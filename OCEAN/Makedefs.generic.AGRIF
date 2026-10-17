@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := all
+
 # [1] Machine independent rules and definitions.
 #==== ======= =========== ===== === ============
 .SUFFIXES: .o .f .i .F .F90 .f90
@@ -10,6 +12,18 @@
 	@(cd CROCOFILES ; ./conv amr.scrum -rm \
 		-comdirin ./ -comdirout AGRIF_MODELFILES/. -convfile $*.F)
 	@$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC CROCOFILES/AGRIF_MODELFILES/$*.F | ./mpc > $*_.f
+param.o: param.F
+	$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC param.F > param_.f
+	$(CFT) -c $(FFLAGS) -ffixed-line-length-none param_.f -o param.o
+
+scalars.o: scalars.F
+	$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC scalars.F > scalars_.f
+	$(CFT) -c $(FFLAGS) -ffixed-line-length-none scalars_.f -o scalars.o
+
+ncscrum.o: ncscrum.F
+	$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC ncscrum.F > ncscrum_.f
+	$(CFT) -c $(FFLAGS) -ffixed-line-length-none ncscrum_.f -o ncscrum.o
+
 .F.o:
 	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > CROCOFILES/$*.F
 	(cd CROCOFILES ; ./conv amr.scrum -rm \
@@ -22,15 +36,9 @@
 	$(CFT) -c $(FFLAGS) $*_.f90 -o $*.o
 #	rm -f $*.f
 .F90.f90:
-	@$(CPP) -P $(CPPFLAGS) $*.F90 > CROCOFILES/$*.F90
-	@(cd CROCOFILES ; ./conv amr.scrum -rm \
-		-comdirin ./ -comdirout AGRIF_MODELFILES/. -convfile $*.F90)
-	@$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC CROCOFILES/AGRIF_MODELFILES/$*.F90 > $*_.f90
+	@$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC $*.F90 > $*_.f90
 .F90.o:
-	$(CPP) -P $(CPPFLAGS) $*.F90 > CROCOFILES/$*.F90
-	(cd CROCOFILES ; ./conv amr.scrum -rm \
-		-comdirin ./ -comdirout AGRIF_MODELFILES/. -convfile $*.F90)
-	$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC CROCOFILES/AGRIF_MODELFILES/$*.F90 > $*_.f90
+	$(CPP) -P $(CPPFLAGS) -ICROCOFILES/AGRIF_INC $*.F90 > $*_.f90
 	$(CFT) -c $(FFLAGS) $*_.f90 -o $*.o
 #	/bin/rm $*.f
 

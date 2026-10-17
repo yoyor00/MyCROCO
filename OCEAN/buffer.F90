@@ -49,15 +49,16 @@ MODULE buffer
 
    ! default
    PRIVATE
-   PUBLIC buff, max_buffer_N_size, init_buffer
+   PUBLIC buff, max_buffer_N_size, init_buffer, check_buffer
 
    INTEGER :: max_buffer_N_size
    REAL, DIMENSION(:), ALLOCATABLE :: buff
 
 CONTAINS
 
-   SUBROUTINE init_buffer
-      INTEGER :: tmp_size
+   SUBROUTINE init_buffer (Lm_in, Mm_in)
+      INTEGER, INTENT(IN), OPTIONAL :: Lm_in, Mm_in
+      INTEGER :: tmp_size, Lm_use, Mm_use, req_len
 
       tmp_size = N + 1
 #ifdef MUSTANG
@@ -71,7 +72,32 @@ CONTAINS
 #endif
       max_buffer_N_size = tmp_size
 
-      ALLOCATE (buff((Lm + 5)*(Mm + 5)*max_buffer_N_size))
+      Lm_use = Lm
+      Mm_use = Mm
+      IF (present(Lm_in)) Lm_use = Lm_in
+      IF (present(Mm_in)) Mm_use = Mm_in
+
+      req_len = (Lm_use + 5)*(Mm_use + 5)*max_buffer_N_size
+      IF (req_len < 1024) req_len = 1024
+
+      IF (ALLOCATED(buff)) THEN
+         IF (SIZE(buff) < req_len) THEN
+            DEALLOCATE(buff)
+         ENDIF
+      ENDIF
+      IF (.NOT. ALLOCATED(buff)) THEN
+         ALLOCATE (buff(req_len))
+      ENDIF
    END SUBROUTINE init_buffer
+
+   SUBROUTINE check_buffer (req_size)
+      INTEGER, INTENT(IN) :: req_size
+      IF (.NOT. ALLOCATED(buff)) THEN
+         ALLOCATE(buff(max(req_size, 1024)))
+      ELSE IF (SIZE(buff) < req_size) THEN
+         DEALLOCATE(buff)
+         ALLOCATE(buff(req_size))
+      ENDIF
+   END SUBROUTINE check_buffer
 
 END MODULE buffer

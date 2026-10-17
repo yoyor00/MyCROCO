@@ -26,6 +26,7 @@ MODULE croco_namelist_init
    private
 
    public :: init_all
+   public :: copy_ncscrum_to_agrif
 
    integer, parameter :: testunit = 40 ! unit used to probe input file availability
 
@@ -570,14 +571,12 @@ contains
    !---------------------------------------------------------------------
    subroutine init_nudging()
       use croco_namelist, ONLY: tauT_in, tauT_out, tauM_in, tauM_out
-#  if defined AGRIF && !defined AGRIF_OBC_M2ORLANSKI && \
-      !defined AGRIF_OBC_M3ORLANSKI && !defined AGRIF_OBC_TORLANSKI
+#  if defined AGRIF && !defined AGRIF_OBC_M2ORLANSKI && !defined AGRIF_OBC_M3ORLANSKI && !defined AGRIF_OBC_TORLANSKI
       use Agrif_Util
 #  endif
       implicit none
 
-#  if defined AGRIF && !defined AGRIF_OBC_M2ORLANSKI && \
-      !defined AGRIF_OBC_M3ORLANSKI && !defined AGRIF_OBC_TORLANSKI
+#  if defined AGRIF && !defined AGRIF_OBC_M2ORLANSKI && !defined AGRIF_OBC_M3ORLANSKI && !defined AGRIF_OBC_TORLANSKI
       if (.not. Agrif_Root()) return
 #  endif
       tauT_in = 1.0/(tauT_in*86400.0)
@@ -666,6 +665,9 @@ contains
       use croco_namelist, ONLY: clmname
 #  if defined MPI
       use scalars, ONLY: mynode
+#  endif
+#  if defined AGRIF
+      use Agrif_Util
 #  endif
       implicit none
       integer, intent(inout) :: ierr
@@ -859,6 +861,9 @@ contains
 #  if defined MPI
       use scalars, ONLY: mynode
 #  endif
+#  if defined AGRIF
+      use Agrif_Util
+#  endif
       implicit none
       integer, intent(inout) :: ierr
       integer :: ios
@@ -893,6 +898,9 @@ contains
       use croco_namelist, ONLY: brywkb_file
 #  if defined MPI
       use scalars, ONLY: mynode
+#  endif
+#  if defined AGRIF
+      use Agrif_Util
 #  endif
       implicit none
       integer, intent(inout) :: ierr
@@ -1022,6 +1030,9 @@ contains
       use croco_namelist, ONLY: logname
 #if defined MPI
       use scalars, ONLY: mynode, mynode2, NNODES2
+#endif
+#if defined AGRIF
+      use Agrif_Util
 #endif
       implicit none
 #ifdef ENSEMBLE
@@ -2537,5 +2548,27 @@ contains
 
    end subroutine init_psource
 #endif /* ANA_PSOURCE */
+
+#ifdef AVERAGES
+   subroutine copy_ncscrum_to_agrif(dest_wrthis, dest_wrtavg)
+      use ncscrum, only: src_wrthis => wrthis, src_wrtavg => wrtavg
+      implicit none
+      logical, intent(inout) :: dest_wrthis(:), dest_wrtavg(:)
+      integer :: n
+      n = min(size(dest_wrthis), size(src_wrthis))
+      dest_wrthis(1:n) = src_wrthis(1:n)
+      n = min(size(dest_wrtavg), size(src_wrtavg))
+      dest_wrtavg(1:n) = src_wrtavg(1:n)
+   end subroutine copy_ncscrum_to_agrif
+#else
+   subroutine copy_ncscrum_to_agrif(dest_wrthis)
+      use ncscrum, only: src_wrthis => wrthis
+      implicit none
+      logical, intent(inout) :: dest_wrthis(:)
+      integer :: n
+      n = min(size(dest_wrthis), size(src_wrthis))
+      dest_wrthis(1:n) = src_wrthis(1:n)
+   end subroutine copy_ncscrum_to_agrif
+#endif
 
 END MODULE croco_namelist_init

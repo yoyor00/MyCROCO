@@ -1206,4 +1206,11 @@ MODULE croco_namelist
    logical :: out_avg_hm = .false.
 # endif
 
+#ifdef AGRIF
+# include "croco_namelist_agrif.h"
+
+CONTAINS
+# include "croco_namelist_agrif_sub.h"
+#endif
+
 END MODULE croco_namelist

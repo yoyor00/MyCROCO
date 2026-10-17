@@ -155,6 +155,7 @@ C$OMP BARRIER
       onemtinterp = 1.-tinterp
 
       nold = 3 - TTimesponge
+      IF (nbstep3d .LT. irhot) nold = TTimesponge
 
       if (SOUTHERN_EDGE) then
         do itrc=1,NT

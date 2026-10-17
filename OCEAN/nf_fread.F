@@ -37,7 +37,7 @@
 #if defined BIOLOGY && defined PISCES && defined key_sediment
       USE par_sed, only: jpksed
 #endif
-      USE buffer, only: buff, max_buffer_N_size
+      USE buffer, only: buff, max_buffer_N_size, check_buffer
       implicit none
 #include "param.h"
       real A(GLOBAL_2D_ARRAY,max_buffer_N_size)
@@ -193,6 +193,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 ! Read/Write array from the disk.
 !===== ===== ===== ==== === =====
 !
+      call check_buffer (count(1)*count(2)*count(3))
 #ifndef WRITER
 # ifdef ABL1D
       if (vert_type.eq.4) then

@@ -24,6 +24,10 @@
           USE croco_namelist_read, ONLY : read_nml, read_nml_fname
           USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
           USE croco_namelist, ONLY : ldefhis, nrrec
+#ifdef AGRIF
+          USE croco_namelist, ONLY : croco_namelist_save_grid,
+     &                               croco_namelist_switch_grid
+#endif
 #ifdef STATIONS
           USE croco_namelist, ONLY : ldefsta
 #endif
@@ -193,7 +197,7 @@
 !
 #define CR  !
 
-      call init_buffer
+      call init_buffer(Lm, Mm)
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters from croco namelist file
@@ -202,6 +206,9 @@
       call read_nml_fname ()
       call read_nml (ierr)
       if (ierr.ne.0) goto 100
+#ifdef AGRIF
+      call croco_namelist_save_grid(0)
+#endif
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -961,6 +968,7 @@ CR      write(*,*) '  0' MYID
       grids_at_level = -1
       sortedint = -1
       call computenbmaxtimes
+      call croco_namelist_switch_grid(0)
 #endif
 
 #ifdef MPI_TIME

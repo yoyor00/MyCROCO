@@ -40,6 +40,9 @@
 #ifdef AVERAGES
       USE croco_namelist, ONLY: nrpfavg, avgname
 #endif
+# ifdef AGRIF
+      USE croco_namelist, ONLY: croco_namelist_switch_grid
+# endif
 #endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
@@ -84,6 +87,10 @@
       include 'mpif.h'
 #endif
       character*70 text
+
+#if defined CROCO_NAMELIST && defined AGRIF
+      call croco_namelist_switch_grid(Agrif_Fixed())
+#endif
 
 #ifndef AVRH
 # define ncname hisname

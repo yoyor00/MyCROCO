@@ -203,6 +203,7 @@ C$OMP BARRIER
       tinterp = 1.+tinterp
 
       nold = 3 - UVTimesponge
+      IF (nbstep3d .LT. irhot) nold = UVTimesponge
 
       if (SOUTHERN_EDGE) then
        do k=1,N

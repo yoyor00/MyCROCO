@@ -15,6 +15,9 @@
                               ! netCDF file.
 
       USE croco_namelist, ONLY: rstname, nrpfrst
+#if defined CROCO_NAMELIST && defined AGRIF
+      USE croco_namelist, ONLY: croco_namelist_switch_grid
+#endif
 #if defined MUSTANG
       USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
       USE dredging, ONLY : l_dredging, dredg_hsed_init
@@ -72,6 +75,10 @@
       real workrsed(GLOBAL_2D_ARRAY,ksdmax)
       real work2d(GLOBAL_2D_ARRAY)
       integer b3dvar_full
+#endif
+
+#if defined CROCO_NAMELIST && defined AGRIF
+      call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
 
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR

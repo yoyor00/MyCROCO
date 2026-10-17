@@ -32,6 +32,7 @@ all: conv
 
 # Check if CC supports -Wno-implicit-function-declaration
 WNO_IMPLICIT := $(shell $(CC) -Wno-implicit-function-declaration -E -x c /dev/null >/dev/null 2>&1 && echo "-Wno-implicit-function-declaration" || echo "")
+CFLAGS += -std=gnu89 -fcommon
 
 conv: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o ./$@

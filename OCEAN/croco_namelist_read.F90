@@ -42,6 +42,9 @@ contains
    !---------------------------------------------------------------------
    subroutine read_nml_fname()
       use croco_namelist, ONLY: fname_nml
+#ifdef AGRIF
+      use Agrif_Util
+#endif
       implicit none
 
       call get_command_argument(1, fname_nml)

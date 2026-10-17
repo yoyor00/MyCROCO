@@ -454,6 +454,19 @@ C$    trd=omp_get_thread_num()
 #   ifdef MASKING
      &                        *vmask(i,Jend+1)
 #   endif
+          if (NORTHERN_EDGE .and. iic.eq.2 .and. iif.eq.1) then
+            if (vbar(i,Jend+1,knew) .ne. vbar(i,Jend+1,knew)) then
+              print *, 'V2DBC_M2SPEC_NAN: node=', mynode, ' i=', i,
+     &          ' Jend1=', Jend+1,
+#   ifdef M2_FRC_BRY
+     &          ' vbarbry_north=', vbarbry_north(i),
+#   else
+     &          ' vbclm=', vbclm(i,Jend+1),
+#   endif
+     &          ' vmask=', vmask(i,Jend+1)
+              call flush(6)
+            endif
+          endif
         enddo
 #  else
 !                                           Northern edge gradient BC

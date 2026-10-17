@@ -121,10 +121,16 @@
       USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
 #  endif
       USE croco_namelist, ONLY: rho0
+#  ifdef AGRIF
+      USE AGRIF_Util
+#  endif
       implicit none
 
 #  include "param.h"
-      integer Istr,Iend,Jstr,Jend, i,j,k
+#  ifdef MPI
+      include 'mpif.h'
+#  endif
+      integer Istr,Iend,Jstr,Jend, i,j,k, nan_gid, ierr
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), K0,
      &     K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N), K1,K2,
 
@@ -252,6 +258,27 @@
 #  ifdef MASKING
             rho(i,j,k)=rho(i,j,k)*rmask(i,j)
 #  endif
+# ifdef AGRIF
+            nan_gid = 0
+            if (.not.Agrif_Root()) nan_gid = Agrif_Fixed()
+# else
+            nan_gid = 0
+# endif
+            if (rho(i,j,k) .ne. rho(i,j,k)) then
+              print *, '>>> NAN in RHO_EOS: g=', nan_gid, ' iic=', iic,
+     &          ' node=', mynode, ' i=', i, ' j=', j, ' k=', k,
+     &          ' Tt=', Tt, ' Ts=', Ts, ' dpth=', dpth,
+     &          ' z_w(N)=', z_w(i,j,N), ' z_r=', z_r(i,j,k),
+     &          ' rho1=', rho1(i,j,k), ' cff=', cff, ' cff1=', cff1,
+     &          ' K0=', K0, ' K1=', K1, ' K2=', K2,
+     &          ' rmask=', rmask(i,j)
+              call flush(6)
+# ifdef MPI
+              call mpi_abort(MPI_COMM_WORLD, 50, ierr)
+# else
+              stop
+# endif
+            endif
 !
 !-----------------------------------------------------------------------
 !  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points

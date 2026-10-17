@@ -75,8 +75,11 @@
 #  ifdef DIAGNOSTICS_PV
 #   include "diags_pv.h"
 #  endif
+#  ifdef MPI
+      include 'mpif.h'
+#  endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx, kmld
-     &       ,imin,imax,jmin,jmax,iAkt,nadv
+     &       ,imin,imax,jmin,jmax,iAkt,nadv, nan_gid, dbg_err
 #  if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
 #  endif
@@ -168,6 +171,32 @@
 #  include "compute_auxiliary_bounds.h"
 
       nadv = 3   !<-- do not remove: used in compute_tracer_fluxes.h
+
+# ifdef AGRIF
+      nan_gid = 0
+      if (.not.Agrif_Root()) nan_gid = Agrif_Fixed()
+# else
+      nan_gid = 0
+# endif
+      do itrc=1,NT
+        do k=1,N
+          do j=Jstr-1,Jend+1
+            do i=Istr-1,Iend+1
+              if (t(i,j,k,nrhs,itrc) .ne. t(i,j,k,nrhs,itrc)) then
+                print *, '>>> NAN AT ENTRY step3d_t: g=', nan_gid, ' iic=', iic,
+     &                   ' node=', mynode, ' itrc=', itrc, ' i=', i, ' j=', j, ' k=', k,
+     &                   ' nrhs=', nrhs
+                call flush(6)
+# ifdef MPI
+                call mpi_abort(MPI_COMM_WORLD, 35, dbg_err)
+# else
+                stop
+# endif
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
 !
 !======================================================================
 !
@@ -316,6 +345,20 @@
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                    -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                         +FE(i,j+1)-FE(i,j))
+              if (t(i,j,k,nnew,itrc) .ne. t(i,j,k,nnew,itrc)) then
+                print *, '>>> NAN IN HORIZ ADV: g=', nan_gid, ' iic=', iic,
+     &            ' node=', mynode, ' itrc=', itrc, ' i=', i, ' j=', j, ' k=', k,
+     &            ' Hz_bak=', Hz_bak(i,j,k), ' tnstp=', t(i,j,k,nstp,itrc),
+     &            ' FX(i+1)=', FX(i+1,j), ' FX(i)=', FX(i,j),
+     &            ' FE(j+1)=', FE(i,j+1), ' FE(j)=', FE(i,j),
+     &            ' pm=', pm(i,j), ' pn=', pn(i,j)
+                call flush(6)
+# ifdef MPI
+                call mpi_abort(MPI_COMM_WORLD, 36, dbg_err)
+# else
+                stop
+# endif
+              endif
 #  else
               if (l_subs2D(itrc-itsubs1+1)) then
                 if (k.eq.1) then
@@ -739,6 +782,30 @@
 # endif
 
 !$acc end kernels
+# ifdef AGRIF
+      nan_gid = 0
+      if (.not.Agrif_Root()) nan_gid = Agrif_Fixed()
+# else
+      nan_gid = 0
+# endif
+      do itrc=1,NT
+        do k=1,N
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              if (t(i,j,k,nnew,itrc) .ne. t(i,j,k,nnew,itrc)) then
+                print *, '>>> NAN BEFORE t3dbc: g=', nan_gid, ' iic=', iic,
+     &                   ' node=', mynode, ' itrc=', itrc, ' i=', i, ' j=', j, ' k=', k
+                call flush(6)
+# ifdef MPI
+                call mpi_abort(MPI_COMM_WORLD, 40, dbg_err)
+# else
+                stop
+# endif
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
 !======================================================================
 !  Set lateral boundary conditions; nudge toward tracer climatology;
 !  apply land-sea mask and exchange periodic boundary conditions.
@@ -746,6 +813,25 @@
 !
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
+      enddo
+
+      do itrc=1,NT
+        do k=1,N
+          do j=Jstr-1,Jend+1
+            do i=Istr-1,Iend+1
+              if (t(i,j,k,nnew,itrc) .ne. t(i,j,k,nnew,itrc)) then
+                print *, '>>> NAN AFTER t3dbc: g=', nan_gid, ' iic=', iic,
+     &                   ' node=', mynode, ' itrc=', itrc, ' i=', i, ' j=', j, ' k=', k
+                call flush(6)
+# ifdef MPI
+                call mpi_abort(MPI_COMM_WORLD, 41, dbg_err)
+# else
+                stop
+# endif
+              endif
+            enddo
+          enddo
+        enddo
       enddo
 !
 !======================================================================

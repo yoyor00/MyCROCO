@@ -15,6 +15,9 @@
       subroutine wrt_avg             ! fields into averages
                                      ! netCDF file.
       use croco_namelist, only: dt, avgname, nrpfavg, rho0
+#if defined CROCO_NAMELIST && defined AGRIF
+      use croco_namelist, only: croco_namelist_switch_grid
+#endif
 !     implicit none
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -49,6 +52,11 @@
 # else
 #  define SWITCH !
 # endif
+
+#if defined CROCO_NAMELIST && defined AGRIF
+      call croco_namelist_switch_grid(Agrif_Fixed())
+#endif
+
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1,

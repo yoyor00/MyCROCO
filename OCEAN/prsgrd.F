@@ -44,9 +44,15 @@ c********************************************************************
 !
       USE croco_namelist, ONLY: rho0, lekman_apg, lnonrot, UG_forced
       USE croco_namelist, ONLY: lts_hadv, loscnonrot
+# ifdef AGRIF
+      USE AGRIF_Util
+# endif
       implicit none
-      integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
+      integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax, nan_gid, ierr
 #  include "param.h"
+#  ifdef MPI
+      include 'mpif.h'
+#  endif
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),   OneFifth,
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),   OneTwelfth,
      &      P(PRIVATE_2D_SCRATCH_ARRAY,N),   epsil,dpth,cff1,cff2,
@@ -448,6 +454,29 @@ c********************************************************************
      &                                                             ))
 #  endif
      &                                                               )
+# ifdef AGRIF
+            nan_gid = 0
+            if (.not.Agrif_Root()) nan_gid = Agrif_Fixed()
+# else
+            nan_gid = 0
+# endif
+            if (rv(i,j,k) .ne. rv(i,j,k)) then
+              print *, '>>> NAN in rv PRSGRD: g=', nan_gid, ' iic=', iic,
+     &          ' node=', mynode, ' i=', i, ' j=', j, ' k=', k,
+     &          ' P(j)=', P(i,j,k), ' P(j-1)=', P(i,j-1,k),
+     &          ' HZR(j)=', HZR(i,j,k), ' HZR(j-1)=', HZR(i,j-1,k),
+     &          ' om_v=', om_v(i,j), ' rho(j)=', rho(i,j,k),
+     &          ' rho(j-1)=', rho(i,j-1,k), ' z_r(j)=', z_r(i,j,k),
+     &          ' z_r(j-1)=', z_r(i,j-1,k), ' dRx(j)=', dRx(i,j),
+     &          ' dRx(j-1)=', dRx(i,j-1), ' dZx(j)=', dZx(i,j),
+     &          ' dZx(j-1)=', dZx(i,j-1), ' vmask=', vmask(i,j)
+              call flush(6)
+# ifdef MPI
+              call mpi_abort(MPI_COMM_WORLD, 60, ierr)
+# else
+              stop
+# endif
+            endif
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then

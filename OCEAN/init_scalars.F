@@ -19,11 +19,14 @@
 ! summation counters, etc; NONE of the physical parameters of
 ! the model is set here.
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, ndtfast
 # ifdef USE_CALENDAR
       use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
      &                          dt_rst
 # endif
+#if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist_init, only: copy_ncscrum_to_agrif
+#endif
 
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
@@ -60,6 +63,9 @@
 #if defined WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#if defined M3FAST || defined K3FAST || defined NBQ
+# include "nbq.h"
+#endif
 
 !      call system('uname -prs')
 
@@ -92,8 +98,24 @@ C$OMP END PARALLEL
 !
 ! Set evolving time indices to their default initial values.
 !
+#if defined AGRIF && defined CROCO_NAMELIST
+      call copy_ncscrum_to_agrif(wrthis
+# ifdef AVERAGES
+     &                          , wrtavg
+# endif
+     &                          )
+#endif
       time=0.
       tdays=0.
+      dtfast = dt / float(ndtfast)
+#if defined M3FAST || defined K3FAST || defined NBQ
+      ndtnbq = ndtfast
+      dtnbq  = dtfast
+      if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
+        ndtnbq = ndtfast
+      endif
+      nsdtnbq = ndtfast/ndtnbq
+#endif
       PREDICTOR_2D_STEP=.FALSE.
       iic=0
       kstp=1

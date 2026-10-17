@@ -19,6 +19,9 @@
 # if defined OA_COUPLING || defined OW_COUPLING
       use croco_namelist, only: ntimes, dt
 # endif
+# ifdef AGRIF
+      use croco_namelist, only: croco_namelist_switch_grid
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -32,6 +35,7 @@
 #ifdef AGRIF
       IF (agrif_fixed().NE.sortedint(nbtimes)) return
       nbtimes = nbtimes + 1
+      call croco_namelist_switch_grid(agrif_fixed())
 #endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1218,7 +1222,6 @@ C$OMP END MASTER
 #  endif
       enddo
 C$OMP BARRIER
-
 # endif /* TRACERS */
 
 # ifdef MORPHODYN

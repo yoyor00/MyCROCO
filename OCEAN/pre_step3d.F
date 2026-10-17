@@ -76,8 +76,11 @@
 #endif              
       implicit none
 # include "param.h"
+# ifdef MPI
+      include 'mpif.h'
+# endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
-     &       ,imin,imax,jmin,jmax,nadv,iAkt
+     &       ,imin,imax,jmin,jmax,nadv,iAkt, nan_gid, dbg_err
 # if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
 # endif

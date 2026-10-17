@@ -104,7 +104,8 @@
 !====================================================================
 !
       subroutine Agrif_initvalues()
-      use croco_namelist, only: dt, ldefhis, nrrec
+      use croco_namelist, only: dt, ldefhis, nrrec,
+     &                          croco_namelist_save_grid
       use croco_namelist_read, only: read_nml_fname, read_nml
       use AGRIF_UTIL
 # ifdef PISCES
@@ -138,7 +139,7 @@
       integer size_XI,size_ETA,se,sse, sz,ssz
       real res1,res2,res3,res4,res5,res6,cff1,cff2
       integer i,j
-      integer ipr,jpr,itrc
+      integer ipr,jpr,itrc,itime
       real,dimension(:,:),pointer :: hparent,umaskparent,rmaskparent
       real htest(GLOBAL_2D_ARRAY)
       real tind(5)
@@ -197,7 +198,7 @@
       if (ierr.ne.0) goto 100         !--> ERROR
 # endif
 
-      call init_buffer
+      call init_buffer(Lm, Mm)
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters in roms.in file
@@ -206,6 +207,9 @@
       call read_nml_fname ()
       call read_nml (ierr)
       if (ierr.ne.0) goto 100
+#ifdef AGRIF
+      call croco_namelist_save_grid(Agrif_Fixed())
+#endif
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -831,24 +835,35 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.SOUTH_INTER) then
 #   endif
-                U_south(0:LOCALLM+1,0:0,1:N,4)=
+              do itime=1,4
+                U_south(0:LOCALLM+1,0:0,1:N,itime)=
      &                u(0:LOCALLM+1,0:0,1:N,1)
 
-                V_south(0:LOCALLM+1,1:1,1:N,4)=
+                V_south(0:LOCALLM+1,1:1,1:N,itime)=
      &                v(0:LOCALLM+1,1:1,1:N,1)
 
-                T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
-     &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)
+                do itrc=1,NT
+                  T_south(0:LOCALLM+1,0:1,1:N,itime,itrc)=
+     &                  t(0:LOCALLM+1,0:1,1:N,1,itrc)
+                enddo
+#    ifdef NBQ
+                W_south(0:LOCALLM+1,0:0,0:N,itime)=
+     &               wz(0:LOCALLM+1,0:0,0:N,1)
+#    endif
+              enddo
 #   if defined M3FAST || defined K3FAST
+                Unbq_south(0:LOCALLM+1,0:0,1:N,1)=
+     &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
                 Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
 
+                Vnbq_south(0:LOCALLM+1,1:1,1:N,1)=
+     &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
                 Vnbq_south(0:LOCALLM+1,1:1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
 #    ifdef NBQ
-                W_south(0:LOCALLM+1,0:0,0:N,4)=
-     &               wz(0:LOCALLM+1,0:0,0:N,1)
-
+                Wnbq_south(0:LOCALLM+1,0:0,0:N,1)=
+     &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
                 Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
 #    endif
@@ -862,25 +877,35 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.NORTH_INTER) then
 #   endif
-                U_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
+              do itime=1,4
+                U_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,itime)=
      &                u(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
 
-                V_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
+                V_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,itime)=
      &                v(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
 
-                T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,4,1:NT)=
-     &                t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)
-
+                do itrc=1,NT
+                  T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,itime,itrc)=
+     &                  t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,itrc)
+                enddo
+#    ifdef NBQ
+                W_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,itime)=
+     &               wz(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)
+#    endif
+              enddo
 #   if defined M3FAST || defined K3FAST
+                Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)=
+     &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
                 Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
 
+                Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)=
+     &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
                 Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
 #    ifdef NBQ
-                W_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,4)=
-     &               wz(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)
-
+                Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)=
+     &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
                 Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,2)=
      &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
 #    endif
@@ -894,24 +919,35 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.WEST_INTER) then
 #   endif
-                U_west(1:1,0:LOCALMM+1,1:N,4)=
+              do itime=1,4
+                U_west(1:1,0:LOCALMM+1,1:N,itime)=
      &               u(1:1,0:LOCALMM+1,1:N,1)
 
-                V_west(0:0,0:LOCALMM+1,1:N,4)=
+                V_west(0:0,0:LOCALMM+1,1:N,itime)=
      &               v(0:0,0:LOCALMM+1,1:N,1)
 
-                T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
-     &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)
+                do itrc=1,NT
+                  T_west(0:1,0:LOCALMM+1,1:N,itime,itrc)=
+     &               t(0:1,0:LOCALMM+1,1:N,1,itrc)
+                enddo
+#    ifdef NBQ
+                W_west(0:0,0:LOCALMM+1,0:N,itime)=
+     &              wz(0:0,0:LOCALMM+1,0:N,1)
+#    endif
+              enddo
 #   if defined M3FAST || defined K3FAST
+                Unbq_west(1:1,0:LOCALMM+1,1:N,1)=
+     &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
                 Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
 
+                Vnbq_west(0:0,0:LOCALMM+1,1:N,1)=
+     &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
                 Vnbq_west(0:0,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
 #    ifdef NBQ
-                W_west(0:0,0:LOCALMM+1,0:N,4)=
-     &              wz(0:0,0:LOCALMM+1,0:N,1)
-
+                Wnbq_west(0:0,0:LOCALMM+1,0:N,1)=
+     &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
                 Wnbq_west(0:0,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
 #    endif
@@ -925,24 +961,35 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.EAST_INTER) then
 #   endif
-                U_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
+              do itime=1,4
+                U_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,itime)=
      &               u(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
 
-                V_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
+                V_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,itime)=
      &               v(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
 
-                T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
-     &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)
+                do itrc=1,NT
+                  T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,itime,itrc)=
+     &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,itrc)
+                enddo
+#    ifdef NBQ
+                W_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,itime)=
+     &              wz(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)
+#    endif
+              enddo
 #   if defined M3FAST || defined K3FAST
+                Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)=
+     &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
                 Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
 
+                Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)=
+     &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
                 Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
 #    ifdef NBQ
-                W_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,4)=
-     &              wz(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)
-
+                Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)=
+     &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
                 Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,2)=
      &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
 #    endif
@@ -978,6 +1025,18 @@ CR      write(*,*) '  0' MYID
       usponge = 0.
       vsponge = 0.
       wsponge = 0.
+      U_sponge_south = 0.
+      V_sponge_south = 0.
+      U_sponge_north = 0.
+      V_sponge_north = 0.
+      U_sponge_west = 0.
+      V_sponge_west = 0.
+      U_sponge_east = 0.
+      V_sponge_east = 0.
+      T_sponge_south = 0.
+      T_sponge_north = 0.
+      T_sponge_west = 0.
+      T_sponge_east = 0.
 
       myfx = 0.
       myfy = 0.
@@ -1018,6 +1077,9 @@ CR      write(*,*) '  0' MYID
       call Agrif_ChildGrid_To_ParentGrid()
       call UpdateGridhis()
       call Agrif_ParentGrid_To_ChildGrid()
+#if defined CROCO_NAMELIST && defined AGRIF
+      call croco_namelist_switch_grid(Agrif_Fixed())
+#endif
 # endif /* AGRIF_2WAY */
 
 # ifdef AGRIF_ADAPTIVE
@@ -1965,12 +2027,18 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       recursive Subroutine UpdateGridhis()
+#if defined CROCO_NAMELIST && defined AGRIF
+      use croco_namelist, only: croco_namelist_switch_grid
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
 # include "scalars.h"
 # include "ncscrum.h"
 
+#if defined CROCO_NAMELIST && defined AGRIF
+      call croco_namelist_switch_grid(Agrif_Fixed())
+#endif
 # ifdef XIOS
 ! RB to be checked
 !      call iom_swap( "roms" )
@@ -1982,6 +2050,9 @@ CR      write(*,*) '  0' MYID
         call Agrif_ChildGrid_To_ParentGrid()
         call UpdateGridhis()
         call Agrif_ParentGrid_To_ChildGrid()
+#if defined CROCO_NAMELIST && defined AGRIF
+        call croco_namelist_switch_grid(Agrif_Fixed())
+#endif
       endif
 
       end subroutine UpdateGridhis

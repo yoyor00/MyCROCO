@@ -28,6 +28,9 @@
 #ifdef WET_DRY
       use croco_namelist, only: D_wetdry
 #endif
+#if defined CROCO_NAMELIST && defined AGRIF
+      use croco_namelist, only: croco_namelist_switch_grid
+#endif
       implicit none
       character*(*) ncname
       integer i, j, k, ncid, lstr, varid, ierr, nf_fwrite,
@@ -43,6 +46,9 @@
 !
 !# include "compute_auxiliary_bounds.h"
 !
+#if defined CROCO_NAMELIST && defined AGRIF
+      call croco_namelist_switch_grid(Agrif_Fixed())
+#endif
 #if defined MPI & !defined PARALLEL_FILES
       if (mynode.gt.0) goto 1
 #endif

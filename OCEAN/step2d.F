@@ -99,6 +99,9 @@ C$    trd=omp_get_thread_num()
 !
       USE debug
       USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha ! needed when AGRIF_CONSERV_VOL
+# ifdef AGRIF
+      USE Agrif_Util
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
@@ -108,7 +111,7 @@ C$    trd=omp_get_thread_num()
 # if defined PSOURCE || defined PSOURCE_MASS
      &        is,
 # endif
-     &        imin,imax,jmin,jmax
+     &        imin,imax,jmin,jmax, nan_gid
       integer,dimension(2) :: ijmax
       real sum_c
       real    VMAX,VMAXL
@@ -401,11 +404,65 @@ C$OMP END MASTER
 # define rzeta2  VFe
 # define rzetaSA VFx
 
-!
-!-----------------------------------------------------------------------
-! Computes zeta(n+1)
-!-----------------------------------------------------------------------
-!
+# ifdef AGRIF
+      nan_gid = 0
+      if (.not.Agrif_Root()) nan_gid = Agrif_Fixed()
+# else
+      nan_gid = 0
+# endif
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (vbar(i,j,knew) .ne. vbar(i,j,knew)) then
+            print *, '>>> NAN in vbar AT ENTRY step2d: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' knew=', knew, ' kstp=', kstp
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 87, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
+
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          if (zeta(i,j,kstp) .ne. zeta(i,j,kstp)) then
+            print *, '>>> NAN in zeta(kstp): g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 91, err)
+# else
+            stop
+# endif
+          endif
+          if (DUon(i,j).ne.DUon(i,j) .or. DUon(i+1,j).ne.DUon(i+1,j)) then
+            print *, '>>> NAN in DUon: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' DUon(i)=', DUon(i,j), ' DUon(i+1)=', DUon(i+1,j)
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 92, err)
+# else
+            stop
+# endif
+          endif
+          if (DVom(i,j).ne.DVom(i,j) .or. DVom(i,j+1).ne.DVom(i,j+1)) then
+            print *, '>>> NAN in DVom: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' DVom(j)=', DVom(i,j), ' DVom(j+1)=', DVom(i,j+1)
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 93, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           zeta_new(i,j)=zeta(i,j,kstp) + dtfast*pm(i,j)*pn(i,j)
@@ -415,6 +472,24 @@ C$OMP END MASTER
 # ifdef ZONAL_NUDGING
           zeta(i,j,knew)=zeta_new(i,j)
 # endif
+        enddo
+      enddo
+
+      do j=JstrV-1,Jend
+        do i=IstrU-1,Iend
+          if (zeta_new(i,j) .ne. zeta_new(i,j)) then
+            print *, '>>> NAN in zeta_new: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' zkstp=', zeta(i,j,kstp),
+     &               ' DUon(i)=', DUon(i,j), ' DUon(i+1)=', DUon(i+1,j),
+     &               ' DVom(j)=', DVom(i,j), ' DVom(j+1)=', DVom(i,j+1)
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 94, err)
+# else
+            stop
+# endif
+          endif
         enddo
       enddo
 !
@@ -611,6 +686,20 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (zeta(i,j,knew) .ne. zeta(i,j,knew)) then
+            print *, '>>> NAN after zetabc: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 95, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.
@@ -1289,6 +1378,21 @@ C$OMP END MASTER
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend
+            if (rvfrc(i,j).ne.rvfrc(i,j) .or. rvbar(i,j).ne.rvbar(i,j)
+     &          .or. rvfrc_bak(i,j,3-nstp).ne.rvfrc_bak(i,j,3-nstp)) then
+              print *, '>>> NAN AT 1379 COUPLING: g=', nan_gid, ' iic=', iic,
+     &          ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &          ' rvfrc=', rvfrc(i,j), ' rvbar=', rvbar(i,j),
+     &          ' rvfrc_bak(3-nstp)=', rvfrc_bak(i,j,3-nstp),
+     &          ' rvfrc_bak(nstp)=', rvfrc_bak(i,j,nstp),
+     &          ' nstp=', nstp
+              call flush(6)
+# ifdef MPI
+              call mpi_abort(MPI_COMM_WORLD, 79, err)
+# else
+              stop
+# endif
+            endif
             cff=rvfrc(i,j)-rvbar(i,j)
             rvfrc(i,j)=cff1*cff + cff2*rvfrc_bak(i,j,3-nstp)
      &                          + cff3*rvfrc_bak(i,j,nstp)
@@ -1426,6 +1530,23 @@ C$OMP END MASTER
         enddo
       enddo
 
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (vbar(i,j,knew) .ne. vbar(i,j,knew)) then
+            print *, '>>> NAN BEFORE loop 1518: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' knew=', knew, ' kstp=', kstp,
+     &               ' Jstr=', Jstr, ' Jend=', Jend, ' JstrV=', JstrV
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 81, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
+
       do j=JstrV,Jend
         do i=Istr,Iend
           DVnew=( (Dstp(i,j)+Dstp(i,j-1))*vbar(i,j,kstp)
@@ -1456,6 +1577,20 @@ C$OMP END MASTER
 #  endif
 # endif
           vbar(i,j,knew)=DVnew/(Dnew(i,j)+Dnew(i,j-1))
+          if (vbar(i,j,knew) .ne. vbar(i,j,knew)) then
+            print *, '>>> NAN at 1547: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' DVnew=', DVnew, ' Dnew(j)=', Dnew(i,j),
+     &               ' Dnew(j-1)=', Dnew(i,j-1), ' Dstp(j)=', Dstp(i,j),
+     &               ' Dstp(j-1)=', Dstp(i,j-1), ' vbar_kstp=', vbar(i,j,kstp),
+     &               ' rvbar=', rvbar(i,j), ' rvfrc=', rvfrc(i,j)
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 80, err)
+# else
+            stop
+# endif
+          endif
 # ifdef SOLVE3D
           DV_avg1(i,j,nnew)=DV_avg1(i,j,nnew) +cff1*om_v(i,j)*(DVnew
 #  ifdef MRL_WCI
@@ -1466,6 +1601,23 @@ C$OMP END MASTER
 #  endif
      &                                                   )
 # endif
+        enddo
+      enddo
+
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (vbar(i,j,knew) .ne. vbar(i,j,knew)) then
+            print *, '>>> NAN AFTER loop 1559: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' knew=', knew, ' kstp=', kstp,
+     &               ' Jstr=', Jstr, ' Jend=', Jend, ' JstrV=', JstrV
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 82, err)
+# else
+            stop
+# endif
+          endif
         enddo
       enddo
 !
@@ -1588,8 +1740,65 @@ C$OMP END MASTER
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (vbar(i,j,knew) .ne. vbar(i,j,knew)) then
+            print *, '>>> NAN in vbar BEFORE u2dbc: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j,
+     &               ' knew=', knew, ' kstp=', kstp
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 88, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
+
       call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
+
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (vbar(i,j,knew) .ne. vbar(i,j,knew)) then
+            print *, '>>> NAN in vbar BETWEEN u2dbc and v2dbc: g=', nan_gid,
+     &               ' iic=', iic, ' iif=', iif, ' node=', mynode,
+     &               ' i=', i, ' j=', j, ' knew=', knew, ' kstp=', kstp
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 89, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
+
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (ubar(i,j,knew) .ne. ubar(i,j,knew)) then
+            print *, '>>> NAN in ubar: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 96, err)
+# else
+            stop
+# endif
+          endif
+          if (vbar(i,j,knew) .ne. vbar(i,j,knew)) then
+            print *, '>>> NAN in vbar: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 97, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
 
 # ifdef OBC_VOLCONS
       call obc_flux_tile (Istr,Iend,Jstr,Jend)
@@ -1938,7 +2147,31 @@ C$OMP END MASTER
       if (LAST_FAST_STEP) then
 !$acc wait
       endif
-# endif       
+# endif
+      do j=Jstr-1,Jend+1
+        do i=Istr-1,Iend+1
+          if (DUon(i,j) .ne. DUon(i,j)) then
+            print *, '>>> NAN in DUon exit: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 98, err)
+# else
+            stop
+# endif
+          endif
+          if (DVom(i,j) .ne. DVom(i,j)) then
+            print *, '>>> NAN in DVom exit: g=', nan_gid, ' iic=', iic,
+     &               ' iif=', iif, ' node=', mynode, ' i=', i, ' j=', j
+            call flush(6)
+# ifdef MPI
+            call mpi_abort(MPI_COMM_WORLD, 99, err)
+# else
+            stop
+# endif
+          endif
+        enddo
+      enddo
       return
       end
 #else
