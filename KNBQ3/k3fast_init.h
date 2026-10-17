@@ -70,19 +70,18 @@
 ! ! BC for DU(V)_nbq treated here
 ! !********************************
 ! !
-# ifdef AGRIF
-!$acc kernels if(compute_on_device) default(present) async(1)
-      do j=Jstr,Jend
-        do i=IstrU,Iend
-          ubar(i,j,knew)=urhs(i,j)
-        enddo
-      enddo
-      do j=JstrV,Jend
-        do i=Istr,Iend
-          vbar(i,j,knew)=vrhs(i,j)
-        enddo
-      enddo
-!$acc end kernels
+!!$acc kernels if(compute_on_device) default(present) async(1)
+!      do j=Jstr,Jend
+!        do i=IstrU,Iend
+!          ubar(i,j,knew)=urhs(i,j)
+!        enddo
+!      enddo
+!      do j=JstrV,Jend
+!        do i=Istr,Iend
+!          vbar(i,j,knew)=vrhs(i,j)
+!        enddo
+!      enddo
+!!$acc end kernels
 
 #  ifdef K3SLOW_W
 !$acc kernels if(compute_on_device) default(present)
@@ -103,7 +102,6 @@
       enddo
 !$acc end kernels
 #  endif /* K3SLOW_W */
-# endif /* AGRIF */
       M2bc_nbq_flag=.true. ! apply boundary wet/dry conditions
                            ! and boundaries for DU(V)_nbq
       call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
@@ -113,28 +111,7 @@
 ! !********************************
 ! !  Implicit part: system setup
 ! !********************************
-! !    
-# ifndef AGRIF
-#  ifdef K3SLOW_W
-!$acc kernels if(compute_on_device) default(present) async(1)
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          work(i,j)=pm(i,j)*pn(i,j)
-#  if defined K3FAST_DUVNBQ || defined K3FAST_DUVNBQ2
-#   ifdef KNHINT_3M	
-       if ((iic==1.and.iif==1).or.mod(iif,nsdtnbq).eq.0) then
-#   endif
-            DU_nbq(i,j)=0.
-            DV_nbq(i,j)=0.
-#   ifdef KNHINT_3M	
-       endif
-#   endif
-#  endif
-        enddo
-      enddo
-!$acc end kernels
-#  endif /* K3SLOW_W */
-# endif /* noAGRIF */
+! !
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! K3FAST_init.h (end)

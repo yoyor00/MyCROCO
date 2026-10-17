@@ -208,11 +208,10 @@
 
       do j=JstrV-2,Jend+1
         do i=IstrU-2,Iend+1
-! ! FRANCIS: A VERIFIER
-!         zab3(i,j) =   zeta(i,j,kstp)
-          zab3(i,j) =   cff1 * zeta(i,j,kstp)
-     &                + cff2 * zeta(i,j,kbak)
-     &                + cff3 * zeta(i,j,kold)
+          zab3(i,j) =   zeta(i,j,kstp)
+!         zab3(i,j) =   cff1 * zeta(i,j,kstp)
+!    &                + cff2 * zeta(i,j,kbak)
+!    &                + cff3 * zeta(i,j,kold)
         enddo
       enddo
 #   endif /* !K3FAST_SPDUP */
