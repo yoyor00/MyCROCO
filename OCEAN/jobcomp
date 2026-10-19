@@ -62,7 +62,7 @@ echo "[SLURM] Compilation exécutée sur le nœud : ${_CUR_HOST} (Job ${_SLURM_J
 #
 # set source
 #
-SOURCE1=../croco/OCEAN
+SOURCE1="${SOURCES1:-/nhoms/nguc/Devel2026/GitWorkTREE/croco_dev2026_NBQ3_Namelist-reproShowroom/OCEAN}"
 
 #
 # determine operating system
@@ -194,7 +194,7 @@ done
 NPROCS="${NPROCS:-1}"
 
 
-SOURCE="${CROCO_SRC-$SOURCE1}"
+SOURCE="${CROCO_SRC:-${SOURCE1}}"
 SCRDIR="./Compile"
 RUNDIR="`pwd`"
 ROOT_DIR="$SOURCE/.."
