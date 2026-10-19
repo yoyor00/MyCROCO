@@ -48,7 +48,7 @@ print("Reading data...")
 h = np.squeeze(nc.variables["h"][args.idy, :])
 Dcrit = float(nc.variables["Dcrit"][:])  # Dcrit is a scalar
 X = np.squeeze(nc.variables["x_rho"][args.idy, :]) / 1000.0  # Convert to km
-T = np.squeeze(nc.variables["scrum_time"][:]) / 86400.0  # Convert to days
+T = np.squeeze(nc.variables["time"][:]) / 86400.0  # Convert to days
 sand = np.squeeze(nc.variables["SAND"][:, args.idz, args.idy, :])
 zeta = np.squeeze(nc.variables["zeta"][:, args.idy, :])
 ubar_raw = np.squeeze(nc.variables["ubar"][:, args.idy, :])

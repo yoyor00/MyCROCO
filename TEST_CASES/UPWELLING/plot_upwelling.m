@@ -33,7 +33,7 @@ makepdf=0;
 tndx=5;
 nc=netcdf('upwelling_avg.nc');
 
-time=(nc{'scrum_time'}(tndx))/(24*3600);
+time=(nc{'time'}(tndx))/(24*3600);
 h=nc{'h'}(:);
 y=squeeze(nc{'y_rho'}(:,2));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));

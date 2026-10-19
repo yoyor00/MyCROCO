@@ -54,7 +54,7 @@ rho0      = 1024.4;
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname);
-tindex=length(nc{'scrum_time'}(:));
+tindex=length(nc{'time'}(:));
 
 if makemovie,
  movObj = QTWriter('tank.mov');
@@ -90,7 +90,7 @@ hc=nc.hc(:);
 %
 kk=round(N/2); % for w
 nc=netcdf(fname);
-t0    = nc{'scrum_time'}(1:tindex);
+t0    = nc{'time'}(1:tindex);
 zeta01= 100*squeeze(nc{'zeta'}(1:tindex,yindex,L-1));
 u01   = 100*squeeze(nc{'u'}(1:tindex,end,yindex,L/2));
 w01   = 100*squeeze(nc{'w'}(1:tindex,kk,yindex,L-1));
@@ -206,7 +206,7 @@ for tindex=tstr:tend % ---------------------------------- time loop
  % --------------------------------------------------------
  % --- read/compute numerical model fields (index 1) ---
  % --------------------------------------------------------
- time=nc{'scrum_time'}(tindex);
+ time=nc{'time'}(tindex);
 
  zeta1=zeta;
  zeta1(zeta1==0)=NaN;
