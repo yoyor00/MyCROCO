@@ -525,17 +525,17 @@
               enddo
             endif
 ! ---------------------------------------------------
-! Compute kbl1 (density) and kblt (temperature)
+! Compute kbld (density) and kblt (temperature)
 ! both starting from indx_depth downward
 ! ---------------------------------------------------
-            kbl1(i,j)=indx_depth
+            kbld(i,j)=indx_depth
             kblt(i,j)=indx_depth
             cff=0
             cff1=0
             do k=indx_depth,1,-1
              if (cff.eq.0.and.rho(i,j,k).le.
      &            rho(i,j,indx_depth)+mld_crit_D) then
-               kbl1(i,j)=k
+               kbld(i,j)=k
              endif
              if (rho(i,j,k).gt.
      &            rho(i,j,indx_depth)+mld_crit_D)  cff=1
@@ -551,13 +551,13 @@
 ! Store MLD: itrc=1 -> density, itrc=2 -> temperature
 ! ----------------------------------------------------
             if (itrc.eq.1) then
-              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl1(i,j))
+              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kbld(i,j)-1)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
 
             elseif (itrc.eq.2) then
-              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kblt(i,j))
+              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kblt(i,j)-1)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif   
@@ -579,7 +579,7 @@
 #  ifdef LMD_SKPP
            kmld=kbl(i,j)
 #   ifdef DIAGNOSTICS_TS_MLD_DENS
-           kmld=kbl1(i,j)
+           kmld=kbld(i,j)
 #   endif
 #  else
            kmld=N-5
@@ -600,20 +600,20 @@
 #  if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
 #   ifdef DIAGNOSTICS_TS_MLD_DENS
-           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbld(i,j)
 #   endif
            kmld=kbl_nstp(i,j)
 #  else
            kmld=N-5
 #  endif
            do k=N,kmld,-1
-             cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+             cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
-           if (itrc .eq. NT) kbl_nstp(i,j)=kbl1(i,j)
+           if (itrc .eq. NT) kbl_nstp(i,j)=kbld(i,j)
 #  endif
          enddo
        enddo
