@@ -469,7 +469,7 @@ c********************************************************************
      &          ' rho(j-1)=', rho(i,j-1,k), ' z_r(j)=', z_r(i,j,k),
      &          ' z_r(j-1)=', z_r(i,j-1,k), ' dRx(j)=', dRx(i,j),
      &          ' dRx(j-1)=', dRx(i,j-1), ' dZx(j)=', dZx(i,j),
-     &          ' dZx(j-1)=', dZx(i,j-1), ' vmask=', vmask(i,j)
+     &          ' dZx(j-1)=', dZx(i,j-1)
               call flush(6)
 # ifdef MPI
               call mpi_abort(MPI_COMM_WORLD, 60, ierr)
