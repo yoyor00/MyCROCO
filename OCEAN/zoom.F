@@ -106,6 +106,7 @@
       subroutine Agrif_initvalues()
       use croco_namelist, only: dt, ldefhis, nrrec
       use croco_namelist_read, only: read_nml_fname, read_nml
+      use cppdefs_info, only: print_cppdefs
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
@@ -206,7 +207,7 @@
       call read_nml_fname ()
       call read_nml (ierr)
       if (ierr.ne.0) goto 100
-      call read_inp (ierr)
+      call print_cppdefs (ierr)
       if (ierr.ne.0) goto 100
 !
 !----------------------------------------------------------------------

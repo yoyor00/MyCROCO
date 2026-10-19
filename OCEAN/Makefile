@@ -34,7 +34,7 @@ include Makedefs
 #        analysis routines
 #======================================================================
 
- SRCS = main.F		step.F		read_inp.F\
+ SRCS = main.F		step.F\
 	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
@@ -59,8 +59,7 @@ include Makedefs
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
-	bio_diag.F	check_srcs.F\
-	check_switches1.F		check_switches2.F\
+	bio_diag.F\
 	debug.F\
 \
 	param.F    ncscrum.F   scalars.F\
@@ -130,6 +129,7 @@ include Makedefs
 
 
  SRCS90 = \
+	cppdefs_info.F90\
 	croco_namelist.F90\
 	mod_tides_mas.F90\
 	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
@@ -177,7 +177,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
-TOOLS = mpc cross_matrix cppcheck srcscheck partit ncjoin ncrename
+TOOLS = mpc cross_matrix partit ncjoin ncrename
 
 
 RCS = $(SRCS:.F=.f)
@@ -227,26 +227,11 @@ cross_matrix: mpc cross_matrix.F
 	$(CFT) -c $(FFLAGS) cross_matrix_.f -o cross_matrix.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o cross_matrix cross_matrix.o
 
-cppcheck:  mpc cppcheck.F
-	$(CPP) -P $(CPPFLAGS) cppcheck.F | ./mpc > cppcheck_.f
-	$(CFT) -c $(FFLAGS) cppcheck_.f -o cppcheck.o
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o cppcheck cppcheck.o
+checkdefs: cppdefs_info.F90
 
-srcscheck: mpc srcscheck.F
-	$(CPP) -P $(CPPFLAGS) srcscheck.F | ./mpc > srcscheck_.f
-	$(CFT) -c $(FFLAGS) srcscheck_.f -o srcscheck.o
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
-	rm -f check_srcs.F
-
-
-checkdefs: check_switches1.F
-
-check_switches1.F: cppcheck cppdefs.h
-	cat cppdefs.h cppdefs_dev.h > mergcpp.txt
-	./cppcheck
-
-check_srcs.F: srcscheck Makefile
-	./srcscheck
+cppdefs_info.F90: cppdefs.h cppdefs_dev.h gen_cppdefs_info.py Makedefs
+	python3 gen_cppdefs_info.py --cpp="$(CPP)" --cppflags="$(CPPFLAGS)" \
+		--srcdir="$(CROCO_SRC_DIR)" --local-files=local_files.txt -o $@
 
 
 partit: partit.F insert_node.o lenstr.o

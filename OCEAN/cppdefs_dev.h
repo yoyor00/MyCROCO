@@ -1100,3 +1100,20 @@
 #else
 #define DOLOOP2D_R(irange,jrange) DOLOOP2D(irange,jrange)
 #endif
+
+/*
+======================================================================
+   Consistency checks (formerly check_switches2.F, now at build time)
+   Reported here to reproduce this exact behavour but many others
+   could be done.
+======================================================================
+*/
+#if defined EW_PERIODIC && ( defined OBC_WEST || defined OBC_EAST )
+# error "EW_PERIODIC is incompatible with OBC_WEST / OBC_EAST"
+#endif
+#if defined NS_PERIODIC && ( defined OBC_SOUTH || defined OBC_NORTH )
+# error "NS_PERIODIC is incompatible with OBC_SOUTH / OBC_NORTH"
+#endif
+#if defined ANA_VMIX && defined LMD_MIXING
+# error "More than one vertical mixing scheme: ANA_VMIX and LMD_MIXING"
+#endif

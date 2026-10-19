@@ -798,6 +798,7 @@
 #endif  /* ONLINE_ANALYSIS */
 
       SUBROUTINE set_xml_global_att(cdid)
+      USE cppdefs_info, ONLY: code_version, local_files
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -987,12 +988,14 @@ C 				  endif
 !
 # endif
 !
-! List of Source Codes and Activated CPP-switches
+! Activated CPP-switches
 !
       CALL iom_set_file_global_attr_char   (cdid
-     &     ,type='string',name='SRCS', value=srcs)
-      CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='CPP-options', value=Coptions)
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='code_version', value=code_version)
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='local_files', value=trim(local_files))
 
       END SUBROUTINE set_xml_global_att
 

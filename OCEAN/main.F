@@ -22,6 +22,7 @@
 !======================================================================
 !
           USE croco_namelist_read, ONLY : read_nml, read_nml_fname
+          USE cppdefs_info, ONLY : print_cppdefs
           USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
           USE croco_namelist, ONLY : ldefhis, nrrec
 #ifdef STATIONS
@@ -198,7 +199,7 @@
       call read_nml_fname ()
       call read_nml (ierr)
       if (ierr.ne.0) goto 100
-      call read_inp (ierr)
+      call print_cppdefs (ierr)
       if (ierr.ne.0) goto 100
 !
 !----------------------------------------------------------------------

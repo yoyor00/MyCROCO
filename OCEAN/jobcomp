@@ -232,7 +232,10 @@ fi
 
 #
 # overwrite with local files
+# (their list is reported in the output files, see gen_cppdefs_info.py)
 #
+ls *.F90 *.F *.h *.h90 2>/dev/null > "$SCRDIR/local_files.txt"
+export CROCO_SRC_DIR="$(cd "$SOURCE" && pwd)"
 
 ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 "$SCRDIR"
 ls *.F     > /dev/null  2>&1 && \cp -f *.F "$SCRDIR"

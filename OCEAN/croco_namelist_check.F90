@@ -183,6 +183,14 @@ contains
          ierr = ierr + 1
       end if
 
+#ifndef SOLVE3D
+      if (ndtfast > 1) then
+         MPI_master_only write (stdout, '(a,i0)') &
+            'Error - ndtfast must be 1 for a shallow water (2D) set-up: ', ndtfast
+         ierr = ierr + 1
+      end if
+#endif
+
    end subroutine check_time_stepping
 
 #ifdef NBQ

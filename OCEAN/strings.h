@@ -15,5 +15,5 @@
 !                                    !
       integer max_opt_size           ! NOTE: Parameter max_opt_size
       parameter (max_opt_size=6400)  ! must be equal to the length
-      character*6400 Coptions,srcs   ! of character string.
-      common /strings/ Coptions,srcs !
+      character*6400 Coptions        ! of character string.
+      common /strings/ Coptions      !

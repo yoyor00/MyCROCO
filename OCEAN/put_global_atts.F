@@ -15,6 +15,7 @@
 #include "cppdefs.h"
 
       subroutine put_global_atts (ncid, ierr)
+      use cppdefs_info, only: code_version, local_files
             use croco_namelist
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
@@ -534,14 +535,19 @@
      &        'Sponge parameters : extent (m) & viscosity (m2.s-1)')
 #endif
 !
-! List of Source Codes and Activated CPP-switches
-!
-      lvar=lenstr(srcs)
-      ierr=nf_put_att_text (ncid,nf_global, 'SRCS', lvar,
-     &                                        srcs(1:lvar))
+! Activated CPP-switches
 !
       lvar=lenstr(Coptions)
       ierr=nf_put_att_text(ncid,nf_global, 'CPP-options',
      &                              lvar, Coptions(1:lvar))
+!
+! Code version (git describe) and files overridden in the run directory
+!
+      lvar=lenstr(code_version)
+      ierr=nf_put_att_text(ncid,nf_global, 'code_version',
+     &                              lvar, code_version(1:lvar))
+      lvar=lenstr(local_files)
+      ierr=nf_put_att_text(ncid,nf_global, 'local_files',
+     &                              lvar, local_files(1:lvar))
       return
       end
