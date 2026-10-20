@@ -106,14 +106,6 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                tairg(GLOBAL_2D_ARRAY,iblkrec))
 
-# ifndef FORMATTED
-        do j=J_RANGE
-          do i=I_RANGE
-            tairg(i,j,iblkrec)=tairg(i,j,iblkrec)-273.15
-          enddo
-        enddo
-# endif
-
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
      &                         tairg(START_2D_ARRAY,iblkrec))
@@ -131,20 +123,6 @@
      &                lonr(GLOBAL_2D_ARRAY),
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
-
-# ifndef FORMATTED
-# ifndef AROME
-        do j=J_RANGE
-          do i=I_RANGE
-            ew=6.1121*(1.0007+3.46e-6*Pref)*
-     &         exp((17.502*tairg(i,j,iblkrec))/
-     &             (240.97+tairg(i,j,iblkrec)))
-            Qsat=0.62197*(ew/(Pref-0.378*ew))
-            rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
-          enddo
-        enddo
-# endif
-# endif
 
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
@@ -166,9 +144,6 @@
 
         do j=J_RANGE
           do i=I_RANGE
-# ifndef FORMATTED
-            prateg(i,j,iblkrec)=prateg(i,j,iblkrec)*8640.
-# endif
             if (1.e-4.gt.abs(prateg(i,j,iblkrec))) then
               prateg(i,j,iblkrec)=0.
             endif
@@ -185,23 +160,8 @@
 ! 4 process radsw (warning!! first (4) downward then (5) upward)
 ! Net solar shortwave radiation: Downwards short wave
 !
-# if defined ERA_ECMWF || defined AROME || defined FORMATTED
-! In the case of ERA we used the net short wave - downward short wave is not used
-# else
-        call MYINTERP(1, NXref, 1, NYref,
-     &                lonref, latref, varref,
-     &                I_RANGE,J_RANGE,
-     &                lonr(GLOBAL_2D_ARRAY),
-     &                latr(GLOBAL_2D_ARRAY),
-     &       radswg_down(GLOBAL_2D_ARRAY,iblkrec))
-
-#  ifdef MPI
-        call exchange_r2d_tile(1,Lm,1,Mm,
-     &                         radswg_down(START_2D_ARRAY,iblkrec))
-#  endif
-
-# endif
-
+! we used the net short wave - downward short wave is not used
+!
       elseif (blkvar_id.eq.5) then
 !
 ! 5 process radsw (warning!! first (4) downward then (5) upward)
@@ -217,12 +177,8 @@
         do j=J_RANGE
           do i=I_RANGE
 
-# if defined ERA_ECMWF || defined AROME || defined FORMATTED
             radswg(i,j,iblkrec)=blk_dum1(i,j)
-# else
-            radswg(i,j,iblkrec)=radswg_down(i,j,iblkrec)
-     &                         -blk_dum1(i,j)
-# endif
+
             if (1e-10.gt.abs(radswg(i,j,iblkrec))) then
               radswg(i,j,iblkrec)=0.
             endif

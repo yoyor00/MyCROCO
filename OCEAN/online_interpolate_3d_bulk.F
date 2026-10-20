@@ -111,13 +111,8 @@
 
         do j=J_RANGE
           do i=I_RANGE
-# ifdef FORMATTED
             pt_dtag(i,j,:,iblkrec)=pt_dtag(i,j,:,iblkrec)
             tairg(i,j,iblkrec)=pt_dtag(i,j,1,iblkrec)
-# else
-            pt_dtag(i,j,:,iblkrec)=pt_dtag(i,j,:,iblkrec)-273.15
-            tairg(i,j,iblkrec)=pt_dtag(i,j,1,iblkrec)-273.15
-# endif
           enddo
         enddo
 
@@ -150,20 +145,6 @@
             rhumg(i,j,iblkrec)=pq_dtag(i,j,1,iblkrec)
           enddo
         enddo
-
-# ifndef FORMATTED
-# ifndef AROME
-        do j=J_RANGE
-          do i=I_RANGE
-            ew=6.1121*(1.0007+3.46e-6*Pref)*
-     &         exp((17.502*tairg(i,j,iblkrec))/
-     &             (240.97+tairg(i,j,iblkrec)))
-            Qsat=0.62197*(ew/(Pref-0.378*ew))
-            rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
-          enddo
-        enddo
-# endif
-# endif
 
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,

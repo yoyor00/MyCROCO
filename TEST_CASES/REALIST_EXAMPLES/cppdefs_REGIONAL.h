@@ -132,10 +132,6 @@
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
 #  undef  ONLINE
-#  ifdef ONLINE
-#   undef  AROME
-#   undef  ERA_ECMWF
-#  endif
 #  undef READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
