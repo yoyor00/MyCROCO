@@ -301,8 +301,7 @@
 !
           do j=jstr,jend
             do i=istr,iend
-              cff1=Hz(i,j,k)/(pm(i,j)*pn(i,j))
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)
      &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
      &                                SWITCH rmask(i,j)
@@ -539,7 +538,7 @@
           do j=jstr,jend
             do i=istr,iend
               cff1=1./(pm(i,j)*pn(i,j))
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*Hz(i,j,k)*cff1
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)
      &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
      &                         +(FC(i,j,k)-FC(i,j,k-1))*cff1
@@ -634,8 +633,7 @@
 !
           do k=1,N
             do i=Istr,Iend
-              TVmix(i,j,k,itrc) = TVmix(i,j,k,itrc)*Hz(i,j,k)
-     &                                           /(pm(i,j)*pn(i,j))
+              TVmix(i,j,k,itrc) = TVmix(i,j,k,itrc)
      &            -(Trate(i,j,k,itrc)-t(i,j,k,nnew,itrc)*Hz(i,j,k))
      &                                        /(dt*pm(i,j)*pn(i,j))
 #    ifdef MASKING
@@ -685,18 +683,7 @@
      &                                              /(dt*cff1)
      &                                       SWITCH rmask(i,j)
 
-!
-! Divide all diagnostic terms by the cell volume
-! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
-! of diag terms are: (unit of tracers)* s-1.
-!
 
-              cff=cff1/Hz(i,j,k)
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-#  ifdef TS_SPONGE_IMP
-              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
-#  endif
 
 
 #  ifdef DIAGNOSTICS_TSVAR
@@ -710,7 +697,7 @@
         enddo
 !
 !==========================================================
-! Tracer diagnostics averaged over the MLD
+! Tracer diagnostics integrated over the MLD
 !==========================================================
 !
 #  if defined DIAGNOSTICS_TS_MLD
@@ -738,8 +725,7 @@
                enddo
                FF(i,j)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
                if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
-     &                        z_w(i,j,N)-z_r(i,j,kbl1(i,j))
-               Tcrit_mld(i,j,1)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+     &                        z_w(i,j,N)-z_w(i,j,kbl1(i,j)-1)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
@@ -755,6 +741,9 @@
        do j=Jstr,Jend
          do i=Istr,Iend
            THmix_mld(i,j,itrc)=0.
+#  ifdef TS_MIX_IMP
+           TVmix_mld(i,j,itrc)=0.
+#  endif
            Taver_mld(i,j,itrc)=0.
            T_mld_nnew(i,j)=0.
            T_mld_nstp(i,j)=0.
@@ -771,12 +760,19 @@
            kmld=N-5
 #   endif
            do k=N,kmld,-1
-             cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
-     &                           THmix(i,j,k,itrc)*cff
+     &                           THmix(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
+#  ifdef TS_MIX_IMP
+             TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
+     &                           TVmix(i,j,k,itrc)
+#  endif
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
+             cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
            enddo
@@ -799,7 +795,7 @@
            kmld=N-5
 #   endif
            do k=N,kmld,-1
-             cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+             cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
            enddo

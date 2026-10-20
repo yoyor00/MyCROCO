@@ -926,16 +926,6 @@
      &                            Hvom(i,j+1,k)-Hvom(i,j,k))
 #   endif /* DIAGNOSTICS_TS_ADV */
 !
-              cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
-#   ifdef DIAGNOSTICS_TS
-              TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
-              TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
-              TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
-#   endif
-              TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
 
 #   if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 \
              && !defined TS_DIF2 && !defined TS_DIF4
@@ -946,7 +936,7 @@
         enddo
 !
 !----------------------------------------------------------
-! Compute tracer diagnostics averaged over the MLD
+! Compute tracer diagnostics integrated over the MLD
 !----------------------------------------------------------
 !
 #   ifdef DIAGNOSTICS_TS_MLD
@@ -972,8 +962,7 @@
                   if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-mld_crit_T)  cff1=1
                enddo
                if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
-     &                        z_w(i,j,N)-z_r(i,j,kbl1(i,j))
-               Tcrit_mld(i,j,1)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+     &                        z_w(i,j,N)-z_w(i,j,kbl1(i,j)-1)
                if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
      &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
             enddo
@@ -1004,32 +993,33 @@
             kmld=N-5
 #    endif
             do k=N,kmld,-1
-              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
-     &                            TXadv(i,j,k,itrc)*cff
+     &                            TXadv(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
-     &                            TYadv(i,j,k,itrc)*cff
+     &                            TYadv(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
-     &                            TVadv(i,j,k,itrc)*cff
+     &                            TVadv(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
-     &                            TVmix(i,j,k,itrc)*cff
+     &                            TVmix(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
-     &                            TForc(i,j,k,itrc)*cff
+     &                            TForc(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+
               T_mld_nnew(i,j)    =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
             enddo
@@ -1054,7 +1044,7 @@
             kmld=N-5
 #     endif
             do k=N,kmld,-1
-              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                        t(i,j,k,nstp,itrc)*cff
             enddo

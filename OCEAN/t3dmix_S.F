@@ -255,8 +255,9 @@
         do j=jstr,jend
           do i=istr,iend
             cff1=pm(i,j)*pn(i,j)
-            THmix(i,j,k,itrc)=FX(i+1,j)-FX(i,j)
-     &                       +FE(i,j+1)-FE(i,j)
+            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)
+     &                         +FX(i+1,j)-FX(i,j)
+     &                         +FE(i,j+1)-FE(i,j)
 #  ifdef MASKING
      &                                        * rmask(i,j)
 #  endif
@@ -267,13 +268,6 @@
 #  ifdef MASKING
      &                                        * rmask(i,j)
 #  endif
-!
-! Divide all diagnostic terms by the cell volume
-! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
-! of diag terms are: (unit of tracers)* s-1.
-!
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
-            Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
           enddo
         enddo
 # endif /* DIAGNOSTICS */
@@ -454,8 +448,7 @@
         do j=jstr,jend
           do i=istr,iend
             cff1=pm(i,j)*pn(i,j)
-            cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)
      &                       +FX(i+1,j)-FX(i,j)
      &                       +FE(i,j+1)-FE(i,j)
 #  ifdef MASKING
@@ -467,17 +460,9 @@
 #  ifdef MASKING
      &                                        * rmask(i,j)
 #  endif
-!
-! Divide all diagnostic terms by the cell volume
-! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
-! of diag terms are: (unit of tracers)* s-1.
-!
 
-            cff=cff1/Hz(i,j,k)
 
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
-            Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-            
+        
 #  if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
 #   include "finalize_diagnostics_tsadv.h"
@@ -494,7 +479,7 @@
 #ifdef DIAGNOSTICS_TS
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 !==========================================================
-! Tracer diagnostics averaged over the MLD
+! Tracer diagnostics integrated over the MLD
 !==========================================================
 !
 #  define T_mld_nnew FX
@@ -521,8 +506,7 @@
                enddo
                FF(i,j)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
                if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
-     &                        z_w(i,j,N)-z_r(i,j,kbl1(i,j))
-               Tcrit_mld(i,j,1)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+     &                        z_w(i,j,N)-z_w(i,j,kbl1(i,j)-1)
                if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
      &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
             enddo
@@ -548,9 +532,10 @@
            kmld=N-5
 #  endif
            do k=N,kmld,-1
-             cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
-     &                           THmix(i,j,k,itrc)*cff
+     &                           THmix(i,j,k,itrc)
+             cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
            enddo
