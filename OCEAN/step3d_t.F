@@ -46,6 +46,9 @@
      &  )
 
       use croco_namelist, only: dt, lts_hadv
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
+      use croco_namelist, only: mld_crit_T, mld_crit_D
+#  endif
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
 #   ifdef MUSTANG
