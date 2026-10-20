@@ -70,15 +70,18 @@ contains
    !    - each phase remains independently readable / testable
    !---------------------------------------------------------------------
    subroutine read_nml(ierr)
-      use param, ONLY: stdout, NT
+      use param, ONLY: stdout
+#if defined SOLVE3D
+      use param, ONLY: NT
+# if defined SEDIMENT
+      use param, ONLY: NST
+# endif
+#endif
 #ifdef DIAGNOSTICS_BIO
       use param, ONLY: NumFluxTerms, NumVSinkTerms
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       use param, ONLY: NumGasExcTerms
 # endif
-#endif
-#if defined SOLVE3D && defined SEDIMENT
-      use param, ONLY: NST
 #endif
       use croco_namelist
       use croco_namelist_check, ONLY: check_all
@@ -342,10 +345,11 @@ contains
       namelist /croco_surf_average_fields/ out_avg_surf
 # endif
 #endif
-# if defined SOLVE3D || defined RIP
       namelist /croco_auxiliary_history_fields/ &
-         out_his_rho, out_his_omega, out_his_w, out_his_akv, &
          out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
+# ifdef SOLVE3D
+      namelist /croco_auxiliary_history_fields/ &
+         out_his_rho, out_his_omega, out_his_w, out_his_akv
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
       namelist /croco_temperature_history_fields/ out_his_akt, out_his_shflx, out_his_shflx_rsw
@@ -2577,9 +2581,7 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_primary_history_tracer_fields)
 # endif
 #endif
-#if defined SOLVE3D || defined RIP
       MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_fields)
-#endif
 #if defined SOLVE3D && defined TEMPERATURE
       MPI_master_only WRITE (stdout, nml=croco_temperature_history_fields)
 #endif
@@ -2883,7 +2885,10 @@ contains
    !  closing it, which avoids any risk of double-close.
    !---------------------------------------------------------------------
    subroutine fatal_nml_error(nml_name, nmlunit, ios, iomsg)
-      use param, ONLY: stdout, NT
+      use param, ONLY: stdout
+#if defined SOLVE3D
+      use param, ONLY: NT
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       use croco_namelist, ONLY: psource_Nsrc
 #endif
@@ -2952,10 +2957,12 @@ contains
       if (looks_like_array) then
          MPI_master_only write (stdout, '(a)') &
             '  -> this assigns an array'
+#if defined SOLVE3D
          MPI_master_only write (stdout, '(a,i0,a)') &
             '  -> if it is sized per-tracer '// &
             '(like tnu2, tnu4, Akt_bak), it must have exactly NT = ', NT, &
             ' values.'
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
          MPI_master_only write (stdout, '(a,i0,a)') &
             '  -> if it is sized per river/point-source '// &

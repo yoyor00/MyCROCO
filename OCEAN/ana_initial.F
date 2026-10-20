@@ -29,7 +29,7 @@
 # ifdef SOLVE3D
       call ana_initial_3d_tile (Istr,Iend,Jstr,Jend)
 # endif
-# ifdef ANA_INITIAL
+# if defined ANA_INITIAL && defined SOLVE3D
       if (trim(testcase_name) == 'ANA_JET') then
         call ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
       endif
@@ -1738,6 +1738,7 @@
       end
 #endif /* SOLVE3D */
 
+#ifdef SOLVE3D
 !======================================================================
 !
       subroutine ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
@@ -2289,4 +2290,4 @@ C$OMP BARRIER
 !$acc end kernels
       return
       end
-
+#endif /* SOLVE3D */

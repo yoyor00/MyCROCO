@@ -187,9 +187,7 @@ contains
 #ifdef AVERAGES
       call init_primary_averages_fields()
 #endif
-#if defined SOLVE3D || (!defined SOLVE3D && defined RIP)
       call init_auxiliary_history_fields()
-#endif
 #if defined SOLVE3D && defined TEMPERATURE
       call init_temperature_history_fields()
 #endif
@@ -1395,9 +1393,9 @@ contains
       use croco_namelist, ONLY: out_his_tracer
 # endif
 #endif
-      use param, ONLY: NT
       use ncscrum, ONLY: wrthis, indxTime, indxZ, indxUb, indxVb
 #ifdef SOLVE3D
+      use param, ONLY: NT
       use ncscrum, ONLY: indxU, indxV
 #endif
       implicit none
@@ -1433,9 +1431,9 @@ contains
       use croco_namelist, ONLY: out_avg_tracer
 #  endif
 # endif
-      use param, ONLY: NT
       use ncscrum, ONLY: wrtavg, indxTime, indxZ, indxUb, indxVb
 #ifdef SOLVE3D
+      use param, ONLY: NT
       use ncscrum, ONLY: indxU, indxV
 #endif
       implicit none
@@ -1459,15 +1457,16 @@ contains
    end subroutine init_primary_averages_fields
 #endif
 
-#if defined SOLVE3D || (!defined SOLVE3D && defined RIP)
    !---------------------------------------------------------------------
    !  init_auxiliary_history_fields
-   !  SOLVE3D basics (rho, omega, w, akv) + surface stress (always).
+   !  Surface/bottom stress (always) + SOLVE3D basics (rho, omega, w, akv).
    !---------------------------------------------------------------------
    subroutine init_auxiliary_history_fields()
       use croco_namelist, ONLY: &
-         out_his_rho, out_his_omega, out_his_w, out_his_akv, &
          out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
+#ifdef SOLVE3D
+      use croco_namelist, ONLY: out_his_rho, out_his_omega, out_his_w, out_his_akv
+#endif
       use ncscrum, ONLY: wrthis, indxTime, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
@@ -1492,7 +1491,6 @@ contains
       if (out_his_rho .or. out_his_omega .or. out_his_w .or. out_his_akv) wrthis(indxTime) = .true.
 #endif
    end subroutine init_auxiliary_history_fields
-#endif
 
 #if defined SOLVE3D && defined TEMPERATURE
    subroutine init_temperature_history_fields()

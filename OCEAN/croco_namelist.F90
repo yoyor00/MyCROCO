@@ -1040,19 +1040,19 @@ MODULE croco_namelist
 # endif
 #endif
 
-# if defined SOLVE3D || defined RIP
-   ! &croco_auxiliary_history_fields  (SOLVE3D basics + surface stress)
+! &croco_auxiliary_history_fields  (surface/bottom stress + SOLVE3D basics)
+# if defined SOLVE3D
    logical :: out_his_rho = .false.
    logical :: out_his_omega = .false.
    logical :: out_his_w = .false.
    logical :: out_his_akv = .false.
+# endif
    logical :: out_his_bostr = .false.
    logical :: out_his_bustr = .false.
    logical :: out_his_bvstr = .false.
    logical :: out_his_wstr = .false.
    logical :: out_his_ustr = .false.
    logical :: out_his_vstr = .false.
-# endif
 # if defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_history_fields
    logical :: out_his_akt = .false.
