@@ -81,7 +81,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
-  (#568, #570)
+  (#568, #570, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -225,4 +225,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten
+  S. Theetten, L. Maillard
