@@ -552,7 +552,7 @@
            kmld=N-5
 #  endif
            do k=N,kmld,-1
-             cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+             cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
