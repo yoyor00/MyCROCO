@@ -98,9 +98,6 @@
 #include "ocean2d.h"
 #include "ocean3d.h"
 #include "mixing.h"
-#ifdef DIAGNOSTICS_TS_MLD_DENS
-#include "diagnostics.h"
-#endif
 #include "mpi_cpl.h"
 #ifdef SEDIMENT
 # include "sediment.h"
@@ -938,10 +935,6 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
 !     Write out depth of planetary boundary layer (m).
 !
       if (wrthis(indxHbl)) then
-# ifdef DIAGNOSTICS_TS_MLD_DENS
-!$acc update if(compute_on_device) host(Tcrit_mld(:,:,1))
-        work2d=Tcrit_mld(:,:,1)
-# else
 #  ifdef LMD_SKPP2005
 !$acc update if(compute_on_device) host(hbls(:,:))
         work2d=hbls(:,:,nstp)
@@ -949,7 +942,6 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
 !$acc update if(compute_on_device) host(hbl(:,:))
         work2d=hbl
 #  endif
-# endif
         call fillvalue2d(work2d,ncidhis,hisHbl,vname(1,indxHbl),
      &        record,r2dvar,type)
 CR      write(*,*) 'wrt_his:  wrtHBL' MYID

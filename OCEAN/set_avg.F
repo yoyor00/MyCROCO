@@ -80,9 +80,6 @@ C$    integer omp_get_thread_num
 # include "averages.h"
 # include "mixing.h"
 # include "forces.h"
-#ifdef DIAGNOSTICS_TS_MLD_DENS
-#include "diagnostics.h"
-#endif
 # ifdef SEDIMENT
 #  include "sediment.h"
 # endif
@@ -343,10 +340,6 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxHbl)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
-#  ifdef DIAGNOSTICS_TS_MLD_DENS
-              hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
-     &                               +Tcrit_mld(i,j,1))
-#  else
 #   ifdef LMD_SKPP2005
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbls(i,j,nstp))
@@ -354,7 +347,6 @@ C$    integer omp_get_thread_num
               hbl_avg(i,j)=cff*( cff1*hbl_avg(i,j)
      &                               +hbl(i,j))
 #   endif
-#  endif
             enddo
           enddo
         endif
