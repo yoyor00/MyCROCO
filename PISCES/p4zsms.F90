@@ -43,7 +43,7 @@ MODULE p4zsms
    LOGICAL :: l_budget
 
    INTEGER  ::  rstph, rstfe, rstszn, rstszd, rstszp
-   INTEGER  ::  rstthet, rstxksi, rstxksim, rstpisstep, rstpistime, rstpistime2
+   INTEGER  ::  rstthet, rstxksi, rstxksim, rstpisstep, rstpistime
    INTEGER  ::  rstpoc, rstgoc
 
    !! * Substitutions
@@ -54,7 +54,7 @@ MODULE p4zsms
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zsms.F90 15459 2021-10-29 08:19:18Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 
@@ -927,25 +927,6 @@ CONTAINS
         ierr = nf_put_att_text(ncid, rstpistime, 'field',     lvar,      &
         &                                  vname(4,indxTime)(1:lvar))
 
-!
-! Time2.
-!
-        lvar = lenstr(vname(1,indxTime2))
-        ierr = nf_def_var (ncid, vname(1,indxTime2)(1:lvar),            &
-        &                              NF_DOUBLE, 1, timedim, rstpistime2)
-#ifdef NC4PAR
-        ierr = nf_var_par_access(ncid,rstpistime2,nf_collective)
-#endif
-        lvar = lenstr(vname(2,indxTime2))
-        ierr = nf_put_att_text (ncid, rstpistime2, 'long_name', lvar,     &
-        &                                  vname(2,indxTime2)(1:lvar))
-        lvar = lenstr(vname(3,indxTime2))
-        ierr = nf_put_att_text (ncid, rstpistime2, 'units',     lvar,     &
-        &                                  vname(3,indxTime2)(1:lvar))
-        lvar = lenstr (vname(4,indxTime2))
-        ierr = nf_put_att_text(ncid, rstpistime2, 'field',     lvar,      &
-        &                                  vname(4,indxTime2)(1:lvar))
-
         cltra = "PH"   ;   cltrs = "PH"   ;    cltru = "-"
         ierr = nf_def_var (ncid, cltra, NF_DOUBLE, 4, r3dgrd, rstph)
 #ifdef NC4PAR
@@ -1153,15 +1134,6 @@ CONTAINS
         ierr = nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), rstpistime)
         IF (ierr .NE. nf_noerr) THEN
           WRITE(stdout,1) vname(1,indxTime)(1:lvar), cn_pisrst_out(1:lstr)
-          GOTO 99                                         !--> ERROR
-        ENDIF
-!
-! Time2.
-!
-        lvar = lenstr(vname(1,indxTime2))
-        ierr = nf_inq_varid (ncid, vname(1,indxTime2)(1:lvar), rstpistime2)
-        IF (ierr .NE. nf_noerr) THEN
-          WRITE(stdout,1) vname(1,indxTime2)(1:lvar), cn_pisrst_out(1:lstr)
           GOTO 99                                         !--> ERROR
         ENDIF
 

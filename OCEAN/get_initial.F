@@ -1,17 +1,19 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
                                                 ! Read initial conditions for the
       subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
                                                 ! initialization file.
+      use croco_namelist
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -124,7 +126,7 @@
 ! is done only when file of initial conditions contains sufficient
 ! data, i.e. two consecutive time records of evolving fields one time
 ! step apart from each other.  Thus, in order to accept the file for
-! exact restart, it must pass two consecutive checks: (i) ocean_time
+! exact restart, it must pass two consecutive checks: (i) time
 ! values in two consecutive values must differ by "dt" of current
 ! run, and (ii) "ntstart" from two consecutive records of netCDF
 ! structure "time_step" must differ by one.  If either check
@@ -173,19 +175,13 @@
 !
       lvar=lenstr(vname(1,indxTime))
       ierr=nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), varid)
-
-!! GC
-!! The following is done for backward compatibility: normally time
-!! variable is named "ocean_time", but legacy startup files may name
-!! it either "roms_time" or "scrum_time".
-!!
-!      if (ierr .ne. nf_noerr) then
-!        ierr=nf_inq_varid (ncid, 'roms_time', varid)
-!      endif
-!      if (ierr .ne. nf_noerr) then
-!        ierr=nf_inq_varid (ncid, 'scrum_time', varid)
-!      endif
-! GC
+!
+! Backward compatibility: initial/restart files written before the
+! netCDF time variable was renamed to "time" still use "scrum_time".
+!
+      if (ierr .ne. nf_noerr) then
+        ierr=nf_inq_varid (ncid, 'scrum_time', varid)
+      endif
 
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
@@ -228,7 +224,7 @@
 #endif
 
 #if defined USE_CALENDAR
-            call tool_origindate(ncid,varid,origin_date_in_sec)
+      call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
@@ -241,9 +237,6 @@
       READ(origin_date(18:19),fmt='(i2)') origin_second
       ! Modify units when using USE_CALENDAR
       vname(3,indxTime)='seconds since '
-     &                     //tool_sectodat(origin_date_in_sec)
-              ! Modify units when using USE_CALENDAR
-      vname(3,indxTime2)='seconds since '
      &                     //tool_sectodat(origin_date_in_sec)
 # if defined XIOS
       MPI_master_only write(stdout,'(/3x,A,/)')
@@ -361,7 +354,7 @@
           nrecdiags_vrt_avg=ibuff(4)
 #  endif
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
           nrecdiags_ek=ibuff(3)
 #  ifdef AVERAGES
           nrecdiags_ek_avg=ibuff(4)
@@ -494,7 +487,7 @@
 # ifdef DIAGNOSTICS_VRT
           ntsdiags_vrt_avg = ntsavg
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
           ntsdiags_ek_avg = ntsavg
 # endif
 # ifdef DIAGNOSTICS_TS

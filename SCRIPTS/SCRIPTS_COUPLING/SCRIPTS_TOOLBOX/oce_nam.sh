@@ -37,14 +37,14 @@
 for nn in $( seq 0 ${AGRIFZ} ) 
 do
     if [ ${nn} -gt 0 ];    then
-	namfile=croco.in.${nn}
+	namfile=croco.nml.${nn}
         agrif_ext=".${nn}"
-	cpfile ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
+	cpfile ${OCE_NAM_DIR}/croco.nml.base.${nn} ${namfile}
 	SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
     else
-	namfile=croco.in
+	namfile=croco.nml
 	agrif_ext=""
-	cpfile ${OCE_NAM_DIR}/croco.in.base ${namfile}
+	cpfile ${OCE_NAM_DIR}/croco.nml.base ${namfile}
 	SUBTIME=1
     fi
     if [ ${nn} -gt 1 ];    then
@@ -80,7 +80,7 @@ do
         end_D=${DAY_END_JOB}
     fi
 
-    printf "Computing the origin_date from start_date and scrum_time\n"
+    printf "Computing the origin_date from start_date and time\n"
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
     cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
@@ -89,13 +89,13 @@ do
         idx_rst=0
 	if [[ ${RESTART_FLAG} == "TRUE" ]]; then
 	    idx_ini=2
-            scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ',' -f 2 | cut -d ';' -f 1)
+            scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ',' -f 2 | cut -d ';' -f 1)
 	else
             idx_ini=1
-	    scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	    scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
 	fi
     else
-        scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+        scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
 	idx_ini=1
 	idx_rst=-1
     fi
@@ -135,7 +135,7 @@ if [[ ${interponline} -eq 1 ]]; then
     if [[ ${frc_ext} == *'AROME'* || ${frc_ext} == *'ARPEGE'* ]];then
         fieldname='AROME'
         online_frc=${frc_ext}
-        echo "Online bulk is ${frc_ext}; default value for records per day is 24. (Change in the croco.in if not)"
+        echo "Online bulk is ${frc_ext}; default value for records per day is 24. (Change in the croco.nml if not)"
         rpd=24
     else 
         if [[ ${frc_ext} == "ERA_ECMWF" || ${frc_ext} == "FORMATTED" ]]; then

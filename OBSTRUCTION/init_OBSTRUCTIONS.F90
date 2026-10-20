@@ -1,3 +1,7 @@
+! Copyright (C) IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_OBSTRUCTION.txt
+
 MODULE init_OBSTRUCTIONS
 
 #include "cppdefs.h"
@@ -48,6 +52,7 @@ MODULE init_OBSTRUCTIONS
    !! * Modules used
    USE com_OBSTRUCTIONS
    USE OBSTRUCTIONS1DV
+   USE croco_namelist, ONLY : obstname
 
    IMPLICIT NONE
 

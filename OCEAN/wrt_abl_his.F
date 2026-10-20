@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -13,6 +14,7 @@
                                ! Writes requested model
       subroutine wrt_abl_his   ! fields at requested levels
                                ! into history netCDF file.
+      use croco_namelist, only: ablname, nrpfablhis
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik, varid
@@ -119,18 +121,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
      &        vname(1,indxTime)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
-
-!-----------------------------------------------------------------------
-!     Time2
-!-----------------------------------------------------------------------
-      ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime2, record, time)
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
       endif

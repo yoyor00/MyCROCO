@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -41,6 +42,8 @@ c********************************************************************
       subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
      &                                       dR,dZ, FC,dZx,rx,dRx)
 !
+      USE croco_namelist, ONLY: rho0, lekman_apg, lnonrot, UG_forced
+      USE croco_namelist, ONLY: lts_hadv, loscnonrot
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
 #  include "param.h"
@@ -59,33 +62,15 @@ c********************************************************************
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
-#  ifdef INNERSHELF_APG
-! Impose alongshore pressure gradient balancing
-! a constant cross-shore geostrophic flow UG (m/s)
-       real UG
-       parameter (UG=0.02)
-#  elif defined FORCED_EKBBL
-       real UG
-       parameter (UG=10.0)
-#  elif defined  FORCED_DBLEEK
-       real UG
-       parameter (UG=0.0015)
-#  elif defined FORCED_OSCNONROTBBL || defined FORCED_NONROTBBL
-       real gdzetady, omega
-       parameter (gdzetady=2.e-6*9.81)
-       parameter (omega=2.*pi/(12.4*3600.))
-#  endif
-#  ifdef DIAGNOSTICS_UV
+       real apg_forced, gdzetady, omega
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
 #   include "diagnostics.h"
-#  else
 #   if defined DIAGNOSTICS_VRT
 #    include "diags_vrt.h"
 #   endif
-#   if defined DIAGNOSTICS_EK
+#   if defined DIAGNOSTICS_KE
 #    include "diags_ek.h"
-#    if defined DIAGNOSTICS_EK_MLD
-#     include "mixing.h"
-#    endif
 #   endif
 #  endif
 #  if defined MRL_WCI || defined READ_PATM
@@ -93,9 +78,6 @@ c********************************************************************
 #  endif
 #  ifdef POT_TIDES
 #   include "tides.h"
-#  endif
-#  ifdef SED_TOY
-#   include "forces.h"
 #  endif
 #  include "openacc_work.h"
 !
@@ -154,6 +136,8 @@ c********************************************************************
 !
       GRho=g/rho0
       HalfGRho=0.5*GRho
+      gdzetady = 2.e-6*9.81
+      omega    = 2.*pi/(12.4*3600.)
 
 !$acc kernels if(compute_on_device) default(present)
       !do j=JstrV-1,Jend
@@ -349,38 +333,10 @@ c********************************************************************
 #  endif
      &    )
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
-            endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                ekwrkPrsgrd(i,j,1) = ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              else
-                ekwrkPrsgrd(i,j,1) = ekwrkPrsgrd(i,j,1) + ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.N) then
-                ekwrkPrsgrd_mld(i,j,1) = ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              elseif (k.ge.kbl(i,j)) then
-            ekwrkPrsgrd_mld(i,j,1) = ekwrkPrsgrd_mld(i,j,1) + ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              endif
-#   endif
-            endif
-#  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                wrkPrsgrd(i,j,1) = ru(i,j,k) SWITCH umask(i,j)
-              else
-                wrkPrsgrd(i,j,1) = wrkPrsgrd(i,j,1) + ru(i,j,k)
-     &                     SWITCH umask(i,j)
-              endif
             endif
 #  endif
 
@@ -452,15 +408,17 @@ c********************************************************************
 
         do j=JstrV,Jend
           do i=Istr,Iend
+            if (lekman_apg) then
+              apg_forced = on_v(i,j)*f(i,j)*UG_forced
+            elseif (loscnonrot) then
+              apg_forced = -gdzetady*cos(omega*time)*on_v(i,j)
+            elseif (lnonrot) then
+              apg_forced = -gdzetady*on_v(i,j)
+            else
+              apg_forced = 0.
+            endif
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
-
-#  if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
-     &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
-#  elif defined FORCED_OSCNONROTBBL
-     &     -gdzetady*cos(omega*time)*on_v(i,j)+
-#  elif defined FORCED_NONROTBBL
-     &     -gdzetady*on_v(i,j)+
-#  endif
+     &                apg_forced +
      &                                             P(i,j-1,k)-P(i,j,k)
 #  ifndef PGF_FLAT_BOTTOM
      &                           -HalfGRho*( (rho(i,j,k)+rho(i,j-1,k))
@@ -472,38 +430,10 @@ c********************************************************************
      &                                                             ))
 #  endif
      &                                                               )
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
-            endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                ekwrkPrsgrd(i,j,2) = rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              else
-                ekwrkPrsgrd(i,j,2) = ekwrkPrsgrd(i,j,2) + rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.N) then
-                ekwrkPrsgrd_mld(i,j,2) = rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              elseif (k.ge.kbl(i,j)) then
-            ekwrkPrsgrd_mld(i,j,2) = ekwrkPrsgrd_mld(i,j,2) + rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              endif
-#   endif
-            endif
-#  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                wrkPrsgrd(i,j,2) = rv(i,j,k) SWITCH vmask(i,j)
-              else
-                wrkPrsgrd(i,j,2) = wrkPrsgrd(i,j,2) + rv(i,j,k)
-     &                                       SWITCH vmask(i,j)
-              endif
             endif
 #  endif
 
@@ -572,6 +502,7 @@ c********************************************************************
 #  endif
      &                                           )
 !
+      USE croco_namelist, ONLY: rho0, lts_hadv
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
@@ -592,11 +523,8 @@ c********************************************************************
 #   if defined DIAGNOSTICS_VRT
 #    include "diags_vrt.h"
 #   endif
-#   if defined DIAGNOSTICS_EK
+#   if defined DIAGNOSTICS_KE
 #    include "diags_ek.h"
-#    if defined DIAGNOSTICS_EK_MLD
-#     include "mixing.h"
-#    endif
 #   endif
 #  endif
 #  ifdef MRL_WCI
@@ -648,25 +576,13 @@ c********************************************************************
 
             ru(i,j,N)=0.5*(HZR(i,j,N)+HZR(i-1,j,N))*on_u(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,1) = ru(i,j,N) SWITCH umask(i,j)
             endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-                ekwrkPrsgrd(i,j,1) = ru(i,j,N)
-     &                           * u(i,j,N,nrhs) SWITCH umask(i,j)
-#   if defined DIAGNOSTICS_EK_MLD
-                ekwrkPrsgrd_mld(i,j,1) = ru(i,j,N)
-     &                           * u(i,j,N,nrhs) SWITCH umask(i,j)
-#   endif
-            endif
 #  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (nnew.ne.3) then
-                wrkPrsgrd(i,j,1) = ru(i,j,N) SWITCH umask(i,j)
-            endif
-#  endif
+
           enddo
 #  ifdef WJ_GRADP
           cff=0.25*g/rho0
@@ -702,38 +618,10 @@ c********************************************************************
 
               ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
-            endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                ekwrkPrsgrd(i,j,1) = ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              else
-                ekwrkPrsgrd(i,j,1) = ekwrkPrsgrd(i,j,1) + ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.N) then
-                ekwrkPrsgrd_mld(i,j,1) = ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              elseif (k.ge.kbl(i,j)) then
-            ekwrkPrsgrd_mld(i,j,1) = ekwrkPrsgrd_mld(i,j,1) + ru(i,j,k)
-     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
-              endif
-#   endif
-            endif
-#  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                wrkPrsgrd(i,j,1) = ru(i,j,k) SWITCH umask(i,j)
-              else
-                wrkPrsgrd(i,j,1) = wrkPrsgrd(i,j,1) + ru(i,j,k)
-     &                     SWITCH umask(i,j)
-              endif
             endif
 #  endif
 
@@ -763,25 +651,10 @@ c********************************************************************
 
             rv(i,j,N)=0.5*(HZR(i,j,N)+HZR(i,j-1,N))*om_v(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,2) = rv(i,j,N) SWITCH vmask(i,j)
-            endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-                ekwrkPrsgrd(i,j,2) = rv(i,j,N)
-     &                           * v(i,j,N,nrhs) SWITCH vmask(i,j)
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.N) then
-                ekwrkPrsgrd_mld(i,j,2) = rv(i,j,N)
-     &                           * v(i,j,N,nrhs) SWITCH vmask(i,j)
-              endif
-#   endif
-            endif
-#  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (nnew.ne.3) then
-                wrkPrsgrd(i,j,2) = rv(i,j,N) SWITCH vmask(i,j)
             endif
 #  endif
 
@@ -820,38 +693,10 @@ c********************************************************************
 
               rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
-            endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                ekwrkPrsgrd(i,j,2) = rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              else
-                ekwrkPrsgrd(i,j,2) = ekwrkPrsgrd(i,j,2) + rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.N) then
-                ekwrkPrsgrd_mld(i,j,2) = rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              elseif (k.ge.kbl(i,j)) then
-            ekwrkPrsgrd_mld(i,j,2) = ekwrkPrsgrd_mld(i,j,2) + rv(i,j,k)
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              endif
-#   endif
-            endif
-#  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (nnew.ne.3) then
-              if (k.eq.N) then
-                wrkPrsgrd(i,j,2) = rv(i,j,k) SWITCH vmask(i,j)
-              else
-                wrkPrsgrd(i,j,2) = wrkPrsgrd(i,j,2) + rv(i,j,k)
-     &                                       SWITCH vmask(i,j)
-              endif
             endif
 #  endif
 
@@ -927,20 +772,20 @@ c********************************************************************
 !
 !--------------------------------------------------------------------
 !
-# ifdef TS_HADV_TEST
-      do k=1,N
-        do j=Jstr,Jend
-          do i=IstrU,Iend
-            ru(i,j,k)  = 0.d0
+      if (lts_hadv) then
+        do k=1,N
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              ru(i,j,k)  = 0.d0
+            enddo
+          enddo
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              rv(i,j,k)  = 0.d0
+            enddo
           enddo
         enddo
-        do j=JstrV,Jend
-          do i=Istr,Iend
-            rv(i,j,k)  = 0.d0
-          enddo
-        enddo
-      enddo
-# endif
+      endif
 !$acc end kernels
 
 !

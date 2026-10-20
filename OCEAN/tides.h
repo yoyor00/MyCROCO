@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !** Include file "tides.h"
@@ -75,5 +76,34 @@
 
       real PTide(GLOBAL_2D_ARRAY)
       common /tides_Ptide/ Ptide
+#endif
+
+#ifdef TIDES_MAS
+      REAL,DIMENSION(30,8,GLOBAL_2D_ARRAY)       :: mrssh,mgssh
+      common /tides_mrssh/ mrssh
+      common /tides_mgssh/ mgssh
+
+      REAL,DIMENSION(30,8,GLOBAL_2D_ARRAY)       :: mru,mgu,mrv,mgv
+      common /tides_mru/ mru
+      common /tides_mgu/ mgu
+      common /tides_mrv/ mrv
+      common /tides_mgv/ mgv
+
+      REAL,DIMENSION(130,GLOBAL_2D_ARRAY)        :: mhssh,mhu,mhv
+      common /tides_mhssh/ mhssh
+      common /tides_mhu/ mhu
+      common /tides_mhv/ mhv
+
+      REAL,DIMENSION(30,8,GLOBAL_2D_ARRAY)       :: mrpot,mgpot
+      common /tides_mrpot/ mrpot
+      common /tides_mgpot/ mgpot
+
+      REAL,DIMENSION(130,GLOBAL_2D_ARRAY)        :: mhpot
+      common /tides_mhpot/ mhpot
+
+      INTEGER,DIMENSION(Ntides) :: k_of   ! species index for harmonic i
+      INTEGER,DIMENSION(Ntides) :: nn_of  ! rank within species for harmonic i
+      common /tides_k_of/ k_of
+      common /tides_nn_of/ nn_of
 #endif
 

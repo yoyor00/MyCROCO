@@ -53,7 +53,7 @@ MODULE p4zdiaz
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zrem.F90 15459 2021-10-29 08:19:18Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 
@@ -212,7 +212,7 @@ CONTAINS
          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
          zfact = rno3 * 1.e+3 * rfact2r !  conversion from molC/l/kt  to molN/m3/s
          DO_3D( 0, 0, 0, 0, 1, jpk )
-            zw3d(ji,jj,jkR) =  nitrpot(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+            zw3d(ji,jj,jkR) =  nitrpot(ji,jj,jk) * nitrfix * zfact * tmask(ji,jj,jk)
          END_3D
          CALL iom_put( "Nfix", zw3d ) ! diazotrophy
          CALL iom_put( "Nfixo2", zw3d * o2nit) ! O2 production by diazotrophy

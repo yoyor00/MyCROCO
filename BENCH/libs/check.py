@@ -148,7 +148,7 @@ def recurse_compare_current_dim(
     """
     # check
     if len(shape_ref) != len(shape_actual):
-        f"Shape is not same in both file for '{varname}'"
+        raise Exception(f"Shape is not same in both file for '{varname}'")
 
     # nothing to check
     if len(shape_ref) == 0:
@@ -253,24 +253,28 @@ def compare_values(ref: Dataset, actual: Dataset, var: str) -> None:
 def extract_comparable_arrays(ref: Dataset, actual: Dataset, var: str):
     shape_ref = ref.variables[var].shape
 
+    # Slice NetCDF4 variable first, then convert — avoids masked array deprecation
     # [1:-1, 1:-1] to check only interior domain
     if len(shape_ref) == 2:
         return (
-            numpy.array(ref.variables[var])[1:-1, 1:-1],
-            numpy.array(actual.variables[var])[1:-1, 1:-1],
+            ref.variables[var][1:-1, 1:-1].data,
+            actual.variables[var][1:-1, 1:-1].data,
         )
     elif len(shape_ref) == 3:
         return (
-            numpy.array(ref.variables[var])[:, 1:-1, 1:-1],
-            numpy.array(actual.variables[var])[:, 1:-1, 1:-1],
+            ref.variables[var][:, 1:-1, 1:-1].data,
+            actual.variables[var][:, 1:-1, 1:-1].data,
         )
     elif len(shape_ref) == 4:
         return (
-            numpy.array(ref.variables[var])[:, :, 1:-1, 1:-1],
-            numpy.array(actual.variables[var])[:, :, 1:-1, 1:-1],
+            ref.variables[var][:, :, 1:-1, 1:-1].data,
+            actual.variables[var][:, :, 1:-1, 1:-1].data,
         )
     else:
-        return numpy.array(ref.variables[var]), numpy.array(actual.variables[var])
+        return (
+            ref.variables[var][:].data,
+            actual.variables[var][:].data,
+        )
 
 
 def log_comparison_errors(

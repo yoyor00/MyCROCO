@@ -59,7 +59,7 @@ include Makedefs
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
-	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
+	bio_diag.F	check_srcs.F\
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
@@ -89,7 +89,7 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
+	get_tides.F\
 	clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
@@ -130,6 +130,13 @@ include Makedefs
 
 
  SRCS90 = \
+	croco_namelist.F90\
+	mod_tides_mas.F90\
+	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
+	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
+	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
+	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
+	ensmpi.F90	stostress.F90   stoalloc.F90    stogls.F90\
 	buffer.F90\
 	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
 	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
@@ -164,14 +171,13 @@ include Makedefs
 	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
 	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
-	
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
-TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+TOOLS = mpc cross_matrix cppcheck srcscheck partit ncjoin ncrename
 
 
 RCS = $(SRCS:.F=.f)
@@ -232,13 +238,8 @@ srcscheck: mpc srcscheck.F
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
 
-checkkwds: mpc checkkwds.F
-	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
-	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
-	rm -f setup_kwds.F
 
-checkdefs: check_switches1.F setup_kwds.F
+checkdefs: check_switches1.F
 
 check_switches1.F: cppcheck cppdefs.h
 	cat cppdefs.h cppdefs_dev.h > mergcpp.txt
@@ -247,8 +248,6 @@ check_switches1.F: cppcheck cppdefs.h
 check_srcs.F: srcscheck Makefile
 	./srcscheck
 
-setup_kwds.F: checkkwds read_inp.F
-	./checkkwds
 
 partit: partit.F insert_node.o lenstr.o
 	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f
@@ -275,7 +274,7 @@ mymodules: $(MOBJS) $(AMROBJS)
 # ====== == ====== === =====
 #
 tarfile:
-	tar cvf croco.tar Make* *.h *.F *.F90 *.in *.in.*
+	tar cvf croco.tar Make* *.h *.F *.F90 *.nml *.nml.*
 #
 # Cleaning:
 # =========
@@ -298,6 +297,7 @@ plotter: plotter.F
 #
 my_barrier.o: my_barrier.f
 	$(CFT) -c -O0 my_barrier.f
+#
 #
 # Include automatically generated dependency list:
 #

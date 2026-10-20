@@ -7,7 +7,7 @@ if [ ${USE_XIOS_ATM} -eq 1 ] ; then
 	mv ${file}*.nc* ${OUTPUTDIR}/
     done
 else
-    module load $ncomod
+    [[ -n ${ncomod} ]] &&  module load $ncomod
     if [[ ${ATM_CASE} == "MOVING_NEST" ]]; then
         totnbdom=$(( ${NB_dom} + ${num_mv_nest} ))
     else
@@ -21,7 +21,7 @@ else
         #\rm wrfout_d0${dom}_${YEAR_BEGIN_JOB}-*
         #mv wrfxtrm_d0${dom}_${YEAR_BEGIN_JOB}-* ${OUTPUTDIR}/wrfxtrm_d0${dom}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
    done
-   module unload $ncomod
+   [[ -n ${ncomod} ]] &&  module unload $ncomod
 fi
 
 #-------------------------------------------------------------------------------

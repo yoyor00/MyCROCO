@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
-! CROCO website : http://www.croco-ocean.org
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
+!
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !======================================================================
@@ -56,6 +57,7 @@
      & ,nzc_oa, swt_wfpf_oa, nper_sclg
       !use module_oa_space,      only : ptij_oa
       use scalars
+      use croco_namelist, only: testcase_name
       implicit none
 ! >> Include with variable declaration
 ! # include "param.h"
@@ -124,9 +126,9 @@
 
 
 #ifdef OA_TRACES
-#if defined MILES || defined IGW
+      if (trim(testcase_name) == 'IGW') then
         call traces_oa1(verbose_oa)
-#endif
+      endif
 #endif
 
                   ! iv <-> ONE SCALOGRAM 
@@ -196,12 +198,12 @@
 #endif
 
 #ifdef OA_TRACES
-#if defined MILES || defined IGW
+      if (trim(testcase_name) == 'IGW') then
                        if(verbose_oa>=verbl) then
-                       call traces2_oa_scal0d(ip) 
-                       !call traces_oa_scal0d(ip) 
+                       call traces2_oa_scal0d(ip)
+                       !call traces_oa_scal0d(ip)
                        endif
-#endif
+      endif
 #endif
 
         enddo loop_for_per_axis

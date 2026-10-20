@@ -21,7 +21,6 @@ MODULE sedbtb
       !!* Substitution
 #  include "ocean2pisces.h90"
 
-   !! $Id: sedbtb.F90 15450 2021-10-27 14:32:08Z cetlod $
 CONTAINS
    
    SUBROUTINE sed_btb( kt )
@@ -61,12 +60,12 @@ CONTAINS
       ! Remineralization rates of the different POC pools
       DO jk=2, jpksed
          DO ji = 1, jpoce
-            zrearat(ji,jk,jspoc1) = -reac_poc1
-            zrearat(ji,jk,jspoc2) = -reac_poc2
-            zrearat(ji,jk,jspoc3) = -reac_poc3
-            zrearat(ji,jk,jspoc4) = -reac_poc4
-            zrearat(ji,jk,jspoc5) = -reac_poc5
-            zrearat(ji,jk,jspoc6) = -reac_poc6
+            zrearat(ji,jk,jspoc1) = -reac_poc1 * xlabil(ji)
+            zrearat(ji,jk,jspoc2) = -reac_poc2 * xlabil(ji)
+            zrearat(ji,jk,jspoc3) = -reac_poc3 * xlabil(ji)
+            zrearat(ji,jk,jspoc4) = -reac_poc4 * xlabil(ji)
+            zrearat(ji,jk,jspoc5) = -reac_poc5 * xlabil(ji)
+            zrearat(ji,jk,jspoc6) = -reac_poc6 * xlabil(ji)
             zsolid1 = volc(ji,jk,jspoc1) * solcp(ji,jk,jspoc1)
             zsolid2 = volc(ji,jk,jspoc2) * solcp(ji,jk,jspoc2)
             zsolid3 = volc(ji,jk,jspoc3) * solcp(ji,jk,jspoc3)
@@ -75,6 +74,7 @@ CONTAINS
             zsolid6 = volc(ji,jk,jspoc6) * solcp(ji,jk,jspoc6)
             rearatpom(ji,jk)  = reac_poc1 * zsolid1 + reac_poc2 * zsolid2 + reac_poc3 * zsolid3    &
             &          + reac_poc4 * zsolid4 + reac_poc5 * zsolid5 + reac_poc6 * zsolid6
+            rearatpom(ji,jk)  = rearatpom(ji,jk) * xlabil(ji)
          END DO
       END DO
 
@@ -131,6 +131,20 @@ CONTAINS
       ! Compute bioturbation of the slow solid species
       !-----------------------------------------------
       CALL sed_mat_btbe( jpsol, solcp, zrearat(:,:,:), dtsed )
+
+      DO jk=2, jpksed
+         DO ji = 1, jpoce
+            zsolid1 = volc(ji,jk,jspoc1) * solcp(ji,jk,jspoc1)
+            zsolid2 = volc(ji,jk,jspoc2) * solcp(ji,jk,jspoc2)
+            zsolid3 = volc(ji,jk,jspoc3) * solcp(ji,jk,jspoc3)
+            zsolid4 = volc(ji,jk,jspoc4) * solcp(ji,jk,jspoc4)
+            zsolid5 = volc(ji,jk,jspoc5) * solcp(ji,jk,jspoc5)
+            zsolid6 = volc(ji,jk,jspoc6) * solcp(ji,jk,jspoc6)
+            rearatpom(ji,jk)  = reac_poc1 * zsolid1 + reac_poc2 * zsolid2 + reac_poc3 * zsolid3    &
+            &          + reac_poc4 * zsolid4 + reac_poc5 * zsolid5 + reac_poc6 * zsolid6
+            rearatpom(ji,jk)  = rearatpom(ji,jk) * xlabil(ji)
+         END DO
+      END DO
 
       IF( ln_timing )  CALL timing_stop('sed_btb')
 

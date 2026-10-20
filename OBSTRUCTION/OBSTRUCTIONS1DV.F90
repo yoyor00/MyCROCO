@@ -1,3 +1,7 @@
+! Copyright (C) 2023 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_OBSTRUCTION.txt
+
 MODULE OBSTRUCTIONS1DV
    !
    ! This module manage the obstruction computation (in one cell "i,j").

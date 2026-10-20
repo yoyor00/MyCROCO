@@ -33,7 +33,6 @@ MODULE sedmat
       !!* Substitution
 #  include "ocean2pisces.h90"
 
-   !! $Id: sedmat.F90 15450 2021-10-27 14:32:08Z cetlod $
  CONTAINS
 
     SUBROUTINE sed_mat_coef
@@ -299,8 +298,12 @@ MODULE sedmat
        ! -----------------------------------------------    
        DO jn = 1, nvar
           IF (isvode(jpwat+jn) == 0) THEN
+             DO jk = 2, jpksed
+                DO ji = 1, jpoce
+                   zr(ji,jk)      = psol(ji,jk,jn)
+                END DO
+             END DO     
              DO ji = 1, jpoce
-                zr(ji,:)      = psol(ji,:,jn)
                 zbet(ji)      = zb(ji,2) - preac(ji,2,jn) * dtsed_in
                 psol(ji,2,jn) = zr(ji,2) / zbet(ji)
              END DO
@@ -700,9 +703,13 @@ MODULE sedmat
 
        ! solves tridiagonal system of linear equations 
        ! -----------------------------------------------
+       DO jk = 1, jpksed
+          DO ji = 1, jpoce
+             zr  (ji,jk) = psol(ji,jk) + (psms(ji,jk) + irrig(ji,jk) * psol(ji,1) ) * dtsed_in
+             zb  (ji,jk) = zb(ji,jk) - (preac(ji,jk) - irrig(ji,jk) ) * dtsed_in
+          END DO
+       END DO
        DO ji = 1, jpoce
-          zr  (ji,:) = psol(ji,:) + (psms(ji,:) + irrig(ji,:) * psol(ji,1) ) * dtsed_in
-          zb  (ji,:) = zb(ji,:) - (preac(ji,:) - irrig(ji,:) ) * dtsed_in
           zbet(ji  ) = zb(ji,1)
           psol(ji,1) = zr(ji,1) / zbet(ji)
        END DO
@@ -720,13 +727,6 @@ MODULE sedmat
              psol(ji,jk) = psol(ji,jk) - zgamm(ji,jk+1) * psol(ji,jk+1)
           END DO
        ENDDO
-
-       DO jk = 2, jpksed
-          DO ji = 1, jpoce
-             xirrigtrd(ji,jn) = xirrigtrd(ji,jn) &
-                 &   - irrig(ji,jk) * (psol(ji,1) - psol(ji,jk) ) * volw3d(ji,jk) * dtsed_in
-          END DO
-       END DO  
 
        IF( ln_timing )  CALL timing_stop('sed_mat_dsri')
 
@@ -754,8 +754,6 @@ MODULE sedmat
        !---Local declarations
        INTEGER  ::  ji, jk, jn
        REAL(wp), DIMENSION(jpoce,jpksed) :: psol1,psol2
-
-       REAL(wp) ::  zirrigt
        !----------------------------------------------------------------------
 
        IF( ln_timing )  CALL timing_start('sed_mat_dsre')

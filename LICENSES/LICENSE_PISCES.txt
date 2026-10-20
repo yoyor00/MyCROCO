@@ -1,0 +1,5 @@
+PISCES (Pelagic Interactions Scheme for Carbon and Ecosystem Studies)
+Copyright (C) O. Aumont, LOCEAN/IPSL
+
+This software is governed by the CeCILL license.
+Full license text: see LICENSES/LICENSE_CeCILL.txt or https://cecill.info

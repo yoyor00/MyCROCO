@@ -114,7 +114,6 @@ MODULE sedchem
       !!* Substitution
 #  include "ocean2pisces.h90"
 
-   !! $Id: sedchem.F90 15450 2021-10-27 14:32:08Z cetlod $
 
 CONTAINS
 
@@ -713,11 +712,11 @@ FUNCTION sw_adtg  (s,t,p)
   !     ==================================================================
   IMPLICIT NONE
   !> salinity [psu (PSU-78)]
-  REAL(wp) :: s
+  REAL(wp), INTENT(in) :: s
   !> temperature [degree C (IPTS-68)]
-  REAL(wp) :: t
+  REAL(wp), INTENT(in) :: t
   !> pressure [db]
-  REAL(wp) :: p
+  REAL(wp), INTENT(in) :: p
 
   REAL(wp) :: a0,a1,a2,a3,b0,b1,c0,c1,c2,c3,d0,d1,e0,e1,e2
   REAL(wp) :: sref
@@ -771,13 +770,13 @@ FUNCTION sw_ptmp  (s,t,p,pr)
 
 ! Input arguments
   !> salinity [psu (PSS-78)]
-  REAL(wp) :: s
+  REAL(wp), INTENT(in) :: s
   !> temperature [degree C (IPTS-68)]
-  REAL(wp) :: t
+  REAL(wp), INTENT(in) :: t
   !> pressure [db]
-  REAL(wp) :: p
+  REAL(wp), INTENT(in) :: p
   !> reference pressure  [db]  
-  REAL(wp) :: pr
+  REAL(wp), INTENT(in) :: pr
 
 ! local arguments
   REAL(wp) :: del_P ,del_th, th, q

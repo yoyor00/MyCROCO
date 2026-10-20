@@ -1,6 +1,8 @@
-!------------------------------------------------------------------------------
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 MODULE initMUSTANG
-!------------------------------------------------------------------------------
 
 #include "cppdefs.h"
 
@@ -38,10 +40,9 @@ MODULE initMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
     USE module_substance
-#ifdef key_MUSTANG_flocmod
+    USE croco_namelist, ONLY : nrrec, sedname_must, rho0, testcase_name
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
-#endif
 
     IMPLICIT NONE
 
@@ -62,7 +63,7 @@ MODULE initMUSTANG
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
                               l_dzsmaxuni, dzsmaxuni,                         &
                               dzsmax_bottom, dzsmin,                          &
-                              nlayer_surf_sed,                                &
+                              nlayer_surf_sed, l_splitlayersurf,              &
                               k1HW97, k2HW97,                                 &
                               fusion_para_activlayer
 
@@ -80,7 +81,8 @@ MODULE initMUSTANG
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
                                      z0seduni, z0sedmud, z0sedbedrock,        &
-                                     l_fricwave, fricwav,                     &
+                                     l_tauskin_center,l_tauskin_ubar,         &
+                                     l_tauskin_upwind, l_fricwave, fricwav,   &
                                      l_z0hydro_coupl_init,                    & 
                                      l_z0hydro_coupl,                         &
                                      coef_z0_coupl,                           &
@@ -88,7 +90,8 @@ MODULE initMUSTANG
                                      z0_hydro_bed
 
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
-                                   l_corflux, cvolmaxsort, cvolmaxmel, slopefac
+                                   l_corflux, cvolmaxsort, cvolmaxmel,        &
+                                   l_slipdeposit, slopefac
 
     namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
                                         coef_tauskin_lat, l_erolat_wet_cell, &
@@ -144,19 +147,15 @@ MODULE initMUSTANG
     namelist /namsedim_poro/ poro_option, poro_min,                           &
                              Awooster, Bwooster, Bmax_wu 
 #ifdef key_MUSTANG_V2
-#ifdef key_MUSTANG_bedload
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
                                 alphabs, alphabn, hmin_bedload, l_fsusp
 #endif
-#endif
 
-#ifdef key_MUSTANG_flocmod
-    namelist /namflocmod/ l_ADS, l_ASH, l_COLLFRAG,                           &
+    namelist /namflocmod/ l_flocmod, l_ADS, l_ASH, l_COLLFRAG,                &
                           f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
                           f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
                           f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
                           f_clim
-#endif
 #if !defined key_noTSdiss_insed
     namelist /namtempsed/ mu_tempsed1, mu_tempsed2, mu_tempsed3,              &
                           epsedmin_tempsed,                                   &
@@ -189,14 +188,10 @@ CONTAINS
     USE dredging, ONLY : dredging_init_param
     USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
-#ifdef key_MUSTANG_splitlayersurf
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_split_surflayer
-#endif
 #ifdef key_MUSTANG_V2
     USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
-#ifdef key_MUSTANG_bedload
     USE sed_MUSTANG_CROCO,  ONLY : sed_bottom_slope
-#endif
 #endif
 
     !! * Arguments
@@ -221,9 +216,7 @@ CONTAINS
 #else
     REAL(KIND=rsh)                  :: somalp
 #endif
-#ifdef key_MUSTANG_flocmod
     LOGICAL :: l_0Dcase
-#endif
 
     ierrorlog = stdout
     iwarnlog = stdout
@@ -245,21 +238,16 @@ CONTAINS
     CALL MUSTANG_init_param()
 
     ! Floculation module
-#ifdef key_MUSTANG_flocmod
+    IF (l_flocmod) THEN
     CALL flocmod_alloc(nv_mud)
-#ifdef SED_TOY_FLOC_0D
-    ! for 0D test case, we need to suppress all settling process
-    l_0Dcase = .true.
-#else
-    l_0Dcase = .false.
-#endif
+    l_0Dcase = (trim(testcase_name) == 'SED_TOY_FLOC_0D')
     CALL flocmod_init(l_ADS, l_ASH, l_COLLFRAG,             &
         f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
         f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
         f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
         f_clim, diam_sed(imud1:nvpc), ros(imud1:nvpc),      &
         rho0, l_0Dcase, ierrorlog)
-#endif
+    ENDIF
 
     CALL dredging_init_param(ifirst,ilast,jfirst,jlast)
 
@@ -278,11 +266,13 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Evaluation of slope for bedload
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#if defined key_MUSTANG_V2
+    IF (l_bedload) THEN
 #if defined MORPHODYN
-    it_morphoYes=0
+      it_morphoYes=0
 #endif
-    CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, h)
+      CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, h)
+    ENDIF
 #endif
 
 
@@ -302,7 +292,7 @@ CONTAINS
         DO i = ifirst, ilast
           IF (ksma(i,j) .NE. 0) THEN
 
-#ifdef key_MUSTANG_splitlayersurf
+            IF (l_splitlayersurf) THEN
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !! Splitting surface layers if too thick
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -312,10 +302,10 @@ CONTAINS
                     IF (dzs(k,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) isplit=1
                 ENDIF
             ENDDO
-            IF(isplit == 1) THEN            
+            IF(isplit == 1) THEN
                 CALL sed_MUSTANG_split_surflayer(i,j,ksma(i,j))
             ENDIF
-#endif
+            ENDIF
 
             DO k=ksmi(i,j),ksma(i,j)
 #ifdef key_MUSTANG_V2
@@ -422,9 +412,7 @@ CONTAINS
     READ(50, namsedim_erosion); rewind(50)
     READ(50, namsedim_poro); rewind(50)
 #ifdef key_MUSTANG_V2
-#ifdef key_MUSTANG_bedload
     READ(50, namsedim_bedload); rewind(50)
-#endif
 #endif
     READ(50, namsedim_lateral_erosion); rewind(50)
     READ(50, namsedim_consolidation); rewind(50)
@@ -435,14 +423,12 @@ CONTAINS
     READ(50, namtempsed); rewind(50)
 #endif
     READ(50, namsedoutput); rewind(50)
-#ifdef key_MUSTANG_flocmod
     ! module FLOCULATION
     READ(50, namflocmod); rewind(50)
-#endif
     READ(50, namdredging); rewind(50)
 
-    CLOSE(50) 
-   
+    CLOSE(50)
+    
     END SUBROUTINE MUSTANG_readnml
 !!===========================================================================
 
@@ -466,9 +452,7 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_deposition)
     MPI_master_only WRITE(iscreenlog, namsedim_poro)
 #ifdef key_MUSTANG_V2
-#ifdef key_MUSTANG_bedload
     MPI_master_only WRITE(iscreenlog, namsedim_bedload)
-#endif  
 #else
     MPI_master_only WRITE(iscreenlog, namsedim_erosion)
 #endif
@@ -482,7 +466,7 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namtempsed)
 #endif
 
-#ifdef key_MUSTANG_flocmod
+    IF (l_flocmod) THEN
     !! module floculation
     MPI_master_only WRITE(iscreenlog, *) ' '
     MPI_master_only WRITE(iscreenlog, *) '    FLOCMOD'
@@ -524,8 +508,8 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, *) &
         'Min concentration below which flocculation is not calculated : ', f_clim
     MPI_master_only WRITE(iscreenlog, *) ' '
-    MPI_master_only WRITE(iscreenlog, *) '*** END FLOCMOD INIT *** '    
-#endif
+    MPI_master_only WRITE(iscreenlog, *) '*** END FLOCMOD INIT *** '
+    ENDIF
    
     END SUBROUTINE MUSTANG_param_log
 !!===========================================================================
@@ -572,8 +556,7 @@ CONTAINS
         ' If you simulate dissolved variables in water AND in sediment, don t use key_nofluxwat_IWS '
 #endif
 
-#ifdef key_MUSTANG_flocmod
-    IF (.not.l_ADS .and. .not.l_ASH) THEN
+    IF (l_flocmod .AND. .not.l_ADS .and. .not.l_ASH) THEN
         MPI_master_only write(ierrorlog, *) 'CAUTION : incompatible flocculation kernel options : '
         MPI_master_only write(ierrorlog, *) '*****************************************************'
         MPI_master_only write(ierrorlog, *) 'l_ADS=', l_ADS
@@ -581,7 +564,6 @@ CONTAINS
         MPI_master_only write(ierrorlog, *) 'simulation stopped'
         STOP
     ENDIF
-#endif
 
     ! test compatibility tocd /consolidation
     IF (l_consolid) THEN
@@ -676,17 +658,6 @@ CONTAINS
     MPI_master_only WRITE(ierrorlog, *) '****************************'
     MPI_master_only WRITE(ierrorlog, *) ' It is not possible to use key_BLOOM_insed  without the key_oxygen'
     MPI_master_only WRITE(ierrorlog, *) ' WARNING : use CPP key : key_oxygen in Makefile'
-    STOP
-#endif
-
-   ! test compatibility bedload with MUSTANG Version 2 
-#if defined key_MUSTANG_bedload && ! defined key_MUSTANG_V2
-    MPI_master_only WRITE(ierrorlog, *)
-    MPI_master_only WRITE(ierrorlog, *) '****************************'
-    MPI_master_only WRITE(ierrorlog, *) ' You are using key_MUSTANG_bedload but '
-    MPI_master_only WRITE(ierrorlog, *) ' You must add the key key_MUSTANG_V2 '
-    MPI_master_only WRITE(ierrorlog, *) ' in order to use the new version V2 of MUSTANG which include bedload behavior'
-    MPI_master_only WRITE(ierrorlog, *)
     STOP
 #endif
 
@@ -1080,7 +1051,7 @@ CONTAINS
  ! CVSED
   
        c_sedtot(:,:,:)=0.0_rsh
-       do iv=-1,nv_tot 
+       do iv=-1,nv_adv ! no fix substance in sed
  
         if (iv == -1) then
            nomcv='temp_sed'
@@ -1496,13 +1467,12 @@ CONTAINS
     !&E ** Purpose : prepare needed output arrays
     !&E--------------------------------------------------------------------------
 
-#if defined key_BLOOM_insed
-        USE bioloinit,  ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
 
-        ALLOCATE(var2D_diagsed(GLOBAL_2D_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
-        ALLOCATE(var3D_diagsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
+#if defined BLOOM && defined key_BLOOM_insed
+    USE comBIOLink , ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
+    ALLOCATE(var2D_diagsed(GLOBAL_2D_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
+    ALLOCATE(var3D_diagsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
 #endif
-
         IF (l_outsed_hsed) THEN
             ALLOCATE(var2D_hsed(GLOBAL_2D_ARRAY))
             var2D_hsed(GLOBAL_2D_ARRAY) = 0.0_rsh
@@ -1580,8 +1550,7 @@ CONTAINS
             ALLOCATE(var2D_niter_ero(GLOBAL_2D_ARRAY))
             var2D_niter_ero(GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
-#ifdef key_MUSTANG_bedload
-        IF (l_outsed_bedload) THEN
+        IF (l_bedload .AND. l_outsed_bedload) THEN
             ALLOCATE(var2D_flx_bx(nvpc,GLOBAL_2D_ARRAY))
             var2D_flx_bx(:,GLOBAL_2D_ARRAY) = 0.0_rsh
             ALLOCATE(var2D_flx_by(nvpc,GLOBAL_2D_ARRAY))
@@ -1592,14 +1561,13 @@ CONTAINS
             var2D_flx_bx_int(GLOBAL_2D_ARRAY) = 0.0_rsh
             ALLOCATE(var2D_flx_by_int(GLOBAL_2D_ARRAY))
             var2D_flx_by_int(GLOBAL_2D_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_bil_bedload_int(GLOBAL_2D_ARRAY)) 
+            ALLOCATE(var2D_bil_bedload_int(GLOBAL_2D_ARRAY))
             var2D_bil_bedload_int(GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
-        IF (l_outsed_fsusp) THEN
+        IF (l_bedload .AND. l_outsed_fsusp) THEN
             ALLOCATE(var2D_fsusp(nvpc,GLOBAL_2D_ARRAY))
             var2D_fsusp(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
-#endif
 #endif
         IF (l_dyn_insed) THEN
             IF (l_outsed_consolidation) THEN
@@ -1694,9 +1662,7 @@ CONTAINS
         outMust_nbvar = 2*ntrc_subs + 3*nvpc + 17
 #ifdef  key_MUSTANG_V2
         outMust_nbvar = outMust_nbvar + nvpc + 6
-#ifdef  key_MUSTANG_bedload
         outMust_nbvar = outMust_nbvar + 4*nvpc + 3
-# endif
 # endif
         if (l_dyn_insed) outMust_nbvar = outMust_nbvar + 8
 
@@ -1920,6 +1886,11 @@ CONTAINS
             vname_Must(1,indx) = TRIM(name_var(isubs))//'_sed'
             vname_Must(2,indx) = TRIM(long_name_var(isubs))//'_sed'
             vname_Must(3,indx) = unit_var(isubs)
+#           if defined BLOOM && defined key_BLOOM_insed
+             if(isubs .gt. nvpc .and. isubs .le. nvp) then
+               vname_Must(3,indx) = "mmol/kgSed"
+             endif
+#           endif
             vname_Must(4,indx) = TRIM(ADJUSTL(ADJUSTR(standard_name_var(isubs))))//', scalar, series'
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
@@ -1996,8 +1967,7 @@ CONTAINS
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
-    
-#ifdef key_MUSTANG_bedload
+
             indx = indx + 1
             vname_Must(1,indx) = TRIM(name_var(isubs))//'_flx_bx'
             vname_Must(2,indx) = 'bedload flux along x-axis'
@@ -2057,7 +2027,6 @@ CONTAINS
             ENDIF
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
-#endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
     ENDDO
             indx = indx + 1
@@ -2240,9 +2209,8 @@ CONTAINS
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
       
-            
-            
-#ifdef key_MUSTANG_bedload
+
+
             ! 16 : flx_bx_int
             indx = indx + 1
             vname_Must(1,indx) = 'flx_bx_int'
@@ -2252,10 +2220,10 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bedload) outMust(indx) = .TRUE.
+            IF (l_bedload .AND. l_outsed_bedload) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
-            
+
             ! 17 : flx_by_int
             indx = indx + 1
             vname_Must(1,indx) = 'flx_by_int'
@@ -2265,10 +2233,10 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bedload) outMust(indx) = .TRUE.
+            IF (l_bedload .AND. l_outsed_bedload) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
-            
+
             ! 18 : bil_bedload_int
             indx = indx + 1
             vname_Must(1,indx) = 'bil_bedload_int'
@@ -2278,11 +2246,10 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bedload) outMust(indx) = .TRUE.
+            IF (l_bedload .AND. l_outsed_bedload) outMust(indx) = .TRUE.
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
-            
-#endif /* key_MUSTANG_bedload */
+
 #endif /* key_MUSTANG_V2 */
 
     IF (l_dyn_insed) THEN
@@ -2555,18 +2522,18 @@ CONTAINS
     crel_mud(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
     l_isitcohesive(GLOBAL_2D_ARRAY) = .FALSE.
 
-#ifdef key_MUSTANG_bedload
-    ALLOCATE( flx_bx(1:nvp,GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
-    ALLOCATE( flx_by(1:nvp,GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
-    ALLOCATE( slope_dhdx(GLOBAL_2D_ARRAY))
-    ALLOCATE( slope_dhdy(GLOBAL_2D_ARRAY))
-    ALLOCATE( sedimask_h0plusxe(GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
-    flx_bx(1:nvp,GLOBAL_2D_ARRAY)=0.0_rsh 
-    flx_by(1:nvp,GLOBAL_2D_ARRAY)=0.0_rsh
-    slope_dhdx(GLOBAL_2D_ARRAY)=0.0_rsh
-    slope_dhdy(GLOBAL_2D_ARRAY)=0.0_rsh
-    sedimask_h0plusxe(GLOBAL_2D_ARRAY)=0.0_rsh
-#endif
+    IF (l_bedload) THEN
+      ALLOCATE( flx_bx(1:nvp,GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
+      ALLOCATE( flx_by(1:nvp,GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
+      ALLOCATE( slope_dhdx(GLOBAL_2D_ARRAY))
+      ALLOCATE( slope_dhdy(GLOBAL_2D_ARRAY))
+      ALLOCATE( sedimask_h0plusxe(GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
+      flx_bx(1:nvp,GLOBAL_2D_ARRAY)=0.0_rsh
+      flx_by(1:nvp,GLOBAL_2D_ARRAY)=0.0_rsh
+      slope_dhdx(GLOBAL_2D_ARRAY)=0.0_rsh
+      slope_dhdy(GLOBAL_2D_ARRAY)=0.0_rsh
+      sedimask_h0plusxe(GLOBAL_2D_ARRAY)=0.0_rsh
+    ENDIF
 #endif
 
     ALLOCATE(phieau_s2w(GLOBAL_2D_ARRAY))
@@ -2618,6 +2585,14 @@ CONTAINS
     DO iv = 1, nv_adv-nvp
         ivdiss(iv) = iv + nvp
     ENDDO  
+#endif
+#if defined key_noTSdiss_insed
+    ALLOCATE(D0_funcT_opt(nv_state))
+    D0_funcT_opt(:)=1
+    ALLOCATE(D0_m0(nv_state))
+    D0_m0(:)=1.0_rsh
+    ALLOCATE(D0_m1(nv_state))
+    D0_m1(:)=0.0_rsh
 #endif
 #endif
 

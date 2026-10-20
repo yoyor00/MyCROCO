@@ -28,8 +28,6 @@ MODULE sedsol
       !!* Substitution
 #  include "ocean2pisces.h90"
    
-
-   !! $Id: sedsol.F90 5215 2015-04-15 16:11:56Z nicolasmartin $
 CONTAINS
    
    SUBROUTINE sed_sol( kt ) 
@@ -53,6 +51,7 @@ CONTAINS
       INTEGER :: MUJAC, LE1, LJAC, IDID, NMAXSTP, ROSM
       REAL(wp) :: X, XEND
       REAL(wp),DIMENSION(jpoce) :: H
+      INTEGER, DIMENSION(jpoce) :: accmask
       REAL(wp), DIMENSION(jpvode * jpksed) :: RTOL, ATOL
       INTEGER, DIMENSION(jpoce,3)   :: ISTAT
       REAL(wp), DIMENSION(jpoce,2)  :: RSTAT
@@ -75,9 +74,11 @@ CONTAINS
       !------------------------------------------------------------------
       zfact = dtsed / ( por1(2) * dz(2) )
       DO js = 1, jpsol
-         DO ji = 1, jpoce
-            solcp(ji,2,js) = solcp(ji,2,js) + rainrg(ji,js) * zfact
-         END DO
+         IF ( js /= jsfes .AND. js /= jsfeo) THEN
+            DO ji = 1, jpoce
+               solcp(ji,2,js) = solcp(ji,2,js) + rainrg(ji,js) * zfact
+            END DO
+         ENDIF
       ENDDO
 
       ! --------------------------------------------------
@@ -100,7 +101,6 @@ CONTAINS
 
       ! Apply bioturbation and compute the impact of the slow SMS on species
       CALL sed_btb( kt )
-
 
 # if ! defined key_agrif
       ! The following part deals with the stiff ODEs
@@ -140,7 +140,6 @@ CONTAINS
          ENDIF
       END DO
 
-
       ! Set options for VODE : banded matrix. SParse option is much more
       ! expensive except if one computes the sparse Jacobian explicitly
       ! To speed up the computation, one way is to reduce ATOL and RTOL
@@ -149,7 +148,6 @@ CONTAINS
       ! ----------------------------------------------------------------
       CALL ROSK(NROSORDER, NEQ,X,zxin,XEND,H,RTOL,ATOL,sed_jac,  &
            &   MLJAC,MUJAC,IDID,ISTAT)
-
 
       DO jn = 1, NEQ
          jk = jarr(jn,1)
@@ -161,18 +159,14 @@ CONTAINS
          ENDIF
       END DO
       rstepros(:) = ISTAT(:,3)
-
-
 #endif
 
       ! CALL inorganic and organic slow redow/chemistry processes
       ! ---------------------------------------------------------
       CALL sed_inorg( kt )
 
-
       ! organic SMS of the slow species
       CALL sed_org( kt )
-
 
       ! Impact of bioirrigation on tracer in the water column
       DO jw = 1, jpwat
@@ -180,7 +174,6 @@ CONTAINS
             pwcp(ji,1,jw) = pwcp(ji,1,jw) + xirrigtrd(ji,jw) / volw3d(ji,1)
          END DO
       END DO
-
 
       IF( ln_timing )  CALL timing_stop('sed_sol')
 !      

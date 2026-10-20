@@ -58,7 +58,7 @@ MODULE p4zrem
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zrem.F90 15459 2021-10-29 08:19:18Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 
@@ -422,6 +422,7 @@ CONTAINS
                 zw3d(ji,jj,jkR) =  zolimi(ji,jj,jk) * rfact2r * tmask(ji,jj,jk) !
              END_3D
              CALL iom_put( "REMIN", zw3d )
+             DEALLOCATE( zw3d )
           ENDIF
           !
           IF( l_dia_bact ) THEN   ! Bacterial biomass

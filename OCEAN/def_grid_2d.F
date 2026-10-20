@@ -1,16 +1,17 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #if !defined SOLVE3D
-      subroutine def_grid_2d (ncid, r2dgrd, u2dgrd, v2dgrd)
+      subroutine def_grid_2d (ncid, r2dgrd, u2dgrd, v2dgrd, nf_ftype)
 !
 ! Define grid variables in output NetCDF file for 2D configuration,
 ! which may be restart, history, averages, etc...
@@ -24,21 +25,12 @@
 !            u2dgrd  integer array of size 2, which contains NetCDF
 !                        IDs for dimensions 'xi_rho' and 'eta_u'.
       implicit none
-      integer ncid, r2dgrd(2), u2dgrd(2), v2dgrd(2)
-     &      , nf_ftype, varid, ierr
+      integer ncid, r2dgrd(2), u2dgrd(2), v2dgrd(2), nf_ftype
+     &      , varid, ierr
       character(len=30) strtmp
 # include "param.h"
 # include "ncscrum.h"
 # include "netcdf.inc"
-!
-! Decide about precision:
-!
-      if (ncid.eq.ncidrst) then
-        nf_ftype=NF_FTYPE
-      else
-        nf_ftype=NF_FOUT
-      endif
-!
 !
 ! Grid type switch: Spherical or Cartesian.
 !
