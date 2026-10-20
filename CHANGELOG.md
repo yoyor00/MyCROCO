@@ -47,6 +47,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - WAVEMAKER : fix use of wavemaker spectrum from data (bulk wave parameters not 
   initialized in this case). This was done through key ROGUE_WAVES, now changed 
   to WAVE_MAKER_DATA (#518)
+- WAVES : wepb output now includes roller delay when roller is activated (#579)
+          the old wepb output can be diagnose from wepb and wepr
 
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
 - COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
