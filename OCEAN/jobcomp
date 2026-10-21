@@ -70,7 +70,9 @@ fi
 # set OASIS-MCT (or OASIS3) directories if needed
 #
 PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
-
+PRISM_INCLUDE_DIR="${PRISM_ROOT_DIR}/build/lib/mct"
+# for OASIS5
+#PRISM_INCLUDE_DIR="${PRISM_ROOT_DIR}/include"
 #
 # set XIOS directory if needed
 #
@@ -381,7 +383,7 @@ if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
       ${PRISM_ROOT_DIR}/lib/libmpeu.a \
       ${PRISM_ROOT_DIR}/lib/libscrip.a"
    PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
-      -I${PRISM_ROOT_DIR}/build/lib/mct"
+      -I${PRISM_INLCUDE_DIR}"
    COMPILEOASIS=TRUE
    LDFLAGS1="$LDFLAGS1 $LIBPSMILE $NETCDFLIB"
    CPPFLAGS1="$CPPFLAGS1 ${PSMILE_INCDIR} $NETCDFINC"
