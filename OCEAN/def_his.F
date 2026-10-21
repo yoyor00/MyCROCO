@@ -234,9 +234,7 @@
 # define vidSwflx avgSwflx
 # define vidShflx_rsw avgShflx_rsw
 # ifdef STOGEN
-#  define vidXIsto1d hisXIsto1d
-#  define vidXIsto2d hisXIsto2d
-#  define vidXIsto3d hisXIsto3d
+!  STOGEN n'est pas ecrit dans les moyennes (aucun avgXIsto* declare)
 # endif
 # if defined BULK_FLUX
 #  define vidShflx_rlw avgShflx_rlw
@@ -257,7 +255,7 @@
 # define vidObst avgObst
 #endif
 
-# if defined M3FAST_HIS || defined K3FAST_HIS
+# if (defined M3FAST_HIS || defined K3FAST_HIS) && !defined AVRH
 #  define vidRnbq hisRnbq
 #  define vidUnbq hisUnbq
 #  define vidVnbq hisVnbq
@@ -740,7 +738,7 @@
 ! STOGEN stochastic variables.
 !---------------------------------------
 !
-# ifdef STOGEN
+# if defined STOGEN && !defined AVRH
         if (ln_stogen.AND.wrt(indxXIsto1d)) then
           lvar=lenstr(vname(1,indxXIsto1d))
 !QJ: not sure aout the def of ierr here ...
@@ -1061,7 +1059,7 @@
      &        5, NF_FOUT, ierr)
         endif
         
-#if defined M3FAST_HIS || defined K3FAST_HIS
+#if (defined M3FAST_HIS || defined K3FAST_HIS) && !defined AVRH
 
 !****** Rho *****
 !
@@ -2943,7 +2941,7 @@
 !
 ! 3D momenta in XI- and ETA-directions.
 !
-#if defined M3FAST_HIS || defined K3FAST_HIS
+#if (defined M3FAST_HIS || defined K3FAST_HIS) && !defined AVRH
 !
 ! M3FAST-kernel related variables:
 !
@@ -3018,7 +3016,7 @@
 !
 ! STOGEN stochastic variables.
 !
-# ifdef STOGEN
+# if defined STOGEN && !defined AVRH
         if (wrt(indxXIsto1d)) then
           lvar=lenstr(vname(1,indxXIsto1d))
           ierr=nf_inq_varid (ncid, vname(1,indxXIsto1d)(1:lvar), vidXIsto1d)
@@ -3923,6 +3921,13 @@
 #undef vidHm
 #undef vidMust
 #undef vidObst
+# if defined M3FAST_HIS || defined K3FAST_HIS
+#  undef vidRnbq
+#  undef vidUnbq
+#  undef vidVnbq
+#  undef vidWnbq
+#  undef vidCnbq
+# endif
 #ifdef STOGEN
 # undef vidXIsto1d
 # undef vidXIsto2d
