@@ -49,6 +49,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   to WAVE_MAKER_DATA (#518)
 
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
+- COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
 
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
@@ -84,7 +85,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
-  (#568, #570)
+  (#568, #570, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -233,4 +234,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten
+  S. Theetten, L. Maillard
