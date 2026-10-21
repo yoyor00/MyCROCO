@@ -111,7 +111,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - DIAGNOSTICS : 
 	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
 	- kinetic energy budget is now 3d
-	- momentum and energy diagnostics are saved as cell-volume integrals
+	- momentum, energy and tracer diagnostics (DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_MLD) terms are now volume-integrated (Issue #320)
+
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
