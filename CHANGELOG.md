@@ -55,13 +55,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
-- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
-           inconsistent with what done for calcite dissolution (#531)
-           Big fix in the calculation of NEW primary productivity with XIOS (#535)
-           Fix the calculation of nitrogen fixation rate with XIOS (#541)
-           Set XIOS write timestep for PISCES identical to ocean (#548)
-           Correct degree to radian conversion (#559)
-           Add the read of pisces namelist for child grid with AGRIF (#561)
+- PISCES : - Switch from relative to potential density for surface pH proxy,
+             inconsistent with what done for calcite dissolution (#531)
+           - Fix in the calculation of NEW primary productivity with XIOS (#535)
+           - Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           - Set XIOS write timestep for PISCES identical to ocean (#548)
+           - Correct degree to radian conversion (#559)
+           - Add the read of pisces namelist for child grid with AGRIF (#561)
+           - Enables use of high-frequency qsr (<24 hrs) with PISCES 
+             in the case of offline reading (#563) - online calculation of 
+             daily mean of qsr needed by PISCES must be implemented
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
@@ -81,6 +84,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
+  (#568, #570, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -138,6 +142,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+
+- Remove duplicate `scrum_time` netCDF variable from history, restart, 
+  averages, diagnostics, surf and station output files; only `time` is 
+  written now (matches the `time` dimension name). get_initial.F still 
+  falls back to reading `scrum_time` when restarting from older files 
+  (Issue #189)
 
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
@@ -223,4 +233,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten
+  S. Theetten, L. Maillard
