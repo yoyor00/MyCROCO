@@ -105,6 +105,7 @@ function show_help() {
    echo "  --timings                   Enable wall-clock timing regions (Experimental feature)."
    echo "  -u, --incremental           Incremental build: do not clean the scratch area and only"
    echo "                              update the sources whose content changed (needs rsync)."
+   echo "                              A removed source falls back to a full rebuild."
    echo "  --netcdf-inc <path>         Specify the NetCDF include directory. (default: nf-config --includedir)"
    echo "  --netcdf-lib <path>         Specify the NetCDF library directory. (default: nf-config --flibs)"
    echo "  --xios-dir <path>           Specify the XIOS root directory. (default: $HOME/xios)"
@@ -173,7 +174,6 @@ done
 
 NPROCS="${NPROCS:-1}"
 CROCO_TIMINGS="${CROCO_TIMINGS:-0}"
-INCREMENTAL="${INCREMENTAL:-}"
 SOURCE="${CROCO_SRC-$SOURCE1}"
 SCRDIR="./Compile"
 RUNDIR="`pwd`"
@@ -257,15 +257,35 @@ ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 "$DESTDIR"
 ls *.F     > /dev/null  2>&1 && \cp -f *.F "$DESTDIR"
 ls *.h     > /dev/null  2>&1 && \cp -f *.h "$DESTDIR"
 ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 "$DESTDIR"
-ls Make*   > /dev/null  2>&1 && \cp -f Make* "$DESTDIR"
+# Make* except Makedefs and Makefile.croco: a run-directory Makedefs would
+# become the cmp reference of the generated one and force a full rebuild on
+# every -u run; Makefile.croco is an AD scratch artifact, not a source
+for f in Make* ; do
+   [[ -f $f ]] || continue
+   [[ $f == Makedefs || $f == Makefile.croco ]] && continue
+   \cp -f "$f" "$DESTDIR"
+done
 
 #
 # incremental build: -c compares content, not modification time, so only
 # the files whose content changed get a new mtime and are rebuilt by make;
 # a removed local file, or a source restored with an old mtime, is synced
-# too. No --delete: it would wipe the objects and modules in $SCRDIR
+# too. No --delete: it would wipe the objects and modules in $SCRDIR.
+# A source removed from the tree since the previous run cannot be synced:
+# its stale copy, objects and modules must not be linked, so fall back to
+# a full resynchronisation, like a non -u run (detected via the manifest
+# of files installed by the previous run, .jobcomp_sources)
 #
+# manifest of the installed sources, written in BOTH modes: it must exist
+# after a full build too, so that a source deleted between that build and
+# the next -u run is detected and triggers the resync below
+(cd "$DESTDIR" && find . -type f | sort) > "$DESTDIR/.jobcomp_sources"
 if [[ -n $INCREMENTAL ]] ; then
+   if [[ -f "$SCRDIR/.jobcomp_sources" ]] && \
+      comm -23 "$SCRDIR/.jobcomp_sources" "$DESTDIR/.jobcomp_sources" | grep -q . ; then
+      rm -rf "$SCRDIR"
+      mkdir -p "$SCRDIR"
+   fi
    rsync -rc "$DESTDIR/" "$SCRDIR/" || exit 1
    rm -rf "$DESTDIR"
 fi
@@ -449,12 +469,15 @@ if [[ $COMPILEAGRIF ]] ; then
    if [[ -f AGRIF/.jobcomp_flags && "$AGRIF_FLAGS" != "$(cat AGRIF/.jobcomp_flags)" ]] ; then
       rm -rf AGRIF/libagrif.a AGRIF/*.mod AGRIF/AGRIF_OBJS AGRIF/AGRIF_YOURFILES
    fi
-   echo "$AGRIF_FLAGS" > AGRIF/.jobcomp_flags
    if [[ $COMPILEMPI ]] ; then
-      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
+      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1" || exit 1
    else
-      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
+      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1" || exit 1
    fi
+   # record the flags only once the library build succeeded: a failed
+   # build stays unrecorded, so the next run wipes and rebuilds it, and
+   # its real error is not masked by a model-link failure
+   echo "$AGRIF_FLAGS" > AGRIF/.jobcomp_flags
    if [[ $OS == Darwin ]] ; then          # DARWIN
 # run RANLIB on Darwin system
       ranlib AGRIF/libagrif.a
