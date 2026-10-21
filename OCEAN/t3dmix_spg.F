@@ -142,6 +142,9 @@
 !========================================================================
 !
       use croco_namelist, only: dt
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      use croco_namelist, only: mld_crit_D, mld_crit_T
+#  endif
       implicit none
 # include "param.h"
 # include "ncscrum.h"
