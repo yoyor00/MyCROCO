@@ -59,6 +59,18 @@
      &       /avg_bvf/bvf_avg
 #  endif
      &       /avg_w/w_avg
+#  if defined M3FAST_HIS || defined K3FAST_HIS
+      real rnbq_avg(GLOBAL_2D_ARRAY,N)
+      real unbq_avg(GLOBAL_2D_ARRAY,N)
+      real vnbq_avg(GLOBAL_2D_ARRAY,N)
+      real wnbq_avg(GLOBAL_2D_ARRAY,0:N)
+      common /avg_rnbq/rnbq_avg /avg_unbq/unbq_avg
+     &       /avg_vnbq/vnbq_avg /avg_wnbq/wnbq_avg
+#   ifdef K3FAST_CSVISC2K
+      real cnbq_avg(GLOBAL_2D_ARRAY,N)
+      common /avg_cnbq/cnbq_avg
+#   endif
+#  endif
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
       real btflx_avg(GLOBAL_2D_ARRAY,NT)

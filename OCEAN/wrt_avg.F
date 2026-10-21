@@ -44,7 +44,7 @@
 # ifdef SEDIMENT
 #  include "sediment.h"
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST || defined K3FAST_HIS
 #  include "nbq.h"
 # endif
 # ifdef MASKING
@@ -347,6 +347,49 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 #  endif
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif
+!
+#  if defined M3FAST_HIS || defined K3FAST_HIS
+!
+!     NBQ variables (moyennes).
+!
+      if (wrtavg(indxRnbq)) then
+!$acc update if(compute_on_device) host(rnbq_avg)
+         workr=rnbq_avg
+         call fillvalue3d(workr,ncidavg,avgRnbq,
+     &        vname(1,indxRnbq), record,r3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtRnbq' MYID
+      endif
+      if (wrtavg(indxUnbq)) then
+!$acc update if(compute_on_device) host(unbq_avg)
+         workr=unbq_avg
+         call fillvalue3d(workr,ncidavg,avgUnbq,
+     &        vname(1,indxUnbq), record,u3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtUnbq' MYID
+      endif
+      if (wrtavg(indxVnbq)) then
+!$acc update if(compute_on_device) host(vnbq_avg)
+         workr=vnbq_avg
+         call fillvalue3d(workr,ncidavg,avgVnbq,
+     &        vname(1,indxVnbq), record,v3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtVnbq' MYID
+      endif
+      if (wrtavg(indxWnbq)) then
+!$acc update if(compute_on_device) host(wnbq_avg)
+         work=wnbq_avg
+         call fillvalue3d_w(work,ncidavg,avgWnbq,
+     &        vname(1,indxWnbq), record,w3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtWnbq' MYID
+      endif
+#   ifdef K3FAST_CSVISC2K
+      if (wrtavg(indxCnbq)) then
+!$acc update if(compute_on_device) host(cnbq_avg)
+         workr=cnbq_avg
+         call fillvalue3d(workr,ncidavg,avgCnbq,
+     &        vname(1,indxCnbq), record,r3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtCnbq' MYID
+      endif
+#   endif
+#  endif
 !
 #  if defined SST_SKIN && defined TEMPERATURE
 !

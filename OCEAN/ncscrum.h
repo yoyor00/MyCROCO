@@ -1330,6 +1330,9 @@
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
+#  if defined M3FAST_HIS || defined K3FAST_HIS
+     &      , avgRnbq, avgUnbq, avgVnbq, avgWnbq, avgCnbq
+#  endif
 #  if defined ANA_VMIX || defined GLS_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , avgbvf
@@ -1938,6 +1941,9 @@
      &      ,     avgR
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
+#  if defined M3FAST_HIS || defined K3FAST_HIS
+     &      , avgRnbq, avgUnbq, avgVnbq, avgWnbq, avgCnbq
+#  endif
      &      , avgHbl,  avgHbbl
 #  if defined ANA_VMIX || defined GLS_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP

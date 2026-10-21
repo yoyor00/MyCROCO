@@ -63,6 +63,7 @@ C$    integer omp_get_thread_num
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
       real cff, cff1, eps, stf_cff, u_str, v_str
+      real cff_nbq, work_nbq
       parameter (eps=1.D-20)
       parameter(stf_cff=86400/0.01)
 # ifdef SOLVE3D
@@ -78,6 +79,9 @@ C$    integer omp_get_thread_num
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "averages.h"
+# if defined NBQ || defined K3FAST || defined K3FAST_HIS
+#  include "nbq.h"
+# endif
 # include "mixing.h"
 # include "forces.h"
 # ifdef SEDIMENT
@@ -336,6 +340,102 @@ C$    integer omp_get_thread_num
           enddo
 #  endif
         endif
+#  if defined M3FAST_HIS || defined K3FAST_HIS
+!
+!       NBQ variables (Rnbq, Unbq, Vnbq, Wnbq, Cnbq).
+!
+        if (wrtavg(indxRnbq)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                rnbq_avg(i,j,k)=cff*(cff1*rnbq_avg(i,j,k)
+     &                              +rho_nbq(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxUnbq)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=max(IstrR,1),IendR
+                cff_nbq=Hz(i,j,k)+Hz(i-1,j,k)
+                if (cff_nbq.gt.eps) then
+                  work_nbq=2.*qdmu_nbq(i,j,k)/cff_nbq
+                else
+                  work_nbq=0.
+                endif
+                unbq_avg(i,j,k)=cff*(cff1*unbq_avg(i,j,k)+work_nbq)
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxVnbq)) then
+          do k=1,N
+            do j=max(JstrR,1),JendR
+              do i=IstrR,IendR
+                cff_nbq=Hz(i,j,k)+Hz(i,j-1,k)
+                if (cff_nbq.gt.eps) then
+                  work_nbq=2.*qdmv_nbq(i,j,k)/cff_nbq
+                else
+                  work_nbq=0.
+                endif
+                vnbq_avg(i,j,k)=cff*(cff1*vnbq_avg(i,j,k)+work_nbq)
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxWnbq)) then
+          do k=1,N-1
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                cff_nbq=Hz(i,j,k)+Hz(i,j,k+1)
+                if (cff_nbq.gt.eps) then
+                  work_nbq=2.*qdmw_nbq(i,j,k)/cff_nbq
+                else
+                  work_nbq=0.
+                endif
+                wnbq_avg(i,j,k)=cff*(cff1*wnbq_avg(i,j,k)+work_nbq)
+              enddo
+            enddo
+          enddo
+          k=0
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              cff_nbq=Hz(i,j,k+1)
+              if (cff_nbq.gt.eps) then
+                work_nbq=2.*qdmw_nbq(i,j,k)/cff_nbq
+              else
+                work_nbq=0.
+              endif
+              wnbq_avg(i,j,k)=cff*(cff1*wnbq_avg(i,j,k)+work_nbq)
+            enddo
+          enddo
+          k=N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              cff_nbq=Hz(i,j,k)
+              if (cff_nbq.gt.eps) then
+                work_nbq=2.*qdmw_nbq(i,j,k)/cff_nbq
+              else
+                work_nbq=0.
+              endif
+              wnbq_avg(i,j,k)=cff*(cff1*wnbq_avg(i,j,k)+work_nbq)
+            enddo
+          enddo
+        endif
+#   ifdef K3FAST_CSVISC2K
+        if (wrtavg(indxCnbq)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                cnbq_avg(i,j,k)=cff*(cff1*cnbq_avg(i,j,k)
+     &                              +soundspeed_nbq(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+#   endif
+#  endif
 #  if defined LMD_SKPP || defined GLS_MIXING
         if (wrtavg(indxHbl)) then
           do j=JstrR,JendR

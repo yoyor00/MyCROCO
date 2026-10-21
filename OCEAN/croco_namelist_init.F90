@@ -1701,6 +1701,12 @@ contains
                          indxR, indxO, indxW, indxAkv, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
+# if defined M3FAST_HIS || defined K3FAST_HIS
+      use ncscrum, ONLY: indxRnbq, indxUnbq, indxVnbq, indxWnbq
+#  ifdef K3FAST_CSVISC2K
+      use ncscrum, ONLY: indxCnbq
+#  endif
+# endif
       implicit none
 
       wrtavg(indxR) = out_avg_rho
@@ -1716,6 +1722,16 @@ contains
       wrtavg(indxVWstr) = out_avg_vstr
       if (out_avg_bostr .or. out_avg_bustr .or. out_avg_bvstr .or. &
           out_avg_wstr .or. out_avg_ustr .or. out_avg_vstr) wrtavg(indxTime) = .true.
+# if defined M3FAST_HIS || defined K3FAST_HIS
+      wrtavg(indxRnbq) = .true.
+      wrtavg(indxUnbq) = .true.
+      wrtavg(indxVnbq) = .true.
+      wrtavg(indxWnbq) = .true.
+#  ifdef K3FAST_CSVISC2K
+      wrtavg(indxCnbq) = .true.
+#  endif
+      wrtavg(indxTime) = .true.
+# endif
    end subroutine init_auxiliary_averages_fields
 #endif
 

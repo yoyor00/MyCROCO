@@ -255,12 +255,20 @@
 # define vidObst avgObst
 #endif
 
-# if (defined M3FAST_HIS || defined K3FAST_HIS) && !defined AVRH
-#  define vidRnbq hisRnbq
-#  define vidUnbq hisUnbq
-#  define vidVnbq hisVnbq
-#  define vidWnbq hisWnbq
-#  define vidCnbq hisCnbq
+# if defined M3FAST_HIS || defined K3FAST_HIS
+#  ifdef AVRH
+#   define vidRnbq avgRnbq
+#   define vidUnbq avgUnbq
+#   define vidVnbq avgVnbq
+#   define vidWnbq avgWnbq
+#   define vidCnbq avgCnbq
+#  else
+#   define vidRnbq hisRnbq
+#   define vidUnbq hisUnbq
+#   define vidVnbq hisVnbq
+#   define vidWnbq hisWnbq
+#   define vidCnbq hisCnbq
+#  endif
 !
 ! M3FAST-kernel related variables:
 !
@@ -1059,7 +1067,7 @@
      &        5, NF_FOUT, ierr)
         endif
         
-#if (defined M3FAST_HIS || defined K3FAST_HIS) && !defined AVRH
+#if defined M3FAST_HIS || defined K3FAST_HIS
 
 !****** Rho *****
 !
@@ -2941,7 +2949,7 @@
 !
 ! 3D momenta in XI- and ETA-directions.
 !
-#if (defined M3FAST_HIS || defined K3FAST_HIS) && !defined AVRH
+#if defined M3FAST_HIS || defined K3FAST_HIS
 !
 ! M3FAST-kernel related variables:
 !
