@@ -289,7 +289,7 @@ CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
 #  if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
-!     Brunt vaisala frequency.
+!     Square of Brunt vaisala frequency (N^2).
 !
       if (wrtavg(indxbvf)) then
 !$acc update if(compute_on_device) host(bvf_avg)

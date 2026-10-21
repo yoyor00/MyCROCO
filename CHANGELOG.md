@@ -53,6 +53,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
+- Fix bvf fields units in history and average files (#567)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
