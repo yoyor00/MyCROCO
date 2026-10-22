@@ -184,6 +184,9 @@
   nrrec   = 1
   ! Path to the initial conditions or restart NetCDF file.
   ininame = "CROCO_FILES/croco_ini.nc"
+  ! Reset the record counters of all output files (his/avg/diags) on restart
+  ! and start new files (existing files with the same names are overwritten).
+  lresetrec = .false.
 /
 
 
@@ -420,7 +423,7 @@
   ! Create new file (.true.) or append (.false.).
   ldefdia  = .true.
   ! Write tracer diagnostic fields every nwrtdia steps (0 = use nwrt).
-  nwrtdia  = 72
+  nwrtdia  = 0
   ! File cycling switch.
   nrpfdia  = 0
   ! Tracer diagnostics file path.
@@ -433,7 +436,7 @@
   ! First step for accumulation of diagnostic averages.
   ntsdia_avg  = 1
   ! Write averaged tracer diagnostics every nwrtdia_avg steps (0 = navg).
-  nwrtdia_avg = 72
+  nwrtdia_avg = 0
   nrpfdia_avg = 0
   dianame_avg = "CROCO_FILES/croco_dia_avg.nc"
 /
@@ -452,7 +455,7 @@
   ! CPP: DIAGNOSTICS_UV
   ldefdiaM  = .true.
   ! Write momentum diagnostic fields every nwrtdiaM steps (0 = nwrt).
-  nwrtdiaM  = 72
+  nwrtdiaM  = 0
   nrpfdiaM  = 0
   dianameM  = "CROCO_FILES/croco_diaM.nc"
 /
@@ -461,7 +464,7 @@
   ! CPP: DIAGNOSTICS_UV && AVERAGES
   ldefdiaM_avg = .true.
   ntsdiaM_avg  = 1
-  nwrtdiaM_avg = 72
+  nwrtdiaM_avg = 0
   nrpfdiaM_avg = 0
   dianameM_avg = "CROCO_FILES/croco_diaM_avg.nc"
 /
@@ -472,7 +475,7 @@
   ! CPP: DIAGNOSTICS_VRT
   ldefdiags_vrt  = .true.
   ! Write vorticity budget every nwrtdiags_vrt steps (0 = nwrt).
-  nwrtdiags_vrt  = 72
+  nwrtdiags_vrt  = 0
   nrpfdiags_vrt  = 0
   diags_vrtname  = "CROCO_FILES/croco_diags_vrt.nc"
 /
@@ -481,7 +484,7 @@
   ! CPP: DIAGNOSTICS_VRT && AVERAGES
   ldefdiags_vrt_avg = .true.
   ntsdiags_vrt_avg  = 1
-  nwrtdiags_vrt_avg = 72
+  nwrtdiags_vrt_avg = 0
   nrpfdiags_vrt_avg = 0
   diags_vrtname_avg = "CROCO_FILES/croco_diags_vrt_avg.nc"
 /
@@ -491,7 +494,7 @@
 &croco_diags_ek
   ! CPP: DIAGNOSTICS_KE
   ldefdiags_ek  = .true.
-  nwrtdiags_ek  = 72
+  nwrtdiags_ek  = 0
   nrpfdiags_ek  = 0
   diags_ekname  = "CROCO_FILES/croco_diags_ek.nc"
 /
@@ -500,7 +503,7 @@
   ! CPP: DIAGNOSTICS_KE && AVERAGES
   ldefdiags_ek_avg = .true.
   ntsdiags_ek_avg  = 1
-  nwrtdiags_ek_avg = 72
+  nwrtdiags_ek_avg = 0
   nrpfdiags_ek_avg = 0
   diags_ekname_avg = "CROCO_FILES/croco_diags_ek_avg.nc"
 /
@@ -510,7 +513,7 @@
 &croco_diags_pv
   ! CPP: DIAGNOSTICS_PV
   ldefdiags_pv  = .true.
-  nwrtdiags_pv  = 72
+  nwrtdiags_pv  = 0
   nrpfdiags_pv  = 0
   diags_pvname  = "CROCO_FILES/croco_diags_pv.nc"
 /
@@ -519,7 +522,7 @@
   ! CPP: DIAGNOSTICS_PV && AVERAGES
   ldefdiags_pv_avg = .true.
   ntsdiags_pv_avg  = 1
-  nwrtdiags_pv_avg = 72
+  nwrtdiags_pv_avg = 0
   nrpfdiags_pv_avg = 0
   diags_pvname_avg = "CROCO_FILES/croco_diags_pv_avg.nc"
 /
@@ -530,7 +533,7 @@
   ! CPP: DIAGNOSTICS_EDDY && !XIOS && AVERAGES
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg  = 1
-  nwrtdiags_eddy_avg = 72
+  nwrtdiags_eddy_avg = 0
   nrpfdiags_eddy_avg = 0
   diags_eddyname_avg = "CROCO_FILES/croco_diags_eddy_avg.nc"
 /
@@ -565,7 +568,7 @@
   ! CPP: ABL1D && !XIOS
   ! Create new ABL history file (.true.) or append (.false.).
   ldefablhis = .true.
-  ! Write ABL history every nwrtablhis baroclinic steps.
+  ! Write ABL history every nwrtablhis baroclinic steps (0 = use nwrt).
   nwrtablhis = 36
   nrpfablhis = 0
   ablname    = "CROCO_FILES/croco_abl_his.nc"
@@ -691,7 +694,7 @@
 &croco_diagnostics_bio
   ! CPP: DIAGNOSTICS_BIO
   ldefdiabio  = .true.
-  nwrtdiabio  = 72
+  nwrtdiabio  = 0
   nrpfdiabio  = 0
   dianamebio  = "CROCO_FILES/croco_diabio.nc"
 /
@@ -700,7 +703,7 @@
   ! CPP: DIAGNOSTICS_BIO && AVERAGES
   ldefdiabio_avg = .true.
   ntsdiabio_avg  = 1
-  nwrtdiabio_avg = 72
+  nwrtdiabio_avg = 0
   nrpfdiabio_avg = 0
   dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
 /
