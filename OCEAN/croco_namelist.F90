@@ -323,7 +323,7 @@ MODULE croco_namelist
    !! Flag (T/F) for creating the ABL history file.
    !! If `.true.`, a new file is created; if `.false.`, data is appended.
    integer :: nwrtablhis = 36
-   !! Number of time-steps between writing of ABL history fields
+   !! Number of time-steps between writing of ABL history fields (0 = use nwrt)
    integer :: nrpfablhis = 0
    !! ABL history file cycling switch:
    !!
@@ -339,7 +339,7 @@ MODULE croco_namelist
    integer :: ntsablavg = 1
    !! Starting time-step for the accumulation of ABL time-averaged data
    integer :: nwrtablavg = 0
-   !! Number of time-steps between writing of ABL averaged fields
+   !! Number of time-steps between writing of ABL averaged fields (0 = use navg)
    integer :: nrpfablavg = 0
    !! ABL averages file cycling switch:
    !!
@@ -519,7 +519,7 @@ MODULE croco_namelist
    ! &croco_diagnostics_ts
    logical :: ldefdia = .true.
    !! Flag (T/F) for writing the tracer diagnostics file
-   integer :: nwrtdia = 72
+   integer :: nwrtdia = 0
    !! Number of time-steps between writing of tracer diagnostic fields (0 = use nwrt)
    integer :: nrpfdia = 0
    !! Tracer diagnostics file cycling switch (0: multi-record, >0: multi-file, -1: overwrite)
@@ -531,7 +531,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged tracer diagnostics
    integer :: ntsdia_avg = 1
    !! Starting time-step for accumulation of averaged tracer diagnostics
-   integer :: nwrtdia_avg = 72
+   integer :: nwrtdia_avg = 0
    !! Number of time-steps between writing of averaged tracer diagnostics (0 = use navg)
    integer :: nrpfdia_avg = 0
    !! Averaged tracer diagnostics file cycling switch
@@ -551,7 +551,7 @@ MODULE croco_namelist
    ! &croco_diagnosticsM
    logical :: ldefdiaM = .true.
    !! Flag (T/F) for writing momentum diagnostics file
-   integer :: nwrtdiaM = 72
+   integer :: nwrtdiaM = 0
    !! Number of time-steps between writing of momentum diagnostics (0 = use nwrt)
    integer :: nrpfdiaM = 0
    !! Momentum diagnostics file cycling switch
@@ -563,7 +563,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged momentum diagnostics
    integer :: ntsdiaM_avg = 1
    !! Starting time-step for accumulation of averaged momentum diagnostics
-   integer :: nwrtdiaM_avg = 72
+   integer :: nwrtdiaM_avg = 0
    !! Number of time-steps between writing of averaged momentum diagnostics (0 = use navg)
    integer :: nrpfdiaM_avg = 0
    !! Averaged momentum diagnostics file cycling switch
@@ -576,7 +576,7 @@ MODULE croco_namelist
    ! &croco_diags_vrt
    logical :: ldefdiags_vrt = .true.
    !! Flag (T/F) for writing vorticity diagnostics file
-   integer :: nwrtdiags_vrt = 72
+   integer :: nwrtdiags_vrt = 0
    !! Number of time-steps between writing of vorticity diagnostics (0 = use nwrt)
    integer :: nrpfdiags_vrt = 0
    !! Vorticity diagnostics file cycling switch
@@ -588,7 +588,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged vorticity diagnostics
    integer :: ntsdiags_vrt_avg = 1
    !! Starting time-step for accumulation of averaged vorticity diagnostics
-   integer :: nwrtdiags_vrt_avg = 72
+   integer :: nwrtdiags_vrt_avg = 0
    !! Number of time-steps between writing of averaged vorticity diagnostics (0 = use navg)
    integer :: nrpfdiags_vrt_avg = 0
    !! Averaged vorticity diagnostics file cycling switch
@@ -601,7 +601,7 @@ MODULE croco_namelist
    ! &croco_diags_ek
    logical :: ldefdiags_ek = .true.
    !! Flag (T/F) for writing energy diagnostics file
-   integer :: nwrtdiags_ek = 72
+   integer :: nwrtdiags_ek = 0
    !! Number of time-steps between writing of energy diagnostics (0 = use nwrt)
    integer :: nrpfdiags_ek = 0
    !! Energy diagnostics file cycling switch
@@ -613,7 +613,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged energy diagnostics
    integer :: ntsdiags_ek_avg = 1
    !! Starting time-step for accumulation of averaged energy diagnostics
-   integer :: nwrtdiags_ek_avg = 72
+   integer :: nwrtdiags_ek_avg = 0
    !! Number of time-steps between writing of averaged energy diagnostics (0 = use navg)
    integer :: nrpfdiags_ek_avg = 0
    !! Averaged energy diagnostics file cycling switch
@@ -626,7 +626,7 @@ MODULE croco_namelist
    ! &croco_diags_pv
    logical :: ldefdiags_pv = .true.
    !! Flag (T/F) for writing potential vorticity diagnostics file
-   integer :: nwrtdiags_pv = 72
+   integer :: nwrtdiags_pv = 0
    !! Number of time-steps between writing of PV diagnostics (0 = use nwrt)
    integer :: nrpfdiags_pv = 0
    !! PV diagnostics file cycling switch
@@ -638,7 +638,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged PV diagnostics
    integer :: ntsdiags_pv_avg = 1
    !! Starting time-step for accumulation of averaged PV diagnostics
-   integer :: nwrtdiags_pv_avg = 72
+   integer :: nwrtdiags_pv_avg = 0
    !! Number of time-steps between writing of averaged PV diagnostics (0 = use navg)
    integer :: nrpfdiags_pv_avg = 0
    !! Averaged PV diagnostics file cycling switch
@@ -654,7 +654,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged eddy diagnostics
    integer :: ntsdiags_eddy_avg = 1
    !! Starting time-step for accumulation of averaged eddy diagnostics
-   integer :: nwrtdiags_eddy_avg = 72
+   integer :: nwrtdiags_eddy_avg = 0
    !! Number of time-steps between writing of averaged eddy diagnostics (0 = use navg)
    integer :: nrpfdiags_eddy_avg = 0
    !! Averaged eddy diagnostics file cycling switch
@@ -667,7 +667,7 @@ MODULE croco_namelist
    ! &croco_diagnostics_bio
    logical :: ldefdiabio = .true.
    !! Flag (T/F) for writing biogeochemical diagnostics file
-   integer :: nwrtdiabio = 72
+   integer :: nwrtdiabio = 0
    !! Number of time-steps between writing of bio diagnostics (0 = use nwrt)
    integer :: nrpfdiabio = 0
    !! Bio diagnostics file cycling switch
@@ -679,7 +679,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged bio diagnostics
    integer :: ntsdiabio_avg = 1
    !! Starting time-step for accumulation of averaged bio diagnostics
-   integer :: nwrtdiabio_avg = 72
+   integer :: nwrtdiabio_avg = 0
    !! Number of time-steps between writing of averaged bio diagnostics (0 = use navg)
    integer :: nrpfdiabio_avg = 0
    !! Averaged bio diagnostics file cycling switch

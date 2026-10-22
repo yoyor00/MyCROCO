@@ -979,11 +979,14 @@ contains
    !---------------------------------------------------------------------
    !  init_abl
    !  Adjust ablname for MPI/ENSEMBLE.
+   !  Apply default nwrtablhis = nwrt when nwrtablhis is 0.
    !---------------------------------------------------------------------
    subroutine init_abl(ierr)
-      use croco_namelist, ONLY: ablname
+      use croco_namelist, ONLY: ablname, nwrtablhis, nwrt
       implicit none
       integer, intent(inout) :: ierr
+
+      if (nwrtablhis == 0) nwrtablhis = nwrt
 
       call adjust_filename_parallel(ablname, "ablname", ierr)
       call adjust_filename_ensemble(ablname)
