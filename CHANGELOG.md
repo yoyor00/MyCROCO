@@ -119,8 +119,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
-- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
-  and not in cppdefs_dev.h (#465)
+- WAVES : wepb output now includes roller delay when roller is activated (#579)
+          the old wepb output can be diagnose from wepb and wepr
 
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
