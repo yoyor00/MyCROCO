@@ -881,7 +881,12 @@ C$OMP PARALLEL DO PRIVATE(tile)
         enddo
       endif
 #else
-      if (ldefhis .and. wrthis(indxTime)) call wrt_his
+!
+! In case of restart (record counter already restored by get_initial),
+! the initial state is already in the history file: do not write it again.
+!
+      if (ldefhis .and. wrthis(indxTime) .and. nrechis.eq.0)
+     &                                                call wrt_his
 #endif
 
 #ifdef ABL1D
@@ -890,7 +895,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call abl_ini (tile)
       enddo
 # ifndef XIOS
-      if (ldefablhis .and. wrtabl(indxTime)) call wrt_abl_his
+      if (ldefablhis .and. wrtabl(indxTime) .and. nrecablhis.eq.0)
+     &                                            call wrt_abl_his
 # endif
 #endif
 
