@@ -730,13 +730,14 @@
        enddo
        do j=Jstr,Jend
          do i=Istr,Iend
-#   ifdef LMD_SKPP
+#   ifdef DIAGNOSTICS_TS_MLD_TURB
+#    if defined LMD_SKPP || defined GLS_MIXING
            kmld=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_DENS
-           kmld=kbld(i,j)
-#     endif
-#   else
+#    else
            kmld=N-5
+#    endif
+#   elif defined DIAGNOSTICS_TS_MLD_DENS
+           kmld=kbld(i,j)
 #   endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
@@ -757,22 +758,25 @@
 
        do j=Jstr,Jend
          do i=Istr,Iend
-#   if defined LMD_SKPP || defined GLS_MIXING
+#   ifdef DIAGNOSTICS_TS_MLD_TURB
+#    if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_DENS
-           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbld(i,j)
-#     endif
            kmld=kbl_nstp(i,j)
-#   else
+#    else
            kmld=N-5
+#    endif
+#   elif defined DIAGNOSTICS_TS_MLD_DENS
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbld(i,j)
+           kmld=kbl_nstp(i,j)
 #   endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
+#   ifdef DIAGNOSTICS_TS_MLD_TURB
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#   elif defined DIAGNOSTICS_TS_MLD_DENS
            if (itrc .eq. NT) kbl_nstp(i,j)=kbld(i,j)
 #   endif
          enddo

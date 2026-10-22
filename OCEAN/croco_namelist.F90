@@ -547,6 +547,13 @@ MODULE croco_namelist
    real :: mld_depth_ref = 10
    !! Reference depth to define the mixed layer depth [m]
 #  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_TURB
+   ! &croco_diag_mld_turb
+   real :: mld_crit_AKt = 2.0e-5
+   !! AKt criterion to define the mixed layer depth [m2/s]
+   real :: mld_depth_ref = 10
+   !! Reference depth to define the mixed layer depth [m]
+#  endif
 #endif
 
 #if defined DIAGNOSTICS_UV

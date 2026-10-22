@@ -106,6 +106,10 @@
   || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       real bvf(GLOBAL_2D_ARRAY,0:N)
       common /mixing_bvf/ bvf
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+      integer kbld(GLOBAL_2D_ARRAY)
+      common /mld_kbld/kbld
+#   endif
 # endif
 
 # ifdef BIOLOGY
@@ -141,10 +145,6 @@
 #   else
       real hbl (GLOBAL_2D_ARRAY  )
       common /lmd_kpp_hbl/ hbl
-#   endif
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
-      integer kbld(GLOBAL_2D_ARRAY)
-      common /kpp_kbld/kbld
 #   endif
 #   ifdef LMD_NONLOCAL
       real ghats(GLOBAL_2D_ARRAY,0:N)

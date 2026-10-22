@@ -95,6 +95,8 @@
 !======================================================================
 
       USE croco_namelist, only: dt
+      use croco_namelist, only: mld_crit_AKt, mld_depth_ref
+      use tracer_budget_mld, only: idx_mld_turbulence
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb
@@ -1053,30 +1055,12 @@
 # endif
 
 !
-!  Compute mixed layer depth
+!  Compute mixed layer depth from turbulence threshold criterion
 !
       do j=Jstr,Jend
         do i=Istr,Iend
-          kbl(i,j)=1
-          hbl(i,j)=z_w(i,j,N)-z_r(i,j,1)
-# ifdef MASKING
-          hbl(i,j)=hbl(i,j)*rmask(i,j)
-# endif
-        enddo
-      enddo
-      kref=max(1,N-3)
-      do k=1,kref
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            cff=rho1(i,j,k)-rho1(i,j,kref)
-            if (cff.gt.0.01) then
-              kbl(i,j)=k
-              hbl(i,j)=z_w(i,j,N)-z_r(i,j,k)
-# ifdef MASKING
-              hbl(i,j)=hbl(i,j)*rmask(i,j)
-# endif
-            endif
-          enddo
+          call idx_mld_turbulence(Istr,Iend,Jstr,Jend,
+     &                  mld_crit_AKt,mld_depth_ref)
         enddo
       enddo
 !$acc end kernels

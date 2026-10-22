@@ -188,6 +188,9 @@ contains
 #  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
       namelist /croco_diag_mld_dens/ mld_crit_D, mld_crit_T, mld_depth_ref
 #  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_TURB
+      namelist /croco_diag_mld_turb/ mld_crit_AKt, mld_depth_ref
+#  endif
 #endif
 #if defined DIAGNOSTICS_UV
       namelist /croco_diagnosticsM/ ldefdiaM, nwrtdiaM, nrpfdiaM, dianameM
@@ -1108,6 +1111,18 @@ contains
          if (ios /= 0) then
             call fatal_nml_error("croco_diag_mld_dens (parse error)", nmlunit, ios, iomsg)
             MPI_master_only WRITE (stdout, nml=croco_diag_mld_dens)
+            ierr = ierr + 1
+         end if
+      end if
+#  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_TURB
+      ! --- croco_diag_mld_turb (optional) ---
+      call check_nml_presence(nmlunit, "croco_diag_mld_turb", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag_mld_turb, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag_mld_turb (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag_mld_turb)
             ierr = ierr + 1
          end if
       end if
@@ -2456,6 +2471,9 @@ contains
 #  endif
 #  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
       MPI_master_only WRITE (stdout, nml=croco_diag_mld_dens)
+#  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_TURB
+      MPI_master_only WRITE (stdout, nml=croco_diag_mld_turb)
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV

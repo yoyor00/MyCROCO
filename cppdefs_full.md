@@ -537,6 +537,7 @@ Budget diagnostics for tracers, momentum, vorticity, energy, etc.
   - `DIAGNOSTICS_TS_ADV` — Use advective (flux) formulation
   - `DIAGNOSTICS_TS_MLD` — Integrate budgets over the mixed layer
     - `DIAGNOSTICS_TS_MLD_DENS` — Use density criterion for MLD
+    - `DIAGNOSTICS_TS_MLD_TURB` — Use turbulence criterion for MLD
 - `DIAGNOSTICS_TSVAR` — Tracer variance budget _(auto-activates DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_ADV)_
 - `DIAGNOSTICS_UV` — Momentum equation budget terms
 - `DIAGNOSTICS_VRT` — Depth-mean vorticity budget

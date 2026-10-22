@@ -281,6 +281,7 @@
 #  undef  DIAGNOSTICS_TS_MLD
 #  ifdef DIAGNOSTICS_TS_MLD
 #   undef  DIAGNOSTICS_TS_MLD_DENS
+#   undef  DIAGNOSTICS_TS_MLD_TURB
 #  endif
 # endif
 
