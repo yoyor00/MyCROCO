@@ -59,6 +59,8 @@
       integer ncid, req_rec, tindx, record, max_rec,
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
+      integer ibuffdg(ncntdg), startdg(2), countdg(2)
+     &      , varid_dg, ierrdg, idgc
       character units*180
       CHARACTER(len=19)          :: tool_sectodat
       REAL(kind=8)               :: tool_datosec
@@ -343,54 +345,74 @@
 #endif
 
 #ifndef XIOS
+!
+! Restore the record numbers of the diagnostics files. Each file has
+! its own output frequency, so the counters are stored in a dedicated
+! variable of the restart file (time_step_dg). For older files, which
+! do not have it, assume the same frequency as history/averages.
+!
+          startdg(1)=1
+          startdg(2)=record
+          countdg(1)=ncntdg
+          countdg(2)=1
+          ierrdg=nf_inq_varid (ncid, 'time_step_dg', varid_dg)
+          if (ierrdg .eq. nf_noerr) then
+            ierrdg=nf_get_vara_int (ncid, varid_dg, startdg, countdg,
+     &                                                        ibuffdg)
+          endif
+          if (ierrdg .ne. nf_noerr) then
+            do idgc=1,ncntdg,2
+              ibuffdg(idgc)=ibuff(3)
+              ibuffdg(idgc+1)=ibuff(4)
+            enddo
+          endif
 
-# ifdef DIAGNOSTICS_VRT
-          nrecdiags_vrt=ibuff(3)
+# ifdef DIAGNOSTICS_TS
+          nrecdia=ibuffdg(1)
 #  ifdef AVERAGES
-          nrecdiags_vrt_avg=ibuff(4)
-#  endif
-# endif
-# ifdef DIAGNOSTICS_KE
-          nrecdiags_ek=ibuff(3)
-#  ifdef AVERAGES
-          nrecdiags_ek_avg=ibuff(4)
-#  endif
-# endif
-# ifdef DIAGNOSTICS_PV
-          nrecdiags_pv=ibuff(3)
-#  ifdef AVERAGES
-          nrecdiags_pv_avg=ibuff(4)
-#  endif
-# endif
-
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
-          nrecdiags_eddy=ibuff(3)
-#  ifdef AVERAGES
-          nrecdiags_eddy_avg=ibuff(4)
-#  endif
-# endif
-# if defined DIAGNOSTICS_TS
-          nrecdia=ibuff(3)
-#  ifdef AVERAGES
-          nrecdia_avg=ibuff(4)
+          nrecdia_avg=ibuffdg(2)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
-          nrecdiaM=ibuff(3)
+          nrecdiaM=ibuffdg(3)
 #  ifdef AVERAGES
-          nrecdiaM_avg=ibuff(4)
+          nrecdiaM_avg=ibuffdg(4)
+#  endif
+# endif
+# ifdef DIAGNOSTICS_VRT
+          nrecdiags_vrt=ibuffdg(5)
+#  ifdef AVERAGES
+          nrecdiags_vrt_avg=ibuffdg(6)
+#  endif
+# endif
+# ifdef DIAGNOSTICS_KE
+          nrecdiags_ek=ibuffdg(7)
+#  ifdef AVERAGES
+          nrecdiags_ek_avg=ibuffdg(8)
+#  endif
+# endif
+# ifdef DIAGNOSTICS_PV
+          nrecdiags_pv=ibuffdg(9)
+#  ifdef AVERAGES
+          nrecdiags_pv_avg=ibuffdg(10)
+#  endif
+# endif
+# ifdef DIAGNOSTICS_EDDY
+          nrecdiags_eddy=ibuffdg(11)
+#  ifdef AVERAGES
+          nrecdiags_eddy_avg=ibuffdg(12)
 #  endif
 # endif
 # ifdef ABL1D
-          nrecablhis=ibuff(3)
+          nrecablhis=ibuffdg(13)
 #  ifdef AVERAGES
-          nrecablavg=ibuff(4)
+          nrecablavg=ibuffdg(14)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_BIO
-          nrecdiabio=ibuff(3)
+          nrecdiabio=ibuffdg(15)
 #  ifdef AVERAGES
-          nrecdiabio_avg=ibuff(4)
+          nrecdiabio_avg=ibuffdg(16)
 #  endif
 # endif
 

@@ -24,6 +24,7 @@
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3),  auxil(2),  checkdims
      &      , b3dgrd(4)
+     &      , auxildg(2)
 #ifdef ABL1D
      &      , abl3dgrd(4)
 #endif
@@ -168,6 +169,10 @@
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
 #endif
         auxil(2)=timedim
+#ifndef XIOS
+        ierr=nf_def_dim (ncid, 'auxil_dg', ncntdg, auxildg(1))
+        auxildg(2)=timedim
+#endif
 
         r2dgrd(3)=timedim           ! Free surface
 
@@ -235,6 +240,19 @@
 #endif
         ierr=nf_put_att_text (ncid, rstTstep, 'long_name', 48,
      &       'time step and record numbers from initialization')
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files: each file has its own
+! output frequency, so its counter is stored separately.
+!
+        ierr=nf_def_var (ncid, 'time_step_dg', nf_int, 2, auxildg,
+     &       rstTstepDg)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTstepDg,nf_collective)
+# endif
+        ierr=nf_put_att_text (ncid, rstTstepDg, 'long_name', 54,
+     &       'record numbers of the diagnostics files (time_step_dg)')
+#endif
 !
 ! Time.
 !
@@ -1298,6 +1316,20 @@
         endif
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTstep,nf_collective)
+#endif
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files (absent in old files).
+!
+        ierr=nf_inq_varid (ncid, 'time_step_dg', rstTstepDg)
+        if (ierr .ne. nf_noerr) then
+          rstTstepDg=-1
+        else
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstTstepDg,nf_collective)
+# endif
+        endif
+        ierr=nf_noerr
 #endif
 !
 ! Time.

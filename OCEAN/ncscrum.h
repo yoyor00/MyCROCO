@@ -1043,8 +1043,12 @@
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
      &       , ntbtf(NT)
 #endif
+! Number of record counters of the diagnostics files stored in the
+! restart file (variable time_step_dg), see wrt_rst/get_initial.
+      integer ncntdg
+      parameter (ncntdg=16)
       integer ncidrst, nrecrst
-     &      , rstTime, rstTstep, rstZ,    rstUb,  rstVb
+     &      , rstTime, rstTstep, rstTstepDg, rstZ, rstUb, rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
      &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm
@@ -1594,7 +1598,7 @@
 
 #endif
      &      , ncidrst, nrecrst
-     &      , rstTime, rstTstep, rstZ,    rstUb,  rstVb
+     &      , rstTime, rstTstep, rstTstepDg, rstZ, rstUb, rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
      &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm

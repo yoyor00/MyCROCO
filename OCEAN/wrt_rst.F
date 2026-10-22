@@ -50,6 +50,9 @@
 #ifdef ABL1D
 # include "abl1d.h"
 #endif
+#ifndef XIOS
+      integer ibuffdg(ncntdg), startdg(2), countdg(2), idg
+#endif
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), nf_fwrite
 #if defined OUTPUTS_SURFACE && ! defined XIOS
@@ -141,6 +144,77 @@
       endif
 #endif
 
+
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files. Each file has its own
+! output frequency, so each counter is stored in its own slot of
+! time_step_dg (slots of disabled diagnostics are set to 0).
+!
+      if (rstTstepDg.ge.0) then
+        do idg=1,ncntdg
+          ibuffdg(idg)=0
+        enddo
+# ifdef DIAGNOSTICS_TS
+      ibuffdg(1)=nrecdia
+#  ifdef AVERAGES
+      ibuffdg(2)=nrecdia_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_UV
+      ibuffdg(3)=nrecdiaM
+#  ifdef AVERAGES
+      ibuffdg(4)=nrecdiaM_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_VRT
+      ibuffdg(5)=nrecdiags_vrt
+#  ifdef AVERAGES
+      ibuffdg(6)=nrecdiags_vrt_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_KE
+      ibuffdg(7)=nrecdiags_ek
+#  ifdef AVERAGES
+      ibuffdg(8)=nrecdiags_ek_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_PV
+      ibuffdg(9)=nrecdiags_pv
+#  ifdef AVERAGES
+      ibuffdg(10)=nrecdiags_pv_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_EDDY
+      ibuffdg(11)=nrecdiags_eddy
+#  ifdef AVERAGES
+      ibuffdg(12)=nrecdiags_eddy_avg
+#  endif
+# endif
+# ifdef ABL1D
+      ibuffdg(13)=nrecablhis
+#  ifdef AVERAGES
+      ibuffdg(14)=nrecablavg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_BIO
+      ibuffdg(15)=nrecdiabio
+#  ifdef AVERAGES
+      ibuffdg(16)=nrecdiabio_avg
+#  endif
+# endif
+        startdg(1)=1
+        startdg(2)=record
+        countdg(1)=ncntdg
+        countdg(2)=1
+        ierr=nf_put_vara_int (ncidrst, rstTstepDg, startdg, countdg,
+     &                                                       ibuffdg)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,1) 'time_step_dg', record, ierr
+     &                   MYID
+        endif
+      endif
+#endif
 
 !
 ! Time.
