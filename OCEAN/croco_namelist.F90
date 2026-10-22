@@ -86,6 +86,15 @@ MODULE croco_namelist
    !! in the file (the initialization record is assigned internally).
    character(len=180) :: ininame = "CROCO_FILES/croco_ini.nc"
    !! Name of file containing the initial state
+   logical :: lresetrec = .false.
+   !! Flag (T/F) to reset to zero the record counters of the history,
+   !! averages and diagnostics files when starting from `ininame`.
+   !! By default (`.false.`) the counters stored in the restart file are used,
+   !! so that the output is appended to the existing files. If `.true.`,
+   !! new output files are started (the first record is written at the
+   !! initial time); existing files with the same names are overwritten.
+   !! Useful to change an output frequency or to start a new branch at a
+   !! time step that is not a multiple of `nrpf*`.
 
    ! &croco_restart
    integer :: nrst = 720

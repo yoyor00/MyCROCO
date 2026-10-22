@@ -98,7 +98,7 @@ contains
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo, m2filter_alpha
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
-      namelist /croco_initial/ nrrec, ininame
+      namelist /croco_initial/ nrrec, ininame, lresetrec
       namelist /croco_restart/ nrst, nrpfrst, rstname
 #ifdef NBQ
       namelist /croco_time_stepping_nbq/ csound_nbq, visc2_nbq

@@ -476,6 +476,75 @@
 # endif
         endif
 #endif
+!
+! Option to start new output files: reset to zero the record counters
+! of the history, averages and diagnostics files (namelist lresetrec).
+!
+        if (lresetrec) then
+          nrechis=0
+#ifdef AVERAGES
+          nrecavg=0
+#endif
+#ifndef XIOS
+# ifdef DIAGNOSTICS_TS
+          nrecdia=0
+#  ifdef AVERAGES
+          nrecdia_avg=0
+#  endif
+# endif
+# ifdef DIAGNOSTICS_UV
+          nrecdiaM=0
+#  ifdef AVERAGES
+          nrecdiaM_avg=0
+#  endif
+# endif
+# ifdef DIAGNOSTICS_VRT
+          nrecdiags_vrt=0
+#  ifdef AVERAGES
+          nrecdiags_vrt_avg=0
+#  endif
+# endif
+# ifdef DIAGNOSTICS_KE
+          nrecdiags_ek=0
+#  ifdef AVERAGES
+          nrecdiags_ek_avg=0
+#  endif
+# endif
+# ifdef DIAGNOSTICS_PV
+          nrecdiags_pv=0
+#  ifdef AVERAGES
+          nrecdiags_pv_avg=0
+#  endif
+# endif
+# ifdef DIAGNOSTICS_EDDY
+          nrecdiags_eddy=0
+#  ifdef AVERAGES
+          nrecdiags_eddy_avg=0
+#  endif
+# endif
+# ifdef ABL1D
+          nrecablhis=0
+#  ifdef AVERAGES
+          nrecablavg=0
+#  endif
+# endif
+# ifdef DIAGNOSTICS_BIO
+          nrecdiabio=0
+#  ifdef AVERAGES
+          nrecdiabio_avg=0
+#  endif
+# endif
+# ifdef OUTPUTS_SURFACE
+          nrecsurf=0
+#  ifdef AVERAGES
+          nrecsurf_avg=0
+#  endif
+# endif
+#endif
+          MPI_master_only write(stdout,'(/1x,2A/)')
+     &         'GET_INITIAL: lresetrec=T, record counters of the ',
+     &         'output files are reset to zero (new output files).'
+        endif
       else
         ntstart=1
         nrecrst=0
