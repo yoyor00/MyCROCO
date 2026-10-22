@@ -346,7 +346,7 @@
           nrecavg=ibuff(4)
 #endif
 
-#if defined RESTART_DIAGS && ! defined XIOS
+#ifndef XIOS
 
 # ifdef DIAGNOSTICS_VRT
           nrecdiags_vrt=ibuff(3)
@@ -383,6 +383,18 @@
           nrecdiaM=ibuff(3)
 #  ifdef AVERAGES
           nrecdiaM_avg=ibuff(4)
+#  endif
+# endif
+# ifdef ABL1D
+          nrecablhis=ibuff(3)
+#  ifdef AVERAGES
+          nrecablavg=ibuff(4)
+#  endif
+# endif
+# ifdef DIAGNOSTICS_BIO
+          nrecdiabio=ibuff(3)
+#  ifdef AVERAGES
+          nrecdiabio_avg=ibuff(4)
 #  endif
 # endif
 
@@ -440,16 +452,9 @@
         count(2)=1
         ierr=nf_get_vara_int (ncid, varid, start, count, ibuff)
         if (ierr .eq. nf_noerr) then
-# ifdef RESTART_DIAGS
           nrecsurf=ibuff(5)
-#  ifdef AVERAGES
+# ifdef AVERAGES
           nrecsurf_avg=ibuff(6)
-#  endif
-# else
-          nrecsurf=0
-#  ifdef AVERAGES
-          nrecsurf_avg=0
-#  endif
 # endif
         endif
 #endif

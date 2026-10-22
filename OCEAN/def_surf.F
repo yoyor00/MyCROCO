@@ -94,7 +94,9 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
         create_new_file=ldefsurf
@@ -102,19 +104,8 @@
         create_new_file=ldefsurf_avg
 #  endif
       else
-#  ifndef AVRH
         create_new_file=.false.
-#  else
-        create_new_file=.false.
-#  endif
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefsurf
-#  else
-      create_new_file=ldefsurf_avg
-#  endif
-# endif
 !
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR

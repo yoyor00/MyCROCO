@@ -533,8 +533,8 @@ Use these keys when running test cases without external NetCDF files. Each `ANA_
 
 Budget diagnostics for tracers, momentum, vorticity, energy, etc.
 
-- `DO_NOT_OVERWRITE` — Keep existing diagnostic files (append mode)
-- `RESTART_DIAGS` — Restart diagnostic accumulation from file
+Output files are never overwritten on restart: record counters of the history, averages and diagnostics files are saved in the restart file and restored, so a restart appends to the existing file (this used to require `DO_NOT_OVERWRITE` and `RESTART_DIAGS`, which no longer exist).
+
 - `DIAGNOSTICS_TS` — Tracer equation budget terms
   - `DIAGNOSTICS_TS_ADV` — Use advective (flux) formulation
   - `DIAGNOSTICS_TS_MLD` — Integrate budgets over the mixed layer

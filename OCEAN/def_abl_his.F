@@ -160,15 +160,14 @@
 ! is created.
 !
 
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
         create_new_file=ldefablhis
       else
         create_new_file=.false.
       endif
-# else
-      create_new_file=ldefablhis
-# endif
 
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
