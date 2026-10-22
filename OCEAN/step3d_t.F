@@ -61,6 +61,7 @@
 #  endif /* SUBSTANCE */
       implicit none
 #  include "param.h"
+#  include "mpi_cpl.h"
 #  include "ncscrum.h"
 #  include "grid.h"
 #  include "ocean3d.h"

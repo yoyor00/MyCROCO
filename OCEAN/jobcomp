@@ -407,7 +407,7 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
 ### if $($CPP1 testkeys.F | grep -i -q kxxxisdefined) ; then
     if $($CPP1 testkeys.F | grep -i -q kxxisdefined) ; then
         echo " => AGRIF + KXX_kernels activated"
-        python prepro_KXX.py
+        python3 prepro_KXX.py
     fi 
 fi
 

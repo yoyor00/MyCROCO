@@ -158,9 +158,15 @@ C$OMP END MASTER
         do j=Jstr,Jend
           do i=Istr,Iend
             do k=-N_sl+1,N
+#  ifndef K3FAST_CSVISC2K
+              p_nbq(i,j,k)=soundspeed2_nbq*rho_nbq(i,j,k)
+              p_nbq_max(i,j,k)=max(p_nbq_max(i,j,k),
+     &                      abs(soundspeed2_nbq*rho_nbq(i,j,k)))
+#  else
               p_nbq(i,j,k)=soundspeed2_nbq(i,j,k)*rho_nbq(i,j,k)
               p_nbq_max(i,j,k)=max(p_nbq_max(i,j,k),
      &                      abs(soundspeed2_nbq(i,j,k)*rho_nbq(i,j,k)))
+#  endif
             enddo
           enddo
         enddo

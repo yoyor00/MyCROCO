@@ -1635,6 +1635,7 @@ C$    integer  trd, omp_get_thread_num
      &     dsup,Btg,cosw,sinw,eps,nw,wh
       parameter (eps=1.0e-10)
 # include "param.h"
+# include "mpi_cpl.h"
 # include "grid.h"
 # include "forces.h"
 # include "ocean3d.h"

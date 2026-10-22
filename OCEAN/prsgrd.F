@@ -50,6 +50,7 @@ c********************************************************************
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax, nan_gid, ierr
 #  include "param.h"
+#  include "mpi_cpl.h"
 #  ifdef MPI
       include 'mpif.h'
 #  endif
@@ -554,6 +555,7 @@ c********************************************************************
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
+#  include "mpi_cpl.h"
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),  cff,
      &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),  cff1,
      &  rsurf(PRIVATE_2D_SCRATCH_ARRAY),    gamma,

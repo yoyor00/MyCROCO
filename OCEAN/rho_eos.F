@@ -127,6 +127,7 @@
       implicit none
 
 #  include "param.h"
+#  include "mpi_cpl.h"
 #  ifdef MPI
       include 'mpif.h'
 #  endif
@@ -270,8 +271,10 @@
      &          ' Tt=', Tt, ' Ts=', Ts, ' dpth=', dpth,
      &          ' z_w(N)=', z_w(i,j,N), ' z_r=', z_r(i,j,k),
      &          ' rho1=', rho1(i,j,k), ' cff=', cff, ' cff1=', cff1,
-     &          ' K0=', K0, ' K1=', K1, ' K2=', K2,
-     &          ' rmask=', rmask(i,j)
+     &          ' K0=', K0, ' K1=', K1, ' K2=', K2
+# ifdef MASKING
+     &          ,' rmask=', rmask(i,j)
+# endif
               call flush(6)
 # ifdef MPI
               call mpi_abort(MPI_COMM_WORLD, 50, ierr)

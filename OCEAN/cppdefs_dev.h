@@ -249,7 +249,7 @@
 #   define K3FAST_W
 #   define K3FAST_RHO
 #   define K3FAST_ZETAW
-#   undef  K3FAST_DUVNBQ
+#   define K3FAST_DUVNBQ
 #   define K3FAST_C3D_UVSF
 #   define K3FAST_C3D_UVFS
 #   define K3FAST_C3D_WSF
