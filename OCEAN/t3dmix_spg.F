@@ -142,7 +142,8 @@
 !========================================================================
 !
       use croco_namelist, only: dt
-      use tracer_budget_mld, only: budget_entrainment_term
+      use tracer_budget_mld, only: budget_entrainment_term,
+     &                               budget_average_over_mld
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
       use croco_namelist, only: mld_crit_D, mld_crit_T, mld_depth_ref
       use tracer_budget_mld, only: idx_mld_density_and_temp
@@ -721,41 +722,8 @@
      &       kbld,Tcrit_mld)
 #    endif /* DIAGNOSTICS_TS_MLD_DENS */
 
-       do j=Jstr,Jend
-         do i=Istr,Iend
-           THmix_mld(i,j,itrc)=0.
-           Taver_mld(i,j,itrc)=0.
-           T_mld_nnew(i,j)=0.
-           T_mld_nstp(i,j)=0.
-         enddo
-       enddo
-       do j=Jstr,Jend
-         do i=Istr,Iend
-#   ifdef DIAGNOSTICS_TS_MLD_TURB
-#    if defined LMD_SKPP || defined GLS_MIXING
-           kmld=kbl(i,j)
-#    else
-           kmld=N-5
-#    endif
-#   elif defined DIAGNOSTICS_TS_MLD_DENS
-           kmld=kbld(i,j)
-#   endif
-           do k=N,kmld,-1
-             cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
-     &                           THmix(i,j,k,itrc)*cff
-#  ifdef MASKING
-     &                   *rmask(i,j)
-#  endif
-             T_mld_nnew(i,j)=T_mld_nnew(i,j)+
-     &                       t(i,j,k,nnew,itrc)*cff
-           enddo
-           Taver_mld(i,j,itrc)=T_mld_nnew(i,j) ! mean over mld
-#  ifdef MASKING
-     &                   *rmask(i,j)
-#  endif
-         enddo
-       enddo
+       call budget_average_over_mld(Istr,Iend,Jstr,Jend,
+     &                  itrc, T_mld_nnew, T_mld_nstp,4)
 
        call budget_entrainment_term(Istr,Iend,Jstr,Jend,
      &                  itrc,T_mld_nnew,T_mld_nstp)

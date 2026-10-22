@@ -23,7 +23,7 @@
       private 
  
       public :: idx_mld_density_and_temp, idx_mld_turbulence, &
-              budget_entrainment_term
+              budget_entrainment_term, budget_average_over_mld
 
       contains
 
@@ -203,6 +203,131 @@
          enddo
         enddo
        end subroutine idx_mld_turbulence
+
+
+!==========================================================================
+       subroutine budget_average_over_mld(Istr,Iend,Jstr,Jend, &
+                       itrc, T_mld_nnew, T_mld_nstp,mode)
+!----------------------------------------------------------------------
+! Purposes : - average budget terms of TS diagnostic over MLD
+!
+! Called by : step3d_t.F, t3dmix_ISO.F, t3dmix_S.F, t3dmix_spg.F
+!----------------------------------------------------------------------
+        use param
+        use scalars
+        use croco_namelist, only: dt
+#include "grid.h"
+#include "ocean3d.h"
+#include "mixing.h"
+#include "diagnostics.h"
+
+        ! Arguments
+        integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
+        integer, intent(in) :: mode 
+        real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
+                T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
+        ! Local declarations
+        integer :: i,j,k,kmld
+        integer :: mode_step3d=1
+        integer :: mode_t3dmix_S=2
+        integer :: mode_t3dmix_ISO=3
+        integer :: mode_t3dmix_spg=4
+        real :: cff
+
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            if (mode == mode_step3d) then
+              TXadv_mld(i,j,itrc)=0.
+              TYadv_mld(i,j,itrc)=0.
+              TVadv_mld(i,j,itrc)=0.
+              TVmix_mld(i,j,itrc)=0.
+              THmix_mld(i,j,itrc)=0.
+              TForc_mld(i,j,itrc)=0.
+              Trate_mld(i,j,itrc)=0.
+              Tentr_mld(i,j,itrc)=0.
+            else if (mode == mode_t3dmix_S .or. mode == mode_t3dmix_spg .or. &
+                      mode == mode_t3dmix_ISO) then
+              THmix_mld(i,j,itrc)=0.
+              Taver_mld(i,j,itrc)=0.
+              if (mode == mode_t3dmix_ISO) then
+#  ifdef TS_MIX_IMP
+                TVmix_mld(i,j,itrc)=0.
+#  endif
+              endif
+            endif
+            T_mld_nnew(i,j)=0.
+            T_mld_nstp(i,j)=0.
+          enddo
+        enddo
+
+        do j=Jstr,Jend
+          do i=Istr,Iend
+#    ifdef DIAGNOSTICS_TS_MLD_TURB
+#     if defined LMD_SKPP || defined GLS_MIXING
+            kmld=kbl(i,j)
+#     else
+            kmld=N-5 ! to be changed ?
+#     endif
+#    elif defined DIAGNOSTICS_TS_MLD_DENS
+           kmld=kbld(i,j)
+#    endif
+! add a else here ?
+            do k=N,kmld,-1
+              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              if (mode == mode_step3d) then
+                TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+ &
+                                   TXadv(i,j,k,itrc)*cff
+                TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+ &
+                                   TYadv(i,j,k,itrc)*cff
+                TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+ &
+                                   TVadv(i,j,k,itrc)*cff
+                TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+ &
+                                   TVmix(i,j,k,itrc)*cff
+                TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+ &
+                                   TForc(i,j,k,itrc)*cff
+              else if (mode == mode_t3dmix_S .or. mode == mode_t3dmix_spg .or. &
+                      mode == mode_t3dmix_ISO) then
+                THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+ &
+                                   THmix(i,j,k,itrc)*cff
+                if (mode == mode_t3dmix_ISO) then
+#  ifdef TS_MIX_IMP
+                  TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+&
+                                   TVmix(i,j,k,itrc)*cff
+#  endif
+                endif             
+              endif             
+              T_mld_nnew(i,j)=T_mld_nnew(i,j)+ &
+                                   t(i,j,k,nnew,itrc)*cff
+#  ifdef MASKING
+              if (mode == mode_step3d) then
+                TXadv_mld(i,j,itrc)= TXadv_mld(i,j,itrc)*rmask(i,j)
+                TYadv_mld(i,j,itrc)= TYadv_mld(i,j,itrc)*rmask(i,j)
+                TVadv_mld(i,j,itrc)= TVadv_mld(i,j,itrc)*rmask(i,j)
+                TVmix_mld(i,j,itrc)= TVmix_mld(i,j,itrc)*rmask(i,j)
+                TForc_mld(i,j,itrc)= TForc_mld(i,j,itrc)*rmask(i,j)
+              else if (mode == mode_t3dmix_S .or. mode == mode_t3dmix_spg .or. &
+                      mode == mode_t3dmix_ISO) then
+                THmix_mld(i,j,itrc)= THmix_mld(i,j,itrc)*rmask(i,j)
+                if (mode == mode_t3dmix_ISO) then
+#   ifdef TS_MIX_IMP
+                TVmix_mld(i,j,itrc)= TVmix_mld(i,j,itrc)*rmask(i,j)
+#   endif
+#  endif
+                endif             
+              endif             
+            enddo 
+            if (mode == mode_t3dmix_S .or. mode == mode_t3dmix_spg .or. &
+                    mode == mode_t3dmix_ISO) then
+              Taver_mld(i,j,itrc)=T_mld_nnew(i,j) ! mean over mld
+#  ifdef MASKING
+              Taver_mld(i,j,itrc) = Taver_mld(i,j,itrc)*rmask(i,j)
+#  endif
+            endif
+          enddo
+        enddo
+
+
+       end subroutine budget_average_over_mld
 
 !==========================================================================
        subroutine budget_entrainment_term(Istr,Iend,Jstr,Jend, &
