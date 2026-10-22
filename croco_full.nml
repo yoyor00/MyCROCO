@@ -451,7 +451,7 @@
 &croco_diag_mld_turb
   ! CPP: DIAGNOSTICS_TS && DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_TURB
   ! AKt criterion for mixed-layer depth [m2/s].
-  mld_crit_AKt = 3.e-2
+  mld_crit_AKt = 2.e-5
   ! Reference depth for mixed-layer criteria [m]
   mld_depth_ref = 10
 /
