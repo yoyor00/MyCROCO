@@ -22,7 +22,8 @@
  
       private 
  
-      public :: idx_mld_density_and_temp, idx_mld_turbulence
+      public :: idx_mld_density_and_temp, idx_mld_turbulence, &
+              budget_entrainment_term
 
       contains
 
@@ -202,5 +203,79 @@
          enddo
         enddo
        end subroutine idx_mld_turbulence
+
+!==========================================================================
+       subroutine budget_entrainment_term(Istr,Iend,Jstr,Jend, &
+                       itrc, T_mld_nnew, T_mld_nstp)
+!----------------------------------------------------------------------
+! Purposes : - compute the entrainment term for TS diagnostique averaged on MLD 
+!
+! Called by : step3d_t.F, t3dmix_ISO.F, t3dmix_S.F, t3dmix_spg.F
+!----------------------------------------------------------------------
+        use param
+        use scalars
+        use croco_namelist, only: dt
+#include "grid.h"
+#include "ocean3d.h"
+#include "mixing.h"
+#include "diagnostics.h"
+
+        ! Arguments
+        integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
+        real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
+                T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
+        ! Local declarations
+        integer :: i,j,k,kmld
+        real :: cff
+
+        do j=Jstr,Jend
+          do i=Istr,Iend
+#     ifdef DIAGNOSTICS_TS_MLD_TURB
+#      if defined LMD_SKPP || defined GLS_MIXING
+            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
+            kmld=kbl_nstp(i,j)
+#      else
+            kmld=N-5
+#      endif
+#     elif defined DIAGNOSTICS_TS_MLD_DENS
+            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbld(i,j)
+            kmld=kbl_nstp(i,j)
+#     endif
+            do k=N,kmld,-1
+              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              T_mld_nstp(i,j)=T_mld_nstp(i,j)+ &
+                             t(i,j,k,nstp,itrc)*cff
+            enddo
+#     ifdef DIAGNOSTICS_TS_MLD_TURB
+            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
+#     elif defined DIAGNOSTICS_TS_MLD_DENS
+            if (itrc .eq. NT) kbl_nstp(i,j)=kbld(i,j)
+#     endif
+          enddo
+        enddo
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            Trate_mld(i,j,itrc)=(T_mld_nnew(i,j)-T_mld_nstp(i,j))/dt 
+#     if defined MASKING
+            Trate_mld(i,j,itrc)=Trate_mld(i,j,itrc)*rmask(i,j)
+#     endif
+            Tentr_mld(i,j,itrc)=Trate_mld(i,j,itrc)- &
+                                TXadv_mld(i,j,itrc)-  &
+                                TYadv_mld(i,j,itrc)-  &
+                                TVadv_mld(i,j,itrc)-  &
+                                TVmix_mld(i,j,itrc)-  &
+#     if (defined TS_DIF2 || defined TS_DIF4 || defined SPONGE_DIF2)
+                                THmix_mld(i,j,itrc)-  &
+#     endif
+                                TForc_mld(i,j,itrc) 
+#     if defined MASKING
+             Tentr_mld(i,j,itrc)=Tentr_mld(i,j,itrc)*rmask(i,j)
+#     endif
+          enddo
+        enddo
+
+
+       end subroutine budget_entrainment_term
+
 
       end module tracer_budget_mld

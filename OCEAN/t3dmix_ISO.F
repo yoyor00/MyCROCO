@@ -141,6 +141,7 @@
 #   endif
 
       use croco_namelist, only: dt
+      use tracer_budget_mld, only: budget_entrainment_term
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
       use croco_namelist, only: mld_crit_D, mld_crit_T, mld_depth_ref
       use tracer_budget_mld, only: idx_mld_density_and_temp
@@ -997,43 +998,8 @@
          enddo
        enddo
 
-       do j=Jstr,Jend
-         do i=Istr,Iend
-#  ifdef DIAGNOSTICS_TS_MLD_TURB
-#   if defined LMD_SKPP || defined GLS_MIXING
-           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
-           kmld=kbl_nstp(i,j)
-#   else
-           kmld=N-5
-#   endif
-#  elif defined DIAGNOSTICS_TS_MLD_DENS
-           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbld(i,j)
-           kmld=kbl_nstp(i,j)
-#  endif
-           do k=N,kmld,-1
-             cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             T_mld_nstp(i,j)=T_mld_nstp(i,j)+
-     &                       t(i,j,k,nstp,itrc)*cff
-           enddo
-#   ifdef DIAGNOSTICS_TS_MLD_TURB
-           if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
-#   elif defined DIAGNOSTICS_TS_MLD_DENS
-           if (itrc .eq. NT) kbl_nstp(i,j)=kbld(i,j)
-#   endif
-         enddo
-       enddo
-       do j=Jstr,Jend
-         do i=Istr,Iend
-            Trate_mld(i,j,itrc)=(T_mld_nnew(i,j)-T_mld_nstp(i,j))/dt
-            Tentr_mld(i,j,itrc)=Trate_mld(i,j,itrc)-
-     &                          TXadv_mld(i,j,itrc)-
-     &                          TYadv_mld(i,j,itrc)-
-     &                          TVadv_mld(i,j,itrc)-
-     &                          TVmix_mld(i,j,itrc)-
-     &                          THmix_mld(i,j,itrc)-
-     &                          TForc_mld(i,j,itrc)
-         enddo
-       enddo
+       call budget_entrainment_term(Istr,Iend,Jstr,Jend,
+     &                  itrc,T_mld_nnew,T_mld_nstp)
 #  undef T_mld_nnew 
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
