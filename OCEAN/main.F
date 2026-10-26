@@ -1027,7 +1027,10 @@ CR      write(*,*) '  0' MYID
       call sto_mod_finalize
 #endif
 #ifdef XIOS
-      call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF
+!     XIOS+AGRIF: all contexts present on the rank must be finalized,
+!     otherwise the XIOS service event loop never empties and
+!     xios_finalize() spins forever (hang after MAIN: DONE).
+      call iom_context_finalize_all()
 #endif
 #ifdef AGRIF
 !
@@ -1037,9 +1040,6 @@ CR      write(*,*) '  0' MYID
       do while (associated(parcours))
         Call Agrif_Instance(parcours % gr)
         call closecdf
-# ifdef XIOS
-        call iom_context_finalize( "crocox") ! needed for XIOS+AGRIF
-# endif
         parcours => parcours % next
       enddo
 #endif
@@ -1059,6 +1059,10 @@ CR      write(*,*) '  0' MYID
 # if defined XIOS
                                 ! case XIOS + (OASIS / no OASIS)
                                 !      > MPI finalize done by XIOS
+!     Note (XIOS 3.0.6 + AGRIF): all the contexts have already been finalized
+!     and every output file closed by iom_context_finalize_all() above, but
+!     xios_finalize() may still never return (internal MPI barrier).  The
+!     run script therefore stops the job ~3 min after "MAIN: DONE".
       call xios_finalize()      !      > if OASIS, finalize is done by XIOS
                                 !      > if AGRIF : done using iom_context_finalize
 !#   if !defined AGRIF

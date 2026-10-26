@@ -872,7 +872,11 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.SOUTH_INTER) then
 #   endif
+#if defined AGRIF_INIT_ALL_TIME_LEVELS
               do itime=1,4
+#else
+              do itime=4,4
+#endif
                 U_south(0:LOCALLM+1,0:0,1:N,itime)=
      &                u(0:LOCALLM+1,0:0,1:N,1)
 
@@ -920,7 +924,11 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.NORTH_INTER) then
 #   endif
+#if defined AGRIF_INIT_ALL_TIME_LEVELS
               do itime=1,4
+#else
+              do itime=4,4
+#endif
                 U_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,itime)=
      &                u(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
 
@@ -968,7 +976,11 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.WEST_INTER) then
 #   endif
+#if defined AGRIF_INIT_ALL_TIME_LEVELS
               do itime=1,4
+#else
+              do itime=4,4
+#endif
                 U_west(1:1,0:LOCALMM+1,1:N,itime)=
      &               u(1:1,0:LOCALMM+1,1:N,1)
 
@@ -1016,7 +1028,11 @@ CR      write(*,*) '  0' MYID
 #   ifdef MPI
             if (.not.EAST_INTER) then
 #   endif
+#if defined AGRIF_INIT_ALL_TIME_LEVELS
               do itime=1,4
+#else
+              do itime=4,4
+#endif
                 U_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,itime)=
      &               u(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
 

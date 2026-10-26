@@ -82,6 +82,7 @@ C$    integer omp_get_thread_num
       real ridge_width, ridge_height
 # include "param.h"
 # include "scalars.h"
+      
 !
       select case (trim(testcase_name))
       case ('BASIN')
@@ -118,6 +119,10 @@ C$    integer omp_get_thread_num
                      beta=0.
       case ('ACOUSTIC')
                      depth=128.
+                     f0=0.
+                     beta=0.
+      case ('WEDGE3D')
+                     depth=200.
                      f0=0.
                      beta=0.
       case ('AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF')
@@ -327,6 +332,9 @@ C$    integer omp_get_thread_num
       case ('AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF')
                      Length_XI =80.0
                      Length_ETA=80.0
+      case('WEDGE3D')
+                     Length_XI =6000.0
+                     Length_ETA=27000.0                     
       case ('GRAV_ADJ')
 #  ifdef NBQ
                      Length_XI =3.0
@@ -580,6 +588,7 @@ C$    integer omp_get_thread_num
       real xboti, l1i, l2i, l3i, hl1i, hl1mi, shti, ybotj
       real Rij, cffi, cffj
       integer jmiddle, imouth, itmp
+      real rloc,thetaloc
 # include "param.h"
 # include "grid.h"
 # include "scalars.h"
@@ -592,7 +601,8 @@ C$    integer omp_get_thread_num
 !
 !$acc kernels if(compute_on_device) default(present)
       select case (trim(testcase_name))
-      case ('BASIN', 'EQUATOR', 'GRAV_ADJ', 'SOLITON', 'ISOLITON', 'ISOLITON_DJL',
+      case ('BASIN', 'EQUATOR', 'GRAV_ADJ', 'SOLITON', 
+     &       'ISOLITON', 'ISOLITON_DJL',
      &      'KH_INST', 'KH_INSTY', 'KH_INST3D',
      &      'CANON2D_KHI', 'CANON2D_TCI', 'CANON2D_HWI',
      &      'TS_HADV_TEST', 'TS_HADV_TEST_DIAG', 'TS_HADV_TEST_ROT',
@@ -612,7 +622,15 @@ C$    integer omp_get_thread_num
             h(i,j)=depth
           enddo
         enddo
-
+      case('WEDGE3D')
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          !h(i,j)=depth
+          rloc = sqrt((xr(i,j)-1000)**2+(yr(i,j)-1000)**2)
+          thetaloc = ATAN2(xr(i,j)-1000,yr(i,j)-1000)-3.14/2
+          h(i,j)=max(200*(1-rloc*cos(thetaloc)/4000),40.)
+        enddo        
+      enddo
       case ('CANYON', 'CANYON_STRAT')
         do j=JstrR,JendR
           do i=IstrR,IendR

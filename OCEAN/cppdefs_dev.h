@@ -1173,6 +1173,14 @@
 */
 #ifdef AGRIF
 # define key_agrif
+/*  AGRIF boundary halos: initialize the four time levels (do itime=1,4
+    in zoom.F) from the parent grid.  Without this, levels 1..3 of
+    U_south/U_north/U_west/U_east/V_* stay uninitialized and schemes
+    reading all time levels (e.g. KH advection) produce NaN at the
+    child boundary on the first step.
+    A configuration that explicitly needs the single-level behaviour
+    can '# undef AGRIF_INIT_ALL_TIME_LEVELS' in its own cppdefs.h.       */
+# define AGRIF_INIT_ALL_TIME_LEVELS
 /*                    Update schemes */
 # undef  AGRIF_UPDATE_MIX_LOW
 # define AGRIF_UPDATE_MIX

@@ -2218,6 +2218,39 @@ C 				  endif
       END SUBROUTINE iom_context_finalize
 
 
+      SUBROUTINE iom_context_finalize_all()
+      !!---------------------------------------------------------------------
+      !!              ***  SUBROUTINE  iom_context_finalize_all  ***
+      !!
+      !! ** Purpose : finalize ALL the XIOS contexts declared on this rank
+      !!               (parent "crocox" and AGRIF children "crocox.N").
+      !!
+      !! ** Method  : children are finalized first (reverse order), the parent
+      !!               last, so that a child never loses its parent resources.
+      !!               Without this, the XIOS service event loop keeps running
+      !!               and xios_finalize() hangs forever after "MAIN: DONE".
+      !!---------------------------------------------------------------------
+      USE xios
+      !
+      INTEGER           :: ji
+      CHARACTER(LEN=64) :: clname
+      !
+      DO ji = 9, 0, -1
+         IF( ji == 0 ) THEN
+            clname = "crocox"
+         ELSE
+            WRITE(clname,'(A,I1)') "crocox.", ji
+         ENDIF
+         IF( xios_is_valid_context(clname) ) THEN
+            CALL iom_swap( TRIM(clname) )
+            CALL xios_context_finalize()
+            WRITE(*,'(2A)') ' XIOS finalize context : ', TRIM(clname)
+         ENDIF
+      ENDDO
+      !
+      END SUBROUTINE iom_context_finalize_all
+
+
       subroutine send_xios_diags (tile)
 
       implicit none
