@@ -249,6 +249,13 @@ C$OMP BARRIER
 
 #ifdef SOLVE3D
 
+! set_vbc ahead of set_bry/ana_bry below which need patm2d 
+! (OBC_PATM inverse-barometer correction) already
+! up to date rather than lagging by one step
+      do tile=my_first,my_last
+        call set_vbc (tile)
+      enddo
+C$OMP BARRIER
       do tile=my_first,my_last
 # ifdef AGRIF
         IF (Agrif_Root()) THEN
@@ -326,7 +333,6 @@ C$OMP BARRIER
 #  endif
 # endif
       do tile=my_first,my_last
-        call set_vbc (tile)
 # if defined  BBL && !defined M3FAST
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN

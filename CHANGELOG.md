@@ -73,6 +73,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
 
+- Restart : Fix restart with OBC_PATM (#496)
+
 - KPP : bug fix for the non-local term in surface KPP parameterisation
         wrong sign and + correction to recover the empirical free convection scaling of 0.2 
 
