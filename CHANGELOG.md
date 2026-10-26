@@ -29,6 +29,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- sediment settling/erosion diagnostics are now cell-volume integrals like the other terms
 	- TForc nudging diagnostic uses the actual nudging increment (and tclmzon with ZONAL\_NUDGING)
 	- no empty-named Tcrit\_mld variables written for passive tracers
+	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)

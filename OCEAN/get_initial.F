@@ -37,6 +37,9 @@
 # include "grid.h"
 #endif
 #include "mixing.h"
+#ifdef DIAGNOSTICS_TS_MLD
+# include "diagnostics.h"
+#endif
 
 #if defined EXACT_RESTART
 # include "coupling.h"
@@ -49,6 +52,9 @@
 !======================================================
 
       real time_scale
+#ifdef DIAGNOSTICS_TS_MLD
+      real workkbl(GLOBAL_2D_ARRAY)
+#endif
       integer itrc
 #ifdef EXACT_RESTART
       real time_bak
@@ -983,6 +989,32 @@
 #   endif /* LMD_BKPP2005 */
 #  endif /* LMD_BKPP */
 # endif /* LMD_MIXING */
+
+# ifdef DIAGNOSTICS_TS_MLD
+!
+!  MLD vertical index at previous time step (stored as real).
+!  If absent, kbl_nstp stays at zero and the MLD index of the
+!  first time step is used.
+!
+      if (tindx.eq.1) then
+        lvar=lenstr(vname(1,indxKbl_nstp))
+        ierr=nf_inq_varid (ncid, vname(1,indxKbl_nstp)(1:lvar), varid)
+        if (ierr .eq. nf_noerr) then
+          workkbl=0.
+          ierr=nf_fread (workkbl(START_2D_ARRAY), ncid, varid,
+     &                                         record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2)
+     &        vname(1,indxKbl_nstp)(1:lvar), record, ininame(1:lstr)
+            goto 99                                      !--> ERROR
+          endif
+          kbl_nstp=nint(workkbl)
+        else
+          MPI_master_only write(stdout,4)
+     &        vname(1,indxKbl_nstp)(1:lvar), ininame(1:lstr)
+        endif
+      endif
+# endif /* DIAGNOSTICS_TS_MLD */
 
 # ifdef GLS_MIXING
 !

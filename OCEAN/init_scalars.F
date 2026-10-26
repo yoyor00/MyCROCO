@@ -3003,6 +3003,18 @@ CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc
+# ifdef DIAGNOSTICS_TS_MLD
+!
+! MLD vertical index at previous time step (restart file only)
+!
+      vname(1,indxKbl_nstp)='kbl_nstp                                  '
+      vname(2,indxKbl_nstp)='MLD vertical index at previous time step  '
+      vname(3,indxKbl_nstp)='nondimensional                            '
+      vname(4,indxKbl_nstp)='kbl_nstp, scalar, series                  '
+      vname(5,indxKbl_nstp)='                                          '
+      vname(6,indxKbl_nstp)='lat_rho lon_rho                           '
+      vname(7,indxKbl_nstp)='                                          '
+# endif
 #endif  /* DIAGNOSTICS_TS */
 
 #ifdef DIAGNOSTICS_UV
