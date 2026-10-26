@@ -25,6 +25,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
 	- DIAGNOSTICS\_PV right-hand side (Trhs) kept in (unit of tracers) s-1
 	- sediment settling/erosion diagnostics are now cell-volume integrals like the other terms
+	- TForc nudging diagnostic uses the actual nudging increment (and tclmzon with ZONAL\_NUDGING)
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)

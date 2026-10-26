@@ -882,6 +882,20 @@
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+!
+! Diagnostic computed before the update, with the same increment
+!
+              TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
+     &                                       +Tnudgcof(i,j,k,itrc)
+#    ifdef ZONAL_NUDGING
+     &                         *(tclmzon(j,k,itrc)-tzon(j,k,itrc))
+#    else
+     &                      *(tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
+#    endif /* ZONAL_NUDGING */
+     &                             *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
+     &                                           SWITCH rmask(i,j)
+#   endif  /* DIAGNOSTICS_TS */
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
      &                                   +dt*Tnudgcof(i,j,k,itrc)*
 #   ifdef ZONAL_NUDGING
@@ -889,18 +903,6 @@
 #   else
      &                       (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
 #   endif /* ZONAL_NUDGING */
-#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
-              TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
-     &                                       +Tnudgcof(i,j,k,itrc)
-     &                                          *(tclm(i,j,k,itrc)
-#    ifdef ZONAL_NUDGING
-     &                                            -tzon(j,k,itrc))
-#    else
-     &                                        -t(i,j,k,nnew,itrc))
-#    endif /* ZONAL_NUDGING */
-     &                             *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
-     &                                           SWITCH rmask(i,j)
-#   endif  /* DIAGNOSTICS_TS */
             enddo
           enddo
         enddo
