@@ -21,6 +21,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- DIAGNOSTICS : tracer budget fixes (Issue #320)
+	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
+	- DIAGNOSTICS\_PV right-hand side (Trhs) kept in (unit of tracers) s-1
+	- sediment settling/erosion diagnostics are now cell-volume integrals like the other terms
+
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 - MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 

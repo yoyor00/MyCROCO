@@ -427,6 +427,15 @@
           enddo
         enddo
 #   endif
+#  elif defined DIAGNOSTICS_PV
+!
+! THmix is accumulated in t3dmix routines: reset it at each step
+!
+        do j=Jstr,Jend
+          do i=Istr,Iend
+              THmix(i,j,k,itrc)=0.
+          enddo
+        enddo
 #  endif /* DIAGNOSTICS_TS */
 #  if !defined OPENACC
         enddo    !<-- k
@@ -899,9 +908,9 @@
 !
 !======================================================================
 ! Compute the tendency term of tracer diagnostics
-! Divide all diagnostic terms by the cell volume
-! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
-! of diagnostic terms will be: (unit of tracers)* s-1.
+! All diagnostic terms are integrated over the cell volume
+! (Hz(i,j,k)/(pm(i,j)*pn(i,j))), so that their unit is:
+! (unit of tracers)* m3 s-1.
 !
 ! Note: the Horizontal mixing term is computed in t3dmix
 ! where Trate is updated accordingly
