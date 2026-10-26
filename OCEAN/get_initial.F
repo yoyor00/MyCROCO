@@ -953,7 +953,7 @@
 !#   else
 !        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
 !#   endif
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbl)(1:lvar)
      &                                   , record, ininame(1:lstr)
@@ -975,7 +975,7 @@
       ierr=nf_inq_varid (ncid, vname(1,indxHbbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (hbbl(START_2D_ARRAY), ncid, varid,
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbbl)(1:lvar)
      &                                    , record, ininame(1:lstr)

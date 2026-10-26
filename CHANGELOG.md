@@ -31,6 +31,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- no empty-named Tcrit\_mld variables written for passive tracers
 	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
 
+- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record
+
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 - MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
