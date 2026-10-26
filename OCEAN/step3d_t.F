@@ -45,7 +45,10 @@
 #  endif
      &  )
 
-      use croco_namelist, only: dt, lts_hadv
+      use croco_namelist, only: dt, lts_hadv 
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      use croco_namelist, only: mld_crit_D, mld_crit_T
+#  endif
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
 #   ifdef MUSTANG
@@ -573,7 +576,7 @@
                         || defined GLS_MIXING
      &    +dt*srflx(i,j)*swdk(i,j,k)
 #    ifdef LMD_NONLOCAL
-     &    -dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
+     &    +dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
 #    endif
 #   endif
               enddo
@@ -587,7 +590,7 @@
                 FC(i,k)=0.
 #   if defined LMD_SKPP || defined LMD_BKPP
 #    ifdef LMD_NONLOCAL
-     &    -dt*ghats(i,j,k)*stflx(i,j,isalt)
+     &    +dt*ghats(i,j,k)*stflx(i,j,isalt)
 #    endif
 #   endif
               enddo

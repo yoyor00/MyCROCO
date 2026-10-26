@@ -90,6 +90,7 @@ contains
       integer, intent(out) :: ierr
 
       integer :: nmlunit, ios
+      character(len=256) :: iomsg
       logical :: found
 
       namelist /croco_testcase/ testcase_name
@@ -667,41 +668,45 @@ contains
 
       ! ----------------------------------------------------------------
       ! Phase 1 – read all sections
-      ! Two distinct error strategies:
-      !   - presence errors (mandatory section absent): accumulated across
-      !     all sections, file closed once at end of phase, single return.
-      !   - parse errors (malformed section): immediate close + return,
-      !     because continuing to read a corrupt file is meaningless.
-      ! In both cases the file is closed by read_nml.
+      ! Both presence errors (mandatory section absent) and parse errors
+      ! (malformed section) are accumulated in ierr and do NOT stop the
+      ! loop: a rewind(nmlunit) always follows a read (success or
+      ! failure), so every subsequent section is read from a clean file
+      ! position regardless of earlier failures. This lets one run
+      ! report every broken/missing section at once instead of only the
+      ! first. The file is closed once, at the end of this phase.
       ! ----------------------------------------------------------------
 
       ! --- croco_testcase (optional) ---
       call check_nml_presence(nmlunit, "croco_testcase", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_testcase, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_testcase, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_testcase (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_testcase (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_testcase)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_title (optional) ---
       call check_nml_presence(nmlunit, "croco_title", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_title, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_title, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_title (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_title (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_title)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_time_stepping (mandatory) ---
       call check_nml_presence(nmlunit, "croco_time_stepping", .true., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_time_stepping, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_time_stepping, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_time_stepping (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_time_stepping (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_time_stepping)
+            ierr = ierr + 1
          end if
       end if
 
@@ -709,10 +714,11 @@ contains
       ! --- croco_time_stepping_nbq (mandatory if NBQ) ---
       call check_nml_presence(nmlunit, "croco_time_stepping_nbq", .true., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_time_stepping_nbq, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_time_stepping_nbq, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_time_stepping_nbq (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_time_stepping_nbq (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_time_stepping_nbq)
+            ierr = ierr + 1
          end if
       end if
 #endif /* NBQ */
@@ -721,10 +727,11 @@ contains
       ! --- croco_use_calendar (mandatory if USE_CALENDAR) ---
       call check_nml_presence(nmlunit, "croco_use_calendar", .true., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_use_calendar, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_use_calendar, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_use_calendar (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_use_calendar (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_use_calendar)
+            ierr = ierr + 1
          end if
       end if
 #endif /* USE_CALENDAR */
@@ -733,10 +740,11 @@ contains
       ! --- croco_s_coord (optional if SOLVE3D) ---
       call check_nml_presence(nmlunit, "croco_s_coord", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_s_coord, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_s_coord, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_s_coord (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_s_coord (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_s_coord)
+            ierr = ierr + 1
          end if
       end if
 #endif /* SOLVE3D */
@@ -744,30 +752,33 @@ contains
       ! --- croco_history (optional) ---
       call check_nml_presence(nmlunit, "croco_history", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_history, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_history, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_history (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_history (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_history)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_initial (optional) ---
       call check_nml_presence(nmlunit, "croco_initial", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_initial, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_initial, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_initial (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_initial (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_initial)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_restart (optional) ---
       call check_nml_presence(nmlunit, "croco_restart", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_restart, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_restart, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_restart (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_restart (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_restart)
+            ierr = ierr + 1
          end if
       end if
 
@@ -775,10 +786,11 @@ contains
       ! --- croco_grid (optional) ---
       call check_nml_presence(nmlunit, "croco_grid", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_grid, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_grid, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_grid (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_grid (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_grid)
+            ierr = ierr + 1
          end if
       end if
 #endif /* ANA_GRID */
@@ -787,10 +799,11 @@ contains
          ! --- croco_forcing (optional) ---
          call check_nml_presence(nmlunit, "croco_forcing", .false., found, ierr)
          if (found) then
-            read (nmlunit, nml=croco_forcing, iostat=ios); rewind (nmlunit)
+            read (nmlunit, nml=croco_forcing, iostat=ios, iomsg=iomsg); rewind (nmlunit)
             if (ios /= 0) then
-               call fatal_nml_error("croco_forcing (parse error)")
-               ierr = ierr + 1; close (nmlunit); return
+               call fatal_nml_error("croco_forcing (parse error)", nmlunit, ios, iomsg)
+               MPI_master_only WRITE (stdout, nml=croco_forcing)
+               ierr = ierr + 1
             end if
          end if
       end if
@@ -799,10 +812,11 @@ contains
       ! --- croco_sponge (optional) ---
       call check_nml_presence(nmlunit, "croco_sponge", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sponge, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sponge, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sponge (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sponge (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sponge)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -811,10 +825,11 @@ contains
       ! --- croco_wetdry (optional) ---
       call check_nml_presence(nmlunit, "croco_wetdry", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wetdry, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wetdry, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wetdry (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wetdry (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wetdry)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -823,10 +838,11 @@ contains
       ! --- croco_wavedry (optional) ---
       call check_nml_presence(nmlunit, "croco_wavedry", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wavedry, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wavedry, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wavedry (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wavedry (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wavedry)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -840,10 +856,11 @@ contains
       ! --- croco_nudging (optional) ---
       call check_nml_presence(nmlunit, "croco_nudging", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_nudging, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_nudging, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_nudging (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_nudging (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_nudging)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -852,10 +869,11 @@ contains
       ! --- croco_bottom_forcing (optional) ---
       call check_nml_presence(nmlunit, "croco_bottom_forcing", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bottom_forcing, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_bottom_forcing, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_bottom_forcing (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_bottom_forcing (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bottom_forcing)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -864,10 +882,11 @@ contains
       ! --- croco_bulk_forcing (optional) ---
       call check_nml_presence(nmlunit, "croco_bulk_forcing", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bulk_forcing, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_bulk_forcing, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_bulk_forcing (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_bulk_forcing (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bulk_forcing)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -883,10 +902,11 @@ contains
       ! --- croco_climatology (optional) ---
       call check_nml_presence(nmlunit, "croco_climatology", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_climatology, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_climatology, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_climatology (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_climatology (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_climatology)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -895,10 +915,11 @@ contains
       ! --- croco_wave_offline (optional) ---
       call check_nml_presence(nmlunit, "croco_wave_offline", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wave_offline, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wave_offline, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wave_offline (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wave_offline (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wave_offline)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -907,10 +928,11 @@ contains
       ! --- croco_biology (optional) ---
       call check_nml_presence(nmlunit, "croco_biology", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_biology, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_biology, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_biology (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_biology (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_biology)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -919,10 +941,11 @@ contains
       ! --- croco_boundary (optional) ---
       call check_nml_presence(nmlunit, "croco_boundary", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_boundary, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_boundary, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_boundary (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_boundary (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_boundary)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -931,10 +954,11 @@ contains
       ! --- croco_wkb_boundary (optional) ---
       call check_nml_presence(nmlunit, "croco_wkb_boundary", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wkb_boundary, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wkb_boundary, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wkb_boundary (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wkb_boundary (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wkb_boundary)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -943,20 +967,22 @@ contains
       ! --- croco_wkb_wwave (optional) ---
       call check_nml_presence(nmlunit, "croco_wkb_wwave", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wkb_wwave, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wkb_wwave, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wkb_wwave (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wkb_wwave (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wkb_wwave)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef WAVE_ROLLER
       ! --- croco_wkb_roller (optional) ---
       call check_nml_presence(nmlunit, "croco_wkb_roller", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wkb_roller, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wkb_roller, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wkb_roller (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wkb_roller (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wkb_roller)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -966,10 +992,11 @@ contains
       ! --- croco_wave_maker (optional) ---
       call check_nml_presence(nmlunit, "croco_wave_maker", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wave_maker, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wave_maker, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wave_maker (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wave_maker (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wave_maker)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -978,10 +1005,11 @@ contains
       ! --- croco_averages (optional) ---
       call check_nml_presence(nmlunit, "croco_averages", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_averages, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_averages, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_averages (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_averages (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_averages)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -990,20 +1018,22 @@ contains
       ! --- croco_surf (optional) ---
       call check_nml_presence(nmlunit, "croco_surf", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_surf, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_surf, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_surf (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_surf (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_surf)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_surf_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_surf_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_surf_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_surf_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_surf_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_surf_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_surf_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1013,20 +1043,22 @@ contains
       ! --- croco_abl (optional) ---
       call check_nml_presence(nmlunit, "croco_abl", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_abl, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_abl, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_abl (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_abl (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_abl)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_abl_averages (optional) ---
       call check_nml_presence(nmlunit, "croco_abl_averages", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_abl_averages, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_abl_averages, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_abl_averages (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_abl_averages (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_abl_averages)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1036,10 +1068,11 @@ contains
 #ifdef LOGFILE
       call check_nml_presence(nmlunit, "croco_logfile", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_logfile, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_logfile, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_logfile (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_logfile (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_logfile)
+            ierr = ierr + 1
          end if
       end if
 #endif /* LOGFILE */
@@ -1048,20 +1081,22 @@ contains
       ! --- croco_diagnostics_ts (optional) ---
       call check_nml_presence(nmlunit, "croco_diagnostics_ts", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagnostics_ts, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagnostics_ts, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagnostics_ts (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagnostics_ts (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagnostics_ts)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_diag_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diag_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diag_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diag_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diag_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diag_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1069,10 +1104,11 @@ contains
       ! --- croco_diag_mld_dens (optional) ---
       call check_nml_presence(nmlunit, "croco_diag_mld_dens", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diag_mld_dens, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diag_mld_dens, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diag_mld_dens (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diag_mld_dens (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag_mld_dens)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1081,20 +1117,22 @@ contains
       ! --- croco_diagnosticsM (optional) ---
       call check_nml_presence(nmlunit, "croco_diagnosticsM", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagnosticsM, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagnosticsM, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagnosticsM (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagnosticsM (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagnosticsM)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_diagM_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diagM_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagM_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagM_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagM_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagM_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagM_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1103,20 +1141,22 @@ contains
       ! --- croco_diags_vrt (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_vrt", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_vrt, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_vrt, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_vrt (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_vrt (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_vrt)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_diags_vrt_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_vrt_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_vrt_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_vrt_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_vrt_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_vrt_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_vrt_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1125,20 +1165,22 @@ contains
       ! --- croco_diags_ek (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_ek", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_ek, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_ek, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_ek (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_ek (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_ek)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_diags_ek_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_ek_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_ek_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_ek_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_ek_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_ek_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_ek_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1147,20 +1189,22 @@ contains
       ! --- croco_diags_pv (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_pv", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_pv, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_pv, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_pv (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_pv (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_pv)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_diags_pv_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_pv_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_pv_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_pv_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_pv_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_pv_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_pv_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1170,10 +1214,11 @@ contains
       ! --- croco_diags_eddy_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_eddy_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_eddy_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_eddy_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_eddy_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_eddy_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_eddy_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1182,20 +1227,22 @@ contains
       ! --- croco_diagnostics_bio (optional) ---
       call check_nml_presence(nmlunit, "croco_diagnostics_bio", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagnostics_bio, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagnostics_bio, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagnostics_bio (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagnostics_bio (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagnostics_bio)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef AVERAGES
       ! --- croco_diagbio_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diagbio_avg", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagbio_avg, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagbio_avg, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagbio_avg (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagbio_avg (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagbio_avg)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1204,40 +1251,44 @@ contains
       ! --- croco_stations (optional) ---
       call check_nml_presence(nmlunit, "croco_stations", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_stations, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_stations, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_stations (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_stations (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_stations)
+            ierr = ierr + 1
          end if
       end if
 #endif
       ! --- croco_primary_history_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_primary_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_primary_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_primary_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_primary_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_primary_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_primary_history_fields)
+            ierr = ierr + 1
          end if
       end if
 #ifdef SOLVE3D
       ! --- croco_primary_history_3d_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_primary_history_3d_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_primary_history_3d_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_primary_history_3d_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_primary_history_3d_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_primary_history_3d_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_primary_history_3d_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef TRACERS
       ! --- croco_primary_history_tracer_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_primary_history_tracer_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_primary_history_tracer_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_primary_history_tracer_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_primary_history_tracer_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_primary_history_tracer_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_primary_history_tracer_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1246,30 +1297,33 @@ contains
       ! --- croco_primary_average_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_primary_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_primary_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_primary_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_primary_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_primary_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_primary_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef SOLVE3D
       ! --- croco_primary_3d_average_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_primary_3d_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_primary_3d_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_primary_3d_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_primary_3d_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_primary_3d_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_primary_3d_average_fields)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef TRACERS
       ! --- croco_primary_tracer_average_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_primary_tracer_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_primary_tracer_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_primary_tracer_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_primary_tracer_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_primary_tracer_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_primary_tracer_average_fields)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1278,51 +1332,57 @@ contains
       ! --- croco_auxiliary_history_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_auxiliary_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_auxiliary_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_auxiliary_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_auxiliary_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_auxiliary_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_fields)
+            ierr = ierr + 1
          end if
       end if
       ! --- history: per-physics optional blocks (14 blocks) ---
 # if defined SOLVE3D && defined TEMPERATURE
       call check_nml_presence(nmlunit, "croco_temperature_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_temperature_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_temperature_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_temperature_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_temperature_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_temperature_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined SALINITY
       call check_nml_presence(nmlunit, "croco_salinity_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_salinity_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_salinity_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_salinity_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_salinity_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_salinity_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined BULK_FLUX
       call check_nml_presence(nmlunit, "croco_bulk_flux_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bulk_flux_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bulk_flux_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bulk_flux_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined BHFLUX
       call check_nml_presence(nmlunit, "croco_bhflux_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bhflux_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bhflux_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bhflux_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bhflux_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bhflux_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined BWFLUX && defined SALINITY
       call check_nml_presence(nmlunit, "croco_bwflux_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bwflux_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bwflux_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bwflux_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bwflux_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bwflux_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && \
@@ -1331,122 +1391,137 @@ contains
       defined GLS_MIXING)
       call check_nml_presence(nmlunit, "croco_bvf_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bvf_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bvf_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bvf_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bvf_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bvf_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
       call check_nml_presence(nmlunit, "croco_hbl_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_hbl_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_hbl_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_hbl_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_hbl_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_hbl_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined LMD_BKPP
       call check_nml_presence(nmlunit, "croco_lmd_bkpp_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_lmd_bkpp_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_lmd_bkpp_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_lmd_bkpp_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined VIS_COEF_3D
       call check_nml_presence(nmlunit, "croco_vis_coef_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_vis_coef_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_vis_coef_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_vis_coef_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined DIF_COEF_3D
       call check_nml_presence(nmlunit, "croco_dif_coef_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_dif_coef_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_dif_coef_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_dif_coef_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined BIOLOGY && !defined PISCES
       call check_nml_presence(nmlunit, "croco_biology_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_biology_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_biology_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_biology_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_biology_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_biology_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined BIO_NChlPZD
       call check_nml_presence(nmlunit, "croco_bio_nchlpzd_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bio_nchlpzd_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bio_nchlpzd_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined BIO_BioEBUS
       call check_nml_presence(nmlunit, "croco_bio_bioebus_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bio_bioebus_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bio_bioebus_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined SOLVE3D && defined MORPHODYN
       call check_nml_presence(nmlunit, "croco_morphodyn_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_morphodyn_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_history_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_morphodyn_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_history_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_morphodyn_history_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
       ! --- averages: per-physics optional blocks (15 blocks) ---
 # if defined AVERAGES && defined SOLVE3D
       call check_nml_presence(nmlunit, "croco_auxiliary_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_auxiliary_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_auxiliary_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
       call check_nml_presence(nmlunit, "croco_temperature_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_temperature_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_temperature_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_temperature_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_temperature_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_temperature_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined SALINITY
       call check_nml_presence(nmlunit, "croco_salinity_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_salinity_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_salinity_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_salinity_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_salinity_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_salinity_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
       call check_nml_presence(nmlunit, "croco_bulk_flux_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bulk_flux_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bulk_flux_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bulk_flux_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BHFLUX
       call check_nml_presence(nmlunit, "croco_bhflux_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bhflux_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bhflux_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bhflux_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bhflux_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bhflux_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
       call check_nml_presence(nmlunit, "croco_bwflux_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bwflux_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bwflux_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bwflux_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bwflux_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bwflux_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
@@ -1455,93 +1530,104 @@ contains
       defined GLS_MIXING)
       call check_nml_presence(nmlunit, "croco_bvf_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bvf_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bvf_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bvf_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bvf_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bvf_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
       (defined LMD_SKPP||defined GLS_MIXING)
       call check_nml_presence(nmlunit, "croco_hbl_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_hbl_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_hbl_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_hbl_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_hbl_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_hbl_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
       call check_nml_presence(nmlunit, "croco_lmd_bkpp_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_lmd_bkpp_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_lmd_bkpp_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_lmd_bkpp_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
       call check_nml_presence(nmlunit, "croco_vis_coef_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_vis_coef_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_vis_coef_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_vis_coef_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
       call check_nml_presence(nmlunit, "croco_dif_coef_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_dif_coef_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_dif_coef_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_dif_coef_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
       call check_nml_presence(nmlunit, "croco_biology_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_biology_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_biology_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_biology_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_biology_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_biology_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
       call check_nml_presence(nmlunit, "croco_bio_nchlpzd_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bio_nchlpzd_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bio_nchlpzd_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
       call check_nml_presence(nmlunit, "croco_bio_bioebus_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bio_bioebus_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_bio_bioebus_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
       call check_nml_presence(nmlunit, "croco_morphodyn_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_morphodyn_averages_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_averages_fields")
-            ierr = ierr + 1; close (nmlunit); return; end if
+         read (nmlunit, nml=croco_morphodyn_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_averages_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_morphodyn_averages_fields)
+            ierr = ierr + 1; end if
       end if
 # endif
 #ifdef DIAGNOSTICS_TS
 # ifdef TRACERS
       call check_nml_presence(nmlunit, "croco_diag3D_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diag3D_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diag3D_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diag3D_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diag3D_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag3D_history_fields)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef DIAGNOSTICS_TS_MLD
       call check_nml_presence(nmlunit, "croco_diag2D_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diag2D_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diag2D_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diag2D_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diag2D_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag2D_history_fields)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1549,19 +1635,21 @@ contains
 # if defined AVERAGES && defined TRACERS
       call check_nml_presence(nmlunit, "croco_diag3D_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diag3D_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diag3D_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diag3D_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diag3D_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag3D_average_fields)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef DIAGNOSTICS_TS_MLD
       call check_nml_presence(nmlunit, "croco_diag2D_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diag2D_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diag2D_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diag2D_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diag2D_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag2D_average_fields)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1570,19 +1658,21 @@ contains
 #ifdef DIAGNOSTICS_UV
       call check_nml_presence(nmlunit, "croco_diagM_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagM_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagM_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagM_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagM_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagM_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_diagM_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagM_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagM_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagM_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagM_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagM_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1590,19 +1680,21 @@ contains
 #ifdef DIAGNOSTICS_VRT
       call check_nml_presence(nmlunit, "croco_diags_vrt_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_vrt_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_vrt_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_vrt_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_vrt_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_vrt_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_diags_vrt_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_vrt_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_vrt_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_vrt_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_vrt_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_vrt_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1610,19 +1702,21 @@ contains
 #ifdef DIAGNOSTICS_KE
       call check_nml_presence(nmlunit, "croco_diags_ek_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_ek_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_ek_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_ek_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_ek_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_ek_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_diags_ek_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_ek_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_ek_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_ek_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_ek_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_ek_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1630,19 +1724,21 @@ contains
 #if defined DIAGNOSTICS_PV && defined TRACERS
       call check_nml_presence(nmlunit, "croco_diags_pv_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_pv_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_pv_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_pv_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_pv_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_pv_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_diags_pv_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_pv_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_pv_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_pv_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_pv_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_pv_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1651,10 +1747,11 @@ contains
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_diags_eddy_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diags_eddy_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diags_eddy_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diags_eddy_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diags_eddy_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diags_eddy_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1662,38 +1759,42 @@ contains
 #ifdef DIAGNOSTICS_BIO
       call check_nml_presence(nmlunit, "croco_diagbioFlux_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagbioFlux_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagbioFlux_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagbioFlux_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagbioFlux_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       call check_nml_presence(nmlunit, "croco_diagbioGasExc_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagbioGasExc_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagbioGasExc_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagbioGasExc_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagbioGasExc_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_diagbioFlux_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagbioFlux_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagbioFlux_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagbioFlux_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagbioFlux_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_average_fields)
+            ierr = ierr + 1
          end if
       end if
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       call check_nml_presence(nmlunit, "croco_diagbioGasExc_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diagbioGasExc_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_diagbioGasExc_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diagbioGasExc_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_diagbioGasExc_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_average_fields)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1702,49 +1803,54 @@ contains
 #ifdef STOGEN
       call check_nml_presence(nmlunit, "croco_stochastic_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_stochastic_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_stochastic_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_stochastic_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_stochastic_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_stochastic_history_fields)
+            ierr = ierr + 1
          end if
       end if
 #endif
 #if defined SOLVE3D && defined GLS_MIXING
       call check_nml_presence(nmlunit, "croco_gls_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_gls_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_gls_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_gls_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_gls_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_gls_history_fields)
+            ierr = ierr + 1
          end if
       end if
 #endif
 #if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
       call check_nml_presence(nmlunit, "croco_gls_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_gls_averages_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_gls_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_gls_averages_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_gls_averages_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_gls_averages_fields)
+            ierr = ierr + 1
          end if
       end if
 #endif
 #if defined ABL1D && !defined XIOS
       call check_nml_presence(nmlunit, "croco_abl_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_abl_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_abl_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_abl_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_abl_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_abl_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_abl_averages_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_abl_averages_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_abl_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_abl_averages_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_abl_averages_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_abl_averages_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1752,19 +1858,21 @@ contains
 #if defined OUTPUTS_SURFACE && !defined XIOS
       call check_nml_presence(nmlunit, "croco_surf_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_surf_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_surf_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_surf_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_surf_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_surf_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_surf_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_surf_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_surf_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_surf_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_surf_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_surf_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1772,57 +1880,63 @@ contains
 #ifdef STATIONS
       call check_nml_presence(nmlunit, "croco_station_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_station_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_station_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_station_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_station_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_station_fields)
+            ierr = ierr + 1
          end if
       end if
 #endif
 #if defined SOLVE3D && defined SEDIMENT
       call check_nml_presence(nmlunit, "croco_sediment_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sediment_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sediment_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sediment_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sediment_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sediment_history_fields)
+            ierr = ierr + 1
          end if
       end if
       call check_nml_presence(nmlunit, "croco_sediment_bfra_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sediment_bfra_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sediment_bfra_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sediment_bfra_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sediment_bfra_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sediment_bfra_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef SUSPLOAD
       call check_nml_presence(nmlunit, "croco_sediment_suspload_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sediment_suspload_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sediment_suspload_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sediment_suspload_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sediment_suspload_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sediment_suspload_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
 # ifdef BEDLOAD
       call check_nml_presence(nmlunit, "croco_sediment_bedload_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sediment_bedload_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sediment_bedload_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sediment_bedload_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sediment_bedload_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sediment_bedload_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
 # if defined MIXED_BED || defined COHESIVE_BED
       call check_nml_presence(nmlunit, "croco_sediment_cohesive_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sediment_cohesive_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sediment_cohesive_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sediment_cohesive_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sediment_cohesive_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sediment_cohesive_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1830,48 +1944,53 @@ contains
 #ifdef BBL
       call check_nml_presence(nmlunit, "croco_bbl_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bbl_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_bbl_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_bbl_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_bbl_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bbl_history_fields)
+            ierr = ierr + 1
          end if
       end if
 #endif
 #ifdef MRL_WCI
       call check_nml_presence(nmlunit, "croco_wci_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wci_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wci_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wci_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wci_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wci_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef SOLVE3D
       call check_nml_presence(nmlunit, "croco_wci_history_3d_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wci_history_3d_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wci_history_3d_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wci_history_3d_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wci_history_3d_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wci_history_3d_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_wci_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wci_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wci_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wci_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wci_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wci_average_fields)
+            ierr = ierr + 1
          end if
       end if
 #  ifdef SOLVE3D
       call check_nml_presence(nmlunit, "croco_wci_average_3d_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wci_average_3d_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wci_average_3d_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wci_average_3d_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wci_average_3d_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wci_average_3d_fields)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -1880,19 +1999,21 @@ contains
 #if defined MRL_WCI || defined OW_COUPLING
       call check_nml_presence(nmlunit, "croco_wave_history_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wave_history_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wave_history_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wave_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wave_history_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wave_history_fields)
+            ierr = ierr + 1
          end if
       end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_wave_average_fields", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_wave_average_fields, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_wave_average_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_wave_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_wave_average_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_wave_average_fields)
+            ierr = ierr + 1
          end if
       end if
 # endif
@@ -1901,10 +2022,11 @@ contains
       ! --- croco_online (optional) ---
       call check_nml_presence(nmlunit, "croco_online", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_online, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_online, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_online (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_online (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_online)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1912,10 +2034,11 @@ contains
       ! --- croco_bodyforce (optional) ---
       call check_nml_presence(nmlunit, "croco_bodyforce", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bodyforce, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_bodyforce, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_bodyforce (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_bodyforce (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bodyforce)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1924,10 +2047,11 @@ contains
       ! --- croco_lin_eos (optional) ---
       call check_nml_presence(nmlunit, "croco_lin_eos", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_lin_eos, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_lin_eos, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_lin_eos (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_lin_eos (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_lin_eos)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1936,10 +2060,11 @@ contains
       ! --- croco_abl_nudg_tra (optional) ---
       call check_nml_presence(nmlunit, "croco_abl_nudg_tra", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_abl_nudg_tra, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_abl_nudg_tra, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_abl_nudg_tra (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_abl_nudg_tra (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_abl_nudg_tra)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1948,10 +2073,11 @@ contains
       ! --- croco_abl_nudg_dyn (optional) ---
       call check_nml_presence(nmlunit, "croco_abl_nudg_dyn", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_abl_nudg_dyn, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_abl_nudg_dyn, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_abl_nudg_dyn (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_abl_nudg_dyn (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_abl_nudg_dyn)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1960,10 +2086,11 @@ contains
       ! --- croco_sediments (optional) ---
       call check_nml_presence(nmlunit, "croco_sediments", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sediments, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sediments, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sediments (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sediments (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sediments)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1972,10 +2099,11 @@ contains
       ! --- croco_sediments_mustang (optional) ---
       call check_nml_presence(nmlunit, "croco_sediments_mustang", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_sediments_mustang, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_sediments_mustang, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_sediments_mustang (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_sediments_mustang (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_sediments_mustang)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1984,10 +2112,11 @@ contains
       ! --- croco_substance (optional) ---
       call check_nml_presence(nmlunit, "croco_substance", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_substance, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_substance, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_substance (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_substance (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_substance)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -1996,10 +2125,11 @@ contains
       ! --- croco_obstruction (optional) ---
       call check_nml_presence(nmlunit, "croco_obstruction", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_obstruction, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_obstruction, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_obstruction (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_obstruction (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_obstruction)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -2008,10 +2138,11 @@ contains
       ! --- croco_xios_origin_date (optional) ---
       call check_nml_presence(nmlunit, "croco_xios_origin_date", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_xios_origin_date, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_xios_origin_date, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_xios_origin_date (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_xios_origin_date (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -2020,10 +2151,11 @@ contains
       ! --- croco_assimilation (optional) ---
       call check_nml_presence(nmlunit, "croco_assimilation", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_assimilation, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_assimilation, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_assimilation (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_assimilation (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_assimilation)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -2031,40 +2163,44 @@ contains
       ! --- croco_rho0 (optional) ---
       call check_nml_presence(nmlunit, "croco_rho0", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_rho0, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_rho0, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_rho0 (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_rho0 (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_rho0)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_bottom_drag (optional) ---
       call check_nml_presence(nmlunit, "croco_bottom_drag", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_bottom_drag, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_bottom_drag, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_bottom_drag (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_bottom_drag (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_bottom_drag)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_gamma2 (optional) ---
       call check_nml_presence(nmlunit, "croco_gamma2", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_gamma2, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_gamma2, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_gamma2 (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_gamma2 (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_gamma2)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_lateral_visc (optional) ---
       call check_nml_presence(nmlunit, "croco_lateral_visc", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_lateral_visc, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_lateral_visc, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_lateral_visc (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_lateral_visc (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_lateral_visc)
+            ierr = ierr + 1
          end if
       end if
 
@@ -2073,20 +2209,22 @@ contains
       ! --- croco_tracer_diff2 (optional) ---
       call check_nml_presence(nmlunit, "croco_tracer_diff2", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_tracer_diff2, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_tracer_diff2, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_tracer_diff2 (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_tracer_diff2 (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_tracer_diff2)
+            ierr = ierr + 1
          end if
       end if
 
       ! --- croco_tracer_diff4 (optional) ---
       call check_nml_presence(nmlunit, "croco_tracer_diff4", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_tracer_diff4, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_tracer_diff4, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_tracer_diff4 (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_tracer_diff4 (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_tracer_diff4)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -2095,10 +2233,11 @@ contains
       ! --- croco_vertical_mixing (optional) ---
       call check_nml_presence(nmlunit, "croco_vertical_mixing", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_vertical_mixing, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_vertical_mixing, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_vertical_mixing (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_vertical_mixing (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_vertical_mixing)
+            ierr = ierr + 1
          end if
       end if
 #  endif
@@ -2108,10 +2247,11 @@ contains
       ! --- croco_psource: read psource_Nsrc first ---
       call check_nml_presence(nmlunit, "croco_psource", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_psource, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_psource, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_psource (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_psource (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_psource)
+            ierr = ierr + 1
          end if
       end if
       ! Allocate per-source arrays now that psource_Nsrc is known
@@ -2143,29 +2283,32 @@ contains
 #  if defined PSOURCE_NCFILE
          call check_nml_presence(nmlunit, "croco_psource_ncfile_data", .false., found, ierr)
          if (found) then
-            read (nmlunit, nml=croco_psource_ncfile_data, iostat=ios); rewind (nmlunit)
+            read (nmlunit, nml=croco_psource_ncfile_data, iostat=ios, iomsg=iomsg); rewind (nmlunit)
             if (ios /= 0) then
-               call fatal_nml_error("croco_psource_ncfile_data (parse error)")
-               ierr = ierr + 1; close (nmlunit); return
+               call fatal_nml_error("croco_psource_ncfile_data (parse error)", nmlunit, ios, iomsg)
+               MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
+               ierr = ierr + 1
             end if
          end if
 #  else
          call check_nml_presence(nmlunit, "croco_psource_data", .false., found, ierr)
          if (found) then
-            read (nmlunit, nml=croco_psource_data, iostat=ios); rewind (nmlunit)
+            read (nmlunit, nml=croco_psource_data, iostat=ios, iomsg=iomsg); rewind (nmlunit)
             if (ios /= 0) then
-               call fatal_nml_error("croco_psource_data (parse error)")
-               ierr = ierr + 1; close (nmlunit); return
+               call fatal_nml_error("croco_psource_data (parse error)", nmlunit, ios, iomsg)
+               MPI_master_only WRITE (stdout, nml=croco_psource_data)
+               ierr = ierr + 1
             end if
          end if
 #  endif
 #  if defined TRACERS
          call check_nml_presence(nmlunit, "croco_psource_tracer", .false., found, ierr)
          if (found) then
-            read (nmlunit, nml=croco_psource_tracer, iostat=ios); rewind (nmlunit)
+            read (nmlunit, nml=croco_psource_tracer, iostat=ios, iomsg=iomsg); rewind (nmlunit)
             if (ios /= 0) then
-               call fatal_nml_error("croco_psource_tracer (parse error)")
-               ierr = ierr + 1; close (nmlunit); return
+               call fatal_nml_error("croco_psource_tracer (parse error)", nmlunit, ios, iomsg)
+               MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
+               ierr = ierr + 1
             end if
          end if
 #  endif
@@ -2175,8 +2318,8 @@ contains
       ! Single close: the file is no longer needed after this point.
       close (nmlunit)
 
-      ! Presence errors (mandatory sections missing) are fatal: stop here
-      ! so that check_all and init_all never run on incomplete data.
+      ! Any accumulated presence or parse error (ierr > 0) is fatal: stop
+      ! here so that check_all and init_all never run on incomplete data.
       if (ierr /= 0) return
 
       ! ----------------------------------------------------------------
@@ -2717,20 +2860,116 @@ contains
    !---------------------------------------------------------------------
    !  fatal_nml_error  (private helper)
    !
-   !  Print a single "aborting" line.
+   !  Print a single "aborting" line, followed by the iostat code and
+   !  the compiler-provided iomsg (e.g. offending variable, bad index,
+   !  type mismatch...) when available, then echo the RAW lines of the
+   !  offending namelist section straight from the file (everything
+   !  between "&nml_name" and the closing "/"), so the user sees exactly
+   !  what was typed instead of an in-memory default/current value.
+   !
+   !  This raw echo is done with a plain text scan (same technique as
+   !  check_nml_presence), NOT a namelist WRITE: a namelist group name is
+   !  resolved at compile time and cannot be passed as an argument or
+   !  built from a string (verified: gfortran rejects both "namelist
+   !  cannot be an argument" and "symbol must be a NAMELIST group name").
+   !  The text-scan approach has no such restriction, which is why it can
+   !  live here once instead of being repeated at each of the ~140 call
+   !  sites.
+   !
+   !  nml_name may carry a " (parse error)" suffix for display; only the
+   !  part before the first blank is used to match "&<name>" in the file.
+   !
    !  Does NOT close the namelist file: the caller is responsible for
    !  closing it, which avoids any risk of double-close.
    !---------------------------------------------------------------------
-   subroutine fatal_nml_error(nml_name)
-      use param, ONLY: stdout
+   subroutine fatal_nml_error(nml_name, nmlunit, ios, iomsg)
+      use param, ONLY: stdout, NT
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+      use croco_namelist, ONLY: psource_Nsrc
+#endif
+      use tools_string, ONLY: to_lowercase
 #if defined MPI
       use scalars, ONLY: mynode
 #endif
       implicit none
       character(len=*), intent(in) :: nml_name
+      integer, intent(in) :: nmlunit
+      integer, intent(in), optional :: ios
+      character(len=*), intent(in), optional :: iomsg
+
+      character(len=256) :: line
+      character(len=64)  :: base_name
+      integer :: ios_scan, iblank, nlines, ic
+      logical :: found, looks_like_array
 
       MPI_master_only write (stdout, '(3a)') &
          'FATAL: aborting after errors in "', trim(nml_name), '" namelist.'
+      if (present(ios)) then
+         MPI_master_only write (stdout, '(a,i0)') '  -> iostat = ', ios
+      end if
+      if (present(iomsg)) then
+         if (len_trim(iomsg) > 0) then
+            MPI_master_only write (stdout, '(2a)') '  -> ', trim(iomsg)
+         end if
+      end if
+
+      iblank = index(trim(nml_name), ' ')
+      if (iblank > 0) then
+         base_name = nml_name(1:iblank - 1)
+      else
+         base_name = trim(nml_name)
+      end if
+
+      MPI_master_only write (stdout, '(a)') '  -> raw namelist section as read from file:'
+      found = .false.
+      looks_like_array = .false.
+      nlines = 0
+      rewind (nmlunit)
+      do
+         read (nmlunit, '(A)', iostat=ios_scan) line
+         if (ios_scan /= 0) exit
+         if (.not. found) then
+            if (index(adjustl(to_lowercase(line)), &
+                      '&'//to_lowercase(trim(base_name))) == 1) found = .true.
+         end if
+         if (found) then
+            MPI_master_only write (stdout, '(2a)') '     ', trim(line)
+            nlines = nlines + 1
+            ! a comma-separated list or a "N*value" repeat count both
+            ! indicate the assigned variable is an array, not a scalar
+            if (index(line, ',') > 0) looks_like_array = .true.
+            ic = index(line, '*')
+            if (ic > 1) then
+               if (line(ic - 1:ic - 1) >= '0' .and. line(ic - 1:ic - 1) <= '9') &
+                  looks_like_array = .true.
+            end if
+            if (index(adjustl(line), '/') == 1) exit
+            if (nlines > 200) exit ! safety cap on a malformed/unterminated file
+         end if
+      end do
+      rewind (nmlunit)
+
+      if (looks_like_array) then
+         MPI_master_only write (stdout, '(a)') &
+            '  -> this assigns an array'
+         MPI_master_only write (stdout, '(a,i0,a)') &
+            '  -> if it is sized per-tracer '// &
+            '(like tnu2, tnu4, Akt_bak), it must have exactly NT = ', NT, &
+            ' values.'
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+         MPI_master_only write (stdout, '(a,i0,a)') &
+            '  -> if it is sized per river/point-source '// &
+            'it must have exactly psource_Nsrc = ', psource_Nsrc, &
+            ' values.'
+         MPI_master_only write (stdout, '(a)') &
+            '  -> if it is sized per river/point-source and per-tracer '// &
+            'it must have exactly NT*psource_Nsrc values (e.g. psource_Tsrc0).'
+#endif
+      end if
+
+      MPI_master_only write (stdout, '(a)') &
+         '  -> default/current in-memory values (also reveals declared '// &
+         'array size, e.g. if the file supplied too few/many values):'
 
    end subroutine fatal_nml_error
 

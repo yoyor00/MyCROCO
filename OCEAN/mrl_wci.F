@@ -505,7 +505,6 @@
 # ifdef WAVE_ROLLER
           wepr(i,j)=erol(i,j)         ! epsilon_r (m3/s3)
 #  ifdef WKB_WWAVE
-          wepb0(i,j)=wepb(i,j)
           wepb(i,j)=max(0.,wepr(i,j)+(1-wkb_roller)*wepb(i,j))
 #  endif
 # endif
