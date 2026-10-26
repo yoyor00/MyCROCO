@@ -773,7 +773,9 @@
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
            enddo
-           Taver_mld(i,j,itrc)=T_mld_nnew(i,j) ! mean over mld
+           Taver_mld(i,j,itrc)=T_mld_nnew(i,j)
+     &                        /(z_w(i,j,N)-z_w(i,j,kmld-1))
+     &                        *(pm(i,j)*pn(i,j))                  ! mean over mld
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
