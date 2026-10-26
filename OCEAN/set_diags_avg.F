@@ -157,6 +157,9 @@
               Tentr_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*Tentr_mld_avg(i,j,itrc) +
      &                           Tentr_mld(i,j,itrc) )
+              Taver_mld_avg(i,j,itrc) = cff *
+     &                    ( cff1*Taver_mld_avg(i,j,itrc) +
+     &                           Taver_mld(i,j,itrc) )
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
               Tcrit_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*Tcrit_mld_avg(i,j,itrc) +

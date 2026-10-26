@@ -22,10 +22,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Fixed
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
+	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
 	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
 	- DIAGNOSTICS\_PV right-hand side (Trhs) kept in (unit of tracers) s-1
+	- MLD budget closure: same MLD index at both time levels with GLS\_MIXING, THmix from split upstream advection, TVmix with implicit sponge
 	- sediment settling/erosion diagnostics are now cell-volume integrals like the other terms
 	- TForc nudging diagnostic uses the actual nudging increment (and tclmzon with ZONAL\_NUDGING)
+	- no empty-named Tcrit\_mld variables written for passive tracers
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
@@ -118,6 +121,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
 	- kinetic energy budget is now 3d
 	- momentum, energy and tracer diagnostics (DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_MLD) terms are now volume-integrated (Issue #320)
+	- DIAGNOSTICS\_TS\_MLD\_DENS : MLD depths (density and temperature criteria) are both computed at w-levels, and the density criterion is used whatever the vertical mixing scheme (Issue #320)
 
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)

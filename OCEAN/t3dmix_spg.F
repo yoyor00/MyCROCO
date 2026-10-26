@@ -724,16 +724,15 @@
                   if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-mld_crit_T)  cff1=1
                enddo
                FF(i,j)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+!
+! MLD (density criterion) for itrc=1, and for itrc=2 difference between
+! MLD (temperature criterion) and MLD (density criterion)
+!
                if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
-     &                        z_w(i,j,N)-z_w(i,j,kbl1(i,j)-1)
-#  ifdef MASKING
-     &                   *rmask(i,j)
-#  endif
+     &            (z_w(i,j,N)-z_w(i,j,kbl1(i,j)-1)) SWITCH rmask(i,j)
                if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
-     &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
-#  ifdef MASKING
-     &                   *rmask(i,j)
-#  endif
+     &            ( (z_w(i,j,N)-z_w(i,j,kblt(i,j)-1))
+     &              -Tcrit_mld(i,j,1) ) SWITCH rmask(i,j)
             enddo
          enddo
 #   endif
@@ -741,7 +740,7 @@
        do j=Jstr,Jend
          do i=Istr,Iend
            THmix_mld(i,j,itrc)=0.
-#  ifdef TS_MIX_IMP
+#  if defined TS_SPONGE_IMP || defined TS_MIX_IMP
            TVmix_mld(i,j,itrc)=0.
 #  endif
            Taver_mld(i,j,itrc)=0.
@@ -751,11 +750,10 @@
        enddo
        do j=Jstr,Jend
          do i=Istr,Iend
-#   ifdef LMD_SKPP
-           kmld=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_DENS
+#   if defined DIAGNOSTICS_TS_MLD_DENS
            kmld=kbl1(i,j)
-#     endif
+#   elif defined LMD_SKPP || defined GLS_MIXING
+           kmld=kbl(i,j)
 #   else
            kmld=N-5
 #   endif
@@ -765,12 +763,15 @@
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
-#  ifdef TS_MIX_IMP
+#  if defined TS_SPONGE_IMP || defined TS_MIX_IMP
+!
+! TVmix was updated by the implicit sponge (or isopycnal) mixing
+!
              TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
      &                           TVmix(i,j,k,itrc)
-#  endif
-#  ifdef MASKING
+#   ifdef MASKING
      &                   *rmask(i,j)
+#   endif
 #  endif
              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
@@ -787,11 +788,11 @@
 
        do j=Jstr,Jend
          do i=Istr,Iend
-#   if defined LMD_SKPP || defined GLS_MIXING
-           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_DENS
+#   if defined DIAGNOSTICS_TS_MLD_DENS
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
-#     endif
+           kmld=kbl_nstp(i,j)
+#   elif defined LMD_SKPP || defined GLS_MIXING
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
            kmld=kbl_nstp(i,j)
 #   else
            kmld=N-5
@@ -801,9 +802,10 @@
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
-           if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#   if defined DIAGNOSTICS_TS_MLD_DENS
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl1(i,j)
+#   elif defined LMD_SKPP || defined GLS_MIXING
+           if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
 #   endif
          enddo
        enddo
@@ -813,13 +815,13 @@
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
-            Tentr_mld(i,j,itrc)=Trate_mld(i,j,itrc)-
-     &                          TXadv_mld(i,j,itrc)-
-     &                          TYadv_mld(i,j,itrc)-
-     &                          TVadv_mld(i,j,itrc)-
-     &                          TVmix_mld(i,j,itrc)-
-     &                          THmix_mld(i,j,itrc)-
-     &                          TForc_mld(i,j,itrc)
+            Tentr_mld(i,j,itrc)=(Trate_mld(i,j,itrc)-
+     &                           TXadv_mld(i,j,itrc)-
+     &                           TYadv_mld(i,j,itrc)-
+     &                           TVadv_mld(i,j,itrc)-
+     &                           TVmix_mld(i,j,itrc)-
+     &                           THmix_mld(i,j,itrc)-
+     &                           TForc_mld(i,j,itrc))
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
