@@ -23,14 +23,15 @@
 !    the MPI/XIOS/OASIS/AGRIF bootstrap, the time-stepping loop and
 !    the shutdown sequence. The model initialization phase itself
 !    (namelist read through the first history write) lives in
-!    croco_init.F90 (module croco_init, subroutine croco_initialize).
+!    croco_initialize.F90 (module croco_initialize, subroutine
+!    croco_initialize_run).
 !
 !======================================================================
 !
       use param
       use scalars
       use ncscrum
-      use croco_init, only : croco_initialize
+      use croco_initialize, only : croco_initialize_run
       use croco_finalize, only : croco_finalize_run
       use croco_namelist, only : ntimes, ninfo
 #ifdef USE_CALENDAR
@@ -76,12 +77,12 @@
 !
 !----------------------------------------------------------------------
 !  Model initialization: namelist read through the first history
-!  write. See croco_init.F90 for the full sequence.
+!  write. See croco_initialize.F90 for the full sequence.
 !----------------------------------------------------------------------
 !
-      call croco_initialize (ierr)
+      call croco_initialize_run (ierr)
 !
-!  Only run the time loop if croco_initialize fully succeeded (ierr)
+!  Only run the time loop if croco_initialize_run fully succeeded (ierr)
 !  and did not itself flag a fatal problem (may_day_flag, e.g. a bad
 !  grid file) -- either way, croco_finalize_run below still runs.
 !

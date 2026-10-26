@@ -12,24 +12,24 @@
 #include "cppdefs.h"
 !
 !=======================================================================
-!  MODULE croco_init
+!  MODULE croco_initialize
 !
-!  Purpose : Model initialization phase. croco_initialize() carries out
-!            every step from "read the namelist" to "write the initial
-!            history file" before handing control back to the 
+!  Purpose : Model initialization phase. croco_initialize_run() carries
+!            out every step from "read the namelist" to "write the
+!            initial history file" before handing control back to the
 !            time-stepping driver (croco.F90).
 
 !=======================================================================
 !
-      module croco_init
+      module croco_initialize
 
       implicit none
       private
-      public :: croco_initialize
+      public :: croco_initialize_run
 
       contains
 
-      subroutine croco_initialize(ierr)
+      subroutine croco_initialize_run(ierr)
 !
       use param
       use scalars
@@ -863,6 +863,6 @@
 !
       if (may_day_flag /= 0) return
 !
-      end subroutine croco_initialize
+      end subroutine croco_initialize_run
 
-      end module croco_init
+      end module croco_initialize

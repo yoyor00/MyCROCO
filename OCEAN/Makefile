@@ -130,7 +130,7 @@ include Makedefs
 
 
  SRCS90 = \
-	croco.F90	croco_init.F90	croco_finalize.F90\
+	croco.F90	croco_initialize.F90	croco_finalize.F90\
 	croco_namelist.F90\
 	mod_tides_mas.F90\
 	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
