@@ -98,14 +98,14 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T        ! River #1, read (T/F) tracer #1 (temperature) from file
-  psource_Lsrc(1,2) = T        ! River #1, read (T/F) tracer #2 (salinity)    from file
-  psource_Lsrc(1,3) = T        ! River #1, read (T/F) tracer #3               from file
-  psource_Lsrc(1,4) = T        ! River #1, read (T/F) tracer #4               from file
-  psource_Tsrc0(1,1) = 10.     ! River #1, temperature
-  psource_Tsrc0(1,2) = 0.      ! River #1, salinity
-  psource_Tsrc0(1,3) = 0.      ! River #1, concentration (or other property of tracer #3)
-  psource_Tsrc0(1,4) = 0.05    ! River #1, concentration (or other property of tracer #4)
+  psource_Lsrc(1,1) = T        ! River #1, tracer #1 (temperature)
+  psource_Lsrc(1,2) = T        ! River #1, tracer #2 (salinity)
+  psource_Lsrc(1,3) = T        ! River #1, tracer #3 (SAND)
+  psource_Lsrc(1,4) = T        ! River #1, tracer #4 (MUD)
+  psource_Tsrc0(1,1) = 10.     ! River #1, tracer #1 (temperature)
+  psource_Tsrc0(1,2) = 0.      ! River #1, tracer #2 (salinity)
+  psource_Tsrc0(1,3) = 0.      ! River #1, tracer #3 (SAND)
+  psource_Tsrc0(1,4) = 0.05    ! River #1, tracer #4 (MUD)
 /
 
 &croco_sediments_mustang

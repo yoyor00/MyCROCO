@@ -76,10 +76,10 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T        ! River #1, read (T/F) tracer #1 (temperature) from file
-  psource_Lsrc(1,2) = T        ! River #1, read (T/F) tracer #2 (salinity)    from file
-  psource_Tsrc0(1,1) = 10.     ! River #1, temperature
-  psource_Tsrc0(1,2) = 36.     ! River #1, salinity
+  psource_Lsrc(1,1) = T        ! River #1, tracer #1 (temperature)
+  psource_Lsrc(1,2) = T        ! River #1, tracer #2 (salinity)
+  psource_Tsrc0(1,1) = 10.     ! River #1, tracer #1 (temperature)
+  psource_Tsrc0(1,2) = 36.     ! River #1, tracer #2 (salinity)
 /
 
 &croco_obstruction
