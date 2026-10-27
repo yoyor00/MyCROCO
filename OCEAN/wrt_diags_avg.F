@@ -269,7 +269,7 @@
            if (itrc == 1) then
              work2d=diagTS_mld_avg(:,:)
              call fillvalue2d(work2d,nciddia_avg,
-     &                      diadiagTS_mld_avg(itrc),
+     &                      diadiagTS_mld_avg,
      &                      vname(1,indxdiagTS_mld+itrc-1),
      &                      record,r2dvar,type)
            endif

@@ -272,7 +272,7 @@
 !
            if (itrc == 1) then
              work2d=diagTS_mld(:,:)
-             call fillvalue2d(work2d,nciddia,diadiagTS_mld(itrc),
+             call fillvalue2d(work2d,nciddia,diadiagTS_mld,
      &                      vname(1,indxdiagTS_mld+itrc-1),
      &                      record,r2dvar,type)
            endif

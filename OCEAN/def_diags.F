@@ -832,31 +832,31 @@
              lvar=lenstr(vname(1,indxdiagTS_mld+itrc-1))
              ierr=nf_def_var(ncid,
      &                 vname(1,indxdiagTS_mld+itrc-1)(1:lvar),
-     &                 NF_FOUT, 3, r2dgrd, viddiagTS_mld(itrc))
+     &                 NF_FOUT, 3, r2dgrd, viddiagTS_mld)
 #   ifdef NC4PAR
-              ierr=nf_var_par_access(ncid,viddiagTS_mld(itrc),
+              ierr=nf_var_par_access(ncid,viddiagTS_mld,
      &                           nf_collective)
 #   endif
 #   ifndef AVRH
               lvar=lenstr(vname(2,indxdiagTS_mld+itrc-1))
               ierr=nf_put_att_text (ncid,
-     &                     viddiagTS_mld(itrc),'long_name',
+     &                     viddiagTS_mld,'long_name',
      &                     lvar, vname(2,indxdiagTS_mld+itrc-1)(1:lvar))
 #   else
               text='averaged '/ /vname(2,indxdiagTS_mld+itrc-1)
               lvar=lenstr(text)
               ierr=nf_put_att_text (ncid,
-     &                             viddiagTS_mld(itrc),'long_name',
+     &                             viddiagTS_mld,'long_name',
      &                             lvar, text(1:lvar))
 #   endif
               lvar=lenstr(vname(3,indxdiagTS_mld+itrc-1))
-              ierr=nf_put_att_text (ncid, viddiagTS_mld(itrc),'units',
+              ierr=nf_put_att_text (ncid, viddiagTS_mld,'units',
      &                     lvar, vname(3,indxdiagTS_mld+itrc-1)(1:lvar))
               lvar=lenstr(vname(4,indxdiagTS_mld+itrc-1))
-              ierr=nf_put_att_text (ncid, viddiagTS_mld(itrc),'field',
+              ierr=nf_put_att_text (ncid, viddiagTS_mld,'field',
      &                     lvar, vname(4,indxdiagTS_mld+itrc-1)(1:lvar))
 
-          call nf_add_attribute(ncid,viddiagTS_mld(itrc),
+          call nf_add_attribute(ncid,viddiagTS_mld,
      &      vname(:,indxdiagTS_mld+itrc-1),5, NF_FOUT, ierr)
 !
             endif  
@@ -1238,14 +1238,14 @@
 !
           lvar=lenstr(vname(1,indxdiagTS_mld+itrc-1))
           ierr=nf_inq_varid(ncid,vname(1,indxdiagTS_mld+itrc-1)(1:lvar),
-     &                                        viddiagTS_mld(itrc))
+     &                                        viddiagTS_mld)
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxdiagTS_mld+itrc-1)(1:lvar),
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #   ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,viddiagTS_mld(itrc),
+          ierr=nf_var_par_access(ncid,viddiagTS_mld,
      &                              nf_collective)
 #   endif
         endif

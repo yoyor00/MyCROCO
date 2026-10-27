@@ -1195,7 +1195,7 @@
      &      , diaTHmix_mld(NT), diaTVmix_mld(NT)
      &      , diaTForc_mld(NT), diaTrate_mld(NT), diaTentr_mld(NT)
      &      , diaTaver_mld(NT)
-     &      , diadiagTS_mld(2)
+     &      , diadiagTS_mld
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
@@ -1400,7 +1400,7 @@
      &      , diaTHmix_mld_avg(NT), diaTVmix_mld_avg(NT)
      &      , diaTForc_mld_avg(NT), diaTrate_mld_avg(NT)
      &      , diaTentr_mld_avg(NT), diaTaver_mld_avg(NT)
-     &      , diadiagTS_mld_avg(2)
+     &      , diadiagTS_mld_avg
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
