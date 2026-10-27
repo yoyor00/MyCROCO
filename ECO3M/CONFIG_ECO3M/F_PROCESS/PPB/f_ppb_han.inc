@@ -38,32 +38,33 @@
 !--------------------------------------------------------------------
 !--------------------------------------------------------------------
 !
-function f_ppb_han(ili,jcol,a_chl,phi_max_C,tau,&
+    function f_ppb_han(ili,jcol,a_chl,phi_max_C,tau,&
         sig_ps2,k_d,k_r,iphyC)
-    !
-    ! Cette fonction calcule la vitesse de production primaire BRUTE de la variable
-    ! d'etat dont la concentration est donnee par la variable d'indice ili
-    !
-    ! variables parametres et leurs unites: 
-    !--------------------------------------
-    ! iphyC     : concentration de phyto en carbone (mol C/l). Si absente, ili utilise par defaut
-    ! a_chl     : coeff. d''absorption spec. de la Chl, m^2 / (g Chl)
-    ! phi_max_C : rendement quantique max., (mol C)/ J
-    ! tau       : temps de turnover des electrons, s
-    ! sig_ps2   : section efficace des PSII, m^2 / Joules
-    ! kd_Han    : constante d'endommagement des PSII, adim ds modele de Han
-    ! kr        : constante de réparation  des PSII, s^-1 
-    ! f_ppb_han : en molC/l/s
-    !
-    ! cette fonction permet aussi de remplir le tableau muphy_NR
-    ! muphy_NR : vitesse specifique de production primaire en absence de lim. 
-    !            par les nutriments, en s^-1
-    !
-    ! Ref:  Han, B. P. (2002) J. Theor. Biol. 214:519-527
-    !
-    ! Melika Baklouti 6/07/2007
-    !-------------------------------------------------------------------------
-    !-- Variables globales
+!
+! This function calculates the GROSS primary production rate of the state variable
+! whose concentration is given by the index variable ili
+!
+! Parameter variables and their units:
+!--------------------------------------
+! iphyC     : concentration of phytoplankton in carbon (mol C/l). If absent, ili used by default
+! a_chl     : specific absorption coefficient of Chl, m^2 / (g Chl)
+! phi_max_C : maximum quantum yield, (mol C)/ J
+! tau       : electron turnover time, s
+! sig_ps2   : effective cross-section of PSII, m^2 / Joules
+! kd_Han    : PSII damage constant, adim in Han model
+! kr        : PSII repair constant, s^-1
+! f_ppb_han_slope_2026: in molC/l/s
+!
+! this function also fills in the muphy_NR table
+
+! muphy_NR: specific primary production rate in the absence of nutrient limitations, in s^-1
+! Cette fonction calcule la vitesse de production primaire BRUTE de la variable
+! d'etat dont la concentration est donnee par la variable d'indice ili
+!
+! Ref:  Han, B. P. (2002) J. Theor. Biol. 214:519-527
+!
+! Melika Baklouti 6/07/2007
+!-------------------------------------------------------------------------
 
     Implicit None
 
