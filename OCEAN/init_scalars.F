@@ -316,19 +316,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(10,indxTime)=start_date
       vname(11,indxTime)=calendar_type
 
-CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
-      vname(1,indxTime2)='time'
-      vname(2,indxTime2)='time since initialization'
-      vname(3,indxTime2)='seconds since '//start_date
-      vname(4,indxTime2)='time, scalar, series'
-      vname(5,indxTime2)='time'
-      vname(6,indxTime2)='  '
-      vname(7,indxTime2)='T '
-      vname(8,indxTime2)='.NO.'
-      vname(9,indxTime2)=' '
-      vname(10,indxTime2)=start_date
-      vname(11,indxTime2)=calendar_type
-
 CR      write(stdout,'(1x,A,I3)') 'indxZ =',indxZ
       vname(1,indxZ)='zeta                                        '
       vname(2,indxZ)='free-surface                                '

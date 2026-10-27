@@ -21,8 +21,7 @@
       use croco_namelist, only: ntimes, dt, ndtfast,
      &                              ininame, rstname, title, frcname,
      &                              theta_s, theta_b, Tcline, hc,
-     &                              nwrt, rdrg, rho0, gamma2, x_sponge,
-     &                              xios_origin_date
+     &                              nwrt, rdrg, rho0, gamma2, x_sponge
 #ifndef ANA_GRID
       use croco_namelist, only: grdname
 #endif

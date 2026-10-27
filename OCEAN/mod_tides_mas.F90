@@ -520,9 +520,10 @@ contains
 !  loop that calls clm_tides): this is the only place jourmem is
 !  touched, so calling it per-tile instead would race across threads.
 !
+    use tools_calendar, only: tool_sectodat, tool_decompdate
     implicit none
     real, intent(in) :: time
-    character(len=19) :: cdate,tool_sectodat
+    character(len=19) :: cdate
     integer :: iheure,iminu,isec
 
     cdate = tool_sectodat(time)
