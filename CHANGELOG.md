@@ -63,6 +63,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
 
 - Fix time in surf average output file (#388)
+- Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
+  surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
 - Fix grid variables writing in average and diagnostic file (#522)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
