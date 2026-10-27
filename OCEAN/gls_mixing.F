@@ -1057,12 +1057,8 @@
 !
 !  Compute mixed layer depth from turbulence threshold criterion
 !
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          call idx_mld_turbulence(Istr,Iend,Jstr,Jend,
+        call idx_mld_turbulence(Istr,Iend,Jstr,Jend,
      &                  mld_crit_AKt,mld_depth_ref,kbl,hbl)
-        enddo
-      enddo
 !$acc end kernels
 
 !
