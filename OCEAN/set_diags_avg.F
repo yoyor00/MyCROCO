@@ -45,7 +45,7 @@
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
-      use croco_namelist, only: ntsdia_avg, nwrtdia_avg
+      use croco_namelist, only: ntsdia_avg, nwrtdia_avg, mld_crit_type
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, itrc, k, ilc
       real    cff,cff1
@@ -160,12 +160,14 @@
               Taver_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*Taver_mld(i,j,itrc) +
      &                           Taver_mld_avg(i,j,itrc) )
-#  ifdef DIAGNOSTICS_TS_MLD_DENS
-              Tcrit_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Tcrit_mld(i,j,itrc) +
-     &                           Tcrit_mld_avg(i,j,itrc) )
-#  endif
             enddo
+          enddo
+        enddo
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            diagTS_mld_avg(i,j) = cff *
+     &                    ( cff1*diagTS_mld(i,j) +
+     &                           diagTS_mld_avg(i,j) )
           enddo
         enddo
 # endif /* DIAGNOSTICS_TS_MLD  */

@@ -263,15 +263,16 @@
            call fillvalue2d(work2d,nciddia_avg,diaTaver_mld_avg(itrc),
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
-#  if defined DIAGNOSTICS_TS_MLD_DENS 
 !
-!  indxTcrit_mld
+!  indxdiagTS_mld
 !
-           work2d=Tcrit_mld_avg(:,:,itrc)
-           call fillvalue2d(work2d,nciddia_avg,diaTcrit_mld_avg(itrc),
-     &                      vname(1,indxTcrit_mld+itrc-1),
+           if (itrc == 1) then
+             work2d=diagTS_mld_avg(:,:)
+             call fillvalue2d(work2d,nciddia_avg,
+     &                      diadiagTS_mld_avg(itrc),
+     &                      vname(1,indxdiagTS_mld+itrc-1),
      &                      record,r2dvar,type)
-#  endif
+           endif
         endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/

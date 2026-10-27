@@ -24,6 +24,9 @@
       use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
      &                          dt_rst
 # endif
+# ifdef DIAGNOSTICS_TS_MLD
+      use croco_namelist, only: mld_crit_type
+# endif
 
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
@@ -2970,29 +2973,30 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
        vname(4,indxTaver_mld+itrc-1)='                            '
        vname(5,indxTaver_mld+itrc-1)='                            '
        vname(6,indxTaver_mld+itrc-1)='                            '
-       vname(7,indxTaver_mld+itrc-1)='                            '
-#  if defined DIAGNOSTICS_TS_MLD_DENS
-CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
-       nametrc=vname(1,indxT+itrc-1)
-       unitt=vname(3,indxT+itrc-1)
-       if (itrc.eq.1) then
-         vname(1,indxTcrit_mld+itrc-1)='dens_mld_depth            '
-         vname(2,indxTcrit_mld+itrc-1)='MLD (density criterion)   '
-       endif
-       if (itrc.eq.2) then
-         vname(1,indxTcrit_mld+itrc-1)='temp_mld_depth            '
-         vname(2,indxTcrit_mld+itrc-1)='MLD (temp criterion)      '
-       endif
-CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
-       write(vname3,*)               ' meter                      '
-       vname(3,indxTcrit_mld+itrc-1)=vname3
-       vname(4,indxTcrit_mld+itrc-1)='                            '
-       vname(5,indxTcrit_mld+itrc-1)='                            '
-       vname(6,indxTcrit_mld+itrc-1)='                            '
-       vname(7,indxTcrit_mld+itrc-1)='                            '
-#  endif 
-# endif /* DIAGNOSTICS_TS_MLD */
-
+       vname(7,indxTaver_mld+itrc-1)='                            ' 
+       if (itrc==1) then
+CR       write(stdout,'(1x,A,I3)') 'indxdiagTS_mld=',indxdiagTS_mld+itrc-1
+          nametrc=vname(1,indxT+itrc-1)
+          unitt=vname(3,indxT+itrc-1)
+          if (mld_crit_type=='density') then
+            vname(1,indxdiagTS_mld+itrc-1)='dens_mld_depth            '
+            vname(2,indxdiagTS_mld+itrc-1)='MLD (density criterion)   '
+          else if (mld_crit_type=='temperature') then
+            vname(1,indxdiagTS_mld+itrc-1)='temp_mld_depth            '
+            vname(2,indxdiagTS_mld+itrc-1)='MLD (temp criterion)      '
+          else if (mld_crit_type=='turbulence') then
+            vname(1,indxdiagTS_mld+itrc-1)='turb_mld_depth            '
+            vname(2,indxdiagTS_mld+itrc-1)='MLD (turbulence criterion)'
+          endif
+CR       write(stdout,'(20x,A)') vname(1,indxdiagTS_mld+itrc-1)
+          write(vname3,*)               ' meter                      '
+          vname(3,indxdiagTS_mld+itrc-1)=vname3
+          vname(4,indxdiagTS_mld+itrc-1)='                            '
+          vname(5,indxdiagTS_mld+itrc-1)='                            '
+          vname(6,indxdiagTS_mld+itrc-1)='                            '
+          vname(7,indxdiagTS_mld+itrc-1)='                            '
+        endif
+# endif
       enddo  ! itrc
 #endif  /* DIAGNOSTICS_TS */
 

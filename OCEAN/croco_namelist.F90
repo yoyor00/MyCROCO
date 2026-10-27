@@ -117,6 +117,21 @@ MODULE croco_namelist
    !! resolution is required during S-coordinate stretching
    real :: Tcline
    !! Kept for backward-compatible NetCDF global attribute; initialized to hc after read
+
+   ! &croco_mld
+  character(len=64) :: mld_crit_type = "turbulence"
+  !! criteria for mld computation
+  !! ("turbulence" = mixing layer from turbulence scheme)
+  !! ("density" = mixed layer from density threshold)
+  !! ("temperature" = mixed layer from temperature threshold)
+  real :: mld_depth_ref = 10
+  !! Reference depth for mixed-layer criteria [m]
+  real :: mld_crit_D = 3.e-2
+  !! Density criterion for mixed-layer depth [kg/m3].
+  real :: mld_crit_T = 2.e-1
+  !! Temperature criterion for mixed-layer depth [Celsius].
+  real :: mld_crit_AKt = 2.e-5
+  !! AKt criterion for mixed-layer depth [m2/s].
 #endif
 
 #ifdef USE_CALENDAR
@@ -537,22 +552,6 @@ MODULE croco_namelist
    !! Averaged tracer diagnostics file cycling switch
    character(len=180) :: dianame_avg = "CROCO_FILES/croco_dia_avg.nc"
    !! Name of averaged tracer diagnostics file
-#  endif
-#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-   ! &croco_diag_mld_dens
-   real :: mld_crit_D = 0.03
-   !! Density criterion to define the mixed layer depth [kg/m3]
-   real :: mld_crit_T = 0.2
-   !! Temperature criterion to define the mixed layer depth [Celsius]
-   real :: mld_depth_ref = 10
-   !! Reference depth to define the mixed layer depth [m]
-#  endif
-#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_TURB
-   ! &croco_diag_mld_turb
-   real :: mld_crit_AKt = 2.0e-5
-   !! AKt criterion to define the mixed layer depth [m2/s]
-   real :: mld_depth_ref = 10
-   !! Reference depth to define the mixed layer depth [m]
 #  endif
 #endif
 

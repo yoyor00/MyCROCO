@@ -46,11 +46,13 @@
      &  )
 
       use croco_namelist, only: dt, lts_hadv
+# ifdef DIAGNOSTICS_TS_MLD
+      use croco_namelist, only: mld_crit_type, 
+     &                          mld_crit_D, mld_crit_T, mld_depth_ref
       use tracer_budget_mld, only: budget_entrainment_term,
-     &                               budget_average_over_mld
-# ifdef DIAGNOSTICS_TS_MLD_DENS 
-      use croco_namelist, only: mld_crit_D, mld_crit_T, mld_depth_ref
-      use tracer_budget_mld, only: idx_mld_density_and_temp
+     &                             budget_average_over_mld,
+     &                             idx_mld_density,
+     &                             idx_mld_temperature
 # endif
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
@@ -81,7 +83,7 @@
 #  ifdef DIAGNOSTICS_PV
 #   include "diags_pv.h"
 #  endif
-      integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx, kmld
+      integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
      &       ,imin,imax,jmin,jmax,iAkt,nadv
 #  if defined PSOURCE || defined PSOURCE_MASS
      &       ,is
@@ -953,14 +955,55 @@
 # if defined DIAGNOSTICS_TS_MLD
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
-#  ifdef DIAGNOSTICS_TS_MLD_DENS
-        call idx_mld_density_and_temp(Istr,Iend,Jstr,Jend,itrc,
-     &       mld_crit_D,mld_crit_T,mld_depth_ref,
-     &       kbld,Tcrit_mld)
-#    endif /* DIAGNOSTICS_TS_MLD_DENS */
+        if (mld_crit_type == 'density') then
+          call idx_mld_density(Istr,Iend,Jstr,Jend,
+     &       mld_crit_D,mld_depth_ref,
+     &       kbld,diagTS_mld)
+        else if (mld_crit_type == 'temperature') then
+          call idx_mld_temperature(Istr,Iend,Jstr,Jend,
+     &       mld_crit_T,mld_depth_ref,
+     &       kblt,diagTS_mld)
+        else if (mld_crit_type == 'turbulence') then
+          do j=Jstr,Jend
+            do i=Istr,Iend
+#    ifdef LMD_SKPP2005
+              diagTS_mld(i,j)=hbls(i,j,nstp)
+#    elif defined LMD_SKPP1994 || defined GLS_MIXING
+              diagTS_mld(i,j)=hbl(i,j)
+#    endif
+            enddo
+          enddo
+        endif
 
-        call budget_average_over_mld(Istr,Iend,Jstr,Jend,
-     &                  itrc, T_mld_nnew, T_mld_nstp,1)
+        if (mld_crit_type == 'density') then
+          call budget_average_over_mld(Istr,Iend,Jstr,Jend,
+     &                  itrc, T_mld_nnew, T_mld_nstp,1,
+     &                  TXadv_mld,TYadv_mld,TVadv_mld,
+     &                  TVmix_mld,THmix_mld,TForc_mld,
+     &                  Tentr_mld,Trate_mld,Taver_mld,
+     &                  TXadv,TYadv,TVadv,
+     &                  TVmix,THmix,TForc,
+     &                  kbld)
+        else if (mld_crit_type == 'temperature') then
+          call budget_average_over_mld(Istr,Iend,Jstr,Jend,
+     &                  itrc, T_mld_nnew, T_mld_nstp,1,
+     &                  TXadv_mld,TYadv_mld,TVadv_mld,
+     &                  TVmix_mld,THmix_mld,TForc_mld,
+     &                  Tentr_mld,Trate_mld,Taver_mld,
+     &                  TXadv,TYadv,TVadv,
+     &                  TVmix,THmix,TForc,
+     &                  kblt)
+        else if (mld_crit_type == 'turbulence') then
+          call budget_average_over_mld(Istr,Iend,Jstr,Jend,
+     &                  itrc, T_mld_nnew, T_mld_nstp,1,
+     &                  TXadv_mld,TYadv_mld,TVadv_mld,
+     &                  TVmix_mld,THmix_mld,TForc_mld,
+     &                  Tentr_mld,Trate_mld,Taver_mld,
+     &                  TXadv,TYadv,TVadv,
+     &                  TVmix,THmix,TForc,
+     &                  kbl)
+        endif
+
 
 #    if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2)
 !
@@ -968,8 +1011,25 @@
 ! If diffusion terms are computed in t3dmix routines, entrainement
 ! terms are also computed in those routines
 !
-        call budget_entrainment_term(Istr,Iend,Jstr,Jend,
-     &                  itrc,T_mld_nnew,T_mld_nstp)
+        if (mld_crit_type == 'density') then
+          call budget_entrainment_term(Istr,Iend,Jstr,Jend,
+     &                  itrc,T_mld_nnew,T_mld_nstp,Trate_mld,
+     &                  TXadv_mld,TYadv_mld,TVadv_mld,
+     &                  TVmix_mld,THmix_mld,TForc_mld,
+     &                  Tentr_mld,kbl_nstp,kbld)
+        else if (mld_crit_type == 'temperature') then
+          call budget_entrainment_term(Istr,Iend,Jstr,Jend,
+     &                  itrc,T_mld_nnew,T_mld_nstp,Trate_mld,
+     &                  TXadv_mld,TYadv_mld,TVadv_mld,
+     &                  TVmix_mld,THmix_mld,TForc_mld,
+     &                  Tentr_mld,kbl_nstp,kblt)
+        else if (mld_crit_type == 'turbulence') then
+          call budget_entrainment_term(Istr,Iend,Jstr,Jend,
+     &                  itrc,T_mld_nnew,T_mld_nstp,Trate_mld,
+     &                  TXadv_mld,TYadv_mld,TVadv_mld,
+     &                  TVmix_mld,THmix_mld,TForc_mld,
+     &                  Tentr_mld,kbl_nstp,kbl)
+        endif
                
 #    endif /* TS_DIF2 && TS_DIF4 && SPONGE_DIF2 */
 #    undef T_mld_nnew

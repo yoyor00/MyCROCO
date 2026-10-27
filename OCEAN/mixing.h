@@ -106,10 +106,10 @@
   || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       real bvf(GLOBAL_2D_ARRAY,0:N)
       common /mixing_bvf/ bvf
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
       integer kbld(GLOBAL_2D_ARRAY)
       common /mld_kbld/kbld
-#   endif
+      integer kblt(GLOBAL_2D_ARRAY)
+      common /mld_kblt/kblt
 # endif
 
 # ifdef BIOLOGY
