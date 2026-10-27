@@ -224,20 +224,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
      &        MYID
         goto 99                !--> ERROR
       endif
-
-!
-!     Time2
-!
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
-     &  - origin_date_in_sec
-     &  )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
 CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Barotropic mode variables: free-surface and 2D momentum
@@ -467,15 +453,9 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-# if defined WAVE_ROLLER && defined WKB_WWAVE 
-!$acc update if(compute_on_device) host(wepb0(:,:))
-        ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
-     &                                   hisWAVE(6), record, r2dvar)
-# else
 !$acc update if(compute_on_device) host(wepb(:,:))
             ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
-# endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
          MPI_master_only write(stdout,1)

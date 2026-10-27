@@ -67,7 +67,7 @@ except FileNotFoundError:
     exit(1)
 
 # Extract variables
-tis = nc.variables["scrum_time"][:] / (24 * 3600)  # Convert time to days
+tis = nc.variables["time"][:] / (24 * 3600)  # Convert time to days
 h = nc.variables["h"][:]
 x = nc.variables["x_rho"][:] / 1000  # Convert to km
 y = nc.variables["y_rho"][:] / 1000  # Convert to km

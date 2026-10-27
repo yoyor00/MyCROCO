@@ -69,7 +69,7 @@ x = nc.variables["x_rho"][:] / 1000.0  # km
 y = nc.variables["y_rho"][:] / 1000.0  # km
 
 # Time
-time = nc.variables["scrum_time"][:]
+time = nc.variables["time"][:]
 nt = len(time)
 
 # Surface level = top sigma (last index)

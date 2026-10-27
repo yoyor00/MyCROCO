@@ -304,7 +304,7 @@ C$OMP END PARALLEL
 
 !#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
-      vname(1,indxTime)='scrum_time'
+      vname(1,indxTime)='time'
       vname(2,indxTime)='time since initialization'
       vname(3,indxTime)='seconds since '//start_date
       vname(4,indxTime)='time, scalar, series'

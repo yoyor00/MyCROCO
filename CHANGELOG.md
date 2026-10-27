@@ -49,24 +49,31 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   to WAVE_MAKER_DATA (#518)
 
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
+- COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
+- COUPLING : Fix missing restart file update for OASIS (#501). 
 
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
-- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
-           inconsistent with what done for calcite dissolution (#531)
-           Big fix in the calculation of NEW primary productivity with XIOS (#535)
-           Fix the calculation of nitrogen fixation rate with XIOS (#541)
-           Set XIOS write timestep for PISCES identical to ocean (#548)
-           Correct degree to radian conversion (#559)
-           Add the read of pisces namelist for child grid with AGRIF (#561)
+- PISCES : - Switch from relative to potential density for surface pH proxy,
+             inconsistent with what done for calcite dissolution (#531)
+           - Fix in the calculation of NEW primary productivity with XIOS (#535)
+           - Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           - Set XIOS write timestep for PISCES identical to ocean (#548)
+           - Correct degree to radian conversion (#559)
+           - Add the read of pisces namelist for child grid with AGRIF (#561)
+           - Enables use of high-frequency qsr (<24 hrs) with PISCES 
+             in the case of offline reading (#563) - online calculation of 
+             daily mean of qsr needed by PISCES must be implemented
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
 
 - VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
+
+- Restart : Fix restart with OBC_PATM (#496)
 
 - KPP : bug fix for the non-local term in surface KPP parameterisation
         wrong sign and + correction to recover the empirical free convection scaling of 0.2 
@@ -96,6 +103,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
+  (#568, #570, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -129,8 +137,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
-- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
-  and not in cppdefs_dev.h (#465)
+- WAVES : wepb output now includes roller delay when roller is activated (#579)
+          the old wepb output can be diagnose from wepb and wepr
 
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
@@ -153,6 +161,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+
+- Remove duplicate `scrum_time` netCDF variable from history, restart, 
+  averages, diagnostics, surf and station output files; only `time` is 
+  written now (matches the `time` dimension name). get_initial.F still 
+  falls back to reading `scrum_time` when restarting from older files 
+  (Issue #189)
 
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
@@ -238,4 +252,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten
+  S. Theetten, L. Maillard

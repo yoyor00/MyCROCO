@@ -123,7 +123,7 @@
 ! is done only when file of initial conditions contains sufficient
 ! data, i.e. two consecutive time records of evolving fields one time
 ! step apart from each other.  Thus, in order to accept the file for
-! exact restart, it must pass two consecutive checks: (i) ocean_time
+! exact restart, it must pass two consecutive checks: (i) time
 ! values in two consecutive values must differ by "dt" of current
 ! run, and (ii) "ntstart" from two consecutive records of netCDF
 ! structure "time_step" must differ by one.  If either check
@@ -172,19 +172,13 @@
 !
       lvar=lenstr(vname(1,indxTime))
       ierr=nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), varid)
-
-!! GC
-!! The following is done for backward compatibility: normally time
-!! variable is named "ocean_time", but legacy startup files may name
-!! it either "roms_time" or "scrum_time".
-!!
-!      if (ierr .ne. nf_noerr) then
-!        ierr=nf_inq_varid (ncid, 'roms_time', varid)
-!      endif
-!      if (ierr .ne. nf_noerr) then
-!        ierr=nf_inq_varid (ncid, 'scrum_time', varid)
-!      endif
-! GC
+!
+! Backward compatibility: initial/restart files written before the
+! netCDF time variable was renamed to "time" still use "scrum_time".
+!
+      if (ierr .ne. nf_noerr) then
+        ierr=nf_inq_varid (ncid, 'scrum_time', varid)
+      endif
 
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
