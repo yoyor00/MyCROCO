@@ -168,8 +168,14 @@
       common /gls_hbl/ hbl
       real cm0
       common /gls_cm0/ cm0
-# endif /* GLS_MIXING */
-
+# elif defined ANA_VMIX
+#   if defined DIAGNOSTICS_TS_MLD
+      integer kbl(GLOBAL_2D_ARRAY)
+      common /ana_kbl/ kbl
+      real hbl(GLOBAL_2D_ARRAY  )
+      common /ana_hbl/ hbl
+#   endif
+# endif /* ANA_VMIX */
 #else
 
 # define u(i,j,k,nrhs) ubar(i,j,kstp)

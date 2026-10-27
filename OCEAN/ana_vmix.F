@@ -26,6 +26,10 @@
 ! and tracers "Akt" [m^2/s] using analytical expressions.
 !
       USE croco_namelist, ONLY: Akv_bak, Akt_bak, testcase_name
+# if defined DIAGNOSTICS_TS_MLD && defined TEMPERATURE
+      use croco_namelist, only: mld_crit_AKt, mld_depth_ref
+      use tracer_budget_mld, only: idx_mld_turbulence
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real cff, kappustr, ustar0
@@ -118,6 +122,14 @@
           enddo
         enddo
       end select
+
+# if defined DIAGNOSTICS_TS_MLD && defined TEMPERATURE
+!
+!  Compute mixed layer depth from turbulence threshold criterion
+!
+      call idx_mld_turbulence(Istr,Iend,Jstr,Jend,
+     &                  mld_crit_AKt,mld_depth_ref,kbl,hbl)
+# endif
 
 # if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)

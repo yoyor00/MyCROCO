@@ -971,7 +971,7 @@
            do i=Istr,Iend
 #    ifdef LMD_SKPP2005
              diagTS_mld(i,j)=hbls(i,j,nstp)
-#    elif defined LMD_SKPP1994 || defined GLS_MIXING
+#    elif defined LMD_SKPP1994 || defined GLS_MIXING || defined ANA_VMIX
              diagTS_mld(i,j)=hbl(i,j)
 #    endif
            enddo
