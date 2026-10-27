@@ -723,7 +723,7 @@ contains
          read (nmlunit, nml=croco_calendar, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
             call fatal_nml_error("croco_calendar (parse error)", nmlunit, ios, iomsg)
-            MPI_master_only WRITE (stdout, nml=croco_use_calendar)
+            MPI_master_only WRITE (stdout, nml=croco_calendar)
             ierr = ierr + 1
          end if
       end if
