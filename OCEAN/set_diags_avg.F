@@ -67,7 +67,8 @@
 !
       if (ilc.gt.ntsdia_avg) then
 
-        if (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.1) then
+        if (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.1
+     &                    .OR. nwrtdia_avg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then
