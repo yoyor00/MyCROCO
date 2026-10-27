@@ -2122,7 +2122,8 @@
 #if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA)\
  || (defined ZCLIMATOLOGY  && !defined ANA_SSH)\
  || (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA)\
- || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+ || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)\
+ || defined DAS
      &                                ,   clmname
 #endif
 #ifdef FRC_BRY
@@ -2239,7 +2240,9 @@
 #if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA)\
  || (defined ZCLIMATOLOGY  && !defined ANA_SSH)\
  || (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA)\
- || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+ || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)\
+ || defined DAS_READ_INC\
+ || defined DAS_DBLE_BKG
      &                                ,   clmname
 #endif
 #ifdef FRC_BRY

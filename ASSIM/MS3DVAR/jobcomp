@@ -189,6 +189,13 @@ if [ ${#POSITIONAL_VARIANTS[@]} -gt 0 ]; then
     # Positional variants provided - build these specific variants
     BUILD_ALL=1  # We'll handle multiple variants
     VARIANTS_TO_BUILD=("${POSITIONAL_VARIANTS[@]}")
+    # Expand a positional "all" (documented usage: "./jobcomp all") to the four variants
+    for v in "${VARIANTS_TO_BUILD[@]}"; do
+        if [ "$(echo "$v" | tr '[:upper:]' '[:lower:]')" = "all" ]; then
+            VARIANTS_TO_BUILD=(lr mr filter ms)
+            break
+        fi
+    done
 elif [ -n "$VARIANT" ] && [ "$VARIANT" != "all" ]; then
     # --variant flag used with specific variant
     VARIANTS_TO_BUILD=("$VARIANT")
