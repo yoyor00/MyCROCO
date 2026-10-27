@@ -3477,7 +3477,6 @@ c !$acc wait
       if (xios_field_is_active("S_aver_mld")) then
           call xios_send_field("S_aver_mld",Taver_mld(:,:,itrc))
       endif
-#     endif
 #    endif
 #   endif
 #  endif
