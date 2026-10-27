@@ -37,7 +37,7 @@ makepdf=0;
 % Read data
 %
 nc=netcdf('river_his.nc','r');
-tis=nc{'scrum_time'}(:);
+tis=nc{'time'}(:);
 h=nc{'h'}(:);
 x=(nc{'x_rho'}(:))/1000;
 y=(nc{'y_rho'}(:))/1000;

@@ -104,18 +104,6 @@ C      write(*,*) 'Write Time'
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-!
-! Averaged diag Time2
-!
-C      write(*,*) 'Write Time'
-      ierr=nf_put_var1_FTYPE (nciddiabio_avg, diaTime2bio_avg, record,
-     &                                              timediabio_avg)
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
-     &                  MYID
-        goto 99                                           !--> ERROR
-      endif
 
 !
 ! Tracer diag variables.

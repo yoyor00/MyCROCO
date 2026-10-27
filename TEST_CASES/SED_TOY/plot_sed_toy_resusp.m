@@ -42,7 +42,7 @@ it=61;          % 5days
 nc=netcdf(fname);
 
 h=squeeze(nc{'h'}(idy,idx));
-T=squeeze(nc{'scrum_time'}(:,:))/86400;
+T=squeeze(nc{'time'}(:,:))/86400;
 [nt,t0]=size(T);
 bostr=squeeze(nc{'bostr'}(:,idy,idx));
 ALT=squeeze(nc{'act_thick'}(:,idy,idx));
