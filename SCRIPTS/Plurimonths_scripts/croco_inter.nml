@@ -106,6 +106,14 @@
   Cdb_max = 1.d-1
 /
 
+&croco_mld
+  mld_crit_type = "turbulence"
+  mld_depth_ref = 10
+  mld_crit_D = 3.e-2
+  mld_crit_T = 2.e-1
+  mld_crit_AKt = 2.e-5
+/
+
 &croco_gamma2
   gamma2 = 1.d0
 /
@@ -141,12 +149,6 @@
   nwrtdia_avg = NUMAVG
   nrpfdia_avg = 0
   dianame_avg = "croco_dia_avg.nc"
-/
-
-&croco_diag_mld_dens
-  mld_crit_D = 3.d-2
-  mld_crit_T = 2.d-1
-  mld_depth_ref = 10
 /
 
 &croco_diagnosticsM

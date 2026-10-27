@@ -623,9 +623,7 @@
        <field id="T_Forc_mld" long_name="T Forc mld" unit="Celsius second-1" grid_ref="rho_2D"/>
        <field id="T_entr_mld" long_name="T entr mld" unit="Celsius second-1" grid_ref="rho_2D"/>
        <field id="T_aver_mld" long_name="T aver mld" unit="Celsius second-1" grid_ref="rho_2D"/>
-#   if defined DIAGNOSTICS_TS_MLD_DENS
-       <field id="D_depth_mld" long_name="Mixed layer depth (density criterion)" unit="Meter" grid_ref="rho_2D"/>
-#   endif
+       <field id="depth_mld" long_name="Mixed layer depth" unit="Meter" grid_ref="rho_2D"/>
 #  endif
 #  ifdef SALINITY
        <field id="S_rate_mld" long_name="S rate mld" unit="PSU second-1" grid_ref="rho_2D"/>
@@ -635,9 +633,6 @@
        <field id="S_Forc_mld" long_name="S Forc mld" unit="PSU second-1" grid_ref="rho_2D"/>
        <field id="S_entr_mld" long_name="S entr mld" unit="PSU second-1" grid_ref="rho_2D"/>
        <field id="S_aver_mld" long_name="S aver mld" unit="PSU second-1" grid_ref="rho_2D"/>
-#   if defined DIAGNOSTICS_TS_MLD_DENS
-       <field id="T_depth_mld" long_name="Isothermal layer depth (T criterion)" unit="Meter" grid_ref="rho_2D"/>
-#   endif
 #  endif
     </field_group>
 #  endif
