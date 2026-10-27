@@ -326,11 +326,11 @@
                       mode == mode_t3dmix_ISO) then
               THmix_mld_local(i,j,itrc)=0.
               Taver_mld_local(i,j,itrc)=0.
-              if (mode == mode_t3dmix_ISO) then
 #  ifdef TS_MIX_IMP
+              if (mode == mode_t3dmix_ISO) then
                 TVmix_mld_local(i,j,itrc)=0.
-#  endif
               endif
+#  endif
             endif
             T_mld_nnew(i,j)=0.
             T_mld_nstp(i,j)=0.
@@ -357,12 +357,12 @@
                       mode == mode_t3dmix_ISO) then
                 THmix_mld_local(i,j,itrc)=THmix_mld_local(i,j,itrc)+ &
                                    THmix_local(i,j,k,itrc)*cff
-                if (mode == mode_t3dmix_ISO) then
 #  ifdef TS_MIX_IMP
+                if (mode == mode_t3dmix_ISO) then
                   TVmix_mld_local(i,j,itrc)=TVmix_mld_local(i,j,itrc)+&
                                    TVmix_local(i,j,k,itrc)*cff
-#  endif
                 endif             
+#  endif
               endif             
               T_mld_nnew(i,j)=T_mld_nnew(i,j)+ &
                                    t(i,j,k,nnew,itrc)*cff
@@ -376,13 +376,13 @@
               else if (mode == mode_t3dmix_S .or. mode == mode_t3dmix_spg .or. &
                       mode == mode_t3dmix_ISO) then
                 THmix_mld_local(i,j,itrc)= THmix_mld_local(i,j,itrc)*rmask(i,j)
-                if (mode == mode_t3dmix_ISO) then
 #   ifdef TS_MIX_IMP
+                if (mode == mode_t3dmix_ISO) then
                 TVmix_mld_local(i,j,itrc)= TVmix_mld_local(i,j,itrc)*rmask(i,j)
-#   endif
-#  endif
                 endif             
+#   endif
               endif             
+#  endif
             enddo 
             if (mode == mode_t3dmix_S .or. mode == mode_t3dmix_spg .or. &
                     mode == mode_t3dmix_ISO) then
