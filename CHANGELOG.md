@@ -21,6 +21,18 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- DIAGNOSTICS : tracer budget fixes (Issue #320)
+	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
+	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
+	- DIAGNOSTICS\_PV right-hand side (Trhs) kept in (unit of tracers) s-1
+	- MLD budget closure: same MLD index at both time levels with GLS\_MIXING, THmix from split upstream advection, TVmix with implicit sponge
+	- sediment settling/erosion diagnostics are now cell-volume integrals like the other terms
+	- TForc nudging diagnostic uses the actual nudging increment (and tclmzon with ZONAL\_NUDGING)
+	- no empty-named Tcrit\_mld variables written for passive tracers
+	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
+
+- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record
+
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 - MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
@@ -53,6 +65,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - COUPLING : Fix missing restart file update for OASIS (#501). 
 
 - Fix time in surf average output file (#388)
+- Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
+  surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
 - Fix grid variables writing in average and diagnostic file (#522)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
@@ -118,7 +132,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - DIAGNOSTICS : 
 	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
 	- kinetic energy budget is now 3d
-	- momentum and energy diagnostics are saved as cell-volume integrals
+	- momentum, energy and tracer diagnostics (DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_MLD) terms are now volume-integrated (Issue #320)
+	- DIAGNOSTICS\_TS\_MLD\_DENS : MLD depths (density and temperature criteria) are both computed at w-levels, and the density criterion is used whatever the vertical mixing scheme (Issue #320)
+
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 

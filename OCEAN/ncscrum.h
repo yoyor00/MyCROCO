@@ -36,6 +36,7 @@
 ! indxAkk,indxAkp vertical diffusion coefficients for TKE and GLS
 ! indxHbl         depth of planetary boundary layer in KPP model
 ! indxHbbl        depth of bottom planetary boundary layer in KPP model
+! indxKbl_nstp    MLD vertical index at previous time step (restart only)
 ! indxHel         depth of euphotic layer
 ! indxChC         Chlorophyll/Carbon ratio
 ! indxTke         Turbulent kinetic energy
@@ -359,7 +360,7 @@
 #  if defined DIAGNOSTICS_TS_MLD
      &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
-     &        indxTentr_mld,indxTaver_mld
+     &        indxTentr_mld,indxTaver_mld,indxKbl_nstp
 #   if defined DIAGNOSTICS_TS_MLD_DENS
      &      , indxTcrit_mld
 #   endif
@@ -390,6 +391,9 @@
      &           indxTaver_mld=indxTentr_mld+NT
 #   if defined DIAGNOSTICS_TS_MLD_DENS
      &          ,indxTcrit_mld=indxTaver_mld+NT
+     &          ,indxKbl_nstp=indxTcrit_mld+NT
+#   else
+     &          ,indxKbl_nstp=indxTaver_mld+NT
 #   endif
 #  endif
      &                                         )
@@ -1061,6 +1065,9 @@
 # ifdef LMD_BKPP
       integer rstHbbl
 # endif
+# ifdef DIAGNOSTICS_TS_MLD
+      integer rstKbl_nstp
+# endif
 # if defined GLS_MIXING
       integer rstAkv,rstAkt
 #  if defined SALINITY
@@ -1610,6 +1617,9 @@
 # endif
 # ifdef LMD_BKPP
      &      , rstHbbl
+# endif
+# ifdef DIAGNOSTICS_TS_MLD
+     &      , rstKbl_nstp
 # endif
 # if defined GLS_MIXING
      &      , rstAkv,rstAkt
