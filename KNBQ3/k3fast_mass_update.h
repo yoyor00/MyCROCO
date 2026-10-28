@@ -82,12 +82,10 @@ C$OMP END MASTER
 !$acc end kernels
 ! !
 ! !********************************
-! !  BC on rho_nbq (AGRIF only)
+! !  BC on rho_nbq
 ! !********************************
 ! !
-#   ifdef AGRIF
         call rnbq_bc_tile(Istr,Iend,Jstr,Jend, work) 
-#   endif
 ! !
 ! !********************************
 ! !  Acoustic wave emission

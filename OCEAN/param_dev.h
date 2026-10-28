@@ -670,5 +670,18 @@
 # else
       parameter (ntrc_surf=0)
 # endif
+
+
+#if defined AGRIF && defined KXX && !defined PARAM_MODULE_INCLUDE
+! This COMMON block is managed by AGRIF/conv (converted into module
+! kxx_param in the model sources). It must NOT be declared inside
+! module param, otherwise the global name kxx_param is defined both as
+! a COMMON and as a module, which is rejected by the compiler.
+      !integer,parameter :: kxxnbmax = 2
+      integer :: kxxnb=0
+      character(len=10),dimension( 1000 ) :: tabkernel
+      common /kxx_param/kxxnb,tabkernel
+#endif
+
 #endif /*SOLVE3D */
 

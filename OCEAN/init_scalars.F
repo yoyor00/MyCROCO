@@ -109,15 +109,17 @@ C$OMP END PARALLEL
       tdays=0.
       dtfast = dt / float(ndtfast)
 #if defined M3FAST || defined K3FAST || defined NBQ
-      ndtnbq = ndtfast
       dtnbq  = dtfast
-# ifdef KNHINT_3M
+# if defined K3FAST
+      ndtnbq = ndtfast
+#  ifdef KNHINT_3M
       if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
         ndtnbq = ndtfast
       endif
       nsdtnbq = ndtfast/ndtnbq
-# else
+#  else
       nsdtnbq = 1
+#  endif
 # endif
 #endif
       PREDICTOR_2D_STEP=.FALSE.
