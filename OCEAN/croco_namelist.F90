@@ -442,7 +442,7 @@ MODULE croco_namelist
 
 #ifdef FOIL
    ! &croco_foil
-   character(len=180) :: foilname = "foil_paraibm.txt"
+   character(len=180) :: foilname = "foil_parafoil.txt"
    !! FOIL parameters input file
 #endif
 

@@ -40,7 +40,7 @@ MODULE ibmtools
    !! * Accessibility
    PUBLIC w_dens, ibm_buoy, ibm_traint, ibm_nycth_mig, ibm_proftraint, &
       ibm_parameter_init, death_by_fishing, selec_dome_or_asymp, &
-      alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s, &
+      alpha_sel, beta_sel, &
       ibm_profmean, ibm_loc_xyz, gasdev_s, tool_julien
    !ibm_profuint, ibm_profvint                                  ! non utilise
 
@@ -51,10 +51,8 @@ MODULE ibmtools
 
    INTEGER, PARAMETER                                  :: track = 1
 
-   REAL(KIND=rsh), PARAMETER                           :: alpha_sel_a = 0.879_rsh
-   REAL(KIND=rsh), PARAMETER                           :: beta_sel_a  = 12.20_rsh
-   REAL(KIND=rsh), PARAMETER                           :: alpha_sel_s = 0.877_rsh
-   REAL(KIND=rsh), PARAMETER                           :: beta_sel_s  = 11.73_rsh
+   REAL(KIND=rsh), DIMENSION(2)                       :: alpha_sel
+   REAL(KIND=rsh), DIMENSION(2)                       :: beta_sel
 
    !!===================================================================================================================================
    !!===================================================================================================================================
@@ -151,7 +149,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! Modules used
       USE trajectools, ONLY: define_pos, ztosiggen
-      USE comtraj, ONLY: type_position, l_repro_random
+      USE comtraj, ONLY: type_position, reproducibility
 
       !! Arguments
       TYPE(type_particle), INTENT(inout)  :: particle
@@ -242,7 +240,7 @@ CONTAINS
 
       ! -- Randomly modify denspawn and size of particles
       draw_id = 0
-      CALL gasdev_s(tir, l_repro_random, particle%num, draw_id)
+      CALL gasdev_s(tir, reproducibility, particle%num, draw_id)
       particle%denspawn = particle%denspawn + tir*ec_type
       particle%density = particle%denspawn
       particle%size = particle%size + tir*ec_type_size
@@ -284,7 +282,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !&E Calculate death by fishing of a patch
 
-      USE comtraj, ONLY: catch_anc_bob, catch_sar_bob, fishing_strategy
+      USE comtraj, ONLY: catch_anc, catch_sar, fishing_strategy
       USE comtraj, ONLY: mat_catch, number_tot, weight_tot, biom_tot, Wdeb_mean
 
       !! Arguments
@@ -443,21 +441,25 @@ CONTAINS
             IF (year > 1970 .and. year < 2000) THEN
                IF (species == 'anchovy') THEN
                   Zfishing = particle%Wdeb*mat_catch(1, month, id_species)* &
-                     selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a) / &
+                     selec_dome_or_asymp(particle%size, alpha_sel(id_species), &
+                                         beta_sel(id_species)) / &
                      (Wdeb_mean(id_species)*biom_tot(id_species))
                ELSE IF (species == 'sardine') THEN
                   Zfishing = particle%Wdeb*mat_catch(1, month, id_species)*&
-                     selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s) / &
+                     selec_dome_or_asymp(particle%size, alpha_sel(id_species), &
+                                         beta_sel(id_species)) / &
                      (Wdeb_mean(id_species)*biom_tot(id_species))
                END IF
             ELSE IF (year >= 2000) THEN
                IF (species == 'anchovy') THEN
                   Zfishing = particle%Wdeb*mat_catch(year-1999, month, id_species)* &
-                     selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a) / &
+                     selec_dome_or_asymp(particle%size, alpha_sel(id_species), &
+                                         beta_sel(id_species)) / &
                      (Wdeb_mean(id_species)*biom_tot(id_species))
                ELSE IF (species == 'sardine') THEN
                   Zfishing = particle%Wdeb*mat_catch(year-1999, month, id_species)* &
-                     selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s) / &
+                     selec_dome_or_asymp(particle%size, alpha_sel(id_species), &
+                                         beta_sel(id_species)) / &
                      (Wdeb_mean(id_species)*biom_tot(id_species))
                END IF
             END IF

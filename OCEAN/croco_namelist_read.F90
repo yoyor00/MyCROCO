@@ -2187,10 +2187,11 @@ contains
       ! --- croco_lagrangian (optional) ---
       call check_nml_presence(nmlunit, "croco_lagrangian", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_lagrangian, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_lagrangian, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_lagrangian (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_lagrangian (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_lagrangian)
+            ierr = ierr + 1
          end if
       end if
 #endif
@@ -2199,10 +2200,11 @@ contains
       ! --- croco_foil (optional) ---
       call check_nml_presence(nmlunit, "croco_foil", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_foil, iostat=ios); rewind (nmlunit)
+         read (nmlunit, nml=croco_foil, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_foil (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
+            call fatal_nml_error("croco_foil (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_foil)
+            ierr = ierr + 1
          end if
       end if
 #endif

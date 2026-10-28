@@ -100,7 +100,8 @@ CONTAINS
       USE toolmpi, ONLY: ex_traj
       USE comtraj, ONLY: down_give, up_give, right_give, left_give
 #endif
-      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz, l_repro_random
+      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz, reproducibility, &
+                         transport_min_depth
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in)    :: xe
@@ -144,7 +145,7 @@ CONTAINS
       INTEGER              :: ierr_mpi
 
       ! Counter to tell successive random draws apart for a given particle
-      ! within a time step, when l_repro_random is used (see lag_random_number)
+      ! within a time step, when reproducibility is used (see lag_random_number)
       INTEGER              :: draw_id
 
 # include "compute_auxiliary_bounds.h"
@@ -272,7 +273,7 @@ CONTAINS
                ! along-sigma advection (and potentially diffusion)
                CALL avance(uz, vz, xe, &
                         dtm, pos_temp, particle%spos, particle%flag, &
-                        Istr, Iend, Jstr, Jend, l_repro_random, particle%num, draw_id)
+                        Istr, Iend, Jstr, Jend, reproducibility, particle%num, draw_id)
                CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
                         hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                xe_final = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
@@ -296,6 +297,13 @@ CONTAINS
 
                particle%xpos = pos_temp%xp; particle%ypos = pos_temp%yp
                IF ((d3_final > 0.0_rsh) .AND. (d3_mid > 0.0_rsh)) THEN
+                  ! Reject a transported position in water shallower than the
+                  ! configured threshold. A zero threshold disables this test.
+                  IF (transport_min_depth > 0.0_rsh .AND. d3_final < transport_min_depth) THEN
+                     particle%xpos = pos_old%xp
+                     particle%ypos = pos_old%yp
+                     CYCLE
+                  END IF
                   particle%d3 = d3_final
                   particle%xe = xe_final
                   particle%h0 = h0_final
@@ -434,7 +442,7 @@ CONTAINS
                         IF (kzz < 0.0) kzz = 0.0                  ! kzz should be > 0 but...
 
                         ! random walk component of vertical diffusion (between 0 and 1)
-                        CALL lag_random_number(l_repro_random, particle%num, draw_id, tir)
+                        CALL lag_random_number(reproducibility, particle%num, draw_id, tir)
 
                         ! s_int=s_int+ds_dif+(2.0_rsh*tir-1.0_rsh)*sqrt(2.0_rsh*dtz*kzz/(r*d3_mid*d3_mid))  en sigma
                         z_int = z_int + (ds_dif + (2.0_rsh*tir - 1.0_rsh)*sqrt(2.0_rsh*dtz*kzz/r))
@@ -461,7 +469,7 @@ CONTAINS
                         !! random mixed layer to avoid accumulation (see Ross and Sharples, 2004)
                         lb = 2.0_rsh        ! distance in meters for the random boundary layer
                         lt = 2.0_rsh        ! twice the boundary layer should be ok
-                        CALL lag_random_number(l_repro_random, particle%num, draw_id, tir)
+                        CALL lag_random_number(reproducibility, particle%num, draw_id, tir)
                         IF (z_int > zpos(kmax) - lt) z_int = zpos(kmax) - tir*lt
                         IF (z_int < zpos(0) + lb) z_int = zpos(0) + tir*lb
 
@@ -497,7 +505,7 @@ CONTAINS
 
    !!======================================================================
    SUBROUTINE avance(uz, vz, xe, deltat, pos, sig0, statp, Istr, Iend, Jstr, Jend, &
-                     l_repro_random, num, draw_id)
+                     reproducibility, num, draw_id)
 
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE avance  ***
@@ -539,7 +547,7 @@ CONTAINS
       REAL(KIND=rsh), INTENT(in)               :: sig0
       INTEGER, INTENT(in)               :: Istr, Iend, Jstr, Jend
       REAL(KIND=rsh), INTENT(inout), OPTIONAL   :: statp
-      LOGICAL, INTENT(in)               :: l_repro_random
+      LOGICAL, INTENT(in)               :: reproducibility
       INTEGER, INTENT(in)               :: num
       INTEGER, INTENT(inout)            :: draw_id
 
@@ -579,9 +587,9 @@ CONTAINS
 
       ! add random dispersion
       IF (hdiff /= 0.0_rsh) then
-         CALL lag_random_number(l_repro_random, num, draw_id, tir1)
+         CALL lag_random_number(reproducibility, num, draw_id, tir1)
          tetha = 2.0_rsh*pi*tir1
-         CALL lag_random_number(l_repro_random, num, draw_id, tir2)
+         CALL lag_random_number(reproducibility, num, draw_id, tir2)
          dkx = sqrt(2.0_rsh*hdiff*deltat*3.0_rsh)*tir2
          IF (0.5_rsh*(ux0 + uxp) /= 0.0_rsh .and. 0.5_rsh*(uy0 + uyp) /= 0.0_rsh) THEN
             pos1%xp = pos1%xp + dkx*cos(tetha)/om_r(nint(pos1%idx_r), nint(pos1%idy_r))

@@ -19,7 +19,7 @@ MODULE debmodel
 #ifdef FOIL
 
    USE module_ibm         ! time,sc_w,h
-   USE comtraj, ONLY: kmax, rsh, rlg, lchain, valmanq, &
+   USE comtraj, ONLY: kmax, rsh, rlg, lchain, valmanq, nb_species, &
                       type_particle, type_patch, patches
 
    IMPLICIT NONE
@@ -82,36 +82,16 @@ MODULE debmodel
    REAL(kind=rsh)                  :: Rfbatch
    REAL(kind=rsh)                  :: SF
 
-   ! Mortality and density-dependency parameters (Menu et al. 2023)
-   ! REAL(KIND=rsh)                  :: gammaA     = 0.447_rsh ! with selectivity
-   ! REAL(KIND=rsh)                  :: K_biomassA = 10.670_rlg ! with selectivity
-   ! REAL(KIND=rsh)                  :: gammaS     = 0.703343166175024681053_rsh ! with selectivity
-   ! REAL(KIND=rsh)                  :: K_biomassS = 85.315712187958894219264_rlg ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: Zea       = 0.063 ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072 ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: za        = 0.154 ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: zs        = 0.179 ! with selectivity
-
-   REAL(KIND=rsh), PUBLIC          :: Zaa = 0.0_rsh
-   REAL(KIND=rsh), PUBLIC          :: Zas = 0.0_rsh
+   ! Density-dependency parameters (Menu et al. 2023)
    REAL(KIND=rsh)                  :: frac_deb = 0.000999999_rsh
-
-   ! without selectivity
-   REAL(KIND=rsh)                  :: gammaA = 0.384_rsh
-   REAL(KIND=rsh)                  :: K_biomassA = 6.156_rsh
-   REAL(KIND=rsh), PUBLIC          :: Zea = 0.056_rsh
-   REAL(KIND=rsh), PUBLIC          :: za = 0.136_rsh
-   REAL(KIND=rsh)                  :: gammaS = 0.387_rsh
-   REAL(KIND=rsh)                  :: K_biomassS = 3.626_rsh
-   REAL(KIND=rsh), PUBLIC          :: Zes = 0.075_rsh
-   REAL(KIND=rsh), PUBLIC          :: zs = 0.201_rsh
+   REAL(KIND=rsh), DIMENSION(nb_species) :: gamma_species, K_biomass_species
 
    !!==============================================================================================
 
 CONTAINS
 
    !!======================================================================
-   SUBROUTINE deb_init(restart)
+   SUBROUTINE deb_init(restart, initialize_catch)
       !&E------------------------------------------------------------------
       !&E                 ***  ROUTINE deb_init  ***
       !&E
@@ -131,32 +111,43 @@ CONTAINS
       !&E------------------------------------------------------------------
       !! * Modules used
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, ionc4_close, &
-                       ionc4_read_dimt, ionc4_read_dimtraj
-      USE ibmtools, ONLY: gasdev_s
-      USE comtraj, ONLY: fileanchovy, filesardine, catch_anc_bob, catch_sar_bob
+                       ionc4_read_dimt, ionc4_read_dimtraj, ionc4_var_exists
+      USE ibmtools, ONLY: gasdev_s, selec_dome_or_asymp
+      USE ibmtools, ONLY: alpha_sel, beta_sel
+#ifdef MPI
+      USE toolmpi, ONLY: ADD_ALL_MPI_REAL
+#endif
+      USE comtraj, ONLY: fileanchovy, filesardine, catch_anc, catch_sar
       USE comtraj, ONLY: mat_catch, fishing_strategy
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
-      USE comtraj, ONLY: l_repro_random
+      USE comtraj, ONLY: reproducibility
+      USE comtraj, ONLY: iscreenlog
+      USE comtraj, ONLY: struc_ad, struc_ad_dd_DEB
+      USE comtraj, ONLY: number_tot, weight_tot, biom_tot, Wdeb_mean
 
       !! * Arguments
       LOGICAL, intent(IN)                          :: restart
+      LOGICAL, intent(IN)                          :: initialize_catch
 
       !! * Local declarations
       CHARACTER(LEN=lchain) :: file_inp
       INTEGER :: idimt
-      INTEGER :: m, n, num, nb_part_nc, is, ie, il, index_num
+      INTEGER :: m, n, num, nb_part_nc, is, ie, il, index_num, ivar, ierr_mpi
       INTEGER :: lstr, lenstr
+      LOGICAL :: found_restart_var
+      CHARACTER(LEN=16), DIMENSION(13) :: required_restart_vars
       TYPE(type_patch), POINTER :: patch
 
       REAL(KIND=rsh) :: WV, WE, WR, WG, NRJ_V, NRJ_g, Wat, Wash, L, Wdeb, NRJ
       REAL(KIND=rsh) :: zoom
+      REAL(KIND=rsh) :: gamma, K_biomass
       INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
       INTEGER :: jj, mm_clock, aaaa, hh, minu, sec
       CHARACTER(len=19) :: tool_sectodat
 
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: daysp_nc, yearsp_nc, season_nc, num_nc
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: daysp_nc, yearsp_nc, season_nc, nbatch_nc, num_nc
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:) :: edeb_nc, hdeb_nc, rdeb_nc, gam_nc
-      REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:) :: neggs_nc, wdeb_nc, zoom_nc
+      REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:) :: neggs_nc, neggs_tot_nc, wdeb_nc, zoom_nc
 
       CHARACTER(len=lchain) :: file_catch
       INTEGER :: id_species
@@ -175,12 +166,34 @@ CONTAINS
       NAMELIST /deb_para/ pAm, pMi, EG, vc, kap, Kx, Hp, TA, K, shapeb, lfactor, E0, Rfbatch, SF
       NAMELIST /deb_fixed_param/ kj, Hb, Hj, T1, TAL, TL, shape, d_V, rho_V, rho_E, &
          rho_R, rho_Gam, Kr, Sizeb, Lj, TR, E_i, R_i
+      NAMELIST /ibm_density_dependency/ gamma, K_biomass
+
+      lstr = lenstr(fileanchovy)
+      OPEN (51, file=fileanchovy(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_density_dependency)
+      CLOSE (51)
+      gamma_species(1) = gamma
+      K_biomass_species(1) = K_biomass
+
+      lstr = lenstr(filesardine)
+      OPEN (51, file=filesardine(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_density_dependency)
+      CLOSE (51)
+      gamma_species(2) = gamma
+      K_biomass_species(2) = K_biomass
 
       CALL tool_decompdate(tool_sectodat(time), jj, mm_clock, aaaa, hh, minu, sec)
+
+      IF (restart) THEN
+         struc_ad = 0.0_rsh
+         number_tot = 0.0_rlg
+         weight_tot = 0.0_rlg
+      END IF
 
       patch => patches%first
       DO n = 1, patches%nb
          IF (patch%species == 'anchovy') THEN
+            id_species = 1
             lstr = lenstr(fileanchovy)
             OPEN (52, file=fileanchovy(1:lstr), status='old', form='formatted', access='sequential')
             READ (52, deb_para)
@@ -189,6 +202,7 @@ CONTAINS
          END IF
 
          IF (patch%species == 'sardine') THEN
+            id_species = 2
             lstr = lenstr(filesardine)
             OPEN (51, file=filesardine(1:lstr), status='old', form='formatted', access='sequential')
             READ (51, deb_para)
@@ -206,14 +220,45 @@ CONTAINS
             ! Initialize array with content of NetCDF input file
             file_inp = trim(patch%file_inp)
             CALL ionc4_openr(file_inp, .false.)
+
+            required_restart_vars(1) = 'EDEB'
+            required_restart_vars(2) = 'HDEB'
+            required_restart_vars(3) = 'RDEB'
+            required_restart_vars(4) = 'GAM'
+            required_restart_vars(5) = 'NEGGS'
+            required_restart_vars(6) = 'WEIGHT'
+            required_restart_vars(7) = 'NUM'
+            required_restart_vars(8) = 'DAYSPAWN'
+            required_restart_vars(9) = 'YEARSPAWN'
+            required_restart_vars(10) = 'ZOOM'
+            required_restart_vars(11) = 'SEASON'
+            required_restart_vars(12) = 'NBATCH'
+            required_restart_vars(13) = 'NEGGS_TOT'
+            DO ivar = 1, UBOUND(required_restart_vars, 1)
+               CALL ionc4_var_exists(file_inp, trim(required_restart_vars(ivar)), found_restart_var)
+               IF (.NOT. found_restart_var) THEN
+                  IF_MPI(MASTER) THEN
+                  WRITE (iscreenlog, *) ' '
+                  WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', n
+                  WRITE (iscreenlog, *) 'Restart variable ', trim(required_restart_vars(ivar)), &
+                     ' is missing from ', trim(file_inp)
+                  WRITE (iscreenlog, *) 'The file cannot be used for a DEB restart.'
+                  WRITE (iscreenlog, *) 'Simulation stopped.'
+                  ENDIF_MPI
+                  CALL_MPI MPI_FINALIZE(ierr_mpi)
+                  STOP
+               END IF
+            END DO
+
             CALL ionc4_read_dimtraj(file_inp, nb_part_nc) !clara
 
             ! nb_part_nc = patch%nb_part_total ! denis
             ALLOCATE (edeb_nc(nb_part_nc), hdeb_nc(nb_part_nc), rdeb_nc(nb_part_nc), &
                       gam_nc(nb_part_nc), wdeb_nc(nb_part_nc))
             ALLOCATE (neggs_nc(nb_part_nc), daysp_nc(nb_part_nc), yearsp_nc(nb_part_nc), &
-                      season_nc(nb_part_nc))
+                      season_nc(nb_part_nc), nbatch_nc(nb_part_nc))
             ALLOCATE (num_nc(nb_part_nc), zoom_nc(nb_part_nc))
+            ALLOCATE (neggs_tot_nc(nb_part_nc))
 
             ! CALL ionc4_openr(trim(file_inp), .false.)
             ! Read time dimension in input file to open last time in restart file
@@ -230,7 +275,9 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "DAYSPAWN", daysp_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "YEARSPAWN", yearsp_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "ZOOM", zoom_nc, 1, nb_part_nc, idimt)
-            !CALL ionc4_read_trajt (file_inp, "SEASON",    season_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "SEASON", season_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "NBATCH", nbatch_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "NEGGS_TOT", neggs_tot_nc, 1, nb_part_nc, idimt)
             CALL ionc4_close(file_inp)
 
             DO m = 1, patch%nb_part_alloc
@@ -259,10 +306,13 @@ CONTAINS
                patch%particles(m)%dayspawn = daysp_nc(index_num)
                patch%particles(m)%yearspawn = yearsp_nc(index_num)
                patch%particles(m)%zoom = zoom_nc(index_num)
+               patch%particles(m)%season = season_nc(index_num) == 1
+               patch%particles(m)%Nbatch = nbatch_nc(index_num)
+               patch%particles(m)%Neggs_tot = neggs_tot_nc(index_num)
             END DO
 
-            DEALLOCATE (edeb_nc, hdeb_nc, rdeb_nc, gam_nc, wdeb_nc, neggs_nc, daysp_nc, yearsp_nc, season_nc)
-            DEALLOCATE (num_nc, zoom_nc)
+            DEALLOCATE (edeb_nc, hdeb_nc, rdeb_nc, gam_nc, wdeb_nc, neggs_nc, daysp_nc, yearsp_nc)
+            DEALLOCATE (season_nc, nbatch_nc, num_nc, zoom_nc, neggs_tot_nc)
          END IF  ! Restart
 
          ! Les caracteristiques des oeufs d'une meme espece proviennent d'un seul et meme fichier de forcage.
@@ -417,7 +467,7 @@ CONTAINS
                zoom = patch%particles(m)%zoom
             ELSE
                draw_id = 0
-               CALL gasdev_s(zoom, l_repro_random, patch%particles(m)%num, draw_id)
+               CALL gasdev_s(zoom, reproducibility, patch%particles(m)%num, draw_id)
                zoom = 1 + zoom*0.2_rsh/3.0_rsh
             END IF
 
@@ -455,6 +505,32 @@ CONTAINS
             patch%particles(m)%NRJ_V = NRJ_V
             patch%particles(m)%NRJ_g = NRJ_g
 
+            ! Rebuild restart aggregates
+            IF (restart .AND. patch%particles(m)%super > 1.0_rsh .AND. &
+                patch%particles(m)%flag /= -valmanq) THEN
+               IF (patch%particles(m)%stage >= 3) &
+                  struc_ad(id_species) = struc_ad(id_species) + &
+                     patch%particles(m)%WV*patch%particles(m)%super
+
+               IF (initialize_catch .AND. patch%particles(m)%stage >= 5 .AND. &
+                   patch%particles(m)%AgeClass >= 1) THEN
+                  IF (id_species == 1) THEN
+                     number_tot(id_species) = number_tot(id_species) + patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
+                     weight_tot(id_species) = weight_tot(id_species) + &
+                        patch%particles(m)%Wdeb*patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
+                  ELSE
+                     number_tot(id_species) = number_tot(id_species) + patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
+                     weight_tot(id_species) = weight_tot(id_species) + &
+                        patch%particles(m)%Wdeb*patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
+                  END IF
+               END IF
+
+            END IF
+
             ! -- Reproduction
             IF (.NOT. restart) THEN
                patch%particles(m)%yearspawn = aaaa
@@ -466,10 +542,10 @@ CONTAINS
          ! IF CATCH as fishing strategy
          IF (fishing_strategy == 'Catch') THEN
             IF (patch%species == 'anchovy') THEN
-               file_catch = catch_anc_bob
+               file_catch = catch_anc
                id_species = 1
             ELSE IF (patch%species == 'sardine') THEN
-               file_catch = catch_sar_bob
+               file_catch = catch_sar
                id_species = 2
             END IF
 
@@ -485,6 +561,31 @@ CONTAINS
          patch => patch%next
 
       END DO  ! loop on patch (n)
+
+      IF (restart) THEN
+         DO is = 1, nb_species
+            CALL_MPI ADD_ALL_MPI_REAL(struc_ad(is))
+            struc_ad_dd_DEB(is) = struc_ad(is)
+            struc_ad(is) = 0.0_rsh
+
+            IF (initialize_catch) THEN
+               CALL_MPI ADD_ALL_MPI_REAL(number_tot(is))
+               CALL_MPI ADD_ALL_MPI_REAL(weight_tot(is))
+               IF (number_tot(is) > 0.0_rlg) THEN
+                  Wdeb_mean(is) = weight_tot(is)/number_tot(is)
+                  biom_tot(is) = weight_tot(is)
+               ELSE
+                  Wdeb_mean(is) = 0.0_rlg
+                  biom_tot(is) = 0.0_rlg
+               END IF
+            ELSE
+               Wdeb_mean(is) = 0.0_rlg
+               biom_tot(is) = 0.0_rlg
+            END IF
+            number_tot(is) = 0.0_rlg
+            weight_tot(is) = 0.0_rlg
+         END DO
+      END IF
 
    END SUBROUTINE deb_init
 
@@ -512,7 +613,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! * Modules used
       USE ibmtools, ONLY: gasdev_s
-      USE comtraj, ONLY: l_repro_random
+      USE comtraj, ONLY: reproducibility
 
       !! * Arguments
       TYPE(type_particle), INTENT(inout) :: particle
@@ -531,7 +632,7 @@ CONTAINS
 
       ! Inter individual variability
       draw_id = 0
-      CALL gasdev_s(zoom, l_repro_random, particle%num, draw_id)
+      CALL gasdev_s(zoom, reproducibility, particle%num, draw_id)
       zoom = 1 + zoom*0.2_rsh/3.0_rsh
 
       !   Affectation des paramètres
@@ -654,7 +755,7 @@ CONTAINS
       REAL(kind=rsh) :: dR, dH, dE, dL, dGam
       REAL(KIND=rsh) :: Wat, Wash
       LOGICAL :: lastbatch
-      INTEGER :: ierr_mpi
+      INTEGER :: ierr_mpi, ind_species
 
       !!----------------------------------------------------------------------
       !! * Executable part
@@ -698,25 +799,26 @@ CONTAINS
       X = 0.0_rsh
       K_food = K !  + L * 10; % account for changes in preference
       f = ffix
+      ind_species = 0
+      IF (species == 'anchovy') ind_species = 1
+      IF (species == 'sardine') ind_species = 2
 
       IF (.not. F_Fix .and. particle%size > 0.0_rsh) THEN
          X = get_Xdeb(particle%xpos, particle%ypos, particle%spos, particle%size, 0.0_rsh, 0.0_rsh, particle%num)
 
          ! -- Densite-dependance  (Menu et al. 2023)
          IF (particle%WV > 0) THEN
-            IF (species == 'anchovy') THEN
-               f = X/(X + K_food + struc_ad_dd_DEB(1)/(K_biomassA*10d8*particle%WV**gammaA)) !BD weight effect
-            END IF
-            IF (species == 'sardine') THEN
-               f = X/(X + K_food + struc_ad_dd_DEB(2)/(K_biomassS*10d8*particle%WV**gammaS)) !BD weight effect
-            END IF
+            IF (ind_species > 0) f = X/(X + K_food + struc_ad_dd_DEB(ind_species)/ &
+               (K_biomass_species(ind_species)*10d8* &
+                particle%WV**gamma_species(ind_species))) ! BD weight effect
          ELSE
             f = X/(X + K_food)
          END IF
 
          IF (X < 0) THEN
             WRITE (*, *) "w_dry", particle%Wdebd, "size", particle%size, "L", particle%L, "f", f, &
-               "nb", particle%super, "strc", struc_ad, "Kbiom", K_biomassA, "Kfood", K_food, "X", X
+               "nb", particle%super, "strc", struc_ad, "Kbiom", K_biomass_species, &
+               "Kfood", K_food, "X", X
             CALL_MPI MPI_FINALIZE(ierr_mpi)
             STOP
          END IF

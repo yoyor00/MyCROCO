@@ -1500,14 +1500,25 @@ CONTAINS
       !&E
       !&E ** Called by : traj_save3d, ibm_save, eggs_grid
       !&E
-      !&E ** Description : reads the true curvilinear grid coordinate directly
-      !&E              (nearest rho-point, same convention as uint/vint's
-      !&E              igg=NINT(xpos))
+      !&E ** Description : bilinear interpolation of the true curvilinear grid
+      !&E              coordinate between the 4 rho-points surrounding
+      !&E              (x, y), same convention (and px, py) as h0int/xeint.
+      !&E              Longitude differences are wrapped to [-180, 180] before
+      !&E              interpolating, and added back to lonr(i1,j1), so a
+      !&E              patch straddling the dateline isn't averaged the wrong
+      !&E              way round.
       !&E
       !&E ** History :
       !&E       !  (??)
       !&E       !  2024     (M. Caillaud)
       !&E       !  2026     (S. Le Gac) update for curvilinear grid
+      !&E       !  2026     (S. Le Gac) bilinear interpolation instead of
+      !&E                    nearest rho-point -- the latter froze the
+      !&E                    output lon/lat for as long as a particle stayed
+      !&E                    within one cell, producing a "staircase" in the
+      !&E                    trajectory output even though the particle's
+      !&E                    internal (xpos, ypos) was updated correctly
+      !&E                    every time step.
       !&E
       !&E---------------------------------------------------------------------
       !! * Function declaration
@@ -1516,17 +1527,46 @@ CONTAINS
       !! * Arguments
       REAL(kind=rsh), INTENT(in)  :: x, y
 
+      !! * Local declarations
+      INTEGER         :: i1, i2, j1, j2
+      REAL(kind=rsh)  :: xloc, yloc, px, py
+      REAL(kind=rlg)  :: lon0, d21, d12, d22
+
       ! x,y are GLOBAL coordinates (like particle%xpos/%ypos), but lonr is
       ! indexed LOCALLY per rank -- see define_pos's
-      ! pos%idx = INT(pos%xp) - iminmpi + 1, the same convention used
-      ! throughout this module. Using NINT(x) directly as a local array
-      ! index (as this function used to) is only correct on the rank whose
-      ! iminmpi/jminmpi happen to be 1 -- everywhere else it silently reads
-      ! the wrong (or edge-clamped) grid cell. Convert first, then clamp
-      ! only as a safety margin (e.g. a particle just past this rank's
-      ! ownership boundary that hasn't been handed off yet).
-      tool_ind2lon = lonr(MIN(MAX(NINT(x) - iminmpi + 1, LBOUND(lonr, 1)), UBOUND(lonr, 1)), &
-                          MIN(MAX(NINT(y) - jminmpi + 1, LBOUND(lonr, 2)), UBOUND(lonr, 2)))
+      ! pos%idx_r = pos%xp - iminmpi + 1, the same convention used
+      ! throughout this module. Using NINT(x)/NINT(y) directly as a local
+      ! array index (as this function used to) is only correct on the rank
+      ! whose iminmpi/jminmpi happen to be 1 -- everywhere else it silently
+      ! reads the wrong (or edge-clamped) grid cell. Convert first (keeping
+      ! the fractional part, unlike the old NINT-based version, so the
+      ! result varies continuously within a cell), then clamp only as a
+      ! safety margin (e.g. a particle just past this rank's ownership
+      ! boundary that hasn't been handed off yet).
+      xloc = x - REAL(iminmpi, rsh) + 1.0_rsh
+      yloc = y - REAL(jminmpi, rsh) + 1.0_rsh
+
+      i1 = INT(xloc); i2 = i1 + 1
+      j1 = INT(yloc); j2 = j1 + 1
+      px = xloc - REAL(i1, rsh)
+      py = yloc - REAL(j1, rsh)
+
+      i1 = MIN(MAX(i1, LBOUND(lonr, 1)), UBOUND(lonr, 1))
+      i2 = MIN(MAX(i2, LBOUND(lonr, 1)), UBOUND(lonr, 1))
+      j1 = MIN(MAX(j1, LBOUND(lonr, 2)), UBOUND(lonr, 2))
+      j2 = MIN(MAX(j2, LBOUND(lonr, 2)), UBOUND(lonr, 2))
+
+      ! Interpolate longitude DIFFERENCES from lonr(i1,j1), each wrapped to
+      ! [-180,180], instead of the raw longitudes -- a cell straddling the
+      ! +-180 meridian would otherwise average e.g. +179 and -179 to ~0
+      ! instead of +-180.
+      lon0 = lonr(i1, j1)
+      d21 = lonr(i2, j1) - lon0; d21 = d21 - 360.0_rlg*REAL(NINT(d21/360.0_rlg), rlg)
+      d12 = lonr(i1, j2) - lon0; d12 = d12 - 360.0_rlg*REAL(NINT(d12/360.0_rlg), rlg)
+      d22 = lonr(i2, j2) - lon0; d22 = d22 - 360.0_rlg*REAL(NINT(d22/360.0_rlg), rlg)
+
+      tool_ind2lon = lon0 + REAL(px, rlg)*(1.0_rlg - REAL(py, rlg))*d21 + REAL(px, rlg)*REAL(py, rlg)*d22 &
+                     + (1.0_rlg - REAL(px, rlg))*REAL(py, rlg)*d12
 
    END FUNCTION tool_ind2lon
 
@@ -1539,12 +1579,15 @@ CONTAINS
       !&E
       !&E ** Called by : traj_save3d, ibm_save, eggs_grid
       !&E
-      !&E ** Description : see tool_ind2lon -- same rationale, reads latr
-      !&E              directly at the nearest rho-point 
+      !&E ** Description : see tool_ind2lon -- same rationale and bilinear
+      !&E              interpolation between the 4 surrounding rho-points
+      !&E              (no dateline wrapping needed for latitude).
       !&E
       !&E ** History :
       !&E       !  2024     (M. Caillaud)
       !&E       !  2026     (S. Le Gac) update for curvilinear grid
+      !&E       !  2026     (S. Le Gac) bilinear interpolation -- see
+      !&E                    tool_ind2lon's history for why
       !&E
       !&E---------------------------------------------------------------------
       !! * Function declaration
@@ -1553,10 +1596,29 @@ CONTAINS
       !! * Arguments
       REAL(kind=rsh), INTENT(in)  :: x, y
 
-      ! See tool_ind2lon -- same global-to-local conversion, then clamp
-      ! against latr's own LBOUND/UBOUND as a safety margin only.
-      tool_ind2lat = latr(MIN(MAX(NINT(x) - iminmpi + 1, LBOUND(latr, 1)), UBOUND(latr, 1)), &
-                          MIN(MAX(NINT(y) - jminmpi + 1, LBOUND(latr, 2)), UBOUND(latr, 2)))
+      !! * Local declarations
+      INTEGER         :: i1, i2, j1, j2
+      REAL(kind=rsh)  :: xloc, yloc, px, py
+
+      ! See tool_ind2lon for the global-to-local conversion and the
+      ! LBOUND/UBOUND clamp (safety margin only).
+      xloc = x - REAL(iminmpi, rsh) + 1.0_rsh
+      yloc = y - REAL(jminmpi, rsh) + 1.0_rsh
+
+      i1 = INT(xloc); i2 = i1 + 1
+      j1 = INT(yloc); j2 = j1 + 1
+      px = xloc - REAL(i1, rsh)
+      py = yloc - REAL(j1, rsh)
+
+      i1 = MIN(MAX(i1, LBOUND(latr, 1)), UBOUND(latr, 1))
+      i2 = MIN(MAX(i2, LBOUND(latr, 1)), UBOUND(latr, 1))
+      j1 = MIN(MAX(j1, LBOUND(latr, 2)), UBOUND(latr, 2))
+      j2 = MIN(MAX(j2, LBOUND(latr, 2)), UBOUND(latr, 2))
+
+      tool_ind2lat = REAL(px, rlg)*(1.0_rlg - REAL(py, rlg))*latr(i2, j1) &
+                     + REAL(px, rlg)*REAL(py, rlg)*latr(i2, j2) &
+                     + (1.0_rlg - REAL(px, rlg))*REAL(py, rlg)*latr(i1, j2) &
+                     + (1.0_rlg - REAL(px, rlg))*(1.0_rlg - REAL(py, rlg))*latr(i1, j1)
 
    END FUNCTION tool_ind2lat
 

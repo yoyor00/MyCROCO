@@ -36,7 +36,8 @@ MODULE trajinitsave
    USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
                     ionc4_write_time, ionc4_sync, ionc4_close, &
                     ionc4_write_trajt, ionc4_read_dimtraj, &
-                    ionc4_read_trajt, ionc4_openr, ionc4_init, ionc4_read_dimt
+                    ionc4_read_trajt, ionc4_openr, ionc4_init, ionc4_read_dimt, &
+                    ionc4_var_exists
 
    IMPLICIT NONE
    PRIVATE
@@ -216,10 +217,8 @@ CONTAINS
       USE comtraj, ONLY: init_mpi_type_particle
 #endif
       USE comtraj, ONLY: patch_list_append, patches, type_patch, file_trajec, &
-                         dir_pathout, dtz, hdiff, hadv, dtsave_traj, l_repro_random
-#ifdef FOIL
-      USE comtraj, ONLY: ibm_restart
-#endif
+                         dir_pathout, dtz, hdiff, transport_min_depth, hadv, dtsave_traj, reproducibility
+      USE comtraj, ONLY: lagrangian_restart
       USE comtraj, ONLY: dsigu, dsigw, kmax, ierrorlog, iscreenlog
       USE comtraj, ONLY: wz
       USE comtraj, ONLY: type_position
@@ -233,7 +232,7 @@ CONTAINS
       !! * Local declarations
       ! For reading input file
       INTEGER                                     :: idimt                    ! Read last time in restart file
-      LOGICAL                                     :: ex, l_posit
+      LOGICAL                                     :: ex, l_posit, found_restart_var
       INTEGER                                     :: lstr, lenstr
       CHARACTER(LEN=5)                            :: comment
       CHARACTER(LEN=19)                           :: dateread, tool_sectodat
@@ -246,13 +245,20 @@ CONTAINS
 
       ! Indexes for loops
       CHARACTER(LEN=lchain)                       :: rec
-      INTEGER                                     :: eof, i, j, k, nn, npa, m1, m2, kk, l
+      INTEGER                                     :: eof, i, j, k, nn, npa, m1, m2, kk, l, ivar
+      CHARACTER(LEN=16), DIMENSION(5)             :: required_restart_vars
 
       ! For circle patch, center of the circle patch
       REAL(KIND=rsh)                              :: dxc, dyc
       REAL(KIND=rsh)                              :: fi, radeg, ray_patch, phimin, phimax
       REAL(KIND=rsh)                              :: xpos_patch, ypos_patch
       REAL(KIND=rsh)                              :: rx, ry, dl
+
+      ! Decomposition-independent rank of a circle-patch grid cell
+      ! among only the cells that fall inside the circle, so every rank
+      ! computes the same values without any MPI communication.
+      INTEGER, ALLOCATABLE, DIMENSION(:, :)       :: circle_rank
+      INTEGER                                     :: n_circle_cells
 
       ! To read data from rectangular patch
       REAL(KIND=rlg)                              :: gmin, gmax
@@ -305,7 +311,9 @@ CONTAINS
       REAL(KIND=rlg), DIMENSION(5)                 :: buff_mpi
 
       NAMELIST /namtraj/ file_trajec, dir_pathout, dtsave_traj
-      NAMELIST /namtrajadiff/ hadv, dtz, hdiff, l_repro_random
+      NAMELIST /namrestart/ lagrangian_restart
+      NAMELIST /namreproducibility/ reproducibility
+      NAMELIST /namtrajadiff/ hadv, dtz, hdiff, transport_min_depth
 
 # include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
@@ -352,6 +360,8 @@ CONTAINS
       lstr = lenstr(lagrangianname)
       OPEN (50, file=lagrangianname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namtraj)
+      READ (50, namrestart)
+      READ (50, namreproducibility)
       READ (50, namtrajadiff)
 
       ! save into simu.log
@@ -367,7 +377,7 @@ CONTAINS
       WRITE (iscreenlog, *) 'fichier definissant les caracteristiques des trajectoires : ', trim(file_trajec)
       ENDIF_MPI
 
-      ! Make sure the type of trajectory is correct
+      ! Make sure the trajectory file is correct
       INQUIRE (file=file_trajec, exist=ex)
       IF (.NOT. ex) THEN
          PRINT *, "Trajectory file '"//trim(file_trajec)//"' does not exist."
@@ -405,6 +415,9 @@ CONTAINS
          ! Create new patch data structure
          new_patch => patch_list_append(patches)
 
+         ! Read name of patch
+         READ (49, '(a)', iostat=eof) new_patch%name
+
          ! Read type of this patch (1=circle, 2=rectangle, 3=netcdf) -- patches
          ! of different types can be mixed within a single file_trajec file.
          READ (49, *, iostat=eof) itypepatch
@@ -416,8 +429,18 @@ CONTAINS
             STOP
          END IF
 
-         ! Read name of patch
-         READ (49, '(a)', iostat=eof) new_patch%name
+         IF (lagrangian_restart .AND. itypepatch /= 3) THEN
+            IF_MPI(MASTER) THEN
+            WRITE (iscreenlog, *) ' '
+            WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', npa
+            WRITE (iscreenlog, *) 'lagrangian_restart = .TRUE. is only supported for NetCDF patches (type 3).'
+            WRITE (iscreenlog, *) 'Current patch type is ', itypepatch, ' (1=circle, 2=rectangle).'
+            WRITE (iscreenlog, *) 'Set lagrangian_restart to .FALSE. or use a type-3 restart patch.'
+            WRITE (iscreenlog, *) 'Simulation stopped.'
+            ENDIF_MPI
+            CALL_MPI MPI_FINALIZE(ierr_mpi)
+            STOP
+         END IF
 
          ! Read starting date of trajectory
          READ (49, '(a)', iostat=eof) dateread
@@ -580,6 +603,22 @@ CONTAINS
                   nn = INT(sqrt(4/pi*nbpart_patch)) + 1
                   dl = 2*ray_patch/nn
 
+                  ! Rank each cell of the nn x nn bounding square among only
+                  ! those inside the circle, in the same (j, i) scan order as
+                  ! the counting/placement loops below, so NUM starts at 1
+                  ALLOCATE (circle_rank(nn, nn))
+                  n_circle_cells = 0
+                  DO j = 1, nn
+                     DO i = 1, nn
+                        rx = -ray_patch + REAL(i - 1)*dl
+                        ry = -ray_patch + REAL(j - 1)*dl
+                        IF (sqrt(rx*rx + ry*ry) <= ray_patch) THEN
+                           circle_rank(i, j) = n_circle_cells
+                           n_circle_cells = n_circle_cells + 1
+                        END IF
+                     END DO
+                  END DO
+
                   IF (is_local_position(REAL(imin_patch, rsh), REAL(jmin_patch, rsh), Istr, Iend, Jstr, Jend)) THEN
                      IF (h(imin_patch, jmin_patch) < kmin_patch) THEN
                         PRINT *, 'Patch on land or too deep'
@@ -629,6 +668,7 @@ CONTAINS
                         END IF
                      END DO
                   END DO
+
                   CALL init_patch(new_patch, nb_part)
                   m2 = 0
                   DO j = 1, nn
@@ -680,7 +720,7 @@ CONTAINS
                                           ! (and therefore trajectory identity) reproducible
                                           ! across MPI decompositions.
                                           new_patch%particles(m1 + l)%num = &
-                                             (((j - 1)*nn + (i - 1))*n_depth_levels + k_index)*nb_part_intro + l + 1
+                                             (circle_rank(i, j)*n_depth_levels + k_index)*nb_part_intro + l + 1
                                        END DO
                                     ELSE
                                        m2 = m2 - nb_part_intro
@@ -691,6 +731,7 @@ CONTAINS
                         END IF
                      END DO
                   END DO
+                  DEALLOCATE (circle_rank)
 
                ELSEIF (itypepatch == 2) THEN
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -843,27 +884,44 @@ CONTAINS
                   kk = index(rec, ',|')
                   IF (kk > 0) THEN
                      new_patch%file_inp = rec(1:kk - 1)
-#ifdef FOIL
-                     IF (ibm_restart) new_patch%file_inp = trim(dir_pathout)//rec(1:kk - 1)
-#endif
-
+                     IF (lagrangian_restart) new_patch%file_inp = trim(dir_pathout)//rec(1:kk - 1)
                   ELSE
                      new_patch%file_inp = rec
-#ifdef FOIL
-                     IF (ibm_restart) new_patch%file_inp = trim(dir_pathout)//rec
-#endif
+                     IF (lagrangian_restart) new_patch%file_inp = trim(dir_pathout)//rec
                   END IF
 
                   ! Estimate/correct number of particle inside the patch
 
                   ! Open input file and read number of particles
                   CALL ionc4_openr(trim(new_patch%file_inp), .false.)
+
+                  IF (lagrangian_restart) THEN
+                     required_restart_vars = (/ 'longitude       ', 'latitude        ', &
+                                                'DEPTH           ', 'NUM             ', &
+                                                'time            ' /)
+                     DO ivar = 1, UBOUND(required_restart_vars, 1)
+                        CALL ionc4_var_exists(trim(new_patch%file_inp), &
+                                              trim(required_restart_vars(ivar)), found_restart_var)
+                        IF (.NOT. found_restart_var) THEN
+                           IF_MPI(MASTER) THEN
+                           WRITE (iscreenlog, *) ' '
+                           WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', npa
+                           WRITE (iscreenlog, *) 'Restart variable ', &
+                              trim(required_restart_vars(ivar)), ' is missing from ', trim(new_patch%file_inp)
+                           WRITE (iscreenlog, *) 'The file cannot be used for a Lagrangian restart.'
+                           WRITE (iscreenlog, *) 'Simulation stopped.'
+                           ENDIF_MPI
+                           CALL_MPI MPI_FINALIZE(ierr_mpi)
+                           STOP
+                        END IF
+                     END DO
+                  END IF
+
                   CALL ionc4_read_dimtraj(trim(new_patch%file_inp), nb_part_nc)
 
                   ALLOCATE (lon_nc(nb_part_nc), lat_nc(nb_part_nc), depth_nc(nb_part_nc))
-#ifdef FOIL
-                  IF (ibm_restart) ALLOCATE (num_nc(nb_part_nc))
-#endif
+
+                  IF (lagrangian_restart) ALLOCATE (num_nc(nb_part_nc))
 
                   ! Read time dimension in input file to open last time in restart file
                   idimt = ionc4_read_dimt(trim(new_patch%file_inp))
@@ -871,9 +929,8 @@ CONTAINS
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "longitude", lon_nc, 1, nb_part_nc, idimt)
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "latitude", lat_nc, 1, nb_part_nc, idimt)
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "DEPTH", depth_nc, 1, nb_part_nc, idimt)
-#ifdef FOIL
-                  IF (ibm_restart) CALL ionc4_read_trajt(trim(new_patch%file_inp), "NUM", num_nc, 1, nb_part_nc, idimt)
-#endif
+
+                  IF (lagrangian_restart) CALL ionc4_read_trajt(trim(new_patch%file_inp), "NUM", num_nc, 1, nb_part_nc, idimt)
 
                   nb_part = 0
                   DO nn = 1, nb_part_nc
@@ -957,10 +1014,9 @@ CONTAINS
                                  ! particle -- keeping NUM (and therefore trajectory identity)
                                  ! reproducible across MPI decompositions.
                                  new_patch%particles(m1 + l)%num = (nn - 1)*nb_part_intro + l + 1
-#ifdef FOIL
+
                                  ! if restart, we want to keep the original num from netcdf file
-                                 IF (ibm_restart) new_patch%particles(m1 + l)%num = num_nc(nn)
-#endif
+                                 IF (lagrangian_restart) new_patch%particles(m1 + l)%num = num_nc(nn)
                               END DO
                            ELSE
                               m2 = m2 - nb_part_intro
@@ -969,9 +1025,7 @@ CONTAINS
                      END IF
                   END DO
                   DEALLOCATE (lon_nc, lat_nc, depth_nc)
-#ifdef FOIL
-                  IF (ibm_restart) DEALLOCATE (num_nc)
-#endif
+                  IF (lagrangian_restart) DEALLOCATE (num_nc)
 
                   ! close netcdf file
                   CALL ionc4_close(new_patch%file_inp)
@@ -985,6 +1039,20 @@ CONTAINS
                ! file, and applied uniformly to every particle created for this
                ! patch regardless of how it was created.
                READ (49, '(a)', iostat=eof) species
+               
+               IF (species /= 'anchovy' .AND. species /= 'sardine') THEN
+                  IF_MPI(MASTER) THEN
+                     WRITE (iscreenlog, *) ' '
+                     WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', npa
+                     WRITE (iscreenlog, *) 'WARNING : species value is not good.'
+                     WRITE (iscreenlog, *) 'WARNING : Or you are using FOIL with' 
+                     WRITE (iscreenlog, *) 'WARNING : a patch file only suited for LAGRANGIAN'
+                     WRITE (iscreenlog, *) 'Simulation stopped.'
+                  ENDIF_MPI
+                  CALL_MPI MPI_FINALIZE(ierr_mpi)
+                  STOP
+                END IF  
+
                READ (49, *, iostat=eof) stage
                READ (49, *, iostat=eof) size
                READ (49, *, iostat=eof) super
@@ -997,7 +1065,7 @@ CONTAINS
                READ (49, *, iostat=eof) Gam_deb
                new_patch%species = species
 
-               IF (.not. ibm_restart) THEN
+               IF (.not. lagrangian_restart) THEN
                   DO nn = 1, new_patch%nb_part_alloc
                      ! Init some variables from ibm.dat file for fish
                      new_patch%particles(nn)%super = super

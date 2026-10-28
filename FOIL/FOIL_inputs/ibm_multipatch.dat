@@ -2,16 +2,21 @@ NETCDF-BASED INITIALIZATION FILE (itypetraj = 3)
 FOIL PATCH AND SUPER-INDIVIDUAL INITIAL CONDITIONS
 
 Patch name
+Patch type: has to be 3 with FOIL so far = NetCDF positions
 Patch initialization date (start of the trajectory)
 Trajectory end date
-Output interval
-Input NetCDF file containing the initial particle positions
 Output trajectory file
 Number of particles released at each initial position
 itypevert: initial vertical-movement scheme (may be updated later)
            = 0: constant depth (no vertical advection or turbulent diffusion)
            < 0: vertical advection only
            > 0: vertical advection and turbulent diffusion using a random walk
+[then the fields specific to the patch type declared above -- for type 3,
+just the input NetCDF file; see traject3d_type1circ.dat/type2rect.dat for
+what a circle/rectangle patch expects here instead]
+Input NetCDF file containing the initial particle positions
+
+The fields below are common to every patch type (FOIL initial conditions):
 Species name (anchovy or sardine)
 Developmental stage of the individuals
 Individual length
@@ -27,7 +32,8 @@ Energy allocated to gametes
 END OF FILE DESCRIPTION%
 
 **************************************************************
-patch1                                  ,| name of patch    
+patch1                                  ,| name of patch
+3                                       ,| Patch type3    
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2004_2005.nc                    ,| filetrajout
@@ -46,7 +52,8 @@ anchovy                                 ,| species
 7548.4                                  ,| R
 0.0                                     ,| Gam
 **************************************************************
-patch2                                  ,| name of patch    
+patch2                                  ,| name of patch 
+3                                       ,| Patch type3   
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2003_2005.nc                    ,| filetrajout
@@ -65,7 +72,8 @@ anchovy                                 ,| species
 20676.0		                            ,| R
 0.0			                            ,| Gam
 **************************************************************
-patch3                                  ,| name of patch    
+patch3                                  ,| name of patch
+3                                       ,| Patch type3    
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2002_2005.nc                    ,| filetrajout
@@ -84,7 +92,8 @@ anchovy                                 ,| species
 26693.15		                        ,| R
 0.0			                            ,| Gam
 **************************************************************
-patch4                                  ,| name of patch    
+patch4                                  ,| name of patch
+3                                       ,| Patch type3    
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2001_2005.nc                    ,| filetrajout

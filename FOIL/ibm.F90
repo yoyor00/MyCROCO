@@ -43,15 +43,16 @@ MODULE ibm
    !! * Shared module variables
 
    !! * Private variables
-   ! From paraibm namibmmove namelist
+   ! From parafoil namibmmove namelist
    REAL(kind=rsh)                                  :: w_max, alpha_w
-   ! From paraibm namibmmove namelist
+   REAL(kind=rsh)                                  :: active_move_min_depth = 0.0_rsh
+   ! From parafoil namibmmove namelist
    LOGICAL                                         :: adult_move
-   ! From paraibm namibmpop, activate or not repro
+   ! From parafoil namibmpop, activate or not repro
    LOGICAL                                         :: repro
-   ! From paraibm namibmpop, spawning interval in hours of patch
+   ! From parafoil namibmpop, spawning interval in hours of patch
    REAL(KIND=rlg)                                  :: dt_spawn
-   ! From paraibm namibmpop, max nb of particles in a nc file
+   ! From parafoil namibmpop, max nb of particles in a nc file
    INTEGER                                         :: max_part
 
    ! Logicals to manage spawn
@@ -63,9 +64,12 @@ MODULE ibm
    ! Type of reals in IBM output
    INTEGER, PARAMETER                              :: out = 4
 
-   ! From paraibm, namibmpop namelist arguments
+   ! From parafoil, namibmpop namelist arguments
    LOGICAL                                         :: fish_mort, density_dependent
    REAL(KIND=rsh)                                  :: multiplier_tac
+
+   ! Species-specific IBM parameters
+   REAL(KIND=rsh), DIMENSION(nb_species)            :: Z0_species, Ze_species, z_decay_species
 
    ! Variables pour la 2e methode de repro
    INTEGER, DIMENSION(nb_species)                   :: target_particles_per_spawn
@@ -104,14 +108,16 @@ CONTAINS
       USE debmodel, ONLY: deb_init
       USE ibmmove, ONLY: fish_move_init
       USE ibmtools, ONLY: ibm_parameter_init
+      USE ibmtools, ONLY: alpha_sel_values => alpha_sel, beta_sel_values => beta_sel
 
       ! Import variables
       USE comtraj, ONLY: iscreenlog
-      USE comtraj, ONLY: type_particle, type_patch, patches, ibm_restart, dtsave_traj
+      USE comtraj, ONLY: type_particle, type_patch, patches, lagrangian_restart, dtsave_traj
       USE comtraj, ONLY: debuse, F_Fix, ffix, file_food, file_NBSS, frac_deb_death, &
-                         fileanchovy, filesardine, fileprobadistrib_anc, nbSizeClass_anc, &
+                         fileanchovy, filesardine, &
+                         fileprobadistrib_anc, nbSizeClass_anc, &
                          sizemin_anc, fileprobadistrib_sar, nbSizeClass_sar, sizemin_sar, &
-                         catch_anc_bob, catch_sar_bob, fishing_strategy
+                         catch_anc, catch_sar, fishing_strategy
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
@@ -120,21 +126,25 @@ CONTAINS
 
       !! * Local declarations
       CHARACTER(LEN=lchain) :: file_inp ! Name of netcdf restart file with data
-      INTEGER :: lstr, lenstr ! To read paraibm file
+      INTEGER :: lstr, lenstr ! To read parafoil file
       INTEGER :: idimt ! Read last time in restart file
       INTEGER :: num ! For restart loop to keep good num info
 
-      LOGICAL :: ibm_l_time ! From paraibm in namibmrestart namelist, restart info
       LOGICAL :: found_yearref, found_t_spawn
-      LOGICAL :: found_hmove
+      LOGICAL :: found_restart_var
+      CHARACTER(LEN=16), DIMENSION(17) :: required_restart_vars
 
       INTEGER :: nb_part_nc ! Number of particles in netcdf for patch
-      INTEGER :: duration_ibm_anc, duration_ibm_sar ! Life time of anchovy and sardine
+      INTEGER :: duration_ibm, nbSizeClass
+      REAL(KIND=rlg) :: sizemin
+      CHARACTER(LEN=lchain) :: catch, fileprobadistrib
 
-      INTEGER :: i, j, n, m, il ! Integers for loops
+      INTEGER :: i, j, n, m, il, ivar ! Integers for loops
       INTEGER :: index_num ! Integers for indexing in restart
       INTEGER :: ierr_mpi
       CHARACTER(LEN=lchain) :: current_run_id
+      REAL(KIND=rsh) :: Z0, Ze, z_decay
+      REAL(KIND=rsh) :: alpha_sel, beta_sel
       ! To convert date to seconds or seconds to date
       CHARACTER(len=19) :: tool_sectodat
       INTEGER :: mm_clock, hh, minu, sec ! jj and aaaa are saved as current_year/day for later
@@ -144,33 +154,71 @@ CONTAINS
       ! Temporary arrays to read data from netcdf if restart
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: flag_nc, temp_nc, super_nc
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: dens_nc, size_nc, drate_nc
+      REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: death_deb_nc, death_fish_nc, death_nat_nc
       REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)       :: dayb_nc
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, AgeClass_nc, num_nc
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: hmove_nc
 
-      ! Definition of namelists in paraibm
-      NAMELIST /namibmrestart/ ibm_restart, ibm_l_time
-      NAMELIST /namibmmove/ w_max, alpha_w, adult_move
-      NAMELIST /namibmpop/ repro, dt_spawn, max_part, duration_ibm_anc, duration_ibm_sar, &
-         fish_mort, fishing_strategy, multiplier_tac, density_dependent
+      ! Definition of namelists in parafoil
+      NAMELIST /namibmmove/ w_max, alpha_w, adult_move, active_move_min_depth
+      NAMELIST /namibmpop/ repro, dt_spawn, max_part, fish_mort, fishing_strategy, &
+         multiplier_tac, density_dependent
       NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_NBSS, file_food, frac_deb_death
-      NAMELIST /namibmfrc/ fileanchovy, filesardine, catch_anc_bob, catch_sar_bob, fileprobadistrib_anc, &
-         nbSizeClass_anc, sizemin_anc, fileprobadistrib_sar, nbSizeClass_sar, sizemin_sar
+      NAMELIST /namibmfiles/ fileanchovy, filesardine
+      NAMELIST /ibm_species/ duration_ibm
+      NAMELIST /ibm_external_forcing/ catch, fileprobadistrib, nbSizeClass, sizemin
+      NAMELIST /ibm_mortality/ Z0, Ze, z_decay
+      NAMELIST /ibm_fishing/ alpha_sel, beta_sel
 
 #include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
       !! * Executable part
 
-      ! namelists in paraibm.txt
+      ! namelists in parafoil.txt
       !--------------------------
       lstr = lenstr(foilname)
       OPEN (50, file=foilname(1:lstr), status='old', form='formatted', access='sequential')
-      READ (50, namibmrestart)
       READ (50, namibmmove)
       READ (50, namibmpop)
       READ (50, namibmdeb)
-      READ (50, namibmfrc)
+      READ (50, namibmfiles)
       CLOSE (50)
+
+      lstr = lenstr(fileanchovy)
+      OPEN (51, file=fileanchovy(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_species)
+      READ (51, ibm_external_forcing)
+      READ (51, ibm_mortality)
+      READ (51, ibm_fishing)
+      CLOSE (51)
+      duration(1) = duration_ibm
+      catch_anc = catch
+      fileprobadistrib_anc = fileprobadistrib
+      nbSizeClass_anc = nbSizeClass
+      sizemin_anc = sizemin
+      Z0_species(1) = Z0
+      Ze_species(1) = Ze
+      z_decay_species(1) = z_decay
+      alpha_sel_values(1) = alpha_sel
+      beta_sel_values(1) = beta_sel
+
+      lstr = lenstr(filesardine)
+      OPEN (51, file=filesardine(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_species)
+      READ (51, ibm_external_forcing)
+      READ (51, ibm_mortality)
+      READ (51, ibm_fishing)
+      CLOSE (51)
+      duration(2) = duration_ibm
+      catch_sar = catch
+      fileprobadistrib_sar = fileprobadistrib
+      nbSizeClass_sar = nbSizeClass
+      sizemin_sar = sizemin
+      Z0_species(2) = Z0
+      Ze_species(2) = Ze
+      z_decay_species(2) = z_decay
+      alpha_sel_values(2) = alpha_sel
+      beta_sel_values(2) = beta_sel
 
       ! save into simu.log
       !-------------------
@@ -186,7 +234,7 @@ CONTAINS
 
       CALL tool_decompdate(tool_sectodat(time), current_day, mm_clock, current_year, hh, minu, sec)
 
-      IF (.NOT. ibm_restart) THEN
+      IF (.NOT. lagrangian_restart) THEN
 #ifdef MPI
          IF (mynode == 0) THEN
             current_run_id = generate_run_id()
@@ -204,18 +252,52 @@ CONTAINS
          ! Init patch general data
          patch%dt_spawn = dt_spawn*3600.0_rlg
 
-         IF (.NOT. ibm_restart) THEN
+         IF (.NOT. lagrangian_restart) THEN
             patch%yearref = current_year - 1
             patch%t_spawn = patch%t_beg
          END IF
 
          ! -------------------------
          ! --- Restart
-         IF (ibm_restart) THEN
+         IF (lagrangian_restart) THEN
             file_inp = trim(patch%file_inp)
 
             ! nb_part_nc = patch%nb_part_total ! denis
             CALL ionc4_openr(file_inp, .false.) ! clara
+
+            required_restart_vars(1) = 'flag'
+            required_restart_vars(2) = 'TEMP'
+            required_restart_vars(3) = 'SIZE'
+            required_restart_vars(4) = 'DENSITY'
+            required_restart_vars(5) = 'STAGE'
+            required_restart_vars(6) = 'NUMBER'
+            required_restart_vars(7) = 'DRATE'
+            required_restart_vars(8) = 'DAYBIRTH'
+            required_restart_vars(9) = 'AGE'
+            required_restart_vars(10) = 'AGECLASS'
+            required_restart_vars(11) = 'NUM'
+            required_restart_vars(12) = 'DAYJUV'
+            required_restart_vars(13) = 'DENSPAWN'
+            required_restart_vars(14) = 'HMOVE'
+            required_restart_vars(15) = 'Death_DEB'
+            required_restart_vars(16) = 'Death_FISH'
+            required_restart_vars(17) = 'Death_NAT'
+            DO ivar = 1, UBOUND(required_restart_vars, 1)
+               CALL ionc4_var_exists(file_inp, trim(required_restart_vars(ivar)), found_restart_var)
+               IF (.NOT. found_restart_var) THEN
+                  IF_MPI(MASTER) THEN
+                  WRITE (iscreenlog, *) ' '
+                  WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', n
+                  WRITE (iscreenlog, *) 'Restart variable ', trim(required_restart_vars(ivar)), &
+                     ' is missing from ', trim(file_inp)
+                  WRITE (iscreenlog, *) 'The file cannot be used for an IBM restart.'
+                  WRITE (iscreenlog, *) 'Simulation stopped.'
+                  ENDIF_MPI
+                  CALL_MPI MPI_FINALIZE(ierr_mpi)
+                  STOP
+               END IF
+            END DO
+
             CALL ionc4_read_dimtraj(file_inp, nb_part_nc) !clara
             CALL ionc4_gatt_read(file_inp, 'yearref', patch%yearref, found_yearref)
             CALL ionc4_gatt_read(file_inp, 't_spawn', patch%t_spawn, found_t_spawn)
@@ -227,6 +309,7 @@ CONTAINS
             ALLOCATE (dens_nc(nb_part_nc), super_nc(nb_part_nc), drate_nc(nb_part_nc), dayb_nc(nb_part_nc))
             ALLOCATE (age_nc(nb_part_nc), AgeClass_nc(nb_part_nc), num_nc(nb_part_nc))
             ALLOCATE (hmove_nc(nb_part_nc))
+            ALLOCATE (death_deb_nc(nb_part_nc), death_fish_nc(nb_part_nc), death_nat_nc(nb_part_nc))
 
             ! CALL ionc4_openr(trim(file_inp), .false.)
             CALL ionc4_gatt_char_read(file_inp, 'run_id', patch%run_id)
@@ -243,19 +326,10 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "AGE", age_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGECLASS", AgeClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM", num_nc, 1, nb_part_nc, idimt)
-
-            ! To be removed in future versions of IBM, when HMOVE is always present in restart files
-            ! Initialize the movement clock if HMOVE is missing
-            CALL ionc4_var_exists(file_inp, "HMOVE", found_hmove)
-            IF (found_hmove) THEN
-               CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
-            ELSE
-               hmove_nc(:) = FLOOR(time/3600.0_rlg)
-               IF_MPI(MASTER) THEN
-               WRITE (iscreenlog, *) &
-                  'WARNING: HMOVE absent from restart; movement clocks reinitialised.'
-               ENDIF_MPI
-            END IF
+            CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "Death_DEB", death_deb_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "Death_FISH", death_fish_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "Death_NAT", death_nat_nc, 1, nb_part_nc, idimt)
 
             DO m = 1, patch%nb_part_alloc
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at restart
@@ -283,6 +357,9 @@ CONTAINS
                patch%particles(m)%age = age_nc(index_num)
                patch%particles(m)%AgeClass = AgeClass_nc(index_num)
                patch%particles(m)%hmove = hmove_nc(index_num)
+               patch%particles(m)%Death_DEB = death_deb_nc(index_num)
+               patch%particles(m)%Death_FISH = death_fish_nc(index_num)
+               patch%particles(m)%Death_NAT = death_nat_nc(index_num)
             END DO
 
             CALL ionc4_read_trajt(trim(file_inp), "DAYJUV", dayb_nc, 1, nb_part_nc, idimt)
@@ -316,13 +393,13 @@ CONTAINS
 
             DEALLOCATE (flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc)
             DEALLOCATE (age_nc, AgeClass_nc, num_nc, hmove_nc)
+            DEALLOCATE (death_deb_nc, death_fish_nc, death_nat_nc)
 
             ! update the date of restart, and savetraj is delayed not to have twice same time step in output
-            IF (ibm_l_time) THEN
-               !    CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
-               CALL ionc4_read_time(trim(file_inp), idimt, patch%t_beg)
-               patch%t_save = patch%t_beg + dtsave_traj*3600.0_rlg
-            END IF
+            ! CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
+            CALL ionc4_read_time(trim(file_inp), idimt, patch%t_beg)
+            patch%t_save = patch%t_beg + dtsave_traj*3600.0_rlg
+               
             IF (.NOT. found_t_spawn) THEN
                patch%t_spawn = patch%t_beg
                IF (patch%dt_spawn > 0.0_rlg) THEN
@@ -342,7 +419,7 @@ CONTAINS
 
             DO m = 1, nb_part_nc
                particle => patch%particles(m)
-               particle%date_orig = time - particle%age*24.0_rlg*3600.0_rlg
+               particle%date_orig = patch%t_beg - particle%age*24.0_rlg*3600.0_rlg
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at init
                IF (.NOT. particle%active) CYCLE
                ! Init some biological parameters if not a restart
@@ -354,10 +431,8 @@ CONTAINS
          patch => patch%next
       END DO         ! loop on patches%nb
 
-      duration = (/duration_ibm_anc, duration_ibm_sar/) ! Store in one variable life expectancy for both species
-
       ! No need of loop to initialize DEB parameters
-      IF (debuse) CALL deb_init(ibm_restart)      ! Init DEB
+      IF (debuse) CALL deb_init(lagrangian_restart, fish_mort .AND. fishing_strategy == 'Catch') ! Init DEB
       IF (adult_move) CALL fish_move_init(Istr, Iend, Jstr, Jend)    ! Init fish_move module
 
       yearclass = current_year + 1                ! Init yearclass to update fish's Ageclass
@@ -371,7 +446,7 @@ CONTAINS
          spawn = .false.
 
          ! A current-year patch means that the first spawning event already occurred.
-         IF (ibm_restart) THEN
+         IF (lagrangian_restart) THEN
             patch => patches%first
             DO n = 1, patches%nb
                IF (patch%yearref == current_year) THEN
@@ -444,11 +519,10 @@ CONTAINS
       USE ibmtools, ONLY: tool_julien
       USE ibmtools, ONLY: ibm_nycth_mig, ibm_parameter_init
       USE ibmtools, ONLY: death_by_fishing, selec_dome_or_asymp
-      USE ibmtools, ONLY: alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s
+      USE ibmtools, ONLY: alpha_sel, beta_sel
       USE ibmmove, ONLY: fish_move
       USE debmodel, ONLY: deb_egg_init, deb_cycle
       USE debmodel, ONLY: readfood3d
-      USE debmodel, ONLY: Zaa, Zas, Zea, Zes, za, zs
       USE comtraj, ONLY: type_particle, type_patch, patches, patch_list_append, resize_patch
       USE comtraj, ONLY: dir_pathout, hadv
       USE comtraj, ONLY: jjulien, struc_ad, struc_ad_dd_DEB
@@ -619,6 +693,16 @@ CONTAINS
 
             ! Update age of fish
             IF (current_day /= jj) particle%age = particle%age + 1
+
+            ! Maximum lifespan is an individual property: particles in the same
+            ! patch may have different ages, especially after a restart
+            ! warning : so far these individuals are not tracked in Death_NAT
+            IF (particle%age >= REAL(duration(ind_species), rsh)) THEN
+               particle%super = 0.0_rsh
+               particle%flag  = -valmanq
+               CYCLE
+            END IF
+
             IF (yearclass == aaaa .and. particle%age > 101.0_rlg) particle%AgeClass = particle%AgeClass + 1
 
             pos%xp = particle%xpos; pos%yp = particle%ypos
@@ -829,7 +913,7 @@ CONTAINS
 
                   IF (current_hour >= particle%hmove + dh) THEN
 
-                     CALL fish_move(particle, ind_species)
+                     CALL fish_move(particle, ind_species, xe, active_move_min_depth)
                      particle%hmove = current_hour
 
                      pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
@@ -898,7 +982,7 @@ CONTAINS
 
                   IF (current_hour >= particle%hmove + dh) THEN
 
-                     CALL fish_move(particle, ind_species)
+                     CALL fish_move(particle, ind_species, xe, active_move_min_depth)
                      particle%hmove = current_hour
 
                      pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
@@ -934,9 +1018,13 @@ CONTAINS
             ! Natural Mortality - size dependent (Menu et al.)
             Z1(ind_species) = 0.0_rlg
             IF (patch%species == 'anchovy') THEN        ! Equivalent to (ind_species == 1)
-               Z1(ind_species) = (Zaa + (Zea - Zaa)*exp(-za*(particle%size - 0.0855_rlg))) ! size egg EN DUR
+               Z1(ind_species) = Z0_species(ind_species) + &
+                  (Ze_species(ind_species) - Z0_species(ind_species))* &
+                  exp(-z_decay_species(ind_species)*(particle%size - 0.0855_rlg)) ! size egg EN DUR
             ELSE IF (patch%species == 'sardine') THEN   ! Equivalent to (ind_species == 2)
-               Z1(ind_species) = (Zas + (Zes - Zas)*exp(-zs*(particle%size - 0.1608_rlg))) ! size egg EN DUR
+               Z1(ind_species) = Z0_species(ind_species) + &
+                  (Ze_species(ind_species) - Z0_species(ind_species))* &
+                  exp(-z_decay_species(ind_species)*(particle%size - 0.1608_rlg)) ! size egg EN DUR
             END IF
 
             ! The mortality of Somarakis is daily, so 86400 is OK
@@ -952,14 +1040,18 @@ CONTAINS
             IF (particle%stage >= 5 .and. particle%AgeClass >= 1) THEN
                IF (patch%species == 'anchovy') THEN
                   number_tot(ind_species) = number_tot(ind_species) + particle%super* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                   weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                ELSE IF (patch%species == 'sardine') THEN
                   number_tot(ind_species) = number_tot(ind_species) + particle%super* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                   weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                END IF
             END IF
 
@@ -1098,6 +1190,12 @@ CONTAINS
                      STOP
                   END SELECT
                END DO
+
+               ! This yearly container receives newborns at several spawning
+               ! events. Keep it active until the youngest cohort reaches its
+               ! own maximum lifespan; death itself is handled per particle.
+               child_patch%t_end = MAX(child_patch%t_end, &
+                  time + REAL(duration(ind), rlg)*86400.0_rlg)
 
                ! Determination du nombre d'individus qui vont apparaitre, selon le nombre vise et le nombre d'oeufs pondus
                target_particles = target_particles_per_spawn(ind)
@@ -1373,12 +1471,13 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: hmove_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
-      INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out, nbatch_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: neggs_tot_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_out, deadfishing_out, deadnatural_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_out
       TYPE(type_patch), POINTER    :: patch
       TYPE(type_particle), POINTER    :: particle
-      LOGICAL                                     :: out_ex, found_hmove
+      LOGICAL                                     :: out_ex
       character(len=64) :: run_id_out
 #ifdef MPI
       ! Used to gather all particles on MASTER, sorted by NUM, so that the
@@ -1394,8 +1493,8 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)          :: age_glob, AgeClass_glob
       INTEGER, ALLOCATABLE, DIMENSION(:)          :: hmove_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_glob, f_glob, Wdeb_glob, Denspawn_glob
-      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_glob, H_glob, R_glob, Neggs_glob, Gam_glob
-      INTEGER, ALLOCATABLE, DIMENSION(:)          :: dayjuv_glob, dayspawn_glob, yearspawn_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_glob, H_glob, R_glob, Neggs_glob, Neggs_tot_glob, Gam_glob
+      INTEGER, ALLOCATABLE, DIMENSION(:)          :: dayjuv_glob, dayspawn_glob, yearspawn_glob, season_glob, nbatch_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_glob, deadfishing_glob, deadnatural_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_glob
 #endif
@@ -1445,17 +1544,6 @@ CONTAINS
                   ENDIF_MPI
                   CALL ionc4_close(file_out)
                   out_ex = .FALSE.
-               END IF
-
-               ! To be removed in future versions of IBM, when HMOVE is always present in restart files
-               ! Add HMOVE to an older output file before appending new records
-               IF (out_ex) THEN
-                  CALL ionc4_var_exists(file_out, "HMOVE", found_hmove)
-                  IF (.NOT. found_hmove) THEN
-                     CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
-                        "Absolute model hour of the previous fish movement", &
-                        fill_value=-1, l_out_nc4par=l_out_nc4par)
-                  END IF
                END IF
 
             END IF
@@ -1516,6 +1604,8 @@ CONTAINS
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "NEGGS", "Number", "Number of eggs", &
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "NEGGS_TOT", "Number", "Cumulative number of spawned eggs", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
                !CALL ionc4_createvar_traj(file_out, "NRJ","J/g","Energy Density",                              &
                !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
 
@@ -1527,8 +1617,10 @@ CONTAINS
                   fill_value=0, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "ZOOM", "", "Zoom value", &
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
-               !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
-               !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "SEASON", "", "Whether within spawning season", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "NBATCH", "", "Cumulative number of spawned batches", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "DENSPAWN", "sigma", "Density of egg at spawning", &
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "Death_DEB", "", "Number dead by starvation", &
@@ -1567,7 +1659,8 @@ CONTAINS
 
          ALLOCATE (hmove_out(nb_part))
          ALLOCATE (dayjuv_out(nb_part), dayspawn_out(nb_part))
-         ALLOCATE (yearspawn_out(nb_part), season_out(nb_part))
+         ALLOCATE (yearspawn_out(nb_part), season_out(nb_part), nbatch_out(nb_part))
+         ALLOCATE (neggs_tot_out(nb_part))
          ALLOCATE (zoom_out(nb_part))
          ALLOCATE (Denspawn_out(nb_part))
          ALLOCATE (food_out(nb_part))
@@ -1579,7 +1672,8 @@ CONTAINS
          ALLOCATE (deadfishing_out(nb_part))
          ALLOCATE (deadnatural_out(nb_part))
 
-         dayjuv_out(:) = 0; dayspawn_out(:) = 0; yearspawn_out(:) = 0; season_out(:) = -1
+         dayjuv_out(:) = 0; dayspawn_out(:) = 0; yearspawn_out(:) = 0
+         season_out(:) = -1; nbatch_out(:) = -1; neggs_tot_out(:) = fillval
          Denspawn_out(:) = fillval; food_out(:) = fillval; Wdeb_out(:) = fillval
          H_out(:) = fillval; E_out(:) = fillval; R_out(:) = fillval; Gam_out(:) = fillval
          f_out(:) = fillval; zoom_out(:) = 0; Neggs_out(:) = fillval
@@ -1618,8 +1712,11 @@ CONTAINS
             Gam_out(p) = REAL(particle%Gam, kind=out)
             Wdeb_out(p) = REAL(particle%Wdeb, kind=out)
             Neggs_out(p) = REAL(particle%Neggs, kind=out)
+            Neggs_tot_out(p) = REAL(particle%Neggs_tot, kind=out)
             yearspawn_out(p) = REAL(particle%yearspawn, kind=out)
             dayspawn_out(p) = REAL(particle%dayspawn, kind=out)
+            season_out(p) = MERGE(1, 0, particle%season)
+            nbatch_out(p) = particle%Nbatch
             dayjuv_out(p) = REAL(particle%dayjuv, kind=out)
             denspawn_out(p) = REAL(particle%denspawn, kind=out)
             zoom_out(p) = REAL(particle%zoom, kind=out)
@@ -1664,8 +1761,11 @@ CONTAINS
          CALL MPI_gather_sort_var(nb_part, Gam_out(1:nb_part), counts, displs, nb_part_total, iperm, Gam_glob)
          CALL MPI_gather_sort_var(nb_part, Wdeb_out(1:nb_part), counts, displs, nb_part_total, iperm, Wdeb_glob)
          CALL MPI_gather_sort_var(nb_part, Neggs_out(1:nb_part), counts, displs, nb_part_total, iperm, Neggs_glob)
+         CALL MPI_gather_sort_var(nb_part, Neggs_tot_out(1:nb_part), counts, displs, nb_part_total, iperm, Neggs_tot_glob)
          CALL MPI_gather_sort_var(nb_part, yearspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, yearspawn_glob)
          CALL MPI_gather_sort_var(nb_part, dayspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, dayspawn_glob)
+         CALL MPI_gather_sort_var(nb_part, season_out(1:nb_part), counts, displs, nb_part_total, iperm, season_glob)
+         CALL MPI_gather_sort_var(nb_part, nbatch_out(1:nb_part), counts, displs, nb_part_total, iperm, nbatch_glob)
          CALL MPI_gather_sort_var(nb_part, dayjuv_out(1:nb_part), counts, displs, nb_part_total, iperm, dayjuv_glob)
          CALL MPI_gather_sort_var(nb_part, Denspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, Denspawn_glob)
          CALL MPI_gather_sort_var(nb_part, zoom_out(1:nb_part), counts, displs, nb_part_total, iperm, zoom_glob)
@@ -1708,8 +1808,11 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'GAM', Gam_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'WEIGHT', Wdeb_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'NEGGS', Neggs_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NEGGS_TOT', Neggs_tot_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'YEARSPAWN', yearspawn_glob(1:num2), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYSPAWN', dayspawn_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'SEASON', season_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'NBATCH', nbatch_glob(1:num2), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYJUV', dayjuv_glob(1:num2), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DENSPAWN', Denspawn_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'ZOOM', zoom_glob(1:num2), num1, num2, 0, fillval)
@@ -1721,8 +1824,9 @@ CONTAINS
          DEALLOCATE (lat_glob, lon_glob, zpos_glob, h0pos_glob, num_glob, flag_glob)
          DEALLOCATE (temp_glob, stage_glob, size_glob, nb_glob, dens_glob, Drate_glob)
          DEALLOCATE (dateo_glob, age_glob, AgeClass_glob, hmove_glob)
-         DEALLOCATE (food_glob, f_glob, E_glob, H_glob, R_glob, Gam_glob, Wdeb_glob, Neggs_glob)
-         DEALLOCATE (yearspawn_glob, dayspawn_glob, dayjuv_glob, Denspawn_glob, zoom_glob)
+         DEALLOCATE (food_glob, f_glob, E_glob, H_glob, R_glob, Gam_glob, Wdeb_glob, Neggs_glob, Neggs_tot_glob)
+         DEALLOCATE (yearspawn_glob, dayspawn_glob, season_glob, nbatch_glob)
+         DEALLOCATE (dayjuv_glob, Denspawn_glob, zoom_glob)
          DEALLOCATE (deaddeb_glob, deadfishing_glob, deadnatural_glob)
 #else
          num1 = 1
@@ -1756,8 +1860,11 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'GAM', Gam_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'WEIGHT', Wdeb_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'NEGGS', Neggs_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NEGGS_TOT', Neggs_tot_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'YEARSPAWN', yearspawn_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYSPAWN', dayspawn_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'SEASON', season_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'NBATCH', nbatch_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYJUV', dayjuv_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DENSPAWN', denspawn_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'ZOOM', zoom_out(1:nb_part), num1, num2, 0, fillval)
@@ -1772,9 +1879,9 @@ CONTAINS
          DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
          DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, AgeClass_out)
          DEALLOCATE (hmove_out)
-         DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out)
+         DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out, nbatch_out)
          DEALLOCATE (Denspawn_out, food_out, Wdeb_out, zoom_out)
-         DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
+         DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out, Neggs_tot_out)!, NRJ_out)
          DEALLOCATE (f_out)
          DEALLOCATE (deaddeb_out, deadfishing_out, deadnatural_out)
 

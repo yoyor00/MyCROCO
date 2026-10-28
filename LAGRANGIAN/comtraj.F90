@@ -93,7 +93,7 @@ MODULE comtraj
 
 #ifdef FOIL
       ! --- Population parameters
-      REAL(KIND=rlg)          :: date_orig   ! date of release
+      REAL(KIND=rlg)          :: date_orig   ! date of birth
       INTEGER                 :: stage = 0
       INTEGER                 :: AgeClass = 0
       INTEGER                 :: Nbatch = 0
@@ -186,33 +186,34 @@ MODULE comtraj
 
    TYPE(type_patch_list), PUBLIC           :: patches
 
-   ! From paraibm or paratraj file
+   ! From parafoil or paratraj file
    CHARACTER(LEN=lchain), PUBLIC          :: file_trajec                  ! name of configuration file
    CHARACTER(LEN=lchain), PUBLIC          :: dir_pathout                 ! name of output path
 
    REAL(kind=rlg), PUBLIC          :: dtz                    ! time step division for vertical subloop for diffusion
    REAL(kind=rsh), PUBLIC          :: hdiff                  ! horizontal diffusion coefficient
+   REAL(kind=rsh), PUBLIC          :: transport_min_depth = 0.0_rsh ! minimum water depth for horizontal transport; 0 disables
    LOGICAL                         :: hadv                   ! if horizontal transport or not, specified in paratraj.txt
-   LOGICAL, PUBLIC          :: l_repro_random = .FALSE.      ! if .TRUE., random-walk draws are seeded deterministically
+   LOGICAL, PUBLIC          :: reproducibility = .FALSE.     ! if .TRUE., random-walk draws are seeded deterministically
                                                              ! per particle/time step (particle%num, iic), so that
                                                              ! trajectories are reproducible across MPI decompositions.
                                                              ! If .FALSE. (default), uses the compiler's intrinsic
                                                              ! RANDOM_NUMBER stream (faster, but decomposition-dependent).
+   LOGICAL, PUBLIC          :: lagrangian_restart            ! Logical for lagrangian/ibm restart
 
 #ifdef FOIL
-   LOGICAL, PUBLIC          :: ibm_restart                  ! Logical for ibm restart
-
    INTEGER, DIMENSION(nb_species), PUBLIC  :: duration                   ! Duree de vie des individus selon leur espece
-   ! namibmdeb namelist parameters from paraibm
+   ! namibmdeb namelist parameters from parafoil
    LOGICAL, PUBLIC          :: debuse, F_Fix, frac_deb_death
    REAL(kind=rsh), PUBLIC          :: ffix
    CHARACTER(LEN=lchain), PUBLIC          :: file_food                   ! Name of input file for food
    CHARACTER(LEN=lchain), PUBLIC          :: file_NBSS
 
-   ! namibmfrc namelist parameters from paraibm
+   ! Species parameter files from parafoil
    CHARACTER(LEN=lchain), PUBLIC           :: fileanchovy, filesardine     ! File for anchovy and sardine global parameters
-   CHARACTER(LEN=lchain), PUBLIC           :: catch_anc_bob               ! File for anchois fishing if fishing_strategy = "Catch"
-   CHARACTER(LEN=lchain), PUBLIC           :: catch_sar_bob               ! File for sardine fishing if fishing_strategy = "Catch"
+   ! External forcing parameters from the species files
+   CHARACTER(LEN=lchain), PUBLIC           :: catch_anc                   ! File for anchovy fishing if fishing_strategy = "Catch"
+   CHARACTER(LEN=lchain), PUBLIC           :: catch_sar                   ! File for sardine fishing if fishing_strategy = "Catch"
    CHARACTER(LEN=lchain), PUBLIC           :: fileprobadistrib_anc        ! Probability map of achovy  distribution
    CHARACTER(LEN=lchain), PUBLIC           :: fileprobadistrib_sar        ! Probability map of sardine distribution
    INTEGER, PUBLIC           :: nbSizeClass_anc, nbSizeClass_sar

@@ -21,6 +21,7 @@ MODULE ibmmove
 
 #ifdef FOIL
 
+   USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_NAN
    USE module_ibm         ! time,h,om_r,on_r
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, &
                       rsh, rlg, lchain, valmanq, type_particle
@@ -174,7 +175,7 @@ CONTAINS
    END SUBROUTINE fish_move_init
 
    !!======================================================================
-   SUBROUTINE fish_move(particle, ind_species)
+   SUBROUTINE fish_move(particle, ind_species, xe, active_move_min_depth)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE fish_move  ***
       !&E
@@ -201,6 +202,8 @@ CONTAINS
       !! * Arguments
       TYPE(type_particle), INTENT(inout)   :: particle
       INTEGER, INTENT(in)                  :: ind_species
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
+      REAL(KIND=rsh), INTENT(in)           :: active_move_min_depth
 
       !! * Local declarations
       LOGICAL              :: move
@@ -259,6 +262,16 @@ CONTAINS
 
       IF (ind_species == 1) Pi = fish_anc(icells, jcells, index, saison)
       IF (ind_species == 2) Pi = fish_sar(icells, jcells, index, saison)
+
+      ! The probability maps use NaN outside their distribution domain.
+      ! Juveniles and adults no longer undergo passive horizontal transport,
+      ! so a fish starting in such a cell cannot leave it. Remove every fish
+      ! subject to active movement whose current-cell probability is missing.
+      IF (IEEE_IS_NAN(Pi)) THEN
+         particle%flag = -valmanq
+         particle%super = 0.0_rsh
+         RETURN
+      END IF
 
       !Select a neighbouring cell j at random among the 4 neighbouring cells
       CALL random_number(v1)
@@ -348,6 +361,9 @@ CONTAINS
 
          IF (h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) > 0.0_rsh .and. &
             rmask(NINT(pos_n%idx_r),NINT(pos_n%idy_r)) > 0.5_rsh .and. &
+            (active_move_min_depth <= 0.0_rsh .or. &
+             h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) + xe(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) &
+             >= active_move_min_depth) .and. &
             particle%flag /= -valmanq) THEN
             ! test si on reste en mer (possibilite si incompatibilite de grille)
             IF ((NINT(pos_n%idx_r) > icells + 1) .or. (NINT(pos_n%idx_r) < icells - 1) .or. &

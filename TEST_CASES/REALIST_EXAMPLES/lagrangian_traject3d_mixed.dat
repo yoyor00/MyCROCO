@@ -1,7 +1,7 @@
 LAGRANGIAN MIXED-TYPE PATCH INITIALIZATION FILE
 
-Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Patch name
+Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Trajectory start date
 Trajectory end date
 Output trajectory file
@@ -36,8 +36,8 @@ Patches of different types can be mixed within a single file: each
 END OF FILE DESCRIPTION
 
 **************************************************************
-1                                             ,| Patch type (1=circle)
 patch_circle                                  ,| Patch name
+1                                             ,| Patch type (1=circle)
 2000/01/01 00:00:00                           ,| Trajectory start date (tbegtraj)
 2000/02/01 00:00:00                           ,| Trajectory end date (tendtraj)
 CROCO_FILES/croco_lagrangian_patch_circle.nc  ,| Output trajectory file
@@ -50,21 +50,21 @@ CROCO_FILES/croco_lagrangian_patch_circle.nc  ,| Output trajectory file
 10 10                                         ,| Minimum and maximum release depths (m)
 1                                             ,| Vertical spacing between release depths (m)
 **************************************************************
-2                                             ,| Patch type (2=rectangle)
 patch_rect                                    ,| Patch name
+2                                             ,| Patch type (2=rectangle)
 2000/01/01 00:00:00                           ,| Trajectory start date (tbegtraj)
 2000/02/01 00:00:00                           ,| Trajectory end date (tendtraj)
 CROCO_FILES/croco_lagrangian_patch_rect.nc    ,| Output trajectory file
 1                                             ,| Particles released at each location (nb_part_intro)
-1                                             ,| Vertical advection and turbulent diffusion (itypevert)
+0                                             ,| Vertical advection and turbulent diffusion (itypevert)
 .true.                                        ,| Use CROCO grid indices for the patch boundaries
 20 24 20 24                                   ,| Boundary indices (i_min, i_max, j_min, j_max)
 2 2                                           ,| Horizontal release spacing (i step, j step)
-5 5                                           ,| Minimum and maximum release depths (m)
+5 10                                           ,| Minimum and maximum release depths (m)
 1                                             ,| Vertical spacing between release depths (m)
 **************************************************************
-3                                             ,| Patch type (3=netcdf)
 patch_netcdf                                  ,| Patch name
+3                                             ,| Patch type (3=netcdf)
 2000/01/01 00:00:00                           ,| Trajectory start date (tbegtraj)
 2000/02/01 00:00:00                           ,| Trajectory end date (tendtraj)
 CROCO_FILES/croco_lagrangian_patch_netcdf.nc  ,| Output trajectory file (filetrajout)

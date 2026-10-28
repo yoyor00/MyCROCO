@@ -45,6 +45,9 @@
 # define MUSTANG
 # undef  SEDIMENT
 # undef  BBL
+                      /* Lagrangian particle tracking */
+# undef  LAGRANGIAN
+# undef  FOIL
                       /* Stochastic and Ensemble */
 # undef STOGEN
 # undef ENSEMBLE
