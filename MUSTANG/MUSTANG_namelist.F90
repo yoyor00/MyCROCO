@@ -23,6 +23,9 @@ MODULE MUSTANG_namelist
     !! * Modules used
     USE comMUSTANG
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
+#ifdef MPI
+    USE scalars, ONLY : mynode
+#endif
 
     IMPLICIT NONE
 
