@@ -41,7 +41,7 @@ except FileNotFoundError:
     print(f"Error: File '{args.file}' not found.")
     exit(1)
 
-time = nc.variables["scrum_time"][tndx] / 86400
+time = nc.variables["time"][tndx] / 86400
 h = nc.variables["h"][:]
 x1 = nc.variables["x_rho"][:]
 y1 = nc.variables["y_rho"][:]

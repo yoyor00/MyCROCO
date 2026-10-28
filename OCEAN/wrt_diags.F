@@ -113,20 +113,6 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-!
-! Time2
-!
-      ierr=nf_put_var1_FTYPE (nciddia, diaTime2, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
-     &  )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
-     &                  MYID
-        goto 99                                           !--> ERROR
-      endif
 
 !
 !---------------------------------------------------------------
@@ -270,10 +256,12 @@
 #  if defined DIAGNOSTICS_TS_MLD_DENS
 !  indxTcrit_mld
 !
+          if (itrc.le.2) then
            work2d=Tcrit_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTcrit_mld(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
+          endif
 #  endif
         endif
 !

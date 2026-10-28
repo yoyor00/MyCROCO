@@ -106,7 +106,7 @@ CONTAINS
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: D0_m0_n,D0_m1_n
 
 
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#if defined key_MUSTANG_V2
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
 
@@ -529,7 +529,7 @@ CONTAINS
    isand2 = igrav2 + nv_sand
    imud1 = isand2 + 1
    imud2 = isand2 + nv_mud
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#if defined key_MUSTANG_V2
    ! initialize without any sediment activating bedload
    ibedload1 = isand2 + 1
    ibedload2 = isand2
@@ -558,10 +558,13 @@ CONTAINS
       if ((.NOT. l_bedload_r(iv)) .AND. (.NOT. l_ibedload2)) then
          l_ibedload2 = .TRUE.
          ibedload2 = iv - 1
-      endif 
+      endif
 
    enddo
 
+   ! l_bedload : whether any substance actually activates bedload transport,
+   ! derived from l_bedload_n() in parasubstance.txt (nmlgravels/nmlsands)
+   l_bedload = (ibedload2 .GE. ibedload1)
 #endif
 #endif
 
@@ -868,8 +871,8 @@ CONTAINS
     MPI_master_only WRITE(stdout,*)'number of MUDS                        : ',nv_mud
     MPI_master_only WRITE(stdout,*)'number of part. var. constitutive     : ',nvpc
     MPI_master_only WRITE(stdout,*)'number of part. var. SORB             : ',nv_sorb
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-    MPI_master_only WRITE(stdout,*)' ibedload1 = ',ibedload1,' ibedload2 = ',ibedload2
+#if defined key_MUSTANG_V2
+    MPI_master_only WRITE(stdout,*)' ibedload1 = ',ibedload1,' ibedload2 = ',ibedload2,' l_bedload = ',l_bedload
 #endif
 #endif
     MPI_master_only WRITE(stdout,*)'number of part. var. NO constitutive  : ',nv_ncp

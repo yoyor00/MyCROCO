@@ -23,7 +23,7 @@
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
 : namflocmod               : parameters using for FLOCMOD module 
-:                            (only if key_MUSTANG_flocmod)
+:                            (active only if l_flocmod)
 : namdredging              : parameters to activate dredging effect
 
 &namsedim_init
@@ -42,9 +42,10 @@
    dzsmaxuni= 0.1
    nlayer_surf_sed=5
 /
-&namsedim_bottomstress      
-   l_z0seduni=.TRUE.  
-   z0seduni = 0.0001  
+&namsedim_bottomstress
+   l_z0seduni=.TRUE.
+   z0seduni = 0.0001
+   l_tauskin_upwind = .TRUE.
 /
 &namsedim_deposition
 /

@@ -45,7 +45,10 @@
 #  endif
      &  )
 
-      use croco_namelist, only: dt, lts_hadv
+      use croco_namelist, only: dt, lts_hadv 
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      use croco_namelist, only: mld_crit_D, mld_crit_T
+#  endif
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
 #   ifdef MUSTANG
@@ -427,6 +430,15 @@
           enddo
         enddo
 #   endif
+#  elif defined DIAGNOSTICS_PV
+!
+! THmix is accumulated in t3dmix routines: reset it at each step
+!
+        do j=Jstr,Jend
+          do i=Istr,Iend
+              THmix(i,j,k,itrc)=0.
+          enddo
+        enddo
 #  endif /* DIAGNOSTICS_TS */
 #  if !defined OPENACC
         enddo    !<-- k
@@ -576,7 +588,7 @@
                         || defined GLS_MIXING
      &    +dt*srflx(i,j)*swdk(i,j,k)
 #    ifdef LMD_NONLOCAL
-     &    -dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
+     &    +dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
 #    endif
 #   endif
               enddo
@@ -590,7 +602,7 @@
                 FC(i,k)=0.
 #   if defined LMD_SKPP || defined LMD_BKPP
 #    ifdef LMD_NONLOCAL
-     &    -dt*ghats(i,j,k)*stflx(i,j,isalt)
+     &    +dt*ghats(i,j,k)*stflx(i,j,isalt)
 #    endif
 #   endif
               enddo
@@ -875,6 +887,20 @@
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
+#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+!
+! Diagnostic computed before the update, with the same increment
+!
+              TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
+     &                                       +Tnudgcof(i,j,k,itrc)
+#    ifdef ZONAL_NUDGING
+     &                         *(tclmzon(j,k,itrc)-tzon(j,k,itrc))
+#    else
+     &                      *(tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
+#    endif /* ZONAL_NUDGING */
+     &                             *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
+     &                                           SWITCH rmask(i,j)
+#   endif  /* DIAGNOSTICS_TS */
               t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
      &                                   +dt*Tnudgcof(i,j,k,itrc)*
 #   ifdef ZONAL_NUDGING
@@ -882,18 +908,6 @@
 #   else
      &                       (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
 #   endif /* ZONAL_NUDGING */
-#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
-              TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
-     &                                       +Tnudgcof(i,j,k,itrc)
-     &                                          *(tclm(i,j,k,itrc)
-#    ifdef ZONAL_NUDGING
-     &                                            -tzon(j,k,itrc))
-#    else
-     &                                        -t(i,j,k,nnew,itrc))
-#    endif /* ZONAL_NUDGING */
-     &                             *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
-     &                                           SWITCH rmask(i,j)
-#   endif  /* DIAGNOSTICS_TS */
             enddo
           enddo
         enddo
@@ -901,9 +915,9 @@
 !
 !======================================================================
 ! Compute the tendency term of tracer diagnostics
-! Divide all diagnostic terms by the cell volume
-! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
-! of diagnostic terms will be: (unit of tracers)* s-1.
+! All diagnostic terms are integrated over the cell volume
+! (Hz(i,j,k)/(pm(i,j)*pn(i,j))), so that their unit is:
+! (unit of tracers)* m3 s-1.
 !
 ! Note: the Horizontal mixing term is computed in t3dmix
 ! where Trate is updated accordingly
@@ -928,16 +942,6 @@
      &                            Hvom(i,j+1,k)-Hvom(i,j,k))
 #   endif /* DIAGNOSTICS_TS_ADV */
 !
-              cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
-#   ifdef DIAGNOSTICS_TS
-              TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
-              TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
-              TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
-#   endif
-              TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
-              Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-              TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
 
 #   if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 \
              && !defined TS_DIF2 && !defined TS_DIF4
@@ -948,7 +952,7 @@
         enddo
 !
 !----------------------------------------------------------
-! Compute tracer diagnostics averaged over the MLD
+! Compute tracer diagnostics integrated over the MLD
 !----------------------------------------------------------
 !
 #   ifdef DIAGNOSTICS_TS_MLD
@@ -973,11 +977,15 @@
                   endif
                   if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-mld_crit_T)  cff1=1
                enddo
+!
+! MLD (density criterion) for itrc=1, and for itrc=2 difference between
+! MLD (temperature criterion) and MLD (density criterion)
+!
                if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
-     &                        z_w(i,j,N)-z_r(i,j,kbl1(i,j))
-               Tcrit_mld(i,j,1)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+     &            (z_w(i,j,N)-z_w(i,j,kbl1(i,j)-1)) SWITCH rmask(i,j)
                if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
-     &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
+     &            ( (z_w(i,j,N)-z_w(i,j,kblt(i,j)-1))
+     &              -Tcrit_mld(i,j,1) ) SWITCH rmask(i,j)
             enddo
          enddo
 #    endif /* DIAGNOSTICS_TS_MLD_DENS */
@@ -991,50 +999,65 @@
             TForc_mld(i,j,itrc)=0.
             Trate_mld(i,j,itrc)=0.
             Tentr_mld(i,j,itrc)=0.
+            Taver_mld(i,j,itrc)=0.
             T_mld_nnew(i,j)=0.
             T_mld_nstp(i,j)=0.
           enddo
         enddo
         do j=Jstr,Jend
           do i=Istr,Iend
-#    ifdef LMD_SKPP
+#    if defined DIAGNOSTICS_TS_MLD_DENS
+            kmld=kbl1(i,j)
+#    elif defined LMD_SKPP || defined GLS_MIXING
             kmld=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_DENS
-           kmld=kbl1(i,j)
-#     endif
 #    else
             kmld=N-5
 #    endif
             do k=N,kmld,-1
-              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
-     &                            TXadv(i,j,k,itrc)*cff
+     &                            TXadv(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
-     &                            TYadv(i,j,k,itrc)*cff
+     &                            TYadv(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
-     &                            TVadv(i,j,k,itrc)*cff
+     &                            TVadv(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
-     &                            TVmix(i,j,k,itrc)*cff
+     &                            TVmix(i,j,k,itrc)
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
+              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+     &                            THmix(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
               TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
-     &                            TForc(i,j,k,itrc)*cff
+     &                            TForc(i,j,k,itrc)
 #  ifdef MASKING
      &                   *rmask(i,j)
 #  endif
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+
               T_mld_nnew(i,j)    =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
             enddo
+!
+! Mean tracer over the MLD (updated in t3dmix routines if called)
+!
+            Taver_mld(i,j,itrc)=T_mld_nnew(i,j)
+     &                         /(z_w(i,j,N)-z_w(i,j,kmld-1))
+     &                         *(pm(i,j)*pn(i,j))
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
           enddo
         enddo
 
@@ -1046,23 +1069,24 @@
 !
         do j=Jstr,Jend
           do i=Istr,Iend
-#     if defined LMD_SKPP || defined GLS_MIXING
-            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
-#      ifdef DIAGNOSTICS_TS_MLD_DENS
+#     if defined DIAGNOSTICS_TS_MLD_DENS
             if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
-#      endif
+            kmld=kbl_nstp(i,j)
+#     elif defined LMD_SKPP || defined GLS_MIXING
+            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
             kmld=kbl_nstp(i,j)
 #     else
             kmld=N-5
 #     endif
             do k=N,kmld,-1
-              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                        t(i,j,k,nstp,itrc)*cff
             enddo
-            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_DENS
+#     if defined DIAGNOSTICS_TS_MLD_DENS
             if (itrc .eq. NT) kbl_nstp(i,j)=kbl1(i,j)
+#     elif defined LMD_SKPP || defined GLS_MIXING
+            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
 #     endif
           enddo
         enddo
@@ -1074,6 +1098,7 @@
      &                          TYadv_mld(i,j,itrc)-
      &                          TVadv_mld(i,j,itrc)-
      &                          TVmix_mld(i,j,itrc)-
+     &                          THmix_mld(i,j,itrc)-
      &                          TForc_mld(i,j,itrc)
           enddo
         enddo

@@ -239,22 +239,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
      &        MYID
         goto 99                !--> ERROR
       endif
-
-!
-!     Time2
-!
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
-     &  )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
 CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Barotropic mode variables: free-surface and 2D momentum
@@ -484,15 +468,9 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-# if defined WAVE_ROLLER && defined WKB_WWAVE 
-!$acc update if(compute_on_device) host(wepb0(:,:))
-        ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
-     &                                   hisWAVE(6), record, r2dvar)
-# else
 !$acc update if(compute_on_device) host(wepb(:,:))
             ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
-# endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
          MPI_master_only write(stdout,1)
@@ -1597,7 +1575,6 @@ CR      write(*,*) 'wrt_his var2D_flx_w2s'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pephm_fcor'  MYID
             endif
-#ifdef key_MUSTANG_bedload
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_bx(itrc,:,:)
@@ -1626,7 +1603,6 @@ CR      write(*,*) 'wrt_his var2D_bil_bedload'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
             endif
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
       enddo
 
@@ -1729,7 +1705,6 @@ CR      write(*,*) 'wrt_his var2D_pct_iter_coh'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_niter_ero'  MYID
       endif
-#ifdef key_MUSTANG_bedload
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_flx_bx_int(:,:)
@@ -1752,7 +1727,6 @@ CR      write(*,*) 'wrt_his var2D_flx_by_int'  MYID
 CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
       endif
 
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN
