@@ -1311,11 +1311,18 @@ C 				  endif
       TYPE(xios_duration)   ::   output_freq
       !!----------------------------------------------------------------------
       !
-      ! tdays (used below via tdays+jday0) is already expressed as
-      ! absolute days since tools_calendar's internal 1900 epoch, so jday0
-      ! must be the julian day of that same fixed epoch, not the run's
-      ! own configurable origin_date (using the run's origin here would
-      ! double-count it, since it is already folded into tdays/time).
+      ! time*sec2day (used below via time*sec2day+jday0), unlike tdays,
+      ! is ALWAYS absolute days since tools_calendar's internal 1900
+      ! epoch, regardless of when this routine runs: tdays switches
+      ! meaning to "elapsed days since the run's true start" as soon as
+      ! step.F executes (see its comment there), whereas time keeps the
+      ! same formula throughout. This routine only happens to run once,
+      ! before the time-stepping loop starts, so tdays would still work
+      ! today -- but relying on that is fragile, so use time directly.
+      ! jday0 must be the julian day of that same fixed 1900 epoch, not
+      ! the run's own configurable origin_date (using the run's origin
+      ! here would double-count it, since it is already folded into
+      ! time).
        CALL ymds2ju( 1900, 1, 1, 0., jday0 )
       DO jn = 1,2
 
@@ -1373,7 +1380,7 @@ C 				  endif
             idx = INDEX(clname,'@startdate@') + 
      &            INDEX(clname,'@STARTDATE@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate( tdays+jday0  )
+               cldate = iom_sdate( time*sec2day+jday0  )
                clname = clname(1:idx-1)//TRIM(cldate)//
      &          clname(idx+11:LEN_TRIM(clname))
                idx = INDEX(clname,'@startdate@') + 
@@ -1383,7 +1390,7 @@ C 				  endif
             idx = INDEX(clname,'@startdatefull@') + 
      &            INDEX(clname,'@STARTDATEFULL@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate(tdays+jday0 , ldfull = .TRUE. )
+               cldate = iom_sdate(time*sec2day+jday0 , ldfull = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)//
      &          clname(idx+15:LEN_TRIM(clname))
                idx = INDEX(clname,'@startdatefull@') +
@@ -1393,7 +1400,7 @@ C 				  endif
             idx = INDEX(clname,'@enddate@') +
      &            INDEX(clname,'@ENDDATE@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate( tdays+jday0 + dt
+               cldate = iom_sdate( time*sec2day+jday0 + dt
      &          / day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)
      &          //clname(idx+9:LEN_TRIM(clname))
@@ -1404,8 +1411,8 @@ C 				  endif
             idx = INDEX(clname,'@enddatefull@') + 
      &            INDEX(clname,'@ENDDATEFULL@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate( tdays+jday0 + dt  
-     &          /day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE., 
+               cldate = iom_sdate( time*sec2day+jday0 + dt
+     &          /day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE.,
      &           ldfull = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)
      &          //clname(idx+13:LEN_TRIM(clname))
@@ -1782,6 +1789,9 @@ C 				  endif
       !
       USE xios     ! XIOS library
       USE xios_module
+      use croco_namelist, only: start_date, calendar_type
+      use tools_calendar, only: tool_sectodat, tool_decompdate,
+     &                          tool_xios_calendar_type
 
 #if defined MUSTANG
       USE comMUSTANG, only: nk_nivsed_out
@@ -1834,6 +1844,20 @@ C 				  endif
       CHARACTER(len=10) :: clname
       CHARACTER(len=10) :: cdname
       INTEGER           :: imd
+      ! torigin_*: decoded from the namelist start_date, this is XIOS's
+      ! fixed "time_origin" -- the reference epoch of the output time
+      ! axis. Distinct from both origin_date (whatever date is embedded
+      ! in the initial/restart file being read) and rundate_* below.
+      INTEGER :: torigin_year, torigin_month, torigin_day
+      INTEGER :: torigin_hour, torigin_minute, torigin_second
+      ! rundate_*: the real calendar date right now, decoded from
+      ! start_time; this is XIOS's "start_date" -- where the calendar
+      ! currently stands, not a fixed reference. Named "rundate" (not
+      ! "start_date") precisely to avoid confusion with the namelist's
+      ! start_date, which torigin_* decodes instead.
+      INTEGER :: rundate_year, rundate_month, rundate_day
+      INTEGER :: rundate_hour, rundate_minute, rundate_second
+      CHARACTER(len=19) :: rundate_str
 
       !!---------------------------------------------------------------------
       !  
@@ -1869,11 +1893,27 @@ C 				  endif
 # endif
       CALL iom_swap( cdname )
 
-      CALL xios_define_calendar( TYPE = "Gregorian", 
-     &      start_date  = xios_date(start_year,start_month,start_day,
-     &                    start_hour,start_minute,start_second),
-     &      time_origin = xios_date(origin_year,origin_month,origin_day,
-     &                    origin_hour,origin_minute,origin_second))
+      ! rundate_* is decoded here from start_time rather than in
+      ! get_initial.F, since get_initial.F is never called for an
+      ! ANA_INITIAL fresh start (nrrec==0) and would leave it undefined
+      ! in that case.
+      rundate_str = tool_sectodat(start_time)
+      CALL tool_decompdate(rundate_str, rundate_day, rundate_month,
+     &                      rundate_year, rundate_hour, rundate_minute,
+     &                      rundate_second)
+
+      CALL tool_decompdate(start_date, torigin_day, torigin_month,
+     &                      torigin_year, torigin_hour, torigin_minute,
+     &                      torigin_second)
+
+      CALL xios_define_calendar(
+     &      TYPE = TRIM(tool_xios_calendar_type(calendar_type)),
+     &      start_date  = xios_date(rundate_year,rundate_month,
+     &                    rundate_day,rundate_hour,rundate_minute,
+     &                    rundate_second),
+     &      time_origin = xios_date(torigin_year,torigin_month,
+     &                    torigin_day,torigin_hour,torigin_minute,
+     &                    torigin_second))
 
       ! horizontal grid definition
       CALL set_scalar

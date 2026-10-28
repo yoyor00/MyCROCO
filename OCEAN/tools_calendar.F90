@@ -62,7 +62,8 @@ MODULE tools_calendar
    INTEGER, PARAMETER :: cal_julian    = 5
 
    PUBLIC :: tool_sectodat, tool_datosec, tool_datetosec, &
-             tool_decompdate, tool_origindate, init_tools_calendar
+             tool_decompdate, tool_origindate, init_tools_calendar, &
+             tool_xios_calendar_type
 
    ! Module-level copies of namelist calendar settings.
    ! Set once via init_tools_calendar (called from init_calendar).
@@ -147,6 +148,33 @@ CONTAINS
       END SELECT
 
    END FUNCTION cf_calendar_id
+
+   !====================================================================
+   CHARACTER(len=10) FUNCTION tool_xios_calendar_type(cal_type)
+   !! ** Purpose : map a CF calendar name (or alias) to the TYPE string
+   !!              expected by XIOS's xios_define_calendar (one of its
+   !!              built-in calendars: Gregorian, Julian, D360, NoLeap,
+   !!              AllLeap). init_tools_calendar has already validated
+   !!              cal_type, so cal_unknown cannot occur here in
+   !!              practice; Gregorian is kept as a harmless fallback.
+
+      IMPLICIT NONE
+      CHARACTER(len=*), INTENT(in) :: cal_type
+
+      SELECT CASE (cf_calendar_id(cal_type))
+      CASE (cal_360day)
+         tool_xios_calendar_type = 'D360'
+      CASE (cal_noleap)
+         tool_xios_calendar_type = 'NoLeap'
+      CASE (cal_allleap)
+         tool_xios_calendar_type = 'AllLeap'
+      CASE (cal_julian)
+         tool_xios_calendar_type = 'Julian'
+      CASE DEFAULT
+         tool_xios_calendar_type = 'Gregorian'
+      END SELECT
+
+   END FUNCTION tool_xios_calendar_type
 
    !====================================================================
    LOGICAL FUNCTION is_mixed_gregorian(str)

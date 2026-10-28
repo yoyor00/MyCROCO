@@ -2043,11 +2043,7 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-      character*80 origin_date, start_date_run
-      integer      start_day, start_month, start_year
-     &         ,   start_hour, start_minute, start_second
-     &         ,   origin_day, origin_month, origin_year
-     &         ,   origin_hour, origin_minute, origin_second
+      character*80 origin_date
 
       REAL(kind=8) :: origin_date_in_sec, origin_secinunit
       REAL(kind=8) :: start_date_in_sec
@@ -2069,16 +2065,12 @@
 #endif
 
       common /cncscrum/
-     &             origin_date, start_date_run
+     &             origin_date
      &         ,   origin_date_in_sec
      &         ,   start_date_in_sec
      &         ,   origin_secinunit
      &         ,   usrname
      &         ,   qbarname, tsrcname
-     &         ,   start_day, start_month, start_year
-     &         ,   start_hour, start_minute, start_second
-     &         ,   origin_day, origin_month, origin_year
-     &         ,   origin_hour, origin_minute, origin_second
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                                ,  diags_eddyname
 #endif

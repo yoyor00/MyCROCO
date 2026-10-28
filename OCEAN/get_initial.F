@@ -190,12 +190,6 @@
      &        'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &        tool_sectodat(origin_date_in_sec)
           origin_date=tool_sectodat(origin_date_in_sec)
-          READ(origin_date(1:4),fmt='(i4)') origin_year
-          READ(origin_date(6:7),fmt='(i2)') origin_month
-          READ(origin_date(9:10),fmt='(i2)') origin_day
-          READ(origin_date(12:13),fmt='(i2)') origin_hour
-          READ(origin_date(15:16),fmt='(i2)') origin_minute
-          READ(origin_date(18:19),fmt='(i2)') origin_second
 
 #ifdef EXACT_RESTART
           if (tindx.eq.2) then
@@ -251,15 +245,6 @@
         goto 99                                           !--> ERROR
       endif
       start_time = start_time + origin_date_in_sec
-#ifdef XIOS
-      start_date_run = tool_sectodat(start_time)
-      READ(start_date_run(1:4),fmt='(i4)') start_year
-      READ(start_date_run(6:7),fmt='(i2)') start_month
-      READ(start_date_run(9:10),fmt='(i2)') start_day
-      READ(start_date_run(12:13),fmt='(i2)') start_hour
-      READ(start_date_run(15:16),fmt='(i2)') start_minute
-      READ(start_date_run(18:19),fmt='(i2)') start_second
-#endif
 
       ierr=nf_inq_varid (ncid, 'time_step', varid)
       if (ierr .eq. nf_noerr) then

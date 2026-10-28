@@ -1055,9 +1055,7 @@ contains
       use croco_namelist, ONLY: start_date, end_date, calendar_type, nrrec
       use tools_calendar, ONLY: init_tools_calendar
       use scalars, ONLY: start_time
-      use ncscrum, ONLY: origin_year, origin_month, origin_day, &
-                         origin_hour, origin_minute, origin_second, &
-                         origin_date, origin_date_in_sec, start_date_in_sec
+      use ncscrum, ONLY: origin_date, origin_date_in_sec, start_date_in_sec
       use param, ONLY: stdout
 #ifdef MPI
       use scalars, ONLY: mynode
@@ -1095,12 +1093,6 @@ contains
       if (nrrec == 0) then
          origin_date = start_date
          origin_date_in_sec = tool_datosec(origin_date)
-         READ (origin_date(1:4), fmt='(i4)') origin_year
-         READ (origin_date(6:7), fmt='(i2)') origin_month
-         READ (origin_date(9:10), fmt='(i2)') origin_day
-         READ (origin_date(12:13), fmt='(i2)') origin_hour
-         READ (origin_date(15:16), fmt='(i2)') origin_minute
-         READ (origin_date(18:19), fmt='(i2)') origin_second
          start_time = origin_date_in_sec
       end if
 #endif
