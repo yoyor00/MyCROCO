@@ -207,9 +207,7 @@ ls "${ROOT_DIR}/"MUSTANG/*       > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"MUSTA
 ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"OBSTRUCTION/* "$SCRDIR"
 ls "${ROOT_DIR}/"LAGRANGIAN/*    > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"LAGRANGIAN/* "$SCRDIR"
 ls "${ROOT_DIR}/"FOIL/*          > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"FOIL/* "$SCRDIR"
-ls "${ROOT_DIR}/"ECO3M/MAKE/*.inc > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"ECO3M/MAKE/*.inc $SCRDIR
-ls "${ROOT_DIR}/"ECO3M/SRC/src_eco3m/*.F90 > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"ECO3M/SRC/src_eco3m/*.F90 $SCRDIR
-ls "${ROOT_DIR}/"ECO3M/CONFIG_ECO3M/F_PROCESS > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"ECO3M/CONFIG_ECO3M/F_PROCESS $SCRDIR
+ls "${ROOT_DIR}/"ECO3M/SRC/src_eco3m/*.F90 > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"ECO3M/SRC/src_eco3m/*.F90 "$SCRDIR"
 ls "${SOURCE}/"croco_ascii.txt   > /dev/null  2>&1 && \cp "${SOURCE}/"croco_ascii.txt "$SCRDIR"
 ls "${ROOT_DIR}/"STOGEN/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"STOGEN/* "$SCRDIR"
 
@@ -329,11 +327,11 @@ if $($CPP1 testkeys.F | grep -i -q p5zisdefined) ; then
 fi
 
 if $($CPP1 testkeys.F | grep -i -q ECO3Misdefined) ; then
+        echo "Eco3M is defined: copy the appropriate namelist"
 	mkdir ../OUTPUTS
-	ln -sf "${ROOT_DIR}/"ECO3M/CONFIG_ECO3M ../CONFIG_ECO3M
-	/bin/cp -rf "${ROOT_DIR}/"ECO3M/CONFIG_ECO3M/config.ini $SCRDIR
-	/bin/cp -rf "${ROOT_DIR}/"ECO3M/CONFIG_ECO3M/modele.def $SCRDIR
         CPPFLAGS1="$CPPFLAGS1 -DCALC -DCOUPL -DRGB"
+        ls ../../CONFIG_ECO3M/F_PROCESS > /dev/null  2>&1 && \cp -r ../../CONFIG_ECO3M/F_PROCESS .
+        ls ../../MAKE/*.inc  > /dev/null  2>&1 && \cp  ../../MAKE/*.inc .
 fi
 
 # add cppkeys for ECO3M compilation - needed : ECO3M is seen as a routine and not a main code thanks to ECO3M_SUB

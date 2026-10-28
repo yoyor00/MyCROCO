@@ -22,7 +22,7 @@ filename_confmod = "CONFIG_ECO3M/modele.def" ! Process functions (from the F_PRO
 !===================================================================================================================
 &nam_eco3m_run
 run_name = "sim_eco3m_1DV"  ! simulation name
-dt_bio = 1200.         ! Simulation time-step (in seconds) 
+dt_bio = 72.         ! Simulation time-step (in seconds) 
 pos_nzmax = "SURF" ! Position of the nz_max point (ie BOTT for bottom or SURF for surface)
 /
 
@@ -105,16 +105,16 @@ outphy(13) = "irrad"
 /
 
 &nam_eco3m_outflux_nb
-num_outflux =  0  ! Number of grid nodes where biogeochemical fluxes will be saved if the SAVE_FLUX key is used
+num_outflux =  1  ! Number of grid nodes where biogeochemical fluxes will be saved if the SAVE_FLUX key is used
 /
 
 &nam_eco3m_outflux_loc
 ! Geographical location of the fluxes to be saved, given in the form  :
 !     | x index | y index | z index
- outflux(1) = 1, 1, 10
+ outflux(1) = 15, 10, 30
 /
 
 &nam_eco3m_outflux_freq
-dt_outflux =  240  ! frequency in minutes 
+dt_outflux = 60   ! frequency in minutes 
 /
 

@@ -63,7 +63,8 @@
 
       if (ilc.gt.ntssurf_avg) then
 
-        if (mod(ilc-ntssurf_avg,nwrtsurf_avg).eq.1) then
+        if (mod(ilc-ntssurf_avg,nwrtsurf_avg).eq.1
+     &                    .OR. nwrtsurf_avg.eq.1) then
 
           if (ZEROTH_TILE) then
             timesurf_avg=time

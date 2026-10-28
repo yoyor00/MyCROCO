@@ -141,7 +141,7 @@
         write(*,*) "eco3m_irrad_init OK"
 #endif
 
-#if !defined ECO3M_SUB 
+#if !defined ECO3M_SUB || defined ECO3M_1DV
 #ifdef MODULE_CO2
      ! initializes CO2-related variables
         call eco3m_co2_init
@@ -349,15 +349,6 @@
    use mod_eco3m_files
    implicit none
 
-! local variables
-   real(8) :: default_conc  ! default concentration if no input file is provided
-   real(8) :: default_temp  ! default temperature in uncoupled mode (i.e. key COUPL not activated)
-   real(8) :: default_salt  ! default salinity in uncoupled mode (i.e. key COUPL not activated)
-   character(256) :: ic_input_directory  ! directory for initial conditions
-   logical :: file_exist ! boolean to check the existence of input file
-   integer :: ivar  ! index of the variable
-   character(300) :: filename  ! name of the file
-
    namelist/nam_eco3m_ic/ic_input_directory, default_conc, default_temp, default_salt
 #if ! defined M3D_NCOUPL
    namelist/nam_eco3m_run/run_name, run_duration, dt_bio, dt_save_bio, &
@@ -366,6 +357,15 @@
    namelist/nam_eco3m_run/run_name, run_duration, dt_bio, dt_save_bio, &
             nx_min, nx_max, ny_min, ny_max, nz_max, pos_nzmax,filename_depth   
 #endif
+
+! local variables
+   real(8) :: default_conc  ! default concentration if no input file is provided
+   real(8) :: default_temp  ! default temperature in uncoupled mode (i.e. key COUPL not activated)
+   real(8) :: default_salt  ! default salinity in uncoupled mode (i.e. key COUPL not activated)
+   character(256) :: ic_input_directory  ! directory for initial conditions
+   logical :: file_exist ! boolean to check the existence of input file
+   integer :: ivar  ! index of the variable
+   character(300) :: filename  ! name of the file
 
         ! Reads the namelist parameters relative to initial conditions
         rewind(namelist_eco3m_id)
@@ -509,9 +509,19 @@
         errlec = 0
         do  while (errlec==0)
             Read(file_input_id,*,iostat=errlec) i,j,k , conc
-            val(i,j,k) = conc
-        enddo
+            if (pos_nzmax=='SURF' .and. k <= nz_max) then 
+                    val(i,j,nz_max-k+1) = conc
+            elseif (pos_nzmax=='BOTT' .and. k<= nz_max) then
+                    val(i,j,k) = conc
+            end if
 
+        enddo
+! some 1DV consider several horizontal grid meshes
+        if ((nx_max - nx_min) /=0 .or. (ny_max - ny_min) /=0) THEN
+           do k=1,nz_max
+              val(:,:,k) = val(1,1,k) 
+           enddo
+        endif
         close(file_input_id)
 
     end subroutine init_prof

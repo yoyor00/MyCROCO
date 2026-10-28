@@ -74,9 +74,11 @@ MODULE comsubstance
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: tocd      
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_sed_r
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: diam_sed, ros
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#if defined key_MUSTANG_V2
     INTEGER  :: ibedload1, ibedload2
-#endif /* if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload */
+    LOGICAL  :: l_bedload ! .TRUE. if any substance activates bedload transport
+        ! (derived from l_bedload_n() in parasubstance.txt)
+#endif /* defined key_MUSTANG_V2 */
     LOGICAL, DIMENSION(:), ALLOCATABLE :: l_outsandrouse
 #endif /* ifdef MUSTANG */
 

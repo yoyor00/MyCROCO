@@ -54,7 +54,21 @@
 
 
       TYPE(VAR_GLOB_USER), Allocatable :: mu_graz(:,:)  !< specific grazing rate
+      TYPE(VAR_GLOB_USER), Allocatable :: mu_growth(:)  !< specific growth rate
       ! to complete with other user variables
+
+#if defined INDIC
+      !GPP = gross primary production
+      !NPP = net primary production
+      REAL(8),Allocatable ::GPPS(:,:,:),GPPL(:,:,:),NPPS(:,:,:),NPPL(:,:,:)
+      !GSP = gross secondary production
+      !NSP = net   secondary production
+      REAL(8),Allocatable ::GSP(:,:,:),NSP(:,:,:)
+      !GBP = gross bacterial production
+      REAL(8),Allocatable ::GBP(:,:,:)
+      !IND = intermediate variable for the calculation of indicators
+      REAL(8),Allocatable ::IND(:,:,:)
+#endif
 
       contains
 
@@ -78,6 +92,35 @@
 
 
  ! to complete
+#ifdef INDIC
+! gross and net primary productions for small and large phytoplankton
+Allocate(GPPS(nx_min:nx_max, ny_min:ny_max, nz_max))
+Allocate(GPPL(nx_min:nx_max, ny_min:ny_max, nz_max))
+Allocate(NPPS(nx_min:nx_max, ny_min:ny_max, nz_max))
+Allocate(NPPL(nx_min:nx_max, ny_min:ny_max, nz_max))
+Allocate(GSP(nx_min:nx_max, ny_min:ny_max, nz_max))
+Allocate(NSP(nx_min:nx_max, ny_min:ny_max, nz_max))
+Allocate(GBP(nx_min:nx_max, ny_min:ny_max, nz_max))
+Allocate(IND(nx_min:nx_max, ny_min:ny_max, nz_max))
+#endif
+!----------------------------------------------------------
+!-- specific growth  rate 
+!----------------------------------------------------------
+  istat=0
+  if (nscp_cell /=0) allocate (mu_growth(nscp_cell),STAT=istat)
+  if (istat/=0) write(*,*) 'pb with the allocation of  mu_growth'
+
+  if (nscp_cell /= 0 .and. allocated(mu_growth)) then
+    do i=1,nscp_cell
+!          NULLIFY(mu_growth(i)%val)
+          Allocate(mu_growth(i)%val(nx_min:nx_max, &
+                  ny_min:ny_max,1:nz_max),stat = istat)
+          if (istat /=0) write(*,*) " problem with the ", &
+                     "allocation of mu_growth(", i,", ",j, ")"
+              mu_growth(i)%val(:,:,:)=0.d0
+              mu_growth(i)%idorg=iscp_cell(i)
+    enddo
+  endif
 !----------------------------------------------------------
 !-- specific grazing rate 
 !----------------------------------------------------------

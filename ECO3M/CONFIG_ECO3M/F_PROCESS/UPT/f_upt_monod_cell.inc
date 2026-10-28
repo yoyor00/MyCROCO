@@ -37,34 +37,35 @@
 !***************************************************************************
 !--------------------------------------------------------------------
 !
-function f_upt_monod_cell(ili,jcol,ibio,inut,k_demi,Vmax)
+   function f_upt_monod_cell(ili,jcol,ibio,inut,k_demi,Vmax)
+!
+!--------------------------------------------------------------------
+
+ This function calculates the uptake rate of a nutrient
+! using the Monod-Michaelis-Menten model
+!
+! Variables and parameters and their units:
+!------------------------------------ -----
+! ibio: index of one of the concentrations (C or N or P...)
+!         of the organism consuming the nutrient
+! inut: parameter giving the index of the concentration
+!         of the limiting nutrient (specified because it may differ from jcol)
+! k_demi: half-saturation constant, (mol X)/l
+! Vmax  : SPECIFIC maximum uptake rate, in  molX.cell-1.s^{-1}
+!
+! f_upt_monod: uptake rate, in (mol X).l-1 s^{-1}
+!
+! CAUTION:
+!    * Vmax must be in mol X.cell-1.s-1
+!
+!
+! Ref: Monod, J. (1950) Annales de l'Institut Pasteur, 79:390-410
+!      Michaelis, L. & Menten, M. L. (1913), 49:333-369
+!
+! Melika Baklouti 01/07/2011, 01/2026
+!--------------------------------------------------------------------
     !
-    !--------------------------------------------------------------------
-    !
-    ! Cette fonction calcule l''absorption/assimilation (uptake) d''un nutriment 
-    ! d''indice inut par le modele de Monod-Michaelis-Menten 
-    !
-    ! Variables et parametres et leurs unites:
-    !----------------------------------------- 
-    ! ibio  : indice d'une des concentrations (C ou N ou P...)
-    !         de l'organisme consommant du nutriment
-    ! inut  : parametre donnant l'indice de la concentration
-    !         en nutriment limitant (specifie car il peut différer de jcol) 
-    ! k_demi: cste de demi saturation, (mol X)/l
-    ! Vmax  : vitesse SPECIFIQUE d'absorption max., en  molX.cell-1.s^{-1}
-    !
-    ! f_upt_monod : vitesse d''absorption, en (mol X).l-1 s^{-1}
-    !
-    ! ATTENTION: 
-    !    * Vmax doit etre imperativement en mol X.cell-1.s-1
-    !
-    ! Ref: Monod, J. (1950) Annales de l'Institut Pasteur, 79:390-410
-    !      Michaelis, L. & Menten, M. L. (1913), 49:333-369
-    !
-    ! Melika Baklouti 01/07/2011
-    !--------------------------------------------------------------------
-    !
-    !-- Variables globales
+    !-- Global variables 
     ! Use VAR_GLOBAL
 
     Implicit None
@@ -81,15 +82,15 @@ function f_upt_monod_cell(ili,jcol,ibio,inut,k_demi,Vmax)
     Integer::i,j,k
     !logical :: isnan
 
-    !-- indice de la conc. en nutriments:
+    !-- nutrient concentration index
     iinut=nint(inut)
 
-    !-- Organisme de la biomasse planctonique:
+    !-- Planktonic biomass organism:
     iibio = nint(ibio)
     iorg_plancton = var(iibio)%idorg 
 
 
-    !--concentration en cell du plancton:
+    !-- cell concentration (abundance) of plankton:
     cell = 'cell'
     iCell= f_idorg2id(iorg_plancton,cell)
 
