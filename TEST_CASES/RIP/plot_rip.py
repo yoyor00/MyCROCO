@@ -46,7 +46,7 @@ except FileNotFoundError:
     exit(1)
 
 # Read parameters
-tindex_last = len(nc.variables["scrum_time"][:]) - 1
+tindex_last = len(nc.variables["time"][:]) - 1
 tstart = 0 if args.makemovie else tindex_last
 tend = tindex_last
 
@@ -65,7 +65,7 @@ fig, ax = plt.subplots(figsize=(10, 8))
 for tindex in range(tstart, tend + 1):
     print(f"Tindex = {tindex}")
 
-    time = nc.variables["scrum_time"][tindex] / 86400  # Convert time to days
+    time = nc.variables["time"][tindex] / 86400  # Convert time to days
     zeta = np.squeeze(nc.variables["zeta"][tindex, :, :])
     u = np.squeeze(nc.variables["u"][tindex, -1, :, :])
     v = np.squeeze(nc.variables["v"][tindex, -1, :, :])

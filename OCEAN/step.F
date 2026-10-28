@@ -82,7 +82,7 @@ C$OMP END PARALLEL
       endif
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Put phase of OASIS3
-      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)) then
+      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+2)) then
 #  ifdef AGRIF
         if(it_inside_root==Agrif_rel_idt()) then 
 #  endif
@@ -111,6 +111,11 @@ C$OMP END PARALLEL
 !
       subroutine prestep3D_thread()
       use croco_namelist
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+      USE mod_tides_mas, ONLY : mas_update_calendar
+#  endif
+# endif
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
@@ -244,6 +249,13 @@ C$OMP BARRIER
 
 #ifdef SOLVE3D
 
+! set_vbc ahead of set_bry/ana_bry below which need patm2d 
+! (OBC_PATM inverse-barometer correction) already
+! up to date rather than lagging by one step
+      do tile=my_first,my_last
+        call set_vbc (tile)
+      enddo
+C$OMP BARRIER
       do tile=my_first,my_last
 # ifdef AGRIF
         IF (Agrif_Root()) THEN
@@ -311,8 +323,16 @@ C$OMP BARRIER
 
       enddo
 C$OMP BARRIER
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+!  Refreshed mas time once per step, ahead of the tile loop
+C$OMP MASTER
+      call mas_update_calendar(time)
+C$OMP END MASTER
+C$OMP BARRIER
+#  endif
+# endif
       do tile=my_first,my_last
-        call set_vbc (tile)
 # if defined  BBL && !defined M3FAST
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
@@ -622,6 +642,11 @@ C$OMP BARRIER
 #ifdef CVTK_DEBUG
       use debug
 #endif
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+      USE mod_tides_mas, ONLY : mas_update_calendar
+#  endif
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -738,6 +763,15 @@ C$OMP BARRIER
         ENDIF
 # endif
 C$OMP BARRIER
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+!  Refreshed mas time once per step, ahead of the tile loop
+C$OMP MASTER
+        call mas_update_calendar(time)
+C$OMP END MASTER
+C$OMP BARRIER
+#  endif
+# endif
         do tile=my_first,my_last
           call set_vbc (tile)
 # ifdef BBL

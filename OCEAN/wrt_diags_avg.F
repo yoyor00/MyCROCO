@@ -112,21 +112,6 @@
         goto 99                                           !--> ERROR
       endif
 !
-! Averaged diag Time
-!
-      ierr=nf_put_var1_FTYPE (nciddia_avg, diaTime2_avg, record,
-     &                                              timedia_avg
-# ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-# endif
-     & )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
-     &                  MYID
-        goto 99                                           !--> ERROR
-      endif
-!
 !---------------------------------------------------------------
 ! Tracer diagnostic variables.
 !---------------------------------------------------------------
@@ -267,10 +252,12 @@
 !
 !  indxTcrit_mld
 !
+          if (itrc.le.2) then
            work2d=Tcrit_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTcrit_mld_avg(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
+          endif
 #  endif
         endif
 !
