@@ -1057,7 +1057,7 @@ contains
       use scalars, ONLY: start_time
       use ncscrum, ONLY: origin_year, origin_month, origin_day, &
                          origin_hour, origin_minute, origin_second, &
-                         origin_date, origin_date_in_sec
+                         origin_date, origin_date_in_sec, start_date_in_sec
       use param, ONLY: stdout
 #ifdef MPI
       use scalars, ONLY: mynode
@@ -1082,6 +1082,14 @@ contains
       ! calendar_type is validated inside init_tools_calendar (fatal abort
       ! on an unrecognized value)
       call init_tools_calendar(calendar_type, start_date)
+
+      ! start_date_in_sec is the fixed anchor used when writing the
+      ! "seconds since start_date" time axis in output files (wrt_rst,
+      ! wrt_his, wrt_avg, ...). It must NOT be confused with
+      ! origin_date_in_sec, which anchors whatever date is embedded in
+      ! the initial/restart file being read and can differ from
+      ! start_date (e.g. climatology-derived initial conditions).
+      start_date_in_sec = tool_datosec(start_date)
 
 #ifdef ANA_INITIAL
       if (nrrec == 0) then

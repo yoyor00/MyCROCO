@@ -97,7 +97,7 @@
 !
       ierr=nf_put_var1_FTYPE (ncidsurf_avg, surfTime_avg,
      &                       record, timesurf_avg
-     &  - origin_date_in_sec
+     &  - start_date_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))

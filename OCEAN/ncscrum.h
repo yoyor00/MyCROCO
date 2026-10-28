@@ -2050,6 +2050,7 @@
      &         ,   origin_hour, origin_minute, origin_second
 
       REAL(kind=8) :: origin_date_in_sec, origin_secinunit
+      REAL(kind=8) :: start_date_in_sec
 
       character*180 usrname
      &         ,   qbarname, tsrcname
@@ -2070,6 +2071,7 @@
       common /cncscrum/
      &             origin_date, start_date_run
      &         ,   origin_date_in_sec
+     &         ,   start_date_in_sec
      &         ,   origin_secinunit
      &         ,   usrname
      &         ,   qbarname, tsrcname
