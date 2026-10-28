@@ -13,12 +13,10 @@
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
-#ifdef CROCO_NAMELIST
       USE croco_namelist, only: dt, rho0
       USE croco_namelist, ONLY: nrpfhis, hisname
-# ifdef AGRIF
+#ifdef AGRIF
       USE croco_namelist, ONLY: croco_namelist_switch_grid
-# endif
 #endif
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc
@@ -134,7 +132,7 @@
 # define SWITCH !
 #endif
 
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
 

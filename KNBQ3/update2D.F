@@ -474,9 +474,9 @@ C$OMP MASTER
 # ifdef K3FAST
       Subroutine Updateunbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
-#  if defined AGRIF && defined CROCO_NAMELIST
+#  if defined AGRIF
       use croco_namelist, only: agrif_nml_storage
-#  elif defined CROCO_NAMELIST
+#  else
       use croco_namelist, only: dt
 #  endif
       implicit none
@@ -503,7 +503,7 @@ C$OMP MASTER
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmu_nbq(i1:i2,j1:j2,k1:k2)
       else
-#  if defined AGRIF && defined CROCO_NAMELIST
+#  if defined AGRIF
         dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
 #  else
         dt_cur = dt
@@ -539,9 +539,9 @@ C$OMP MASTER
 ! !
       Subroutine Updatevnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
-#  if defined AGRIF && defined CROCO_NAMELIST
+#  if defined AGRIF
       use croco_namelist, only: agrif_nml_storage
-#  elif defined CROCO_NAMELIST
+#  else
       use croco_namelist, only: dt
 #  endif
       implicit none
@@ -567,7 +567,7 @@ C$OMP MASTER
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmv_nbq(i1:i2,j1:j2,k1:k2)
       else
-#  if defined AGRIF && defined CROCO_NAMELIST
+#  if defined AGRIF
         dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
 #  else
         dt_cur = dt
@@ -604,9 +604,9 @@ C$OMP MASTER
 #  ifdef K3FAST
       Subroutine Updatewnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
-#  if defined AGRIF && defined CROCO_NAMELIST
+#  if defined AGRIF
       use croco_namelist, only: agrif_nml_storage
-#  elif defined CROCO_NAMELIST
+#  else
       use croco_namelist, only: dt
 #  endif
       implicit none
@@ -631,7 +631,7 @@ C$OMP MASTER
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmw_nbq(i1:i2,j1:j2,k1:k2)
       else
-#  if defined AGRIF && defined CROCO_NAMELIST
+#  if defined AGRIF
         dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
 #  else
         dt_cur = dt
@@ -1201,9 +1201,9 @@ C$OMP MASTER
 ! !
       Subroutine Updateduavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
       use croco_namelist, only: agrif_nml_storage
-#elif defined CROCO_NAMELIST
+#else
       use croco_namelist, only: dt
 #endif
       implicit none
@@ -1229,7 +1229,7 @@ C$OMP MASTER
         tabres(i1:i2,j1:j2) = rrhoy * DU_avg1(i1:i2,j1:j2,4)
 
       ELSE
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
         dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
 #else
         dt_cur = dt
@@ -1278,9 +1278,9 @@ C$OMP MASTER
 ! !
       Subroutine Updatedvavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
       use croco_namelist, only: agrif_nml_storage
-#elif defined CROCO_NAMELIST
+#else
       use croco_namelist, only: dt
 #endif
       implicit none
@@ -1307,7 +1307,7 @@ C$OMP MASTER
          tabres(i1:i2,j1:j2) = rrhox * DV_avg1(i1:i2,j1:j2,4)
 
        ELSE
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
          dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
 #else
          dt_cur = dt

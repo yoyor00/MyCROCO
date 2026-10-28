@@ -17,9 +17,7 @@
 #ifdef key_pisces
       USE trc, ONLY : profsed
 #endif
-#ifdef CROCO_NAMELIST
       USE croco_namelist
-#endif
       IMPLICIT NONE
 
       PUBLIC set_grid

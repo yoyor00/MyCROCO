@@ -15,7 +15,7 @@
                               ! netCDF file.
 
       USE croco_namelist, ONLY: rstname, nrpfrst
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       USE croco_namelist, ONLY: croco_namelist_switch_grid
 #endif
 #if defined MUSTANG
@@ -77,7 +77,7 @@
       integer b3dvar_full
 #endif
 
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
 

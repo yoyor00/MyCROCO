@@ -24,7 +24,7 @@
       use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
      &                          dt_rst
 # endif
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
       use croco_namelist_init, only: copy_ncscrum_to_agrif
 #endif
 
@@ -98,7 +98,7 @@ C$OMP END PARALLEL
 !
 ! Set evolving time indices to their default initial values.
 !
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
       call copy_ncscrum_to_agrif(wrthis
 # ifdef AVERAGES
      &                          , wrtavg

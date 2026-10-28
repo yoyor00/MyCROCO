@@ -31,7 +31,6 @@ C$    integer omp_get_thread_num
 ! distribution of the shared arrays accross the cluster, unless
 ! another distribution policy is specified to override the default.
 !
-#ifdef CROCO_NAMELIST
         USE croco_namelist, ONLY: visc2, visc4
 #ifdef SOLVE3D
 # ifdef TRACERS
@@ -39,7 +38,6 @@ C$    integer omp_get_thread_num
 # endif
 # if !defined LMD_MIXING && !defined GLS_MIXING
         USE croco_namelist, ONLY: Akv_bak, Akt_bak
-# endif
 # endif
 #endif
 !     implicit none

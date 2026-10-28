@@ -14,7 +14,7 @@
       subroutine def_rst (ncid, total_rec, ierr)  ! restart netCDF
                                                   ! file.
         USE croco_namelist, ONLY: ldefhis, nrpfrst, rstname
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
         USE croco_namelist, ONLY: croco_namelist_switch_grid
 #endif
 #if defined MUSTANG
@@ -66,7 +66,7 @@
 ! where, 1 =< record_within_the_file =< records_per_file, so that
 ! total_record changes continuously throughout the sequence of files.
 !
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
       ierr=0

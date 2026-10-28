@@ -38,10 +38,8 @@
 #  endif
 # endif
      &                         )
-#ifdef CROCO_NAMELIST
       USE croco_namelist, ONLY: dt, nrrec, rho0, 
      &                  visc2read_nbq, csound_nbq
-#endif
 !
 !======================================================================
 !

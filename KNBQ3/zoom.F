@@ -1142,7 +1142,7 @@ CR      write(*,*) '  0' MYID
       call Agrif_ChildGrid_To_ParentGrid()
       call UpdateGridhis()
       call Agrif_ParentGrid_To_ChildGrid()
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
 # endif /* AGRIF_2WAY */
@@ -2185,7 +2185,7 @@ CR      write(*,*) '  0' MYID
 ! !*********************************************************************
 ! !  
       recursive Subroutine UpdateGridhis()
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       use croco_namelist, only: croco_namelist_switch_grid
 #endif
       implicit none
@@ -2194,7 +2194,7 @@ CR      write(*,*) '  0' MYID
 # include "scalars.h"
 # include "ncscrum.h"
 
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
 # ifdef XIOS
@@ -2208,7 +2208,7 @@ CR      write(*,*) '  0' MYID
         call Agrif_ChildGrid_To_ParentGrid()
         call UpdateGridhis()
         call Agrif_ParentGrid_To_ChildGrid()
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
         call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
       endif

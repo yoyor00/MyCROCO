@@ -1,35 +1,4 @@
 #!/bin/bash
-# ==============================================================================
-# Vérification de l'environnement SLURM et exécution sur nœud de calcul
-# ==============================================================================
-if [[ -z "${SLURM_JOB_ID:-}" && -z "${SLURM_JOBID:-}" ]] || [[ -z "${SLURM_NODELIST:-}" && -z "${SLURM_JOB_NODELIST:-}" ]]; then
-   echo "==============================================================================" >&2
-   echo "[ERROR] jobcomp : Environnement SLURM non détecté (variables SLURM* absentes)." >&2
-   echo "        Toute compilation hors allocation SLURM est interdite." >&2
-   echo "==============================================================================" >&2
-   exit 1
-fi
-export PATH="/nhoms/commun/softs2/gnu-15.2.0/gnu_ompi/4.1.8/bin:/usr/local/openmpi/4.1.8/gnu15.2.0/bin:${PATH}"
-export LD_LIBRARY_PATH="/nhoms/commun/softs2/gnu-15.2.0/gnu_ompi/4.1.8/lib64:/usr/local/openmpi/4.1.8/gnu15.2.0/lib:${LD_LIBRARY_PATH:-}"
-export NETCDF="/nhoms/commun/softs2/gnu-15.2.0/gnu_ompi/4.1.8"
-export NETCDF_INC_DIR="/nhoms/commun/softs2/gnu-15.2.0/gnu_ompi/4.1.8/include"
-export NETCDF_LIB_DIR="/nhoms/commun/softs2/gnu-15.2.0/gnu_ompi/4.1.8/lib64"
-export OMPI_FC=gfortran
-export OMPI_CC=gcc
-export MPIF90=mpif90
-export MPICC=mpicc
-export LINUX_FC=gfortran
-export CROCO_FC=gfortran
-
-_SLURM_JID="${SLURM_JOB_ID:-${SLURM_JOBID}}"
-_SLURM_NODES="${SLURM_NODELIST:-${SLURM_JOB_NODELIST}}"
-_CUR_HOST="$(hostname -s 2>/dev/null || hostname)"
-if [[ "${_CUR_HOST}" == "orion" || ( -n "${SLURM_SUBMIT_HOST:-}" && "${_CUR_HOST}" == "${SLURM_SUBMIT_HOST}" && "${_CUR_HOST}" != "${_SLURM_NODES}" ) ]]; then
-   echo "[SLURM] Délégation de jobcomp depuis ${_CUR_HOST} vers le nœud ${_SLURM_NODES} (Job ${_SLURM_JID})..."
-   exec srun --export=ALL --jobid="${_SLURM_JID}" -N 1 -n 1 --overlap "$0" "$@"
-fi
-echo "[SLURM] Compilation exécutée sur le nœud : ${_CUR_HOST} (Job ${_SLURM_JID}, Nœuds: ${_SLURM_NODES})"
-
 ####################################################
 #               COMPILATION JOB                    #
 ####################################################
@@ -62,7 +31,7 @@ echo "[SLURM] Compilation exécutée sur le nœud : ${_CUR_HOST} (Job ${_SLURM_J
 #
 # set source
 #
-SOURCE1="${SOURCES1:-/nhoms/nguc/Devel2026/GitWorkTREE/croco_dev2026_NBQ3_Namelist-reproShowroom/OCEAN}"
+SOURCE1=../croco/OCEAN
 
 #
 # determine operating system
@@ -192,9 +161,7 @@ done
 
 
 NPROCS="${NPROCS:-1}"
-
-
-SOURCE="${CROCO_SRC:-${SOURCE1}}"
+SOURCE="${CROCO_SRC-$SOURCE1}"
 SCRDIR="./Compile"
 RUNDIR="`pwd`"
 ROOT_DIR="$SOURCE/.."
@@ -346,12 +313,6 @@ CFT1="${CROCO_CFT1-$CFT1}"
 echo "Checking KNBQ3..."
 if $($CPP1 testkeys.F | grep -i -q knbq3isdefined) ; then
         echo " => KNBQ3 activated"
-	echo "-------------------------------------"
-	echo "-------------------------------------"
-	echo "-------------------------------------"
-	echo "-------------------------------------"
-	echo "-------------------------------------"
-	echo "-------------------------------------"
         cp KNBQ3/*  .
         #
         # overwrite with local files

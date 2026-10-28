@@ -18,9 +18,6 @@
 ======================================================================
 */
 
-#ifndef CROCO_NAMELIST
-# define CROCO_NAMELIST
-#endif
 
 /*
   Define standard dimensions for the model arrays (vertical

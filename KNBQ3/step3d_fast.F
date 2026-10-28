@@ -150,12 +150,10 @@ C$    trd=omp_get_thread_num()
 ! !*********************************************************************
 ! !*********************************************************************
 ! !
-#ifdef CROCO_NAMELIST
       use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max, ndtfast, csound_nbq, visc2read_nbq
 # ifdef NBQ
       use croco_namelist, only: csound_nbq, visc2read_nbq
 # endif
-#endif
 # ifdef CVTK_DEBUG               
       use debug
       use my_functions
@@ -165,9 +163,7 @@ C$    trd=omp_get_thread_num()
       use module_oa_variables, only : tv_oa
       use module_oa_periode,   only : tvc_oa,tc_oa
 # endif
-#ifdef CROCO_NAMELIST
       USE croco_namelist, ONLY: dt, rho0, rdrg, rdrg2
-#endif
       implicit none
 ! ! 
 ! !*********************************************************************

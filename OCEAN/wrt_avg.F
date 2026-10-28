@@ -15,7 +15,7 @@
       subroutine wrt_avg             ! fields into averages
                                      ! netCDF file.
       use croco_namelist, only: dt, avgname, nrpfavg, rho0
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       use croco_namelist, only: croco_namelist_switch_grid
 #endif
 !     implicit none
@@ -53,7 +53,7 @@
 #  define SWITCH !
 # endif
 
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
 

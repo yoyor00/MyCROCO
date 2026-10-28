@@ -917,9 +917,9 @@ C$OMP END MASTER
 
       Subroutine Updateduavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
       use croco_namelist, only: agrif_nml_storage
-#elif defined CROCO_NAMELIST
+#else
       use croco_namelist, only: dt
 #endif
       implicit none
@@ -945,7 +945,7 @@ C$OMP END MASTER
         tabres(i1:i2,j1:j2) = rrhoy * DU_avg1(i1:i2,j1:j2,4)
 
       ELSE
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
         dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
 #else
         dt_cur = dt
@@ -990,9 +990,9 @@ C$OMP END MASTER
 
       Subroutine Updatedvavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
       use croco_namelist, only: agrif_nml_storage
-#elif defined CROCO_NAMELIST
+#else
       use croco_namelist, only: dt
 #endif
       implicit none
@@ -1019,7 +1019,7 @@ C$OMP END MASTER
          tabres(i1:i2,j1:j2) = rrhox * DV_avg1(i1:i2,j1:j2,4)
 
        ELSE
-#if defined AGRIF && defined CROCO_NAMELIST
+#if defined AGRIF
          dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
 #else
          dt_cur = dt

@@ -35,14 +35,12 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
-#ifdef CROCO_NAMELIST
       USE croco_namelist, ONLY: nrpfhis, ldefhis, hisname
 #ifdef AVERAGES
       USE croco_namelist, ONLY: nrpfavg, avgname
 #endif
-# ifdef AGRIF
+#ifdef AGRIF
       USE croco_namelist, ONLY: croco_namelist_switch_grid
-# endif
 #endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
@@ -88,7 +86,7 @@
 #endif
       character*70 text
 
-#if defined CROCO_NAMELIST && defined AGRIF
+#if defined AGRIF
       call croco_namelist_switch_grid(Agrif_Fixed())
 #endif
 
