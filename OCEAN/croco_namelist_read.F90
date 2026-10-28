@@ -345,7 +345,8 @@ contains
 # if defined SOLVE3D || defined RIP
       namelist /croco_auxiliary_history_fields/ &
          out_his_rho, out_his_omega, out_his_w, out_his_akv, &
-         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
+         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr, &
+         out_his_z_r, out_his_z_w
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
       namelist /croco_temperature_history_fields/ out_his_akt, out_his_shflx, out_his_shflx_rsw
@@ -395,7 +396,8 @@ contains
 # if defined AVERAGES && defined SOLVE3D
       namelist /croco_auxiliary_averages_fields/ &
          out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
-         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr, &
+         out_avg_z_r, out_avg_z_w
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
       namelist /croco_temperature_averages_fields/ out_avg_akt, out_avg_shflx, out_avg_shflx_rsw

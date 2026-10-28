@@ -59,6 +59,9 @@
      &       /avg_bvf/bvf_avg
 #  endif
      &       /avg_w/w_avg
+      real z_r_avg(GLOBAL_2D_ARRAY,N)
+      real z_w_avg(GLOBAL_2D_ARRAY,0:N)
+      common /avg_z_r/z_r_avg /avg_z_w/z_w_avg
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
       real btflx_avg(GLOBAL_2D_ARRAY,NT)

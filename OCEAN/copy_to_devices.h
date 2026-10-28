@@ -1268,6 +1268,8 @@
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
+!$acc&, z_r_avg
+!$acc&, z_w_avg
 #  ifdef NBQ
 !$acc&, w_avg
 #  else

@@ -265,6 +265,8 @@
   out_his_wstr = .true.
   out_his_ustr = .true.
   out_his_vstr = .true.
+  out_his_z_r = .false.
+  out_his_z_w = .false.
 /
 
 &croco_temperature_history_fields
@@ -370,6 +372,8 @@
   out_avg_wstr = .true.
   out_avg_ustr = .true.
   out_avg_vstr = .true.
+  out_avg_z_r = .false.
+  out_avg_z_w = .false.
 /
 
 &croco_temperature_averages_fields

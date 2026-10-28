@@ -194,6 +194,7 @@ C$    integer omp_get_thread_num
             rho(i,j,k) =init
 # ifdef AVERAGES
             rho_avg(i,j,k)=init
+            z_r_avg(i,j,k)=init
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
 #  ifndef NBQ
@@ -330,6 +331,7 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef AVERAGES
             omega_avg(i,j,k)=init
+            z_w_avg(i,j,k)=init
 #  ifdef NBQ
             w_avg(i,j,k)=init
 #  endif
