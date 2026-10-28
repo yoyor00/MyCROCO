@@ -22,12 +22,9 @@ MODULE initMUSTANG
 !&E     subroutine MUSTANG_param_log      ! write parameters for information
 !&E     subroutine MUSTANG_compatibility  ! check compatibility 
 !&E                                         between the various parameters
-!&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not 
+!&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not
 !&E                                         from file
-!&E     subroutine MUSTANG_init_hsed      ! initialize the sediment thickness 
-!&E                                         function sediment parameters 
-!&E                                         (MUSTANG_mixsed)
-!&E     subroutine MUSTANG_init_param     ! initialize the settling velocity 
+!&E     subroutine MUSTANG_init_param     ! initialize the settling velocity
 !&E                                         of sand variables and erosion 
 !&E                                         parameters
 !&E     subroutine MUSTANG_init_output    ! initialize dimensions of output 
@@ -40,7 +37,7 @@ MODULE initMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
     USE module_substance
-    USE croco_namelist, ONLY : nrrec, sedname_must, rho0, testcase_name
+    USE croco_namelist, ONLY : sedname_must, rho0, testcase_name
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
 
@@ -57,8 +54,7 @@ MODULE initMUSTANG
                              date_start_morpho, date_start_dyninsed,          &
                              hseduni, cseduni, ksmiuni, ksmauni,              &
                              sini_sed, tini_sed,                              &
-                             l_unised_adjust_hsed, csed_mud_ini,              &
-                             l_initsed_vardiss, poro_mud_ini
+                             l_initsed_vardiss
 
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
                               l_dzsmaxuni, dzsmaxuni,                         &
@@ -190,7 +186,6 @@ CONTAINS
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_split_surflayer
 #ifdef key_MUSTANG_V2
-    USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
     USE sed_MUSTANG_CROCO,  ONLY : sed_bottom_slope
 #endif
 
@@ -209,13 +204,7 @@ CONTAINS
     CHARACTER(len=lchain) :: filepc_user
     INTEGER               :: lstr
     INTEGER               :: lenstr
-#ifdef key_MUSTANG_V2
-    REAL(KIND=rsh)                  :: mass_tot, poro_kij, crel_mud_ini
-    REAL(KIND=rsh),DIMENSION(1:nvpc):: frac_sed
-    REAL(KIND=rsh),DIMENSION(1:nvp) :: mass_sed
-#else
-    REAL(KIND=rsh)                  :: somalp
-#endif
+    REAL(KIND=rsh)        :: sommud, cvolgrvsan
     LOGICAL :: l_0Dcase
 
     ierrorlog = stdout
@@ -308,33 +297,20 @@ CONTAINS
             ENDIF
 
             DO k=ksmi(i,j),ksma(i,j)
+                c_sedtot(k,i,j)=SUM(cv_sed(igrav1:imud2,k,i,j))
+                poro(k,i,j)=1.0_rsh - c_sedtot(k,i,j)/ros(1)
 #ifdef key_MUSTANG_V2
-             mass_tot = 0.0_rsh
-             DO iv=igrav1,imud2
-               mass_sed(iv)=cv_sed(iv,k,i,j)*dzs(k,i,j) 
-               mass_tot=mass_tot+mass_sed(iv)
-             END DO
-             DO iv=igrav1,imud2
-               frac_sed(iv)=mass_sed(iv)/mass_tot
-             END DO
-             crel_mud_ini=(1.0_rsh-poro_mud_ini)*ros(1)
-             CALL MUSTANGV2_comp_poro_mixsed(frac_sed,poro_mud_ini,  &
-                                crel_mud_ini,poro_kij)
-             poro(k,i,j)=poro_kij
-             crel_mud(k,i,j)=crel_mud_ini
-             poro_mud(k,i,j)=poro_mud_ini
-             c_sedtot(k,i,j)=(1.0_rsh-poro(k,i,j))*ros(1)
-             DO iv=igrav1,imud2
-               cv_sed(iv,k,i,j)=c_sedtot(k,i,j)*frac_sed(iv)
-             END DO
-#else
-             somalp=0.0_rsh
-             DO iv=1,nvpc
-                somalp=somalp+cv_sed(iv,k,i,j)/ros(iv)
-             ENDDO
-             poro(k,i,j)=1.0_rsh-somalp
+                sommud=0.0_rsh
+                DO iv=imud1,imud2
+                    sommud=sommud+cv_sed(iv,k,i,j)
+                ENDDO
+                cvolgrvsan=0.0_rsh
+                DO iv=igrav1,isand2
+                    cvolgrvsan=cvolgrvsan+cv_sed(iv,k,i,j)/ros(iv)
+                ENDDO
+                crel_mud(k,i,j)=sommud/(1.0_rsh-cvolgrvsan)
+                poro_mud(k,i,j)=1.0_rsh - crel_mud(k,i,j)/ros(1)
 #endif
-
             ENDDO
           ELSE
             poro(:,i,j)=0.0_rsh
@@ -711,7 +687,6 @@ CONTAINS
     !!--------------------------------------------------------------------------
     !! * Executable part
 
-    IF (csed_mud_ini == 0.0_rsh ) csed_mud_ini = cfreshmud
     tstart_dyninsed = max(tool_datosec(date_start_dyninsed), time)
     t_dyninsed = tstart_dyninsed
     tstart_morpho = tool_datosec(date_start_morpho)
@@ -821,101 +796,6 @@ CONTAINS
     ENDIF
 
     END SUBROUTINE MUSTANG_init_param
-!!===========================================================================
-
-    SUBROUTINE MUSTANG_init_hsed(cv_sedini)
-    !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_init_hsed  ***
-    !&E
-    !&E ** Purpose : initialize sediment thickness, in order to be coherent with sediment parameters
-    !&E     function of cseduni, cvolmax, csed_ini of each sediment,
-    !&E      valid only if cv_sed  and dzs not variable
-    !&E
-    !&E ** Description : 
-    !&E
-    !&E ** Called by :  MUSTANG_init
-    !&E
-    !&E--------------------------------------------------------------------------
-    !! * Arguments
-    REAL(KIND=rsh), INTENT(IN),DIMENSION(nvpc) :: cv_sedini
-
-    !! * Local declarations
-    INTEGER        :: iv                
-    REAL(KIND=rsh) :: dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan,masdepmud,     &
-                        dvolsan,dmasmud,dmasmudgrav,dmasmudsand
-
-    !! * Executable part
-
-    ! **TODO** translate all comments in english
-      !!! Volume a deposer
-    voldepgrv=0.0_rsh
-    voldepsan=0.0_rsh        
-    DO iv=igrav1,igrav2
-        voldepgrv=voldepgrv+cv_sedini(iv)/ros(iv)*hseduni  ! kg/m3 * m /(kg/m3)  (vol_g)
-    ENDDO
-    DO iv=isand1,isand2
-        voldepsan=voldepsan+cv_sedini(iv)/ros(iv)*hseduni  ! kg/m3 * m /(kg/m3)  (vol_s)
-    ENDDO
-
-    !!! Masse a deposer
-    masdepmud=0.0_rsh
-    DO iv=imud1,imud2
-        masdepmud=masdepmud+cv_sedini(iv)*hseduni  ! kg/m2  (m_v)
-    ENDDO
-
-    !!! nouvelle Couche de gravier
-    IF(voldepgrv.GE.0.0_rsh)THEN
-        dzsgrv=voldepgrv/cvolmaxsort
-    ENDIF
-
-    !!! Couche de sable
-    IF(voldepsan.GE.0.0_rsh)THEN
-        dvolsan=MIN(voldepsan,dzsgrv*(cvolmaxmel-cvolmaxsort)) ! volume de sable qui s insere dans le gravier (cvolmaxmel-cvolmaxsort)
-        dzssan=MAX(0.,(voldepsan-dvolsan)/cvolmaxsort)
-    ENDIF
-    
-    !!! Couche de vase
-    IF(masdepmud.GE.0.0_rsh) THEN
-        IF(dzsgrv >0.0_rsh .and. dzssan > 0.0_rsh) THEN
-            ! melange sable+gravier  
-            dmasmudgrav=dzsgrv*csed_mud_ini*(1.0_rsh-cvolmaxmel)  ! masse de vase qui s insere dans le gravier (1-cvolmaxmel)
-            IF (isand2>isand1 ) THEN
-                dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxmel) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-            ELSE
-                dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxsort) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-            ENDIF
-        ELSE IF (dzssan > 0.0_rsh .AND. isand2>isand1 ) THEN
-            ! melange sables  
-            dmasmudgrav=0.
-            dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxmel) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-        ELSE IF(dzsgrv >0.0_rsh .AND. igrav2>igrav1 ) THEN
-            ! melange graviers  
-            dmasmudgrav=dzsgrv*csed_mud_ini*(1.0_rsh-cvolmaxmel)  ! masse de vase qui s insere dans le gravier (1-cvolmaxmel)
-            dmasmudsand=0.
-        ELSE
-            ! un seul type de sediment 
-            dmasmudgrav=dzsgrv*csed_mud_ini*(1.0_rsh-cvolmaxsort)  ! masse de vase qui s insere dans le gravier ou sable (1-cvolmaxsort)
-            dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxsort) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-        ENDIF
-        ! nouvelle couche de vase
-        dzsmud=(masdepmud-dmasmudgrav-dmasmudsand)/csed_mud_ini
-        IF(dzsmud <0.0_rsh) THEN
-            dzsmud=0.0_rsh
-            IF (masdepmud-dmasmudgrav < 0.0_rsh) THEN
-                dmasmudgrav = masdepmud
-                dmasmudsand = 0.0_rsh
-            ELSE
-                dmasmudsand = masdepmud-dmasmudgrav
-            ENDIF
-        ENDIF     
-    dmasmud = dmasmudgrav +dmasmudsand
-    ENDIF
-
-    !!! Nouvelle Hauteur totale
-    hsed_new = dzsgrv +dzssan +dzsmud
-
-    END SUBROUTINE MUSTANG_init_hsed
-
 !!=============================================================================
   SUBROUTINE MUSTANG_init_fromfile
  
@@ -962,33 +842,21 @@ CONTAINS
  ! arrays, determine how many time records are available in the file
  ! and set record from which the dada will be read.
  !
- ! The record is set as follows: (1) if only one time record is
- ! available in the file, then that record is used REGARDLESS of
- ! value of nrrec supplied from the parameter file; (2) if the
- ! file has multiple records and nrrec is positive, then nrrec is
- ! used, provided that nrrec is within the available records; 
- ! (3) if the file has multiple records and nrrec<0, then THE LAST 
- ! available record is used.
- 
+ ! The record is set as follows: if only one time record is
+ ! available in the file, then that record is used; otherwise
+ ! THE LAST available record is used.
+
  !      if (may_day_flag.ne.0) return      !-->  EXIT
        inised_name = filrepsed
        lstr = lenstr(inised_name)
        ierr = nf_open(inised_name(1:lstr), nf_nowrite, ncid)
        if (ierr.eq.nf_noerr) then
          ierr = checkdims(ncid, inised_name, lstr, indx)
- 
+
          if (ierr.ne.nf_noerr) then
           goto 99
          elseif (indx.eq.0) then
            indx = 1
-         elseif (indx.gt.0 .and. nrrec.gt.0 .and. nrrec.le.indx) then
-           indx = nrrec
-         elseif (indx.gt.0 .and. nrrec.gt.indx) then
-           write(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')   &
-                'MUSTANG_init_fromfile ERROR: requested restart time record', &
-                nrrec, ' exceeds',  'number of available records', &
-                indx,'in netCDF file', '''',inised_name(1:lstr),'''.'
-           goto 99                                        !--> ERROR
          endif
        else
          write(stdout,'(/1x,2A/15x,3A)') &
@@ -1164,7 +1032,7 @@ CONTAINS
     !! * Local declarations
     CHARACTER*50   :: filesand, filemud
     INTEGER        :: i, j, k, iv, ivg, imud_nobio, IERR_MPI
-    REAL(KIND=rsh) :: somalp,dzsf,dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan,masdepmud,h0max_def,     &
+    REAL(KIND=rsh) :: dzsf,dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan,masdepmud,h0max_def,     &
                         dvolsan,dmasmud,dmasmudgrav,dmasmudsand,cini_modif,tot_csed_init,dzsmaxmin
 
     !! * Executable part
@@ -1234,25 +1102,7 @@ CONTAINS
             ENDDO    
         ENDIF
       
-        ! ajustement du hsed et cv_sed
-        ! ==============================
-        IF(l_unised_adjust_hsed .AND. hseduni > 0.0_rsh) THEN
-            ALLOCATE(cv_sedini(1:nvpc))
-            !!! Concentration massique
-            DO iv=1,nvpc
-                ! constitutive variables : cini_sed in % of cseduni
-                cv_sedini(iv)=cseduni*cini_sed(iv)
-            ENDDO
-
-            CALL MUSTANG_init_hsed(cv_sedini)
-            MPI_master_only WRITE(iscreenlog,*)'NEW TOTAL SEDIMENT THICKNESS AFTER ADJUSTEMENT = ',hsed_new
-            cseduni=cseduni*hseduni/hsed_new         
-            hseduni=hsed_new
-            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
-            DEALLOCATE(cv_sedini)
-        ELSE
-            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
-        ENDIF
+        WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
 
         DO j=jfirst,jlast
         DO i=ifirst,ilast

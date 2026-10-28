@@ -40,22 +40,14 @@ MODULE comMUSTANG
         ! variables, temperature and salinity in sediment (will be done with 
         ! concentrations in water at bottom (k=1))
     LOGICAL  :: l_unised !set to .true. for a uniform bottom initialization
-    LOGICAL  :: l_unised_adjust_hsed ! set to .true. if we want to adjust the 
-        ! sediment thickness in order to be coherent with sediment 
-        ! parameters (calculation of a new hseduni based on 
-        ! cseduni, cvolmax values, and csed_ini of each sediment)
-    CHARACTER(len=lchain) :: filrepsed ! file path from which the model is 
+    CHARACTER(len=lchain) :: filrepsed ! file path from which the model is
         ! initialized for the continuation of a previous run or non uniform init
     REAL(KIND=rsh) :: cseduni ! initial sediment concentration (kg/m3)
-    REAL(KIND=rsh) :: hseduni ! initial uniform sediment thickness (m) 
-    REAL(KIND=rsh) :: csed_mud_ini ! real, mud concentration into initial 
-        ! sediment (kg/m3) (if = 0. ==> csed_mud_ini = cfreshmud)
+    REAL(KIND=rsh) :: hseduni ! initial uniform sediment thickness (m)
     INTEGER        :: ksmiuni ! lower grid cell index in the sediment
     INTEGER        :: ksmauni ! upper grid cell index in the sediment
     REAL(KIND=rsh) :: sini_sed ! initial interstitial water uniform salinity
     REAL(KIND=rsh) :: tini_sed ! initial interstitial water uniform temperature
-    REAL(KIND=rsh) :: poro_mud_ini !only if key_MUSTANG_V2, initial porosity of
-        ! mud fraction
 
 
     ! namsedim_layer
@@ -441,10 +433,8 @@ MODULE comMUSTANG
     ! fwet =1 if not used  
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: fwet
 
-    ! Initialization 
+    ! Initialization
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_sed
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cv_sedini
-    REAL(KIND=rsh) :: hsed_new
 
     ! Fluxes at the interface water-sediment
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w

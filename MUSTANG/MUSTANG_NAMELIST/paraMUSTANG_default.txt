@@ -39,21 +39,13 @@
 :                used if l_unised = .false.
 :    hseduni : real, initial uniform sediment thickness (m)
 :    cseduni : real, initial sediment concentration (kg/m3)
-:    l_unised_adjust_hsed : boolean, set to .true. if we want to adjust the 
-:                  sediment thickness in order to be coherent with sediment 
-:                  parameters (calculation of a new hseduni based on 
-:                  cseduni, cvolmax values, and csed_ini of each sediment)
-:    csed_mud_ini : real, mud concentration into initial sediment (kg/m3)
-:                   (if = 0. ==> csed_mud_ini = cfreshmud)
 :    ksmiuni : integer, lower grid cell index in the sediment
 :    ksmauni : integer, upper grid cell index in the sediment
-:    sini_sed : real, initial interstitial water uniform salinity (in the 
+:    sini_sed : real, initial interstitial water uniform salinity (in the
 :               sediment) (PSU)
-:    tini_sed : real, initial interstitial water uniform temperature (in 
+:    tini_sed : real, initial interstitial water uniform temperature (in
 :               the sediment) (Celsius degree)
-:    poro_mud_ini : real, if key_MUSTANG_V2 only, initial porosity of mud 
-:                   fraction
-:    l_initsed_vardiss : boolean, set to .true. if initialization of 
+:    l_initsed_vardiss : boolean, set to .true. if initialization of
 :                        dissolved variables, temperature and salinity in 
 :                        sediment (will be done with concentrations in water 
 :                        at bottom (k=1))
@@ -63,16 +55,13 @@
    date_start_morpho = '0000/01/01 00:00:00' 
    l_unised = .true.    
    filrepsed = './' 
-   hseduni = 1. 
-   cseduni = 1500.0        
-   l_unised_adjust_hsed = .FALSE.   
-   csed_mud_ini = 300.0      
-   ksmiuni = 1 
-   ksmauni = 1    
-   sini_sed = 35.5 
-   tini_sed = 10. 
-   poro_mud_ini = 0.  
-   l_initsed_vardiss = .false. 
+   hseduni = 1.
+   cseduni = 1500.0
+   ksmiuni = 1
+   ksmauni = 1
+   sini_sed = 35.5
+   tini_sed = 10.
+   l_initsed_vardiss = .false.
    / 
 :
 :------------------------------------------------------------------------------
