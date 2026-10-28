@@ -80,7 +80,7 @@ MODULE initMUSTANG
                                 E0_mud_para_indep
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
-                                     z0seduni, z0sedmud, z0sedbedrock,        &
+                                     z0seduni, z0sedmin, z0sedbedrock,        &
                                      l_tauskin_center,l_tauskin_ubar,         &
                                      l_tauskin_upwind, l_fricwave, fricwav,   &
                                      l_z0hydro_coupl_init,                    & 

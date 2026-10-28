@@ -221,7 +221,7 @@ MODULE sed_MUSTANG
     ! Update sediment roughness length
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (.not. l_z0seduni) then
-      call sed_MUSTANG_comp_z0sed(ifirst, ilast, jfirst, jlast, h)
+      call sed_MUSTANG_comp_z0sed(ifirst, ilast, jfirst, jlast)
     endif
 
 #ifdef OBSTRUCTION
@@ -1044,7 +1044,7 @@ ENDIF
   
    !!==============================================================================
 
-   SUBROUTINE sed_MUSTANG_comp_z0sed(ifirst,ilast,jfirst,jlast,BATHY_H0)
+   SUBROUTINE sed_MUSTANG_comp_z0sed(ifirst,ilast,jfirst,jlast)
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_comp_z0sed ***
@@ -1059,36 +1059,45 @@ ENDIF
 
    !! * Arguments
    INTEGER, INTENT(IN)                                  :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)  :: BATHY_H0
 
    !! * Local declarations
    INTEGER        :: i,j,ksmax
-   REAL(KIND=rsh) :: diamgravsan
+   REAL(KIND=rsh) :: inv_csedtot ! 1/c_sedtot
+   REAL(KIND=rsh) :: diamgravsan ! ponderation of diameter of gravel and sand from each sediment fraction
+   REAL(KIND=rsh) :: z0gravsan ! application of nikuradse to obtain gravel+sand roughness
+   REAL(KIND=rsh) :: fracgravsan ! fraction of gravel + sand
+   REAL(KIND=rsh) :: fracmud ! fraction of mud
    !!---------------------------------------------------------------------------
    !! * Executable part
 
+     z0sed(:,:) = z0sedbedrock ! no sediment
      DO j=jfirst,jlast
        DO i=ifirst,ilast
-         IF(BATHY_H0(i,j).EQ.-valmanq) THEN
-           ! Here value not set to -valmanq, since in skinstress
-           ! computation, there are calls in i+1, i-1, j+1, j-1 whihtout test on
-           ! land : in case of land velocities =0 ; and velocities are averaged
-           z0sed(i,j) = z0sedmud
-         ELSE
-           ksmax = ksma(i,j)
-           IF((ksmax.NE.0).AND. c_sedtot(ksmax,i,j).NE.0.0_rsh)THEN !There is sediment
-             diamgravsan = MAX(diam_sed(isand2),  &
-                          SUM( (cv_sed(igrav1:isand2,ksmax,i,j)/c_sedtot(ksmax,i,j))*diam_sed(igrav1:isand2) ))
-             ! Application of Nikurasde z0 = (d50/12)
-             ! If only mud diamgravsan = 0., so z0seduni is used
-             z0sed(i,j) = MAX(z0seduni,diamgravsan/12.0_rsh)
-           ELSE ! There is no sediment
-             z0sed(i,j) = z0sedbedrock
-           ENDIF
-         ENDIF 
+          ksmax = ksma(i,j)
+          IF (ksmax /= 0) THEN
+            IF (c_sedtot(ksmax,i,j) > 0.0_rsh) THEN ! sediment presence
+              inv_csedtot = 1.0_rsh / c_sedtot(ksmax,i,j)
 
+              diamgravsan = SUM(cv_sed(igrav1:isand2,ksmax,i,j) * &
+                                  diam_sed(igrav1:isand2)) * inv_csedtot
+
+              ! Application of Nikurasde z0 = (d50/12)
+              z0gravsan = diamgravsan / 12.0_rsh
+
+              fracmud     = SUM(cv_sed(imud1:imud2,ksmax,i,j)) * inv_csedtot
+              fracgravsan = SUM(cv_sed(igrav1:isand2,ksmax,i,j)) * inv_csedtot
+
+              z0sed(i,j) = MAX(z0sedmin, z0gravsan * fracgravsan + z0sedmin * fracmud)
+            END IF
+          END IF
        ENDDO
      ENDDO
+
+#ifdef MPI
+     if (.not. l_tauskin_center) then
+       call exchange_r2d_tile (ifirst, ilast, jfirst, jlast, z0sed(START_2D_ARRAY))
+     endif
+#endif
 
    END SUBROUTINE sed_MUSTANG_comp_z0sed
 

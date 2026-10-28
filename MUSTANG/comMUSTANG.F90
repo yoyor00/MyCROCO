@@ -94,9 +94,9 @@ MODULE comMUSTANG
     LOGICAL  :: l_z0seduni ! boolean, set to .false. for z0sed computation from
         ! sediment diameter (if true, z0seduni is used)
     REAL(KIND=rsh) :: z0seduni ! uniform bed roughness (m)
-    REAL(KIND=rsh) :: z0sedmud ! mud (i.e.minimum) bed roughness (m) 
+    REAL(KIND=rsh) :: z0sedmin ! mud (i.e.minimum) bed roughness (m)
         ! (used only if l_unised is false)
-    REAL(KIND=rsh) :: z0sedbedrock ! bed roughness for bedrock (no sediment) (m) 
+    REAL(KIND=rsh) :: z0sedbedrock ! bed roughness for bedrock (no sediment) (m)
         ! (used only if l_unised is false)
     LOGICAL :: l_tauskin_center ! boolean, to compute tauskin_c at rho point directly
     LOGICAL :: l_tauskin_ubar ! boolean, to use depth-averaged velocity instead of u(k=1)

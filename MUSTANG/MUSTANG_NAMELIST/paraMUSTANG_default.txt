@@ -131,11 +131,11 @@
 :    l_z0seduni : boolean, set to .false. for z0sed computation from 
 :                 sediment diameter (if true, z0seduni is used)
 :    z0seduni : real, uniform bed roughness (m)
-:    z0sedmud : real, mud (i.e.minimum) bed roughness (m) (used only if 
+:    z0sedmin : real, minimum bed roughness (m) (used only if
 :               l_unised is false)
-:    z0sedbedrock : real, bed roughness for bedrock (no sediment) (m) (used 
+:    z0sedbedrock : real, bed roughness for bedrock (no sediment) (m) (used
 :                   only if l_unised is false)
-:    l_tauskin_center : boolean, set to .true. to compute bottom shear stress 
+:    l_tauskin_center : boolean, set to .true. to compute bottom shear stress
 :                       with u* directly at (rho) location (center of the cell)
 :                       (not compatible with l_tauskin_upwind)
 :    l_tauskin_ubar : boolean, set to .true. to compute bottom shear stress 
@@ -160,10 +160,10 @@
 :------------------------------------------------------------------------------
 &namsedim_bottomstress
    l_z0seduni = .true.       
-   z0seduni = 0.00002      
-   z0sedmud = 0.0001    
-   z0sedbedrock = 0.005  
-   l_tauskin_center = .FALSE. 
+   z0seduni = 0.00002
+   z0sedmin = 0.0001
+   z0sedbedrock = 0.005
+   l_tauskin_center = .FALSE.
    l_tauskin_ubar = .FALSE. 
    l_tauskin_upwind = .FALSE. 
    l_fricwave = .true. 
