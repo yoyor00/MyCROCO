@@ -66,7 +66,8 @@
 !
       if (ilc.gt.ntsablavg) then
 
-        if (mod(ilc-ntsablavg,nwrtablavg).eq.1) then
+        if (mod(ilc-ntsablavg,nwrtablavg).eq.1
+     &                    .OR. nwrtablavg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then
