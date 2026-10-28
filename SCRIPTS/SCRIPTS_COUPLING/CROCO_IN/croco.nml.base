@@ -167,6 +167,7 @@
 &croco_diag_mld_dens
   mld_crit_D = 3.d-2
   mld_crit_T = 2.d-1
+  mld_depth_ref = 10
 /
 
 &croco_diagnosticsM

@@ -544,6 +544,8 @@ MODULE croco_namelist
    !! Density criterion to define the mixed layer depth [kg/m3]
    real :: mld_crit_T = 0.2
    !! Temperature criterion to define the mixed layer depth [Celsius]
+   real :: mld_depth_ref = 10
+   !! Reference depth to define the mixed layer depth [m]
 #  endif
 #endif
 

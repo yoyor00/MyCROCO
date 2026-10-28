@@ -134,7 +134,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- kinetic energy budget is now 3d
 	- momentum, energy and tracer diagnostics (DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_MLD) terms are now volume-integrated (Issue #320)
 	- DIAGNOSTICS\_TS\_MLD\_DENS : MLD depths (density and temperature criteria) are both computed at w-levels, and the density criterion is used whatever the vertical mixing scheme (Issue #320)
-
+	- MLD depths (density and temperature criteria) are both computed starting from a reference depth (10 m by default) instead of the surface. The reference depth can be set with the namelist parameter mld_depth_ref (Issue #545)
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
@@ -253,4 +253,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten, L. Maillard
+  S. Theetten, L. Maillard, N. Herry
