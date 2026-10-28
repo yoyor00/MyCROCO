@@ -2137,6 +2137,7 @@ contains
          read (nmlunit, nml=croco_bloom, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then
             call fatal_nml_error("croco_bloom (parse error)")
+            MPI_master_only WRITE (stdout, nml=croco_bloom)
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if
@@ -2147,6 +2148,7 @@ contains
          read (nmlunit, nml=croco_bloom_diag, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then
             call fatal_nml_error("croco_bloom_diag (parse error)")
+            MPI_master_only WRITE (stdout, nml=croco_bloom_diag)
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if
@@ -2159,6 +2161,7 @@ contains
          read (nmlunit, nml=croco_BIOLink_par_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then
             call fatal_nml_error("croco_BIOLink_par_history_fields (parse error)")
+            MPI_master_only WRITE (stdout, nml=croco_BIOLink_par_history_fields)
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if
