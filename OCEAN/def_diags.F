@@ -790,8 +790,9 @@
      &      vname(:,indxTaver_mld+itrc-1),5, NF_FOUT, ierr)
 !
 #  if defined DIAGNOSTICS_TS_MLD_DENS
-!  Tcrit indxTcrit on MLD
+!  Tcrit indxTcrit on MLD (only defined for itrc=1,2)
 !
+         if (itrc.le.2) then
            lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidTcrit_mld(itrc))
@@ -817,6 +818,7 @@
 
        call nf_add_attribute(ncid,vidTcrit_mld(itrc),
      &      vname(:,indxTcrit_mld+itrc-1),5, NF_FOUT, ierr)
+         endif
 #  endif/* DIAGNOSTICS_TS_MLD_DENS */
 !
         endif
@@ -1181,8 +1183,9 @@
 #  endif
 #  if defined DIAGNOSTICS_TS_MLD_DENS
 !
-!  indxTcrit on MLD
+!  indxTcrit on MLD (only defined for itrc=1,2)
 !
+       if (itrc.le.2) then
         lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
         ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                        vidTcrit_mld(itrc))
@@ -1194,6 +1197,7 @@
 #   ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
 #   endif
+       endif
 #  endif /*DIAGNOSTICS_TS_MLD_DENS*/
         endif
 
