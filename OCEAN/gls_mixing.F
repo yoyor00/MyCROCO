@@ -96,7 +96,7 @@
 
       USE croco_namelist, only: dt
       use croco_namelist, only: mld_crit_AKt, mld_depth_ref
-      use tracer_budget_mld, only: idx_mld_turbulence
+      use module_mld, only: idx_mld_turbulence
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb

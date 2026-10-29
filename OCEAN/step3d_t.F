@@ -49,10 +49,10 @@
 # ifdef DIAGNOSTICS_TS_MLD
       use croco_namelist, only: mld_crit_type, 
      &                          mld_crit_D, mld_crit_T, mld_depth_ref
-      use tracer_budget_mld, only: budget_entrainment_term,
-     &                             budget_average_over_mld,
-     &                             idx_mld_density,
-     &                             idx_mld_temperature
+      use module_tracer_budget_mld, only: budget_entrainment_term,
+     &                                    budget_average_over_mld
+      use module_mld, only: idx_mld_density,
+     &                      idx_mld_temperature
 # endif
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat

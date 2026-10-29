@@ -170,7 +170,7 @@ include Makedefs
 	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
 	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
-        tracer_budget_mld.F90
+        module_tracer_budget_mld.F90 module_mld.F90
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES

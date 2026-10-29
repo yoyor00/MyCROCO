@@ -28,7 +28,7 @@
       USE croco_namelist, ONLY: Akv_bak, Akt_bak, testcase_name
 # if defined DIAGNOSTICS_TS_MLD && defined TEMPERATURE
       use croco_namelist, only: mld_crit_AKt, mld_depth_ref
-      use tracer_budget_mld, only: idx_mld_turbulence
+      use module_mld, only: idx_mld_turbulence
 # endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
