@@ -629,7 +629,7 @@
 ! ===  u,v and tracer equations Diagnostics  ===
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=17*NT)
+      parameter (ntrc_diats=17*NT+1)
 #  else
       parameter (ntrc_diats=8*NT)
 #  endif
