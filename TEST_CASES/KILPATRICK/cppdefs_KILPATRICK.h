@@ -1,6 +1,6 @@
 # define ABL_NO_OCEAN_FEEDBACK
 # define CONST_TRACERS
-# define MPI
+# undef  MPI
 # define AVERAGES
 # define NONLIN_EOS
 # define SOLVE3D

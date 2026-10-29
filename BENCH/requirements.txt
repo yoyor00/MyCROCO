@@ -20,3 +20,7 @@ xarray
 cartopy
 scipy
 pandas
+# to patch the CROCO namelist files (croco.nml)
+f90nml
+# to run the unit tests (python -m pytest tests)
+pytest
