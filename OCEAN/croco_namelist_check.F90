@@ -482,8 +482,9 @@ contains
 
       if (.not. found) then
          MPI_master_only write (stdout, '(a,a,a)') &
-            'Warning - mld_crit_type = ''', trim(mld_crit), &
-            ''' is not in the list of known test cases. ' 
+            'Error - mld_crit_type = ''', trim(mld_crit), &
+            ''' is not in the list of known criteria. Should be turbulence, density or temperature. ' 
+         ierr = ierr + 1
       end if
 
    end subroutine check_mld_crit_type
