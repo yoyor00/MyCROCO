@@ -958,8 +958,6 @@
 !==========================================================
 !
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
-#  define T_mld_nnew FX
-#  define T_mld_nstp FE
         if (mld_crit_type == 'density') then
           call idx_mld_density(Istr,Iend,Jstr,Jend,
      &       mld_crit_D,mld_depth_ref,
@@ -977,7 +975,7 @@
         endif
 
         call budget_average_over_mld(Istr,Iend,Jstr,Jend,
-     &                  itrc, T_mld_nnew, T_mld_nstp,3,
+     &                  itrc, FX, FE,3,
      &                  TXadv_mld,TYadv_mld,TVadv_mld,
      &                  TVmix_mld,THmix_mld,TForc_mld,
      &                  Tentr_mld,Trate_mld,Taver_mld,
@@ -986,13 +984,11 @@
      &                  diagTS_kmld)
 
         call budget_entrainment_term(Istr,Iend,Jstr,Jend,
-     &                  itrc,T_mld_nnew,T_mld_nstp,Trate_mld,
+     &                  itrc,FX,FE,Trate_mld,
      &                  TXadv_mld,TYadv_mld,TVadv_mld,
      &                  TVmix_mld,THmix_mld,TForc_mld,
      &                  Tentr_mld,kbl_nstp,diagTS_kmld)
 
-#  undef T_mld_nnew 
-#  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
 #endif /* DIAGNOSTICS_TS */
