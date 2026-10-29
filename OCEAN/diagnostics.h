@@ -37,6 +37,9 @@
       real Taver_mld(GLOBAL_2D_ARRAY,NT)
       real diagTS_mld(GLOBAL_2D_ARRAY)
       integer kbl_nstp(GLOBAL_2D_ARRAY)
+#  if defined DIAGNOSTICS_TS_MLD
+      integer diagTS_kmld(GLOBAL_2D_ARRAY)
+#  endif
 # endif
 # ifdef AVERAGES
       real timedia_avg
@@ -87,6 +90,7 @@
       common /diag_Taver_mld/Taver_mld
       common /diag_diagTS_mld/diagTS_mld
       common /diag_kbl_nstp/kbl_nstp
+      common /diag_diagTS_kmld/diagTS_kmld
 # endif
 # ifdef AVERAGES
       common /diag_timedia_avg/timedia_avg

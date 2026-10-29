@@ -106,10 +106,6 @@
   || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       real bvf(GLOBAL_2D_ARRAY,0:N)
       common /mixing_bvf/ bvf
-      integer kbld(GLOBAL_2D_ARRAY)
-      common /mld_kbld/kbld
-      integer kblt(GLOBAL_2D_ARRAY)
-      common /mld_kblt/kblt
 # endif
 
 # ifdef BIOLOGY
@@ -168,14 +164,7 @@
       common /gls_hbl/ hbl
       real cm0
       common /gls_cm0/ cm0
-# elif defined ANA_VMIX
-#   if defined DIAGNOSTICS_TS_MLD
-      integer kbl(GLOBAL_2D_ARRAY)
-      common /ana_kbl/ kbl
-      real hbl(GLOBAL_2D_ARRAY  )
-      common /ana_hbl/ hbl
-#   endif
-# endif /* ANA_VMIX */
+# endif /* GLS_MIXING */
 #else
 
 # define u(i,j,k,nrhs) ubar(i,j,kstp)

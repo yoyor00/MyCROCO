@@ -33,7 +33,6 @@ C$    integer omp_get_thread_num
 !
         USE croco_namelist, ONLY: visc2, visc4
 #ifdef SOLVE3D
-        USE croco_namelist, ONLY: mld_crit_type
 # ifdef TRACERS
         USE croco_namelist, ONLY: tnu2, tnu4
 # endif
@@ -41,6 +40,9 @@ C$    integer omp_get_thread_num
         USE croco_namelist, ONLY: Akv_bak, Akt_bak
 # endif
 # endif
+#ifdef DIAGNOSTICS_TS_MLD
+        USE croco_namelist, ONLY: mld_crit_type
+#endif
 !     implicit none
 #include "param.h"
 #include "ncscrum.h"
@@ -1448,16 +1450,12 @@ C$    integer omp_get_thread_num
           hbl(i,j)=init
 #  endif
           kbl(i,j)=init
-          if (mld_crit_type=='density') then
-            kbld(i,j)=init
-          else if (mld_crit_type=='temperature') then
-            kblt(i,j)=init
-          endif
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
 #  endif
 #  if defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD
           kbl_nstp(i,j)=init
+          diagTS_kmld(i,j)=init
 #  endif
         enddo
       enddo

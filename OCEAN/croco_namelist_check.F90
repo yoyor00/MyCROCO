@@ -49,7 +49,6 @@ contains
 #endif
 #ifdef SOLVE3D
       call check_croco_s_coord(ierr)
-      call check_mld_crit_type(ierr)
 #endif
       call check_history(ierr)
 #ifdef ONLINE
@@ -67,7 +66,9 @@ contains
 #ifdef ANA_PSOURCE
       call check_psource(ierr)
 #endif
-
+#ifdef DIAGNOSTICS_TS_MLD
+      call check_mld_crit_type(ierr)
+#endif
    end subroutine check_all
 
    !---------------------------------------------------------------------
@@ -260,39 +261,6 @@ contains
       end if
 
    end subroutine check_croco_s_coord
-   !---------------------------------------------------------------------
-   !  check_nml_mld_crit_type
-   !---------------------------------------------------------------------
-   subroutine check_mld_crit_type(ierr)
-      use param, ONLY: stdout
-      use croco_namelist, ONLY: mld_crit_type
-#if defined MPI
-      use scalars, ONLY: mynode
-#endif
-      implicit none
-      integer, intent(inout) :: ierr
-
-      logical :: found
-      character(len=64) :: mld_crit
-
-      mld_crit = adjustl(mld_crit_type)
-
-      ! MLD criteria types
-      select case (trim(mld_crit_type))
-      case ('turbulence', 'density','temperature')
-         found = .true.
-      case default
-         found = .false.
-      end select
-
-      if (.not. found) then
-         MPI_master_only write (stdout, '(a,a,a)') &
-            'Warning - mld_crit_type = ''', trim(mld_crit), &
-            ''' is not in the list of known test cases. ' 
-      end if
-
-   end subroutine check_mld_crit_type
-
 #endif /* SOLVE3D */
 
    !---------------------------------------------------------------------
@@ -485,5 +453,41 @@ contains
       end if
    end subroutine check_psource
 #endif /* ANA_PSOURCE */
+
+#ifdef DIAGNOSTICS_TS_MLD
+   !---------------------------------------------------------------------
+   !  check_nml_mld_crit_type
+   !---------------------------------------------------------------------
+   subroutine check_mld_crit_type(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: mld_crit_type
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      logical :: found
+      character(len=64) :: mld_crit
+
+      mld_crit = adjustl(mld_crit_type)
+
+      ! MLD criteria types
+      select case (trim(mld_crit_type))
+      case ('turbulence', 'density','temperature')
+         found = .true.
+      case default
+         found = .false.
+      end select
+
+      if (.not. found) then
+         MPI_master_only write (stdout, '(a,a,a)') &
+            'Warning - mld_crit_type = ''', trim(mld_crit), &
+            ''' is not in the list of known test cases. ' 
+      end if
+
+   end subroutine check_mld_crit_type
+
+#endif /* DIAGNOSTICS_TS_MLD */
 
 END MODULE croco_namelist_check

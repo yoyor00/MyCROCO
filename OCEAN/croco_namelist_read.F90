@@ -105,8 +105,6 @@ contains
 #endif
 #ifdef SOLVE3D
       namelist /croco_s_coord/ theta_s, theta_b, hc
-      namelist /croco_mld/ mld_crit_type, mld_crit_AKt, mld_crit_D,&
-              mld_crit_T, mld_depth_ref
 #endif
 #ifdef USE_CALENDAR
       namelist /croco_use_calendar/ start_date, end_date, &
@@ -186,6 +184,10 @@ contains
 #  ifdef AVERAGES
       namelist /croco_diag_avg/ ldefdia_avg, ntsdia_avg, nwrtdia_avg, &
          nrpfdia_avg, dianame_avg
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+      namelist /croco_diag_mld/ mld_crit_type, mld_crit_AKt, mld_crit_D, &
+              mld_crit_T, mld_depth_ref
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV
@@ -746,17 +748,6 @@ contains
             ierr = ierr + 1
          end if
       end if
-
-      ! --- croco_mld (optional) ---
-      call check_nml_presence(nmlunit, "croco_mld", .false., found, ierr)
-      if (found) then
-         read (nmlunit, nml=croco_mld, iostat=ios, iomsg=iomsg); rewind (nmlunit)
-         if (ios /= 0) then
-            call fatal_nml_error("croco_mld (parse error)", nmlunit, ios, iomsg)
-            MPI_master_only WRITE (stdout, nml=croco_mld)
-            ierr = ierr + 1
-         end if
-      end if
 #endif /* SOLVE3D */
 
       ! --- croco_history (optional) ---
@@ -1110,6 +1101,18 @@ contains
          end if
       end if
 #  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+      ! --- croco_diag_mld (optional) ---
+      call check_nml_presence(nmlunit, "croco_diag_mld", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag_mld, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag_mld (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag_mld)
+            ierr = ierr + 1
+         end if
+      end if
+#  endif 
 #endif
 #if defined DIAGNOSTICS_UV
       ! --- croco_diagnosticsM (optional) ---
@@ -2441,7 +2444,6 @@ contains
 #  if !defined LMD_MIXING && !defined GLS_MIXING
       MPI_master_only WRITE (stdout, nml=croco_vertical_mixing)
 #  endif
-      MPI_master_only WRITE (stdout, nml=croco_mld)
 #endif
 #if !defined NONLIN_EOS
       MPI_master_only WRITE (stdout, nml=croco_lin_eos)
@@ -2452,6 +2454,9 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_diagnostics_ts)
 #  ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diag_avg)
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+      MPI_master_only WRITE (stdout, nml=croco_diag_mld)
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV
