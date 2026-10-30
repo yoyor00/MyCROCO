@@ -2960,6 +2960,9 @@ CR      write(*,*) '  0' MYID
       real tabres(i1:i2,j1:j2)
       logical before
 
+
+      print *,"i1=",i1," i2=",i2
+      print *,"j1=",j1," j2=",j2
       if (before) then
         tabres = h(i1:i2,j1:j2)
       else
