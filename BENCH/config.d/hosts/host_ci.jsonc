@@ -7,9 +7,9 @@
     },
     "tuning": {
       "gnu": {
-        "extra": "-march=native",
+        "extra": "",
         "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
-        "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+        "debug": "-O0 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
         "mpi_options": "-use-hwthread-cpus --allow-run-as-root",
       },
       "intel": {
