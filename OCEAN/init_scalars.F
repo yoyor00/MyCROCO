@@ -1870,6 +1870,24 @@ CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(7,indxbvf)='                                          '
 # endif
 
+CR      write(stdout,'(1x,A,I3)') 'indxZ_r =',indxZ_r
+      vname(1,indxZ_r)='z_r                                         '
+      vname(2,indxZ_r)='depth of rho-points                         '
+      vname(3,indxZ_r)='meter                                       '
+      vname(4,indxZ_r)='z_r, scalar, series                         '
+      vname(5,indxZ_r)='                                            '
+      vname(6,indxZ_r)='lat_rho lon_rho                             '
+      vname(7,indxZ_r)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxZ_w =',indxZ_w
+      vname(1,indxZ_w)='z_w                                         '
+      vname(2,indxZ_w)='depth of w-points                           '
+      vname(3,indxZ_w)='meter                                       '
+      vname(4,indxZ_w)='z_w, scalar, series                         '
+      vname(5,indxZ_w)='                                            '
+      vname(6,indxZ_w)='lat_rho lon_rho                             '
+      vname(7,indxZ_w)='                                            '
+
 # ifdef VIS_COEF_3D
 CR      write(stdout,'(1x,A,I3)') 'indxVisc =',indxVisc
       vname(1,indxVisc)='visc3d                                   '

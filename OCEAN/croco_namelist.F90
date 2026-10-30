@@ -1054,6 +1054,8 @@ MODULE croco_namelist
    logical :: out_his_wstr = .false.
    logical :: out_his_ustr = .false.
    logical :: out_his_vstr = .false.
+   logical :: out_his_z_r = .false.
+   logical :: out_his_z_w = .false.
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_history_fields
@@ -1135,6 +1137,8 @@ MODULE croco_namelist
    logical :: out_avg_wstr = .false.
    logical :: out_avg_ustr = .false.
    logical :: out_avg_vstr = .false.
+   logical :: out_avg_z_r = .false.
+   logical :: out_avg_z_w = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_averages_fields

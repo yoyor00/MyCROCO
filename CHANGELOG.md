@@ -19,6 +19,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   potential, in addition to elevation; works now with both
   ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
+- OUTPUTS : add z\_r and z\_w to history and averages files, activated with
+  out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
+  auxiliary fields namelist blocks (Issue #543)
+
 ### Fixed
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)

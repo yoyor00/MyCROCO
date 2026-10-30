@@ -326,6 +326,23 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif
 !
+!     Write out depth of rho- and w-points (m).
+!
+      if (wrtavg(indxZ_r)) then
+!$acc update if(compute_on_device) host(z_r_avg)
+         workr=z_r_avg
+         call fillvalue3d(workr,ncidavg,avgZ_r,
+     &        vname(1,indxZ_r), record,r3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtZ_r' MYID
+      endif
+      if (wrtavg(indxZ_w)) then
+!$acc update if(compute_on_device) host(z_w_avg)
+         work=z_w_avg
+         call fillvalue3d_w(work,ncidavg,avgZ_w,
+     &        vname(1,indxZ_w), record,w3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtZ_w' MYID
+      endif
+!
 #  if defined SST_SKIN && defined TEMPERATURE
 !
 !     Write out skin temperature (degC)
