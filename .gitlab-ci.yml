@@ -55,6 +55,9 @@ repro_ci:
     - ./bench-croco.py --case AgAc_KNBQ --variants sequential --title repro_ci --debug --rebuild --host host_ci --html -N --report
   artifacts:
     <<: *artifacts
+    paths:
+      - BENCH/results
+      - BENCH/rundir/**/Compile
     reports:
       junit: BENCH/results/**/junit_report.xml
 
