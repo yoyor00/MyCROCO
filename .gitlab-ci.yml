@@ -45,9 +45,22 @@ variables:
   stage: bench
   tags: [ci.inria.fr, large]
   image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_nvidia_parallel:dev
-# ─── gfortran (always-on) ─────────────────────────────────────────────────
+# ─── repro_ci (test / reproduction) ───────────────────────────────────────
 
-gfortran:
+repro_ci:
+  <<: *gfortran
+  script:
+    - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
+    - *ensure_f90nml
+    - ./bench-croco.py --case AgAc_KNBQ --variants sequential --title repro_ci --debug --rebuild --host host_ci --html -N --report
+  artifacts:
+    <<: *artifacts
+    reports:
+      junit: BENCH/results/**/junit_report.xml
+
+# ─── gfortran (always-on - temporairement désactivé pour repro_ci) ─────────
+
+.gfortran_matrix:
   <<: *gfortran
   parallel:
     matrix:
@@ -68,9 +81,9 @@ gfortran:
     reports:
       junit: BENCH/results/$TITLE-host_ci/junit_report.xml
 
-# ─── gfortran_parallel (always-on) ────────────────────────────────────────
+# ─── gfortran_parallel (always-on - temporairement désactivé pour repro_ci)
 
-gfortran_parallel:
+.gfortran_parallel_matrix:
   <<: *gfortran_parallel
   parallel:
     matrix:
@@ -175,9 +188,9 @@ nvhpc_schedule:
     reports:
       junit: BENCH/results/$TITLE-host_ci/junit_report.xml
 
-# ─── Performance tracking ─────────────────────────────────────────────────
+# ─── Performance tracking (temporairement désactivé pour repro_ci) ─────────
 
-track_perf:
+.track_perf:
   <<: *gfortran_parallel
   script:
     - |
