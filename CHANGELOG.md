@@ -96,6 +96,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - KPP : bug fix for the non-local term in surface KPP parameterisation
         wrong sign and + correction to recover the empirical free convection scaling of 0.2 
 
+- MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
+
 ### Changed
 
 - Input file croco.in replace by a standard namelist (#497)
@@ -252,7 +254,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, M. Le Corre
+  J. Gula, C. Mazoyer, M. Le Corre, P. Penven
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
