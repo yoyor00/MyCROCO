@@ -130,6 +130,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
 
+- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
