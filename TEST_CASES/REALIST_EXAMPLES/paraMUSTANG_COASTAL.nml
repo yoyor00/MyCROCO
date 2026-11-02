@@ -40,19 +40,19 @@
    nlayer_surf_sed=5 
 /
 &namsedim_bottomstress
-   l_z0seduni=.true.  
-   z0seduni = 0.0001     
-   z0sedmud = 0.0001    
-   z0sedbedrock = 0.005  
-   l_fricwave=.false.  
+   l_z0seduni=.false.
+   z0seduni = 0.0001
+   z0sedmin = 0.0001
+   z0sedbedrock = 0.005
+   l_fricwave=.false.
 /  
 &namsedim_deposition
    cfreshmud=400.0
    csedmin=30.
-   cmudcr=600.  
+   cmudcr=600.
    cvolmaxsort=0.58
-   cvolmaxmel=0.67 
-/ 
+   cvolmaxmel=0.67
+/
 &namsedim_erosion
    activlayer=0.02  
    frmudcr2=0.7 

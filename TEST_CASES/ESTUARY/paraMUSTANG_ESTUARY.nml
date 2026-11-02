@@ -29,10 +29,9 @@
 &namsedim_init
    l_unised = .true.
    hseduni = 1.
-   cseduni= 978.3 
-   csed_mud_ini = 300.0  
+   cseduni= 978.3
    ksmiuni = 1
-   ksmauni = 2 
+   ksmauni = 2
 /
 &namsedim_layer
    dzsmin=1.0e-5   

@@ -40,8 +40,7 @@ MODULE MUSTANG_namelist
                              date_start_morpho, date_start_dyninsed,          &
                              hseduni, cseduni, ksmiuni, ksmauni,              &
                              sini_sed, tini_sed,                              &
-                             l_unised_adjust_hsed, csed_mud_ini,              &
-                             l_initsed_vardiss, poro_mud_ini
+                             l_initsed_vardiss
 
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
                               l_dzsmaxuni, dzsmaxuni,                         &
@@ -63,7 +62,7 @@ MODULE MUSTANG_namelist
                                 E0_mud_para_indep
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
-                                     z0seduni, z0sedmud, z0sedbedrock,        &
+                                     z0seduni, z0sedmin, z0sedbedrock,        &
                                      l_tauskin_center,l_tauskin_ubar,         &
                                      l_tauskin_upwind, l_fricwave, fricwav,   &
                                      l_z0hydro_coupl_init,                    &

@@ -16,7 +16,8 @@
 
       USE croco_namelist, ONLY: rstname, nrpfrst
 #if defined MUSTANG
-      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs,
+     &                      t_dyninsed, rstT_dyninsed
       USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
 
@@ -788,6 +789,15 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           endif
        endif
 
+! scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation): a single scalar, not a gridded field
+       ierr=nf_put_var1_FTYPE (ncidrst, rstT_dyninsed, record,
+     &                                                  t_dyninsed)
+       if (ierr .ne. nf_noerr) then
+         write(stdout,1) 't_dyninsed', record, ierr
+     &                   MYID
+         goto 99                                         !--> ERROR
+       endif
 
 # endif /* MUSTANG */
 
