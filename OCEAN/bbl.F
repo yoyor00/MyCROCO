@@ -128,7 +128,7 @@
      &        d50, rhosed, rhow, smgd, osmgd, D, mu_w,
      &        tau_cb, tau_ex, tau_bf, tau_up, tau_en,
      &        tau_w, tau_ws, tau_c, tau_cs, tau_cw, tau_cws,
-     &        thetw, twopi, Ucur, Vcur, Ubc, visk,
+     &        tau_cws_max, thetw, twopi, Ucur, Vcur, Ubc, visk,
      &        znots, znot, znota, znot_bl, znot_rip,
      &        eps, zomin, zomax, depth, Ut, sinh_maxarg
       parameter
