@@ -93,11 +93,11 @@
 /
 
 &croco_sediments_mustang
-  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV2_Ana_dune.txt"
+  sedname_must = "TEST_CASES/DUNE/paraMUSTANG_ANA_DUNE.nml"
 /
 
 &croco_substance
-  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Ana_dune.txt"
+  subsfilename = "TEST_CASES/DUNE/parasubstance_ANA_DUNE.nml"
 /
 
 &croco_primary_history_fields
