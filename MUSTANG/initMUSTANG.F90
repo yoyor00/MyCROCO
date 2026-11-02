@@ -738,6 +738,7 @@ CONTAINS
       enddo
 
 ! land cells
+#ifdef MASKING
       do k=ksdmin,ksdmax
         WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
         WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) dzs(k,GLOBAL_2D_ARRAY)=0.0_rsh
@@ -747,6 +748,7 @@ CONTAINS
         enddo
       enddo
       WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) ksma(GLOBAL_2D_ARRAY)=0
+#endif
 
 
  ! dredging
@@ -880,7 +882,11 @@ CONTAINS
 
         DO j=jfirst,jlast
         DO i=ifirst,ilast
+#ifdef MASKING
             IF(h(i,j) /= -valmanq .AND. rmask(i,j) == 1.0_rsh) THEN
+#else
+            IF(h(i,j) /= -valmanq) THEN
+#endif
                 DO k=ksmi(i,j),ksma(i,j)
                     c_sedtot(k,i,j)=0.0_rsh
                     DO iv=1,nvpc
