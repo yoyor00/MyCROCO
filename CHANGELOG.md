@@ -86,6 +86,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            - Enables use of high-frequency qsr (<24 hrs) with PISCES 
              in the case of offline reading (#563) - online calculation of 
              daily mean of qsr needed by PISCES must be implemented
+           - Fix no update of POC/GOC prod by diazotropy - minor effect (#583)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
