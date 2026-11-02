@@ -390,6 +390,7 @@
 ======================================================================
 */
 #ifdef TS_HADV_UP3    /* Check if options are defined in cppdefs.h */
+#elif defined TS_HADV_C2
 #elif defined TS_HADV_C4
 #elif defined TS_HADV_UP5
 #elif defined TS_HADV_WENO5
@@ -398,6 +399,7 @@
 #elif defined TS_HADV_RSUP5
 #else
 # define TS_HADV_UP3    /* 3rd-order upstream lateral advection */
+# undef  TS_HADV_C2     /* 2th-order centered lateral advection */
 # undef  TS_HADV_C4     /* 4th-order centered lateral advection */
 # undef  TS_HADV_UP5    /* 5th-order upstream lateral advection */
 # undef  TS_HADV_WENO5  /* 5th-order WENOZ    lateral advection */
