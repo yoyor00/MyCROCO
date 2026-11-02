@@ -19,6 +19,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   potential, in addition to elevation; works now with both
   ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
+- OUTPUTS : add z\_r and z\_w to history and averages files, activated with
+  out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
+  auxiliary fields namelist blocks (Issue #543)
+
 ### Fixed
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
@@ -120,14 +124,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
-
 - MUSTANG : review lateral erosion feature (Issue #349)
-
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
-
 - MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
-
 - MUSTANG : change init and roughness length computation (#562)
+- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
@@ -137,7 +138,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- kinetic energy budget is now 3d
 	- momentum, energy and tracer diagnostics (DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_MLD) terms are now volume-integrated (Issue #320)
 	- DIAGNOSTICS\_TS\_MLD\_DENS : MLD depths (density and temperature criteria) are both computed at w-levels, and the density criterion is used whatever the vertical mixing scheme (Issue #320)
-
+	- MLD depths (density and temperature criteria) are both computed starting from a reference depth (10 m by default) instead of the surface. The reference depth can be set with the namelist parameter mld_depth_ref (Issue #545)
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
@@ -256,4 +257,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten, L. Maillard
+  S. Theetten, L. Maillard, N. Herry

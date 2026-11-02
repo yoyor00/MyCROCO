@@ -49,10 +49,10 @@
 &namsedim_deposition
    cfreshmud=400.0
    csedmin=30.
-   cmudcr=600.  
+   cmudcr=600.
    cvolmaxsort=0.58
-   cvolmaxmel=0.67 
-/ 
+   cvolmaxmel=0.67
+/
 &namsedim_erosion
    activlayer=0.02  
    frmudcr2=0.7 

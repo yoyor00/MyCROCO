@@ -143,7 +143,7 @@
 !
       use croco_namelist, only: dt
 #  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-      use croco_namelist, only: mld_crit_D, mld_crit_T
+      use croco_namelist, only: mld_crit_D, mld_crit_T, mld_depth_ref
 #  endif
       implicit none
 # include "param.h"
@@ -154,8 +154,9 @@
      &       FE (PRIVATE_2D_SCRATCH_ARRAY)
       real   cff,cff1
 # ifdef DIAGNOSTICS_TS_MLD_DENS
-      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
-      real    FF(PRIVATE_2D_SCRATCH_ARRAY)
+      integer kblt(PRIVATE_2D_SCRATCH_ARRAY),
+     &        indx_depth
+      real    nearest_diff, diff_k
 # endif
 # ifndef TS_MIX_S
       real  Akz (PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -695,47 +696,73 @@
             enddo
           enddo
         enddo
+
 !
 !==========================================================
 ! Tracer diagnostics integrated over the MLD
 !==========================================================
 !
-#  if defined DIAGNOSTICS_TS_MLD
-#   define T_mld_nnew FX
-#   define T_mld_nstp FE
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
-         do j=Jstr,Jend
-            do i=Istr,Iend
-               kbl1(i,j)=1
-               kblt(i,j)=1
-               FF(i,j)=0.
-               cff=0
-               cff1=0
-               do k=N,1,-1
-                  if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_D) then
-                     kbl1(i,j)=k
-                  endif
-                  if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_D)  cff=1
+# if defined DIAGNOSTICS_TS_MLD
+#  define T_mld_nnew FX
+#  define T_mld_nstp FE
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
 
-                  if (cff1.eq.0.and.t(i,j,k,nnew,1).gt.
-     &               t(i,j,N,nnew,1)-mld_crit_T) then
-                     kblt(i,j)=k
-                  endif
-                  if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-mld_crit_T)  cff1=1
-               enddo
-               FF(i,j)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
-!
-! MLD (density criterion) for itrc=1, and for itrc=2 difference between
-! MLD (temperature criterion) and MLD (density criterion)
-!
-               if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
-     &            (z_w(i,j,N)-z_w(i,j,kbl1(i,j)-1)) SWITCH rmask(i,j)
-               if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
-     &            ( (z_w(i,j,N)-z_w(i,j,kblt(i,j)-1))
-     &              -Tcrit_mld(i,j,1) ) SWITCH rmask(i,j)
+        do j=Jstr,Jend
+          do i=Istr,Iend
+! -----------------------------------------------------------------
+! Find the index corresponding to the reference depth mld_depth_ref
+! -----------------------------------------------------------------
+            if (z_w(i,j,0) .gt. -mld_depth_ref) then
+! if bathymetry shallower than reference depth, clamp to bottom
+              indx_depth = 1
+            else
+              indx_depth = N
+              nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+              do k=N-1,1,-1
+                 diff_k = abs(z_r(i,j,k)+mld_depth_ref)
+                 if (diff_k .le. nearest_diff) then
+                    nearest_diff = diff_k
+                    indx_depth = k
+                 else
+                    exit
+                 endif
+              enddo
+            endif
+! ---------------------------------------------------
+! Compute kbld (density) and kblt (temperature)
+! both starting from indx_depth downward
+! ---------------------------------------------------
+            kbld(i,j)=indx_depth
+            kblt(i,j)=indx_depth
+            cff=0
+            cff1=0
+            do k=indx_depth,1,-1
+             if (cff.eq.0.and.rho(i,j,k).le.
+     &            rho(i,j,indx_depth)+mld_crit_D) then
+               kbld(i,j)=k
+             endif
+             if (rho(i,j,k).gt.
+     &            rho(i,j,indx_depth)+mld_crit_D)  cff=1
+
+             if (cff1.eq.0.and.t(i,j,k,nnew,itemp).ge.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
+               kblt(i,j)=k
+             endif
+             if (t(i,j,k,nnew,itemp).lt.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T) cff1=1
             enddo
-         enddo
-#   endif
+! -------------------------------------------------------------------------------------
+! Store MLD (density criterion) for itrc=1, and MLD (temperature criterion) for itrc=2
+! -------------------------------------------------------------------------------------
+            if (itrc.eq.1) then
+              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kbld(i,j)-1) SWITCH rmask(i,j)
+
+            elseif (itrc.eq.2) then
+              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kblt(i,j)-1) SWITCH rmask(i,j)
+            endif
+          enddo
+        enddo
+#  endif /* DIAGNOSTICS_TS_MLD_DENS */
 
        do j=Jstr,Jend
          do i=Istr,Iend
@@ -751,7 +778,7 @@
        do j=Jstr,Jend
          do i=Istr,Iend
 #   if defined DIAGNOSTICS_TS_MLD_DENS
-           kmld=kbl1(i,j)
+           kmld=kbld(i,j)
 #   elif defined LMD_SKPP || defined GLS_MIXING
            kmld=kbl(i,j)
 #   else
@@ -789,7 +816,7 @@
        do j=Jstr,Jend
          do i=Istr,Iend
 #   if defined DIAGNOSTICS_TS_MLD_DENS
-           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbld(i,j)
            kmld=kbl_nstp(i,j)
 #   elif defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
@@ -803,7 +830,7 @@
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
 #   if defined DIAGNOSTICS_TS_MLD_DENS
-           if (itrc .eq. NT) kbl_nstp(i,j)=kbl1(i,j)
+           if (itrc .eq. NT) kbl_nstp(i,j)=kbld(i,j)
 #   elif defined LMD_SKPP || defined GLS_MIXING
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
 #   endif

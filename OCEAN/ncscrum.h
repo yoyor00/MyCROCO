@@ -27,6 +27,7 @@
 ! indxO,indeW     omega vertical mass flux and true vertical velocity
 ! indxR           density anomaly
 ! indxbvf         Brunt Vaisala Frequency
+! indxZ_r,indxZ_w depth of rho- and w-points (z_r, z_w)
 ! indxAOU  	  Apparent Oxygen Utilization
 ! indxWIND10      surface wind speed 10 m
 ! indxpCO2        partial pressure of CO2 in the ocean
@@ -919,6 +920,10 @@
       integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
 #endif
+#ifdef SOLVE3D
+      integer indxZ_r, indxZ_w
+      parameter (indxZ_r=indxSUSTR+141, indxZ_w=indxSUSTR+142)
+#endif
 !
 !===================================================================
 !
@@ -1146,6 +1151,7 @@
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
+     &      , hisZ_r, hisZ_w
 # ifdef STOGEN
      &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
 # endif
@@ -1334,6 +1340,7 @@
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
+     &      , avgZ_r, avgZ_w
 #  if defined ANA_VMIX || defined GLS_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , avgbvf
@@ -1683,6 +1690,7 @@
      &      , hisU,    hisV,     hisT,    hisR
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
+     &      , hisZ_r,  hisZ_w
      &      , hisHbl,  hisHbbl
 # ifdef STOGEN
      &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
@@ -1945,6 +1953,7 @@
      &      ,     avgR
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
+     &      , avgZ_r,  avgZ_w
      &      , avgHbl,  avgHbbl
 #  if defined ANA_VMIX || defined GLS_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
