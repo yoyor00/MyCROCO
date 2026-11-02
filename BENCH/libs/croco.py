@@ -82,6 +82,14 @@ class Croco:
             "TEST_CASES/%s/param_%s.h" % (_case, _case),
         )
 
+        # pre-resolved AGRIF_FixedGrids.in, only used if the case actually
+        # enables the AGRIF cpp key (checked once cppdefs.h is resolved)
+        # Convention: TEST_CASES/<CASE>/AGRIF_FixedGrids_<CASE>.in
+        self.croco_agrif_fixedgrids_file = self.resolve_case_file(
+            "agrif_fixedgrids_file",
+            "TEST_CASES/%s/AGRIF_FixedGrids_%s.in" % (_case, _case),
+        )
+
         self.croco_build = JobcompCrocoSetup(
             self.config, self.dirname, self.variant["tuning_familly"]
         )
@@ -215,6 +223,26 @@ class Croco:
             cppdefs_file=self.croco_cppdefsfile,
             param_file=self.croco_paramfile,
         )
+
+        # AGRIF nesting is only meaningful once cppdefs.h is fully resolved
+        # (master file + per-case cppdefs_file + cppkeys toggles), so detect
+        # it from the build rather than from the raw case config.
+        if self.croco_build.cppdef_h_is_defined("AGRIF"):
+            if self.croco_agrif_fixedgrids_file is None:
+                raise Exception(
+                    f"Case '{self.case_name}': AGRIF is enabled but no "
+                    f"AGRIF_FixedGrids.in was found for case '{self.case['case']}' "
+                    f"(expected TEST_CASES/{self.case['case']}/"
+                    f"AGRIF_FixedGrids_{self.case['case']}.in, or set "
+                    f"'agrif_fixedgrids_file' in the case config)."
+                )
+            Messaging.step(
+                f"Use case AGRIF_FixedGrids.in : {self.croco_agrif_fixedgrids_file}"
+            )
+            shutil.copyfile(
+                self.croco_agrif_fixedgrids_file,
+                os.path.join(self.dirname, "AGRIF_FixedGrids.in"),
+            )
 
     def compile(self):
         # display
