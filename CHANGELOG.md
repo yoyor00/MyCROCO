@@ -44,6 +44,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
   restart inconsistencies with MORPHODYN, update testcase plot script 
   accordingly (#470)
+- MUSTANG : Fix MUSTANG restart bit-exactness (#562)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
@@ -126,13 +127,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
-
 - MUSTANG : review lateral erosion feature (Issue #349)
-
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
-
 - MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
-
+- MUSTANG : change init and roughness length computation (#562)
 - MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
