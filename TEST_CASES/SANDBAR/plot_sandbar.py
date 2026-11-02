@@ -60,9 +60,9 @@ morph_cpl = True
 # Read grid from numerical model
 # =====================================================================
 yindex = 1  # Python indexing (MATLAB yindex = 2)
-tindex = len(nc.variables["scrum_time"][:]) - 1  # Last time record
+tindex = len(nc.variables["time"][:]) - 1  # Last time record
 
-time = morph_fac * nc.variables["scrum_time"][:] / 3600  # Time in hours
+time = morph_fac * nc.variables["time"][:] / 3600  # Time in hours
 tindex0 = np.argmin(np.abs(time - (4 if mycase == "1B" else 3)))
 
 # Horizontal grid
@@ -116,7 +116,7 @@ Du2d = np.tile(Du, (N, 1))
 time_days = (
     morph_fac
     / 86400
-    * (nc.variables["scrum_time"][tindex] - nc.variables["scrum_time"][0])
+    * (nc.variables["time"][tindex] - nc.variables["time"][0])
 )
 thour = int(np.floor(time_days * 24))
 

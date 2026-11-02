@@ -124,18 +124,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
      &        MYID
         goto 99                !--> ERROR
       endif
-
-!-----------------------------------------------------------------------
-!     Time2
-!-----------------------------------------------------------------------
-      ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime2, record, time)
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
 !
 ! ============================================================
 !     Large scale ABL1D variables

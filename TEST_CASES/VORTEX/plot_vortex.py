@@ -49,7 +49,7 @@ var_type, ddd, cmin, dc, cmax, cff = caxis_params.get(
 # Load parent dataset
 parent_ds = xr.open_dataset(args.file)
 N = parent_ds.dims["s_rho"]
-time = round(parent_ds["scrum_time"][tindex].item() / (24 * 3600))
+time = round(parent_ds["time"][tindex].item() / (24 * 3600))
 print(f"Day: {time}")
 X = 1e-3 * parent_ds["x_rho"]
 Y = 1e-3 * parent_ds["y_rho"]

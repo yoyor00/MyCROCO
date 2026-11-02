@@ -15,9 +15,9 @@
                                                   ! file.
         USE croco_namelist, ONLY: ldefhis, nrpfrst, rstname
 #if defined MUSTANG
-        USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
+        USE comMUSTANG, ONLY : rstMust, vname_rstMust,
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
-     &   rstMust_nbvar
+     &   rstMust_nbvar, rstT_dyninsed
 #endif
       implicit none
       logical create_new_file
@@ -254,29 +254,8 @@
         ierr=nf_put_att_text(ncid, rstTime, 'field',     lvar,
      &                                  vname(4,indxTime)(1:lvar))
 
-        call nf_add_attribute(ncid, rstTime, vname(:,indxTime), 
+        call nf_add_attribute(ncid, rstTime, vname(:,indxTime),
      &      5, NF_DOUBLE, ierr)
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                              NF_DOUBLE, 1, timedim, rstTime2)
-#ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstTime2,nf_collective)
-#endif
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, rstTime2, 'long_name', lvar,
-     &                                  vname(2,indxTime2)(1:lvar))
-        lvar=lenstr(vname(3,indxTime2))
-        ierr=nf_put_att_text (ncid, rstTime2, 'units',     lvar,
-     &                                  vname(3,indxTime2)(1:lvar))
-        lvar=lenstr (vname(4,indxTime2))
-        ierr=nf_put_att_text(ncid, rstTime2, 'field',     lvar,
-     &                                  vname(4,indxTime2)(1:lvar))
-
-        call nf_add_attribute(ncid, rstTime2, vname(:,indxTime2), 5,
-     &       NF_DOUBLE, ierr)
 !
 !     Free-surface.
 !
@@ -670,6 +649,30 @@
 
 #  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
+
+# ifdef DIAGNOSTICS_TS_MLD
+!
+! MLD vertical index at previous time step (needed by MLD budget)
+!
+        lvar=lenstr(vname(1,indxKbl_nstp))
+        ierr=nf_def_var (ncid, vname(1,indxKbl_nstp)(1:lvar),
+     &       NF_DOUBLE, 3, r2dgrd, rstKbl_nstp)
+#  ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstKbl_nstp,nf_collective)
+#  endif
+        lvar=lenstr(vname(2,indxKbl_nstp))
+        ierr=nf_put_att_text (ncid, rstKbl_nstp, 'long_name',
+     &       lvar,   vname(2,indxKbl_nstp)(1:lvar))
+        lvar=lenstr(vname(3,indxKbl_nstp))
+        ierr=nf_put_att_text (ncid, rstKbl_nstp, 'units', lvar,
+     &       vname(3,indxKbl_nstp)(1:lvar))
+        lvar=lenstr(vname(4,indxKbl_nstp))
+        ierr=nf_put_att_text (ncid, rstKbl_nstp, 'field', lvar,
+     &       vname(4,indxKbl_nstp)(1:lvar))
+
+        call nf_add_attribute(ncid, rstKbl_nstp,
+     &       vname(:,indxKbl_nstp), 5, NF_DOUBLE,ierr)
+# endif /* DIAGNOSTICS_TS_MLD */
 
 # if defined GLS_MIXING
 !
@@ -1199,6 +1202,22 @@
      &              vname_rstMust(:,indx), 5, NF_DOUBLE, ierr)
             endif
         enddo
+!
+! Scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation) process: not a gridded field, stored as a single
+! scalar per restart record so it can be restored exactly instead
+! of being reset to the current time on restart.
+!
+        ierr=nf_def_var (ncid, 't_dyninsed',
+     &                              NF_DOUBLE, 1, timedim,
+     &                              rstT_dyninsed)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstT_dyninsed,nf_collective)
+#   endif
+        ierr=nf_put_att_text (ncid, rstT_dyninsed, 'long_name', 48,
+     &       'next scheduled time for dynamic-in-sediment update')
+        ierr=nf_put_att_text (ncid, rstT_dyninsed, 'units', 6,
+     &       'second')
 #endif  /* MUSTANG */
 
 
@@ -1370,18 +1389,6 @@
         endif
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTime,nf_collective)
-#endif
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_inq_varid (ncid, vname(1,indxTime2)(1:lvar), rstTime2)
-        if (ierr. ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime2)(1:lvar), rstname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-#ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstTime2,nf_collective)
 #endif
 
 ! Free-surface.
@@ -1619,6 +1626,22 @@
 
 #  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
+
+# ifdef DIAGNOSTICS_TS_MLD
+!
+! MLD vertical index at previous time step (needed by MLD budget)
+!
+          lvar=lenstr(vname(1,indxKbl_nstp))
+          ierr=nf_inq_varid (ncid,vname(1,indxKbl_nstp)(1:lvar),
+     &                                               rstKbl_nstp)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxKbl_nstp)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstKbl_nstp,nf_collective)
+#  endif
+# endif /* DIAGNOSTICS_TS_MLD */
 
 # if defined GLS_MIXING
 !
@@ -1961,6 +1984,15 @@
           ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
 # endif
         enddo
+
+        ierr=nf_inq_varid (ncid, 't_dyninsed', rstT_dyninsed)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) 't_dyninsed', rstname(1:lstr)
+          goto 99                                       !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstT_dyninsed,nf_collective)
+# endif
 #endif
 
 

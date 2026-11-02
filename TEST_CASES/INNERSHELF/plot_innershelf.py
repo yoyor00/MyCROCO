@@ -77,7 +77,7 @@ print("Reading grid and parameters from CROCO file...")
 
 # Get grid, Av & f from numerical model
 with Dataset(fname, "r") as nc:
-    tindex = len(nc.variables["scrum_time"][:]) - 1  # reads last record (0-based)
+    tindex = len(nc.variables["time"][:]) - 1  # reads last record (0-based)
     yindex = 2  # y index (Python 0-based, so 3->2)
 
     Av = nc.Akv_bak  # viscosity (global attribute)
