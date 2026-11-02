@@ -473,14 +473,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  --- Read from NetCDF file (to do) ---
 !
-#if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
-# ifdef AGRIF
-      if (Agrif_lev_sedim.EQ.0) call get_bsedim
-# else
-      call get_bsedim
-# endif
-#endif
-!
 #if defined SEDIMENT && !defined ANA_SEDIMENT
 # ifdef AGRIF
       if (Agrif_lev_sedim.EQ.0) call get_sediment

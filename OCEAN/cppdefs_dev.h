@@ -806,22 +806,7 @@
 # else
 #  define ANA_WWAVE
 # endif
-# ifdef SEDIMENT
-#  undef  ANA_BSEDIM
-# else
-#  define ANA_BSEDIM
-# endif
-# ifdef SEDIMENT
-#  define Z0_BL
-# else
-#  undef  Z0_BL
-# endif
-# ifdef Z0_BL
-#  define Z0_RIP
-# endif
-# undef  Z0_BIO
 #endif
-
 /*
 ======================================================================
                 Sediment dynamics models (USGS sediment model/Mustang)
