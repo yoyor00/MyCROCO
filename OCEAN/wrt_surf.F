@@ -17,7 +17,7 @@
 !---------------------------------------------------------------
 !
       subroutine wrt_surf
-
+      use croco_namelist, only: surfname, nrpfsurf
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -96,20 +96,6 @@
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
-     &                  MYID
-        goto 99                                           !--> ERROR
-      endif
-!
-! Time2
-!
-      ierr=nf_put_var1_FTYPE (ncidsurf, surfTime2, record, time
-# ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-# endif
-     &  )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif

@@ -22,6 +22,16 @@ C$    integer omp_get_thread_num
       end
 
       subroutine setup_grid1_tile (Istr,Iend,Jstr,Jend)
+      use croco_namelist, ONLY: gamma2
+#ifdef WKB_WWAVE
+      use croco_namelist, ONLY: wkb_tide
+#endif
+#ifdef WET_DRY
+      use croco_namelist, ONLY: D_wetdry
+#endif
+#ifdef WAVE_DRY
+      use croco_namelist, ONLY: D_wavedry
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
 #ifdef WET_DRY
@@ -262,9 +272,7 @@ C$    integer omp_get_thread_num
 !$acc end kernels
 
 #ifdef BD_EXCHANGE
-# ifndef BASIN      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
-# endif      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   on_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, pnom_r)

@@ -32,10 +32,8 @@
 #  ifndef BEDLOAD_VANDERA
 #   define BSTRESS_UPWIND
 #  endif
-#  ifdef ANA_DUNE
+#  ifdef NO_BSTRESS_UPWIND
 #   undef  BSTRESS_UPWIND
-#   undef  BEDLOAD_SLUMP
-#   undef  BEDLOAD_SHALLOW_LIMIT
 #  endif
 #  ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
 #   define BEDLOAD_VANDERA_ZEROCURR
@@ -225,6 +223,7 @@ C$OMP BARRIER
 #  endif
      &                            )
 !
+      use croco_namelist, only: dt, rho0
       implicit none
       integer Istr,Iend,Jstr,Jend
       real  FX(PRIVATE_2D_SCRATCH_ARRAY)
@@ -1445,6 +1444,7 @@ C$OMP BARRIER
      &                              Hz_inv,Hz_inv2,Hz_inv3,qc,
      &                              FC,qR,qL,WR,WL,tau_w,ksource)
 !
+      use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "ocean3d.h"
@@ -1672,7 +1672,8 @@ C$OMP BARRIER
 #  ifdef DIAGNOSTICS_TS
           do k=1,N
             do i=Istr,Iend
-              TForc(i,j,k,indx)=(FC(i,k)-FC(i,k-1))/dt
+              TForc(i,j,k,indx)=(FC(i,k)-FC(i,k-1))
+     &                                    /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                    * rmask(i,j)
 #   endif
@@ -1694,7 +1695,7 @@ C$OMP BARRIER
             do i=Istr,Iend
               Trate(i,j,k,indx)=(Hz(i,j,k)*t(i,j,k,nnew,indx)
      &                          -Hz_bak(i,j,k)*t(i,j,k,nstp,indx))
-     &                                                         /dt
+     &                                     /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                                 *rmask(i,j)
 #   endif
@@ -1731,6 +1732,7 @@ C$OMP BARRIER
 !
       subroutine sed_fluxes_tile (Istr,Iend,Jstr,Jend, tau_w)
 !
+      use croco_namelist, only: dt, rho0
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -1833,7 +1835,8 @@ C$OMP BARRIER
 #  ifdef DIAGNOSTICS_TS
           do i=Istr,Iend
             TForc(i,j,1,indx) = TForc(i,j,1,indx) +
-     &                          ero_flux(i,j,ised)/dt
+     &                          ero_flux(i,j,ised)
+     &                                   /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                   * rmask(i,j)
 #   endif
@@ -1853,7 +1856,7 @@ C$OMP BARRIER
           do i=Istr,Iend
             Trate(i,j,1,indx)=(Hz(i,j,1)*t(i,j,1,nnew,indx)
      &                        -Hz_bak(i,j,1)*t(i,j,1,nstp,indx))
-     &                                                       /dt
+     &                                   /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                               *rmask(i,j)
 #   endif
@@ -1897,6 +1900,7 @@ C$OMP BARRIER
       subroutine sed_bed_tile (Istr,Iend,Jstr,Jend,
      &                         tau_w,dep_mass,Awrk1,Awrk2)
 !
+      use croco_namelist, only: dt, rho0
       implicit none
 #  include "param.h"
 #  include "bbl.h"
@@ -2417,6 +2421,7 @@ C$OMP BARRIER
      &                         Istr,Iend,Jstr,Jend,tau_w,dep_mass)
 !***********************************************************************
 !
+      use croco_namelist, only: dt, rho0
       implicit none
 #  include "param.h"
 #  include "bbl.h"
@@ -3727,6 +3732,7 @@ C$OMP BARRIER
         USE flocmod, ONLY : flocmod_alloc, flocmod_init
         USE flocmod, ONLY : f_ws
 # endif
+      USE croco_namelist, ONLY: rho0, sedname
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -4156,6 +4162,7 @@ C$OMP BARRIER
 !  T_c, T_t, T_cu, T_tu: Updated time periods in half cycles
 !                        based on current velocity
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"
@@ -4314,6 +4321,7 @@ C$OMP BARRIER
 !  theta_ix, theta_iy  : Shields parameter in x and y dir.
 !  mag_theta_i         : Magnitude of Shields parameter for half cycle
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"
@@ -4870,6 +4878,7 @@ C$OMP BARRIER
 ! Critical Shields parameter from Soulsby (1997).
 ! Dynamics of Marine Sands
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"
@@ -5127,6 +5136,7 @@ C$OMP BARRIER
 !
 ! Critical Shields parameter from Soulsby (1997).
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"
@@ -5151,6 +5161,7 @@ C$OMP BARRIER
 # ifdef SED_FLOCS
       subroutine sed_flocmod_tile (Istr,Iend,Jstr,Jend)
         USE flocmod, ONLY : flocmod_main, flocmod_comp_g
+        use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "scalars.h"

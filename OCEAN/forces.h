@@ -523,10 +523,6 @@
 # ifdef WAVE_ROLLER
       real wepr(GLOBAL_2D_ARRAY)
       common /forces_wepr/wepr
-#  ifdef WKB_WWAVE
-      real wepb0(GLOBAL_2D_ARRAY)
-      common /forces_wepb0/wepb0
-#  endif
 # endif
 !
 !--------------------------------------------------------------------
@@ -733,10 +729,6 @@
       common /wave_maker_k/ wkx_bry, wky_bry
       common /wave_maker_pha/ wpha_bry
 
-      real wmaker_amp, wmaker_prd, wmaker_dir
-      real wmaker_dsp, wmaker_fsp
-      common /wave_maker_par/ wmaker_amp, wmaker_prd, wmaker_dir
-      common /wave_maker_par/ wmaker_dsp, wmaker_fsp 
       real coswd,sinwd,coswds,sinwds
       common /wave_maker_cos/ coswd,sinwd,coswds,sinwds
 #endif

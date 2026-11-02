@@ -106,7 +106,9 @@
                 endif
             enddo
         enddo
+#if !defined ECO3M_SUB 
          TEND(:,:,:,:) = TEND(:,:,:,:) * dt_bio
+#endif
 
     end subroutine eco3m_compute_sms
 

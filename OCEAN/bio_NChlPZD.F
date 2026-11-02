@@ -19,6 +19,7 @@
 ! In this particular implementation there is 4 compartments:
 ! NO3, PHYTOplankton, ZOOplanknton, DETritus.
 !
+      use croco_namelist, only: dt, rho0
       implicit none
       integer Istr,Iend,Jstr,Jend
 # include "param.h"

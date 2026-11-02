@@ -1,0 +1,132 @@
+&croco_testcase
+  testcase_name = 'SED_TOY_ROUSE'
+/
+
+&croco_title
+  title = "Sed_toy rouse experiment (Single Column GradP / SCM) TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 21600
+  dt = 2
+  ndtfast = 10
+  ninfo = 1
+/
+
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  hc = 200000.0d0
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 1800
+  nrpfhis = 0
+  hisname = "sed_toy_rouse_his.nc"
+/
+
+&croco_restart
+  nrst = 21600
+  nrpfrst = -1
+  rstname = "sed_toy_rouse_rst.nc"
+/
+
+&croco_rho0
+  rho0 = 1025.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.0d-03
+  rdrg2 = 3.15d-3
+  Zobt = 1.d-4
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-1
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_vertical_mixing
+  Akv_bak = 1.d-4
+  Akt_bak = 8*1.d-6
+/
+
+&croco_lin_eos
+  R0 = 30.d0
+  T0 = 20.d0
+  S0 = 35.5d0
+  Tcoef = 0.0d-10
+  Scoef = 0.0d-10
+/
+
+&croco_bodyforce
+  levsfrc = 1
+  levbfrc = 1
+/
+
+&croco_sediments
+  sedname = "TEST_CASES/SED_TOY/sediment_sed_toy_rouse.in"
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 8*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .false.
+  out_his_akv = .true.
+  out_his_bostr = .true.
+  out_his_wstr = .true.
+  out_his_ustr = .true.
+  out_his_vstr = .true.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .true.
+  out_his_shflx = .true.
+  out_his_shflx_rsw = .true.
+/
+
+&croco_salinity_history_fields
+  out_his_aks = .false.
+  out_his_swflx = .true.
+/
+
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
+&croco_sediment_bfra_history_fields
+  out_his_sed_bfra = 6*.true.
+/
+
+&croco_sediment_suspload_history_fields
+  out_his_sed_dflx = 6*.true.
+  out_his_sed_eflx = 6*.true.
+/
+
+
+
+! End of namelist

@@ -16,7 +16,8 @@
 !     Read in point or grided sea river runoff tracer
 !     concentration the appropriate time from runoff NetCDF file.
 !
-      implicit none
+        use croco_namelist, only: dt
+        implicit none
 # include "param.h"
 # include "forces.h"
 # include "scalars.h"
@@ -844,6 +845,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 !
 !     Set-up river runoff concentration data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
       integer itrc,Istr,Iend,Jstr,Jend,i, it1,it2
       real cff, cff1,cff2

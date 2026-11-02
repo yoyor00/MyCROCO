@@ -15,43 +15,43 @@ function f_inhib_Frost_Franzen(ili,jcol,inut,kn)
     ! Romain Mauriac
     !--------------------------------------------------------------------------------------------
 
-    ! Variables globales
+   ! Variables globales
 
-    Implicit None
+   Implicit None
 
-    !-- fonction
-    real(8) :: f_inhib_Frost_Franzen(nx_min:nx_max,ny_min:ny_max,1:nz_max)
+  !-- fonction
+  real(8) :: f_inhib_Frost_Franzen(nx_min:nx_max,ny_min:ny_max,1:nz_max)
 
-    !-- arguments
-    Real(8) :: kn,inut
-    Integer :: ili,jcol,id 
+  !-- arguments
+  Real(8) :: kn,inut
+  Integer :: ili,jcol,id 
 
-    !-- variables locales:
-    character(L_CHAIN)::chain1,chain2
-    integer :: i,j,k
+  !-- variables locales:
+  character(L_CHAIN)::chain1,chain2
+  integer :: i,j,k
 
-    id=nint(inut)
+  id=nint(inut)
 
-    
-    f_inhib_Frost_Franzen = 1.d0
+  
+  f_inhib_Frost_Franzen = 1.d0
 
-    do k = 1,nz_max
-        do j = ny_min,ny_max
-            do i = nx_min,nx_max
-            if (var(id)%conc(i,j,k) > 1d-10) f_inhib_Frost_Franzen(i,j,k) =  1.d0/(1.d0+(var(id)%conc(i,j,k)/kn))
-       enddo
-     enddo
-    enddo
+!  do k = 1,nz_max
+!    do j = ny_min,ny_max
+!       do i = nx_min,nx_max
+!       if (var(id)%conc(i,j,k)>1d-10) f_inhib_Frost_Franzen(i,j,k)=1.d0/(1.d0+(var(id)%conc(i,j,k)/(kn+1d-50)))
+!     enddo
+!   enddo
+!  enddo
 
-    !do i = nx_min,nx_max
-    !  do j = ny_min,ny_max
-    !    do k = 1,nz_max
-    !IF (ISNAN(f_inhib_Frost_Franzen(i,j,k))) THEN
-    !WRITE(*,*) 'FUNCTION f_inhib_Frost_Franzen contains NaN',i,j,k
-    !STOP
-    !ENDIF
-    !enddo
-    !enddo
-    !enddo
+  !do i = nx_min,nx_max
+  !  do j = ny_min,ny_max
+  !    do k = 1,nz_max
+  !IF (ISNAN(f_inhib_Frost_Franzen(i,j,k))) THEN
+  !WRITE(*,*) 'FUNCTION f_inhib_Frost_Franzen contains NaN',i,j,k
+  !STOP
+  !ENDIF
+  !enddo
+  !enddo
+  !enddo
 
 end function f_inhib_Frost_Franzen

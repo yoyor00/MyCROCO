@@ -34,6 +34,7 @@
 ! data, when mod(iic-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntssurf_avg, nwrtsurf_avg
       implicit none
       integer istr,iend,jstr,jend, i,j, ilc, iflux
 # ifdef SOLVE3D
@@ -62,7 +63,8 @@
 
       if (ilc.gt.ntssurf_avg) then
 
-        if (mod(ilc-ntssurf_avg,nwrtsurf_avg).eq.1) then
+        if (mod(ilc-ntssurf_avg,nwrtsurf_avg).eq.1
+     &                    .OR. nwrtsurf_avg.eq.1) then
 
           if (ZEROTH_TILE) then
             timesurf_avg=time

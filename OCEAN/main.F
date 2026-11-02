@@ -21,6 +21,21 @@
 !
 !======================================================================
 !
+          USE croco_namelist_read, ONLY : read_nml, read_nml_fname
+          USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
+          USE croco_namelist, ONLY : ldefhis, nrrec
+#ifdef STATIONS
+          USE croco_namelist, ONLY : ldefsta
+#endif
+#if defined ABL1D && !defined XIOS
+          USE croco_namelist, ONLY : ldefablhis
+#endif
+#ifdef DIAGNOSTICS_BIO
+          USE croco_namelist, ONLY : ldefdiabio
+#endif
+#ifdef USE_CALENDAR
+          USE croco_namelist, ONLY : end_date
+#endif
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif
@@ -189,9 +204,12 @@
       call init_buffer
 !
 !----------------------------------------------------------------------
-!  Read in tunable model parameters in roms.in file
+!  Read in tunable model parameters from croco namelist file
 !----------------------------------------------------------------------
 !
+      call read_nml_fname ()
+      call read_nml (ierr)
+      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -199,7 +217,7 @@
 !  Initialize global model parameters
 !----------------------------------------------------------------------
 !
-!  Gobal scalar variables
+!  Global scalar variables
 !
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100
@@ -1050,6 +1068,8 @@ CR      write(*,*) '  0' MYID
 #endif
 
  100  continue
+
+      if (may_day_flag.ne.0) ierr=1
 
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)

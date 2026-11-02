@@ -58,6 +58,7 @@ C$    integer omp_get_thread_num
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntsavg, navg, rho0
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
@@ -755,7 +756,7 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxEPB)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb0(i,j) )
+              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb(i,j) )
             enddo
           enddo
         endif

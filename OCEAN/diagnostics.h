@@ -37,6 +37,8 @@
       real Taver_mld(GLOBAL_2D_ARRAY,NT)
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
       real Tcrit_mld(GLOBAL_2D_ARRAY,NT)
+! kbl1  Index of the deepest level within the MLD (density criterion)
+      integer kbl1(GLOBAL_2D_ARRAY)
 #  endif
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
@@ -91,6 +93,7 @@
       common /diag_Taver_mld/Taver_mld
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
       common /diag_Tcrit_mld/Tcrit_mld
+      common /diag_kbl1/kbl1
 #  endif
       common /diag_kbl_nstp/kbl_nstp
 # endif

@@ -38,6 +38,9 @@
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
 #endif
+#ifdef BODYFORCE
+      USE croco_namelist, ONLY: levsfrc, levbfrc
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax

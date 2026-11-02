@@ -50,7 +50,10 @@
 ! Common Code
 !
 #include "set_obc_definitions.h"
-!
+      USE croco_namelist, ONLY: gamma2
+#if defined M2_FRC_BRY || defined M2CLIMATOLOGY
+      USE croco_namelist, ONLY: tauM_in, tauM_out
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
       real    grad(PRIVATE_2D_SCRATCH_ARRAY)

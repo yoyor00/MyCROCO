@@ -25,7 +25,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then
             if [[ ${dom} == "d01" ]]; then
               echo "set CPLMASK to 1 in coupled domain $dom"
               echo "ncap2 -O -s \"CPLMASK(:,0,:,:)=(LANDMASK+LAKEMASK-1)*(-1)\" ./wrfinput_$dom ./wrfinput_$dom"
-              module load $ncomod
+              [[ -n ${ncomod} ]] && module load $ncomod
               ncap2 -O -s "CPLMASK(:,0,:,:)=(LANDMASK+LAKEMASK-1)*(-1)" ./wrfinput_$dom ./wrfinput_$dom
               if [[ $(echo ${wrfcpldom} | wc -w) == 1 && $AGRIFZ > 0 ]]; then
                   ncpdq -O -d num_ext_model_couple_dom_stag,0 -v CPLMASK -a num_ext_model_couple_dom_stag,Time wrfinput_$dom tmp.nc
@@ -57,9 +57,9 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then
                   mv tmp.nc.2 wrfinput_$dom
                   rm -rf tmp.nc tmp.nc.1
               fi
-              module unload $ncomod
+              [[ -n ${ncomod} ]] && module unload $ncomod
             else
-              module load $ncomod
+              [[ -n ${ncomod} ]] && module load $ncomod
               echo "set CPLMASK to 1 in coupled domain $dom"
               num_ext_mod=$( ncdump -h wrfinput_d01 | grep "num_ext_model_couple_dom_stag = " | cut -d ' ' -f 3)
               if [[ ${num_ext_mod} -lt $(echo ${wrfcpldom} | wc -w) ]];then
@@ -87,7 +87,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then
               fi
               ncks -O -v var_tmp -x wrfinput_d01.tmp wrfinput_d01
               rm -rf wrfinput_d01.tmp 
-              module unload $ncomod
+              [[ -n ${ncomod} ]] && module unload $ncomod
             fi
         done
     fi

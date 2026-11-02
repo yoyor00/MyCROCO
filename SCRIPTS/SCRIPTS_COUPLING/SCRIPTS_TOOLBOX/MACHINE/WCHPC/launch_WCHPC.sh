@@ -9,9 +9,9 @@ fi
 
 if [ ${USE_OCE} -eq 1 ]; then
     if [[ ${MPI_NOLAND} == "TRUE" ]]; then
-        echo "-np ${NP_OCE} ./crocox croco.in" >> app.conf
+        echo "-np ${NP_OCE} ./crocox croco.nml" >> app.conf
     else
-        echo "-np $(( ${NP_OCEX} * ${NP_OCEY} )) ./crocox croco.in" >> app.conf
+        echo "-np $(( ${NP_OCEX} * ${NP_OCEY} )) ./crocox croco.nml" >> app.conf
     fi
 
     if [ ${USE_XIOS_OCE} -eq 1 ]; then

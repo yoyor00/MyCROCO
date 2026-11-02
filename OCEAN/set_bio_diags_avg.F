@@ -14,6 +14,7 @@
 
       subroutine set_bio_diags_avg(tile)
 
+
       implicit none
       integer tile
 # include "param.h"
@@ -45,6 +46,7 @@
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntsdiabio_avg, nwrtdiabio_avg
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, iflux, k, ilc
       real    cff,cff1
@@ -66,7 +68,8 @@
 !
       if (ilc.gt.ntsdiabio_avg) then
 
-        if (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).eq.1) then
+        if (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).eq.1
+     &                    .OR. nwrtdiabio_avg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then

@@ -15,6 +15,7 @@
                                   ! Writes requested model
       subroutine wrt_bio_diags_avg    ! fields at requested levels
                                   ! into diagnostics netCDF file.
+      use croco_namelist, only: dianamebio_avg, nrpfdiabio_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -100,18 +101,6 @@ C      write(*,*) 'Write Time'
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
-     &                  MYID
-        goto 99                                           !--> ERROR
-      endif
-!
-! Averaged diag Time2
-!
-C      write(*,*) 'Write Time'
-      ierr=nf_put_var1_FTYPE (nciddiabio_avg, diaTime2bio_avg, record,
-     &                                              timediabio_avg)
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif

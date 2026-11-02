@@ -14,6 +14,7 @@
                                      ! Write time-averaged
       subroutine wrt_avg             ! fields into averages
                                      ! netCDF file.
+      use croco_namelist, only: dt, avgname, nrpfavg, rho0
 !     implicit none
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -106,20 +107,6 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime))
          write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
-     &        MYID
-         goto 99                !--> ERROR
-      endif
-!
-!     Averaged time2
-!
-      ierr=nf_put_var1_FTYPE (ncidavg, avgTime2, record, time_avg
-# ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-# endif
-     &  )
-      if (ierr .ne. nf_noerr) then
-         lvar=lenstr(vname(1,indxTime2))
-         write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif

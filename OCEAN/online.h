@@ -34,7 +34,7 @@
       ! --------------------- !
       ! Bulk variable''s names !
       ! --------------------- !
-      character*250 pathbulk, bulkfilename(nblkvrs),
+      character*250 bulkfilename(nblkvrs),
      &              blk_vname(4, nblkvrs)
       ! ---------------------- !
       ! Bulk variable''s tables !
@@ -45,9 +45,7 @@
       ! ------------------------------- !
       ! Bulk variable''s time parameters !
       ! ------------------------------- !
-      integer bulkyearnum(nblkvrs), bulkmonthnum(nblkvrs),
-     &        yearnum, monthnum, yearend, monthend,
-     &        recordsperday
+      integer bulkyearnum(nblkvrs), bulkmonthnum(nblkvrs)
       integer bulk_recO(nblkvrs), bulk_ncycleO(nblkvrs),
      &        bulk_tidO(nblkvrs), ntbulkO(nblkvrs)
       real    bulk_timeO(2,nblkvrs), bulk_cycleO(nblkvrs)
@@ -64,13 +62,12 @@
 
       common /bulkonline_integer/
      &        itbulkO, bulk_varid, ncidbulkO,
-     &        bulkyearnum, bulkmonthnum, yearnum, monthnum,
-     &        yearend, monthend, recordsperday,
+     &        bulkyearnum, bulkmonthnum,
      &        bulk_recO, bulk_ncycleO, bulk_tidO, ntbulkO,
      &        NX0, NY0
 
       common /bulkonline_character/
-     &        pathbulk, bulkfilename, blk_vname
+     &        bulkfilename, blk_vname
 
       common /bulkonline_logical/
      &        newbulk

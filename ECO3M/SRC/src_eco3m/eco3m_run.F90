@@ -89,6 +89,11 @@
        endif
        ! computes the eco3m source minus sinks (trends)
         call eco3m_compute_sms
+#ifdef SAVE_FLUX
+        if (mod(tps, dt_save_bio*60) == 0) then
+             call eco3m_write_fluxes
+        end if
+#endif
 #endif
 
 #else /* not ECO3M_SUB */

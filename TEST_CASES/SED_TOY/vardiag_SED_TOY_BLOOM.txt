@@ -1,0 +1,683 @@
+BEGINNING OF FILE DESCRIPTION
+file defining substances or sedimentological, biological,
+ bacteriological and/or biogeochemical variables
+
+NAME of variables USING A UNIQUE WORD  (add _ instead of a white)
+
+1                                                                               ,|variable number
+MES_TOT                                                                         ,|variable name
+MES_TOT                                                                         ,|variable long_name
+total_concentration_of_suspended_matter_in_sea_water                            ,|variable standard_name
+kg.m-3                                                                          ,|unit
+0.0                                                                             ,|variable valid_min value 
+100                                                                             ,|variable valid_max value
+1                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.       ,|.true. if variable in water    (k,i,j)
+.true.       ,|.true. if variable in sediment (i,j,k)
+
+ATTENTION : put 2D diagnostics variables in water then in sediment before 3D diagnostics variables 
+            put 3D diagnostics variables in sediment at the ned of the file
+
+END OF FILE DESCRIPTION
+
+***************************************************
+1                                                                               ,|variable number
+maximum_de_diat                                                                 ,|variable name
+maximum_de_diat                                                                 ,|variable long_name
+maximum_diatom_mass_concentration_in_sea_water                                  ,|variable standard_name
+micromole.l-1                                                                   ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+2                                                                               ,|variable number
+date_max_diat                                                                   ,|variable name
+date_max_diat                                                                   ,|variable long_name
+date_of_maximum_diatom_mass_concentration_in_sea_water                          ,|variable standard_name
+days                                                                            ,|unit
+0.0                                                                             ,|variable valid_min value 
+365.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+3                                                                               ,|variable number
+profondeur_max_diat                                                             ,|variable name
+profondeur_max_diat                                                             ,|variable long_name
+depth_of_maximum_diatom_mass_concentration_in_sea_water                         ,|variable standard_name
+m                                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000.0                                                                         ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+4                                                                               ,|variable number
+maximum_de_dino                                                                 ,|variable name
+maximum_de_dino                                                                 ,|variable long_name
+maximum_dinoflagellate_mass_concentration_in_sea_water                          ,|variable standard_name
+micromole.l-1                                                                   ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+5                                                                               ,|variable number
+date_max_dino                                                                   ,|variable name
+date_max_dino                                                                   ,|variable long_name
+date_of_maximum_dinoflagellate_mass_concentration_in_sea_water                  ,|variable standard_name
+days                                                                            ,|unit
+0.0                                                                             ,|variable valid_min value 
+365.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+6                                                                               ,|variable number
+profondeur_max_dino                                                             ,|variable name
+profondeur_max_dino                                                             ,|variable long_name
+depth_of_maximum_dinoflagellate_mass_concentration_in_sea_water                 ,|variable standard_name
+m                                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000.0                                                                         ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+7                                                                               ,|variable number
+maximum_de_nano                                                                 ,|variable name
+maximum_de_nano                                                                 ,|variable long_name
+maximum_nanoflagellate_mass_concentration_in_sea_water                          ,|variable standard_name
+micromole.l-1                                                                   ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+8                                                                               ,|variable number
+date_max_nano                                                                   ,|variable name
+date_max_nano                                                                   ,|variable long_name
+date_of_maximum_nanoflagellate_mass_concentration_in_sea_water                  ,|variable standard_name
+days                                                                            ,|unit
+0.0                                                                             ,|variable valid_min value 
+365.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+9                                                                               ,|variable number
+profondeur_max_nano                                                             ,|variable name
+profondeur_max_nano                                                             ,|variable long_name
+depth_of_maximum_nanoflagellate_mass_concentration_in_sea_water                 ,|variable standard_name
+m                                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000.0                                                                         ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+10                                                                              ,|variable number
+grad_vert_salinite                                                              ,|variable name
+grad_vert_salinite                                                              ,|variable long_name
+maximum_vertical_gradient_of_sea_water_salinity                                 ,|variable standard_name
+per mil                                                                         ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+11                                                                              ,|variable number
+profondeur_grad_sal                                                             ,|variable name
+profondeur_grad_sal                                                             ,|variable long_name
+depth_of_maximum_vertical_gradient_of_sea_water_salinity                        ,|variable standard_name
+m                                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000.0                                                                         ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+12                                                                              ,|variable number
+grad_vert_temp                                                                  ,|variable name
+grad_vert_temp                                                                  ,|variable long_name
+maximum_vertical_gradient_of_sea_water_temperature                              ,|variable standard_name
+Deg Celcius                                                                     ,|unit
+0.0                                                                             ,|variable valid_min value 
+40.0                                                                            ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+13                                                                              ,|variable number
+prof_grad_temp                                                                  ,|variable name
+prof_grad_temp                                                                  ,|variable long_name
+depth_of_maximum_vertical_gradient_of_sea_water_temperature                     ,|variable standard_name
+m                                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000.0                                                                         ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+14                                                                              ,|variable number
+prod_diat                                                                       ,|variable name
+prod_diat                                                                       ,|variable long_name
+cumulated_production_of_diatoms_in_sea_water_column_expressed_in_carbon         ,|variable standard_name
+g.m-2_from_01jan                                                                ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+15                                                                              ,|variable number
+prod_dino                                                                       ,|variable name
+prod_dino                                                                       ,|variable long_name
+cumulated_production_of_dinoflagellates_in_sea_water_column_expressed_in_carbon ,|variable standard_name
+g.m-2_from_01jan                                                                ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+16                                                                              ,|variable number
+prod_nano                                                                       ,|variable name
+prod_nano                                                                       ,|variable long_name
+cumulated_production_of_nanoflagellates_in_sea_water_column_expressed_in_carbon ,|variable standard_name
+g.m-2_from_01jan                                                                ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+17                                                                              ,|variable number
+prod_cumul_chloro                                                               ,|variable name
+prod_cumul_chloro                                                               ,|variable long_name
+cumulated_total_production_in_sea_water_column_expressed_in_carbon              ,|variable standard_name
+g.m-2_from_01jan                                                                ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+18                                                                              ,|variable number
+nh4_flux_through_watsed_interface                                               ,|variable name
+diffusive_flux_of_ammonium_through_water_sediment_interface                     ,|variable long_name
+diffusive_flux_of_ammonium_through_water_sediment_interface                     ,|variable standard_name
+mmole.m-2.dtout-1                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+19                                                                              ,|variable number
+no3_flux_through_watsed_interface                                               ,|variable name
+diffusive_flux_of_nitrate_through_water_sediment_interface                      ,|variable long_name
+diffusive_flux_of_nitrate_through_water_sediment_interface                      ,|variable standard_name
+mmole.m-2.dtout-1                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+20                                                                              ,|variable number
+po4_flux_through_watsed_interface                                               ,|variable name
+diffusive_flux_of_phosphate_through_water_sediment_interface                    ,|variable long_name
+diffusive_flux_of_phosphate_through_water_sediment_interface                    ,|variable standard_name
+mmole.m-2.dtout-1                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+21                                                                              ,|variable number
+o2_flux_through_watsed_interface                                                ,|variable name
+diffusive_flux_of_oxygen_through_water_sediment_interface                       ,|variable long_name
+diffusive_flux_of_oxygen_through_water_sediment_interface                       ,|variable standard_name
+mmole.m-2.dtout-1                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+2                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+22                                                                              ,|variable number
+effet_lumiere_diat                                                              ,|variable name
+effet_lumiere_diat                                                              ,|variable long_name
+light_limitation_of_diatom_growth                                               ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+23                                                                              ,|variable number
+effet_azote_diat                                                                ,|variable name
+effet_azote_diat                                                                ,|variable long_name
+nitrogen_limitation_of_diatom_growth                                            ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+24                                                                              ,|variable number
+effet_silice_diat                                                               ,|variable name
+effet_silice_diat                                                               ,|variable long_name
+silicon_limitation_of_diatom_growth                                             ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+25                                                                              ,|variable number
+effet_phosp_diat                                                                ,|variable name
+effet_phosp_diat                                                                ,|variable long_name
+phosphate_limitation_of_diatom_growth                                           ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+26                                                                              ,|variable number
+effet_lumiere_dino                                                              ,|variable name
+effet_lumiere_dino                                                              ,|variable long_name
+light_limitation_of_dinoflagellate_growth                                       ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+27                                                                              ,|variable number
+effet_azote_dino                                                                ,|variable name
+effet_azote_dino                                                                ,|variable long_name
+nitrogen_limitation_of_dinoflagellate_growth                                    ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+28                                                                              ,|variable number
+effet_phosp_dino                                                                ,|variable name
+effet_phosp_dino                                                                ,|variable long_name
+phosphate_limitation_of_dinoflagellate_growth                                   ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+29                                                                              ,|variable number
+effet_lumiere_nano                                                              ,|variable name
+effet_lumiere_nano                                                              ,|variable long_name
+light_limitation_of_nanopicoplankton_growth                                     ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+30                                                                              ,|variable number
+effet_azote_nano                                                                ,|variable name
+effet_azote_nano                                                                ,|variable long_name
+nitrogen_limitation_of_nanopicoplankton_growth                                    ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+31                                                                              ,|variable number
+effet_phosp_nano                                                                ,|variable name
+effet_phosp_nano                                                                ,|variable long_name
+phosphate_limitation_of_nanopicoplankton_growth                                   ,|variable standard_name
+su                                                                              ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+32                                                                              ,|variable number
+extinction_lumineuse                                                            ,|variable name
+extinction_lumineuse                                                            ,|variable long_name
+light_extinction_in_sea_water                                                   ,|variable standard_name
+m-1                                                                             ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+33                                                                              ,|variable number
+chlorophylle_a                                                                  ,|variable name
+chlorophylle_a                                                                  ,|variable long_name
+chlorophyll_mass_concentration_in_sea_water                                     ,|variable standard_name
+microg.l-1                                                                      ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+34                                                                              ,|variable number
+wchute_diat                                                                     ,|variable name
+wchute_diat                                                                     ,|variable long_name
+diatom_sinking_velocity_in_sea_water                                            ,|variable standard_name
+m.days-1                                                                        ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                          ,|saving in file
+***************************************************
+35                                                                              ,|variable number
+wchute_det                                                                      ,|variable name
+wchute_det                                                                      ,|variable long_name
+detritus_sinking_velocity_in_sea_water                                          ,|variable standard_name
+m.days-1                                                                        ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+36                                                                              ,|variable number
+SPIMSPOM                                                                        ,|variable name
+SPIMSPOM                                                                        ,|variable long_name
+total_suspended_matter_in_sea_water                                             ,|variable standard_name
+mg.l-1                                                                          ,|unit
+0.0                                                                             ,|variable valid_min value 
+100.0                                                                           ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+37                                                                              ,|variable number
+oxygen_saturation                                                               ,|variable name
+oxygen_saturation                                                               ,|variable long_name
+oxygen_saturation                                                               ,|variable standard_name
+%                                                                               ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000.0                                                                         ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.true.                                                                          ,|variable in water    (k,i,j)
+.false.                                                                         ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+38                                                                              ,|variable number
+Fluxcum_aerobic_miner_Norg                                                      ,|variable name
+Fluxcum_aerobic_miner_Norg                                                      ,|variable long_name
+flux_aerobic_miner_Norg                                                         ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+39                                                                              ,|variable number
+Fluxcum_aerobic_miner_Porg                                                      ,|variable name
+Fluxcum_aerobic_miner_Porg                                                      ,|variable long_name
+flux_aerobic_miner_Porg                                                         ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+40                                                                              ,|variable number
+Fluxcum_aerobic_miner_biogenic_Si                                               ,|variable name
+Fluxcum_aerobic_miner_biogenic_Si                                               ,|variable long_name
+flux_aerobic_miner_biogenic_Si                                                  ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+41                                                                              ,|variable number
+Fluxcum_nitrification                                                           ,|variable name
+Fluxcum_nitrification                                                           ,|variable long_name
+flux_nitrification                                                              ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+42                                                                              ,|variable number
+Fluxcum_adsorb_desorb_P                                                         ,|variable name
+Fluxcum_adsorb_desorb_P                                                         ,|variable long_name
+flux_adsorb_desorb_P                                                            ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.false.                                                                         ,|saving in file
+***************************************************
+43                                                                              ,|variable number
+Fluxcum_anaerobic_miner_Norg                                                    ,|variable name
+Fluxcum_anaerobic_miner_Norg                                                    ,|variable long_name
+flux_anaerobic_miner_Norg                                                       ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+44                                                                              ,|variable number
+Fluxcum_anaerobic_miner_Porg                                                    ,|variable name
+Fluxcum_anaerobic_miner_Porg                                                    ,|variable long_name
+flux_anaerobic_miner_Porg                                                       ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+45                                                                              ,|variable number
+Fluxcum_nitrate_miner_Norg                                                      ,|variable name
+Fluxcum_nitrate_miner_Norg                                                      ,|variable long_name
+flux_nitrate_miner_Norg                                                         ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+46                                                                              ,|variable number
+Fluxcum_dnra_miner_Norg                                                         ,|variable name
+Fluxcum_dnra_miner_Norg                                                         ,|variable long_name
+flux_dnra_miner_Norg                                                            ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+47                                                                              ,|variable number
+Fluxcum_denitrification_miner_Norg                                              ,|variable name
+Fluxcum_denitrification_miner_Norg                                              ,|variable long_name
+flux_denitrification_miner_Norg                                                 ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+48                                                                              ,|variable number
+Fluxcum_nitrate_miner_Porg                                                      ,|variable name
+Fluxcum_nitrate_miner_Porg                                                      ,|variable long_name
+flux_nitrate_miner_Porg                                                         ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+49                                                                              ,|variable number
+Fluxcum_ODU_oxyd_solid                                                          ,|variable name
+Fluxcum_ODU_oxyd_solid                                                          ,|variable long_name
+flux_ODU_oxyd_solid                                                             ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+50                                                                              ,|variable number
+Fluxcum_dissolution_PFe                                                         ,|variable name
+Fluxcum_dissolution_PFe                                                         ,|variable long_name
+flux_dissolution_PFe                                                            ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+51                                                                              ,|variable number
+Fluxcum_precipitation_P                                                         ,|variable name
+Fluxcum_precipitation_P                                                         ,|variable long_name
+flux_precipitation_P                                                            ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+52                                                                              ,|variable number
+Fluxcum_precipitation_Si                                                        ,|variable name
+Fluxcum_precipitation_Si                                                        ,|variable long_name
+flux_precipitation_Si                                                           ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+53                                                                              ,|variable number
+Fluxcum_mortality_phyto_sed                                                     ,|variable name
+Fluxcum_mortality_phyto_sed                                                     ,|variable long_name
+cum_flux_mortality_phyto_sed                                                    ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+54                                                                              ,|variable number
+Fluxcum_benthic_filter_grazing                                                  ,|variable name
+Fluxcum_benthic_filter_grazing                                                  ,|variable long_name
+cum_flux_benthic_filter_grazing                                                 ,|variable standard_name
+mmole.m-2                                                                       ,|unit
+0.0                                                                             ,|variable valid_min value 
+10000000.0                                                                      ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************
+55                                                                              ,|variable number
+porosity                                                                        ,|variable name
+sediment_porosity                                                               ,|variable long_name
+sediment_porosity                                                               ,|variable standard_name
+m3/m3                                                                           ,|unit
+0.0                                                                             ,|variable valid_min value 
+1.0                                                                             ,|variable valid_max value
+3                                                                               ,|dimension (1=1D ; 2=2D ; 3=3D)
+.false.                                                                         ,|variable in water    (k,i,j)
+.true.                                                                          ,|variable in sediment (i,j,k)
+.true.                                                                          ,|saving in file
+***************************************************

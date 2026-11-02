@@ -48,12 +48,14 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
     #-----------
     printf "      Preparing param.h \n"
     # replace else conf settings in param.h
-    sed -e "s/(\s*LLm0=xx,\s*MMm0=xx,\s*N=xx)/(LLm0=$(( ${dimx} - 2 )), MMm0=$(( ${dimy} - 2 )), N=${dimz})/g" \
+    sed -e "s|LLm0 = *[0-9]*|LLm0 = $(( ${dimx} - 2 ))|g" \
+        -e "s|MMm0 = *[0-9]*|MMm0 = $(( ${dimy} - 2 ))|g" \
+        -e "s|N = *[0-9]*|N = ${dimz}|g" \
         param.h.base > tmp$$
     mv tmp$$ param.h
     # update necessary things
-    sed -e "s/NP_XI *= *[0-9]* *,/NP_XI=${NP_OCEX},/g" \
-        -e "s/NP_ETA *= *[0-9]* *,/NP_ETA=${NP_OCEY},/g" \
+    sed -e "s|NP_XI = *[0-9]*|NP_XI = ${NP_OCEX}|g" \
+        -e "s|NP_ETA = *[0-9]*|NP_ETA = ${NP_OCEY}|g" \
         param.h > tmp$$ 
     mv tmp$$ param.h
     if [[ ${MPI_NOLAND} == "TRUE" ]]; then

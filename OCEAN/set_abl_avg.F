@@ -45,6 +45,7 @@
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntsablavg, nwrtablavg
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, itrc, k, ilc
       real    cff,cff1
@@ -65,7 +66,8 @@
 !
       if (ilc.gt.ntsablavg) then
 
-        if (mod(ilc-ntsablavg,nwrtablavg).eq.1) then
+        if (mod(ilc-ntsablavg,nwrtablavg).eq.1
+     &                    .OR. nwrtablavg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then

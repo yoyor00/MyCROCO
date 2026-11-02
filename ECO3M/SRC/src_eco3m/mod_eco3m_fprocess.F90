@@ -67,93 +67,90 @@ CONTAINS
     !-----------------------------UPTAKE DE NUTRIMENTS---------------------------
     !----------------------------------------------------------------------------
     !FONCTION DE MONOD:
-#include "F_PROCESS/UPT/f_upt_monod_cell.inc"
+!#include "F_PROCESS/UPT/f_upt_monod_cell.inc"
+#include "F_PROCESS/UPT/f_upt_monod_cell_multX.inc"
     !----------------------------------------------------------------------------
     !-----------------------INHIBITION UPTAKE PAR UN NUTRIMENT-------------------
-#include "F_PROCESS/UPT/f_inhib_Frost_Franzen.inc"
-#include "F_PROCESS/UPT/f_cp_inhib_Frost_Franzen.inc"
+!#include "F_PROCESS/UPT/f_inhib_Frost_Franzen.inc"
     !----------------------------------------------------------------------------
     !-----------------------------------------------------------------------------
     !------------------------------MORTALITE NATURELLE----------------------------
     !-----------------------------------------------------------------------------
     !FONCTION DE MORTALITE:
-#include "F_PROCESS/MORT/f_mort_quadratique_cell.inc"
-#include "F_PROCESS/MORT/f_mort_linear_cell.inc"
-#include "F_PROCESS/MORT/f_mort_linear_implicit.inc"
+#include "F_PROCESS/MORT/f_mort_quadratique_cell_2026.inc"
+#include "F_PROCESS/MORT/f_mort_linear_cell_2026.inc"
     !-----------------------------------------------------------------------------
     !----------------------LIMITATION PAR UN QUOTA INTRACELLULAIRE----------------
     !-----------------------------------------------------------------------------
     !FONCTION DE GEIDER:
-#include "F_PROCESS/FQUOTA/f_fQPPX_geid_2020.inc"
-!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_2021.inc"
-!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_2019.inc"
-!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2018_hind3D.inc"
-!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2018_ssbug.inc"
-!#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2019.inc"
-#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2020.inc"
-!#include "F_PROCESS/FQUOTA/f_fQRESP_X_geid.inc"
-#include "F_PROCESS/FQUOTA/f_fQRESPX_geid_2020.inc"
-!#include "F_PROCESS/FQUOTA/f_fQRESPX_geid_2021.inc"
-!#include "F_PROCESS/FQUOTA/f_fQPPC_geid_2018_hind3D.inc"
-#include "F_PROCESS/FQUOTA/f_fQPPC_geid_2020.inc"
-!#include "F_PROCESS/FQUOTA/f_fQRESPC_geid_2018_hind3D.inc"
-!#include "F_PROCESS/FQUOTA/f_fQPPC_geid_2019_new.inc"
-!#include "F_PROCESS/FQUOTA/f_fQRESP_C_geid.inc"
-!#include "F_PROCESS/FQUOTA/f_fQRESPC_geid_2019_new.inc"
-#include "F_PROCESS/FQUOTA/f_fQRESPC_geid_2020.inc"
+#include "F_PROCESS/FQUOTA/f_hQPPX_geid_2026.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPX_geid_2026.inc"
+#include "F_PROCESS/FQUOTA/f_hQPPC_geid_2026.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPC_geid_2026.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPC_geid_rem_2026.inc"
+#include "F_PROCESS/FQUOTA/f_hQPPC_geid_rem_2026.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPC_geid_rem_2025_clean.inc"
+#include "F_PROCESS/FQUOTA/f_hQPPC_geid_rem_2025_clean.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPCX_rem_2026.inc"
+#include "F_PROCESS/FQUOTA/f_fQPPX_geid_split_2026.inc"
+#include "F_PROCESS/FQUOTA/f_hQPPX_geid_split_2026.inc"
+!#include "F_PROCESS/FQUOTA/f_hQPPCX_rem_2026.inc"
     !-----------------------------------------------------------------------------
     !--------------------------------PHOTOSYNTHESE--------------------------------
     !-----------------------------------------------------------------------------
     !FONCTION DE HAN:
-#include "F_PROCESS/PPB/f_ppb_han.inc"
+!#include "F_PROCESS/PPB/f_ppb_han.inc"
+#include "F_PROCESS/PPB/f_ppb_han_slope_2026.inc"
     !-----------------------------------------------------------------------------
     !---------------------------------CROISSANCE----------------------------------
     !-----------------------------------------------------------------------------
     !FONCTION DE CROISSANCE:
-!#include "F_PROCESS/GROWTH/f_growth_cell_droop.inc"
-#include "F_PROCESS/GROWTH/f_growth_cell_droop_2020.inc"
+#include "F_PROCESS/GROWTH/f_growth_cell_droop_2024.inc"
+#include "F_PROCESS/GROWTH/f_growth_cell_droop_convX_2026.inc"
+#include "F_PROCESS/GROWTH/f_growth_MOP2MZOO_2025_clean.inc"
+#include "F_PROCESS/GROWTH/f_growth_MOP2MZOO_2026.inc"
+#include "F_PROCESS/GROWTH/f_growth_MOPX2MZOO_2026.inc"
+#include "F_PROCESS/GROWTH/f_growth_MOPX2MZOO_2025_clean.inc"
 #include "F_PROCESS/GROWTH/f_growth_cell_droop_conv.inc"
-!#include "F_PROCESS/GROWTH/f_grow_cell_droop_conv_NP.inc"
     !-----------------------------------------------------------------------------
     !-------------------- LIMITATION PAR DES QUOTA INTRACELLULAIRES---------------
     !-----------------------------------------------------------------------------
     !-----------------------------------------------------------------------------
     !----------------------NITRIFICATION------------------------------------------
-#include "F_PROCESS/NITRIF/f_nitrif_linear.inc"
+#include "F_PROCESS/NITRIF/f_nitrif_linear_2026.inc"
     !-----------------------------------------------------------------------------
     !-----------------------------------------------------------------------------
     !---------------------------------RESPIRATION---------------------------------
     !-----------------------------------------------------------------------------
-    !FONCTION DE THINGSTAD(COUT DE LA CROISSANCE):
-#include "F_PROCESS/RESP/f_resp.inc"
-#include "F_PROCESS/RESP/f_resp_maint.inc"
+    !FONCTION DE THINGSTAD (COUT DE LA CROISSANCE):
+!#include "F_PROCESS/RESP/f_resp.inc"
+!#include "F_PROCESS/RESP/f_resp_maint.inc"
     !-----------------------------------------------------------------------------
     !----------------------PRODUCTION DE CHLOROPHYLLE-----------------------------
     !-----------------------------------------------------------------------------
-!#include "F_PROCESS/PChl/f_lchl_bak06_2018.inc"
-!#include "F_PROCESS/PChl/f_lchl_bak06_2019.inc"
-#include "F_PROCESS/PChl/f_lchl_bak06_2020.inc"
-#include "F_PROCESS/PChl/f_lchl_bak06_2021.inc"
-!#include "F_PROCESS/PChl/f_Chl_bak2021.inc"
-!#include "F_PROCESS/PChl/f_lchl_bak06_2019b.inc"
-!#include "F_PROCESS/FQUOTA/f_fQChl.inc"
-!#include "F_PROCESS/FQUOTA/f_fQChl_2019.inc"
-#include "F_PROCESS/FQUOTA/f_fQChl_2020.inc"
+!#include "F_PROCESS/PChl/f_regul_Chl_bak2025_clean.inc"
+!#include "F_PROCESS/PChl/f_regul_ChlC_CN.inc"
+#include "F_PROCESS/PChl/f_regul_Chl_bak2026.inc"
+#include "F_PROCESS/PChl/f_synth_Chl.inc"
     !-----------------------------------------------------------------------------
     !------------------------FONCTION DE DIAZOTROPHIE-----------------------------
     !-----------------------------------------------------------------------------
     !-----------------------------------------------------------------------------
     !-------------------------REMINERALISATION DE LA MO---------------------------
     !-----------------------------------------------------------------------------
-#include "F_PROCESS/REMIN/f_hydrolysis.inc"
-#include "F_PROCESS/REMIN/f_hydrolysis_XC.inc"
-!#include "F_PROCESS/REMIN/f_rem_DOM.inc"
-#include "F_PROCESS/REMIN/f_rem_DOM_baretta95.inc"
+#include "F_PROCESS/REMIN/f_ratio_OM.inc"
+#include "F_PROCESS/REMIN/f_hydrol_CNP_2025_clean.inc"
+#include "F_PROCESS/REMIN/f_hydrol_CNP_2026.inc"
+#include "F_PROCESS/REMIN/f_hydrol_CX_2026.inc"
+#include "F_PROCESS/REMIN/f_remin_2026.inc"
+#include "F_PROCESS/REMIN/f_rem_ext_DOX.inc"
+#include "F_PROCESS/REMIN/f_rem_int_DOX.inc"
     !-----------------------------------------------------------------------------
     !--------------------------PREDATION DU ZOOPLANCTON---------------------------
     !-----------------------------------------------------------------------------
-#include "F_PROCESS/GRAZ/M_PROIES/f_graz_KOOIJ_KTW_cell.inc"
-#include "F_PROCESS/GRAZ/M_PROIES/f_graz_hol2_mpreys_X.inc"
+!#include "F_PROCESS/GRAZ/M_PROIES/f_graz_KOOIJ_KTW_cell_2025_clean.inc"
+#include "F_PROCESS/GRAZ/M_PROIES/f_graz_KTW_revis.inc"
+#include "F_PROCESS/GRAZ/M_PROIES/f_graz_hol2_mpreys_X_2025.inc"
     !-----------------------------------------------------------------------------
 #include "F_PROCESS/LIGHT/ATTENUATION/f_extinc_morel88.inc"
     !-----------------------------------------------------------------------------

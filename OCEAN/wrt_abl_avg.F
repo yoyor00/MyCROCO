@@ -14,6 +14,7 @@
                                ! Writes requested model
       subroutine wrt_abl_avg   ! fields at requested levels
                                ! into averages netCDF file.
+      use croco_namelist, only: ablname_avg, nrpfablavg
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik, varid
@@ -109,18 +110,6 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
      &        vname(1,indxTime)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
-
-!-----------------------------------------------------------------------
-!     Time2
-!-----------------------------------------------------------------------
-      ierr=nf_put_var1_FTYPE (ncidablavg, ablavgTime2, record, time)
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
       endif

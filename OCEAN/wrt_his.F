@@ -13,6 +13,8 @@
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
+      USE croco_namelist, only: dt, rho0
+      USE croco_namelist, ONLY: nrpfhis, hisname
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc, nvp
 #endif
@@ -234,22 +236,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
      &        vname(1,indxTime)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
-
-!
-!     Time2
-!
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
-     &  )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
       endif
@@ -482,15 +468,9 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-# if defined WAVE_ROLLER && defined WKB_WWAVE 
-!$acc update if(compute_on_device) host(wepb0(:,:))
-        ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
-     &                                   hisWAVE(6), record, r2dvar)
-# else
 !$acc update if(compute_on_device) host(wepb(:,:))
             ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
-# endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
          MPI_master_only write(stdout,1)
@@ -1535,18 +1515,13 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
           do k=1,nk_nivsed_out
 #           if defined BLOOM && defined key_BLOOM_insed
               if (itrc .gt. nvpc .AND. itrc .le. nvp) then
-                do j=0,Mm+1
-                  do i=0,Lm+1
-                    if(rmask_wet(i,j).eq.1) then
-                      if(c_sedtot(k,i,j) .gt. 0.0) then
-!                     ... in the sediment, writes the particulate variables in mmole/kgSed
-                        workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)/c_sedtot(k,i,j)
-                      endif
-                    else
-                      workrsed(i,j,k)=0.0
-                    endif
-                  enddo
-                enddo
+!                no need of wet_dry rmask_wet as we are in sediment
+!                ... writes the particulate variables in mmole/kgSed
+                where(c_sedtot(k,:,:).gt.0.)
+                  workrsed(:,:,k) = var3D_cvsed(k,:,:,itrc) / c_sedtot(k,:,:)
+                elsewhere
+                  workrsed(:,:,k) = 0.0
+                endwhere
               else
                 workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
               endif
@@ -1600,7 +1575,6 @@ CR      write(*,*) 'wrt_his var2D_flx_w2s'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pephm_fcor'  MYID
             endif
-#ifdef key_MUSTANG_bedload
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_bx(itrc,:,:)
@@ -1629,7 +1603,6 @@ CR      write(*,*) 'wrt_his var2D_bil_bedload'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
             endif
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
       enddo
 
@@ -1732,7 +1705,6 @@ CR      write(*,*) 'wrt_his var2D_pct_iter_coh'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_niter_ero'  MYID
       endif
-#ifdef key_MUSTANG_bedload
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_flx_bx_int(:,:)
@@ -1755,7 +1727,6 @@ CR      write(*,*) 'wrt_his var2D_flx_by_int'  MYID
 CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
       endif
 
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN

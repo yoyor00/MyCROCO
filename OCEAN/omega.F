@@ -69,6 +69,7 @@
 !
 !======================================================================
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 # ifdef PSOURCE_MASS

@@ -53,6 +53,10 @@
 !
 # include "set_obc_definitions.h"
 !
+      use croco_namelist, only: dt
+#if defined W_FRC_BRY || defined WCLIMATOLOGY
+      use croco_namelist, only: tauM_in, tauM_out
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"

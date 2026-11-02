@@ -396,12 +396,7 @@
 
 # define ROOF_LAYER_RAD alumplafond /* Radiation at the top layer */
 # define SOLAR_RAD srflx /* Incoming solar radiation */
-# ifndef ANA_SRFLUX
-!#   define RAD_SRFSCALE srf_scale /* Scaling factor = 1/(rho0*Cp) */
-#   define RAD_SRFSCALE (1./(rho0*Cp)) 
-# else
-#   define RAD_SRFSCALE 0. 
-# endif
+# define RAD_SRFSCALE (1./(rho0*Cp)) /* srflx is always scaled by 1/(rho0*Cp) */
 # define EXTINCTION_RAD extinction /* Coefficient of light 
                                       Extinction in the water column */
 

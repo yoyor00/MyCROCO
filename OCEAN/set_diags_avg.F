@@ -45,6 +45,7 @@
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntsdia_avg, nwrtdia_avg
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, itrc, k, ilc
       real    cff,cff1
@@ -66,7 +67,8 @@
 !
       if (ilc.gt.ntsdia_avg) then
 
-        if (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.1) then
+        if (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.1
+     &                    .OR. nwrtdia_avg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then
@@ -127,42 +129,42 @@
 
 # ifdef DIAGNOSTICS_TS_MLD
 !
-! Diagnostics averaged over MLD
+! Diagnostics integrated over MLD
 !
         do itrc=1,NT
           do j=JstrR,JendR
             do i=IstrR,IendR
               TXadv_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TXadv_mld(i,j,itrc) +
-     &                           TXadv_mld_avg(i,j,itrc) )
+     &                    ( cff1*TXadv_mld_avg(i,j,itrc) +
+     &                           TXadv_mld(i,j,itrc) )
               TYadv_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TYadv_mld(i,j,itrc) +
-     &                           TYadv_mld_avg(i,j,itrc) )
+     &                    ( cff1*TYadv_mld_avg(i,j,itrc) +
+     &                           TYadv_mld(i,j,itrc) )
               TVadv_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TVadv_mld(i,j,itrc) +
-     &                           TVadv_mld_avg(i,j,itrc) )
+     &                    ( cff1*TVadv_mld_avg(i,j,itrc) +
+     &                           TVadv_mld(i,j,itrc) )
               THmix_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*THmix_mld(i,j,itrc) +
-     &                           THmix_mld_avg(i,j,itrc) )
+     &                    ( cff1*THmix_mld_avg(i,j,itrc) +
+     &                           THmix_mld(i,j,itrc) )
               TVmix_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TVmix_mld(i,j,itrc) +
-     &                           TVmix_mld_avg(i,j,itrc) )
+     &                    ( cff1*TVmix_mld_avg(i,j,itrc) +
+     &                           TVmix_mld(i,j,itrc) )
               TForc_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TForc_mld(i,j,itrc) +
-     &                           TForc_mld_avg(i,j,itrc) )
+     &                    ( cff1*TForc_mld_avg(i,j,itrc) +
+     &                           TForc_mld(i,j,itrc) )
               Trate_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Trate_mld(i,j,itrc) +
-     &                           Trate_mld_avg(i,j,itrc) )
+     &                    ( cff1*Trate_mld_avg(i,j,itrc) +
+     &                           Trate_mld(i,j,itrc) )
               Tentr_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Tentr_mld(i,j,itrc) +
-     &                           Tentr_mld_avg(i,j,itrc) )
+     &                    ( cff1*Tentr_mld_avg(i,j,itrc) +
+     &                           Tentr_mld(i,j,itrc) )
               Taver_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Taver_mld(i,j,itrc) +
-     &                           Taver_mld_avg(i,j,itrc) )
+     &                    ( cff1*Taver_mld_avg(i,j,itrc) +
+     &                           Taver_mld(i,j,itrc) )
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
               Tcrit_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Tcrit_mld(i,j,itrc) +
-     &                           Tcrit_mld_avg(i,j,itrc) )
+     &                    ( cff1*Tcrit_mld_avg(i,j,itrc) +
+     &                           Tcrit_mld(i,j,itrc) )
 #  endif
             enddo
           enddo

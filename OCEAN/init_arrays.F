@@ -31,6 +31,15 @@ C$    integer omp_get_thread_num
 ! distribution of the shared arrays accross the cluster, unless
 ! another distribution policy is specified to override the default.
 !
+        USE croco_namelist, ONLY: visc2, visc4
+#ifdef SOLVE3D
+# ifdef TRACERS
+        USE croco_namelist, ONLY: tnu2, tnu4
+# endif
+# if !defined LMD_MIXING && !defined GLS_MIXING
+        USE croco_namelist, ONLY: Akv_bak, Akt_bak
+# endif
+# endif
 !     implicit none
 #include "param.h"
 #include "ncscrum.h"
@@ -497,7 +506,9 @@ C$    integer omp_get_thread_num
             Taver_mld(i,j,itrc)=init
 #   ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld(i,j,itrc)=init
+            kbl1(i,j)=init
 #   endif
+            kbl_nstp(i,j)=init
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
@@ -1459,14 +1470,8 @@ C$    integer omp_get_thread_num
           hbl(i,j)=init
 #  endif
           kbl(i,j)=init
-#  if defined DIAGNOSTICS_TS_MLD_DENS
-          kbl1(i,j)=init
-#  endif
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
-#  endif
-#  if defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD
-          kbl_nstp(i,j)=init
 #  endif
         enddo
       enddo

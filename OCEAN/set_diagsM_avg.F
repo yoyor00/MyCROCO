@@ -16,6 +16,7 @@
 
 !      USE param
 
+
       implicit none
       integer tile
 # include "param.h"
@@ -52,6 +53,7 @@
 ! data, when mod(ilc-1,nwrtdiaM_avg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: navg, ntsdiaM_avg, nwrtdiaM_avg
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, iflux, k, ilc
       real    cff, cff1

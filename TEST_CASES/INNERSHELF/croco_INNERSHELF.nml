@@ -1,0 +1,159 @@
+&croco_testcase
+  testcase_name = 'INNERSHELF'
+/
+
+&croco_title
+  title = "Inner Shelf 2D-V Example (Homogeneous case)"
+/
+
+&croco_time_stepping
+  ntimes = 5760
+  dt = 300
+  ndtfast = 50
+  ninfo = 10
+/
+
+&croco_s_coord
+  theta_s = 0.001d0
+  theta_b = 1.0d0
+  hc = 4.9d0
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "innershelf_rst.nc"
+/
+
+&croco_sponge
+  x_sponge = 40.e3
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 5760
+  nrpfhis = 0
+  hisname = "innershelf_his.nc"
+/
+
+&croco_averages
+  ntsavg = 1
+  navg = 576
+  nrpfavg = 0
+  avgname = "innershelf_avg.nc"
+/
+
+&croco_restart
+  nrst = 5760
+  nrpfrst = -1
+  rstname = "innershelf_rst.nc"
+/
+
+&croco_rho0
+  rho0 = 1000.
+/
+
+&croco_bottom_drag
+  rdrg = 5.E-03
+  rdrg2 = 0.
+  Zobt = 0.e-2
+  Cdb_min = 5.e-3
+  Cdb_max = 100.e-3
+/
+
+&croco_gamma2
+  gamma2 = 1.
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 1*0.d0
+/
+
+&croco_vertical_mixing
+  Akv_bak = 1.e-2
+  Akt_bak = 1*5.e-3
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 20.
+  S0 = 35.
+  Tcoef = 0.28d0
+  Scoef = 0.78d0
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 1*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .true.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .false.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .true.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 1*.true.
+/
+
+&croco_auxiliary_averages_fields
+  out_avg_rho = .true.
+  out_avg_omega = .false.
+  out_avg_w = .true.
+  out_avg_akv = .false.
+  out_avg_bostr = .false.
+  out_avg_bustr = .false.
+  out_avg_bvstr = .false.
+  out_avg_wstr = .false.
+  out_avg_ustr = .false.
+  out_avg_vstr = .false.
+/
+
+&croco_temperature_averages_fields
+  out_avg_akt = .true.
+  out_avg_shflx = .false.
+  out_avg_shflx_rsw = .false.
+/
+
+
+
+! End of namelist

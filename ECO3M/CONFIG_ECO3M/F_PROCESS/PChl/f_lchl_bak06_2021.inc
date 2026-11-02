@@ -170,14 +170,8 @@ function f_lchl_bak06_2021(ili,jcol,thetaN_max,alpha,phimax,Q_MIN_PHY_C,Q_MAX_PH
             do i=nx_min,nx_max
                      E_PARZ(i,j,k) = max(E_PARZ(i,j,k),0.0d0)
 
-!                     CHL_C_MAX =  0.6 * exp(-0.5 * E_PARZ(i,j,k)) + 0.6 ! SIM 492 
-!                     CHL_C_MAX =  0.55 * exp(-0.25 * E_PARZ(i,j,k)) + 0.6 ! SIM 465
-!                     CHL_C_MAX =  0.6 * exp(-0.2 * E_PARZ(i,j,k)) + 0.6 ! SIM 417
-!                     CHL_C_MAX =  0.7 * exp(-0.5 * E_PARZ(i,j,k)) + 0.6
                      CHL_C_MAX =  0.6 * exp(-0.3 * E_PARZ(i,j,k)) + 0.6 ! SIM 381
 
-!                     thetaN_max_local = CHL_C_MAX * 3.53 ! 3.53 = (C:N)min (celui des proteines)             
-!                     thetaN_max_local = min(thetaN_max_local,thetaN_max)
                      thetaN_max_local = thetaN_max
                       
     !-- Calcul du coefficient ro_chl de l'expression de Geider (1998)
@@ -193,10 +187,7 @@ function f_lchl_bak06_2021(ili,jcol,thetaN_max,alpha,phimax,Q_MIN_PHY_C,Q_MAX_PH
   			  fratio = min(1.0d0,fratio)
                           fratio = max(0.0d0,fratio)
       			  
-                          !-- Regulation by Chl:C ratio in phytoplankton
-!                          fCHL_C = (CHL_C_MAX - theta(i,j,k))/(CHL_C_MAX - 0.12)
-!                          fCHL_C = (1.d0 - theta(i,j,k)/CHL_C_MAX)/(1.d0-theta(i,j,k)/CHL_C_MAX + 0.05)
-!                          fCHL_C = (1.d0 - thetaN(i,j,k)/thetaN_max_local)/(1.d0-thetaN(i,j,k)/thetaN_max_local + 0.05)
+                       !-- Regulation by Chl:C ratio in phytoplankton
                          fCHL_C = ((thetaN_max_local - thetaN(i,j,k) )/(thetaN_max_local - 0.42))
                           fCHL_C = min(1.0d0,fCHL_C)
                           fCHL_C = max(0.0d0,fCHL_C)
@@ -206,10 +197,6 @@ function f_lchl_bak06_2021(ili,jcol,thetaN_max,alpha,phimax,Q_MIN_PHY_C,Q_MAX_PH
                     else
                           f_lchl_bak06_2021(i,j,k) =  0.d0
                     endif
-!                    IF (ISNAN(f_lchl_bak06_2021(i,j,k))) THEN
-!                       WRITE(*,*) 'FUNCTION f_lchl_bak06_2021 contains NaN',i,j,k
-!                       STOP
-!                   ENDIF
             enddo
         enddo
     enddo

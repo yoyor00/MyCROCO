@@ -49,6 +49,7 @@ CONTAINS
       INTEGER  :: jn, ierr, ioptio
       TYPE(PTRACER), DIMENSION(jptra) :: tracer
       CHARACTER(LEN=20)::   clname
+      CHARACTER(LEN=30)::   clname_ref, clname_cfg
 
       NAMELIST/nampistrc/ tracer
       !!
@@ -61,11 +62,27 @@ CONTAINS
       !                               ! Open the namelist file
       !                               ! ----------------------
       clname = 'namelist_pisces'
-      CALL ctl_opn( numnatp_ref, TRIM( clname )//'_ref', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
-      CALL ctl_opn( numnatp_cfg, TRIM( clname )//'_cfg', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
-      
+      clname_ref = TRIM( clname )//'_ref'
+      clname_cfg = TRIM( clname )//'_cfg'
+
+#ifdef AGRIF
+      IF(.Not.Agrif_Root()) then
+# ifdef AGRIF_ADAPTIVE
+        clname_ref = TRIM( clname_ref )//".1"
+        clname_cfg = TRIM( clname_cfg )//".1"
+# else
+        clname_ref = TRIM( clname_ref )//"."//Agrif_Cfixed()
+        clname_cfg = TRIM( clname_cfg )//"."//Agrif_Cfixed()
+# endif
+      ENDIF
+#endif
+
+      CALL ctl_opn( numnatp_ref, TRIM( clname_ref ), 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
+      CALL ctl_opn( numnatp_cfg, TRIM( clname_cfg ), 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
+
 !      CALL load_nml( numnatp_ref, TRIM( clname )//'_ref', numout, lwm )
 !      CALL load_nml( numnatp_cfg, TRIM( clname )//'_cfg', numout, lwm )
+
       IF(lwm) CALL ctl_opn( numonp, 'output.namelist.pis', &
               &            'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
 

@@ -1,10 +1,86 @@
 {
-  // SANDBAR
+  // SANDBAR — Roelvink & Reniers (1995) LIP flume experiments
+  //
+  // All cases share a single cppdefs_Sandbar.h.
+  // Two axes toggled via cppkeys:
+  //   NBQ     : undef (hydrostatic, default) → define for Boussinesq
+  // Two param files (dimensions):
+  //   param_Sandbar.h     : LLm0=100, N=10  (hydrostatic)
+  //   param_Sandbar_nbq.h : LLm0=720, N=20  (NBQ)
+  // LIP experiments (wave conditions) distinguished by testcase_name:
+  //   SANDBAR         : generic (uses SANDBAR_OFFSHORE conditions by default)
+  //   SANDBAR_OFFSHORE: offshore bar (LIP-1B), wkb_amp=0.45, wkb_prd=5
+  //   SANDBAR_ONSHORE : onshore  bar (LIP-1C), wkb_amp=0.18, wkb_prd=8
+
   "SANDBAR": {
-    "title": "SANDBAR - (720 x 1 x 20 : 1440)",
+    "title": "SANDBAR - generic (100 x 1 x 10)",
     "case": "SANDBAR",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_sandbar.py",
+      "plotphy_script": "./TEST_CASES/SANDBAR/plot_sandbar.py",
+      "plotphy_script_input": "sandbar_his.nc",
+    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
+    "patches": {},
+    "check_outputs": ["sandbar_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  // --- Hydrostatic (MRL-WCI) cases ---
+  "SANDBAR_OFFSHORE": {
+    "title": "SANDBAR - LIP-1B offshore bar hydrostatic (100 x 1 x 10)",
+    "case": "SANDBAR",
+    "cppdefs_file": "TEST_CASES/SANDBAR/cppdefs_SANDBAR.h",
+    "param_file": "TEST_CASES/SANDBAR/param_SANDBAR.h",
+    "nml_file": "TEST_CASES/SANDBAR/croco_SANDBAR_OFFSHORE.nml",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/SANDBAR/plot_sandbar.py",
+      "plotphy_script_input": "sandbar_his.nc",
+    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
+    "patches": {},
+    "check_outputs": ["sandbar_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  "SANDBAR_ONSHORE": {
+    "title": "SANDBAR - LIP-1C onshore bar hydrostatic (100 x 1 x 10)",
+    "case": "SANDBAR",
+    "cppdefs_file": "TEST_CASES/SANDBAR/cppdefs_SANDBAR.h",
+    "param_file": "TEST_CASES/SANDBAR/param_SANDBAR.h",
+    "nml_file": "TEST_CASES/SANDBAR/croco_SANDBAR_ONSHORE.nml",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/SANDBAR/plot_sandbar.py",
+      "plotphy_script_input": "sandbar_his.nc",
+    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
+    "patches": {},
+    "check_outputs": ["sandbar_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  // --- NBQ (Boussinesq) cases ---
+  "SANDBAR_OFFSHORE_NBQ": {
+    "title": "SANDBAR - LIP-1B offshore bar NBQ + sediment (720 x 1 x 20)",
+    "case": "SANDBAR",
+    "cppkeys": { "NBQ": true },
+    "cppdefs_file": "TEST_CASES/SANDBAR/cppdefs_SANDBAR.h",
+    "param_file": "TEST_CASES/SANDBAR/param_SANDBAR_NBQ.h",
+    "nml_file": "TEST_CASES/SANDBAR/croco_SANDBAR_OFFSHORE_NBQ.nml",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/SANDBAR/plot_sandbar.py",
+      "plotphy_script_input": "sandbar_his.nc",
+    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
+    "patches": {},
+    "check_outputs": ["sandbar_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  "SANDBAR_ONSHORE_NBQ": {
+    "title": "SANDBAR - LIP-1C onshore bar NBQ + sediment (720 x 1 x 20)",
+    "case": "SANDBAR",
+    "cppkeys": { "NBQ": true },
+    "cppdefs_file": "TEST_CASES/SANDBAR/cppdefs_SANDBAR.h",
+    "param_file": "TEST_CASES/SANDBAR/param_SANDBAR_NBQ.h",
+    "nml_file": "TEST_CASES/SANDBAR/croco_SANDBAR_ONSHORE_NBQ.nml",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/SANDBAR/plot_sandbar.py",
       "plotphy_script_input": "sandbar_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },

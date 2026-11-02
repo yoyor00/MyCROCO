@@ -12,6 +12,7 @@
 #include "cppdefs.h"
 #if defined LMD_SKPP || defined LMD_BKPP
       subroutine alfabeta_tile (Istr,Iend,Jstr,Jend, alpha,beta)
+      USE croco_namelist, ONLY: rho0, R0, T0, S0, Tcoef, Scoef
 !
 !--------------------------------------------------------------------
 !  This routine computes thermal expansion and saline contraction

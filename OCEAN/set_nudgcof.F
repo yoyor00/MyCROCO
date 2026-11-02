@@ -25,6 +25,14 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
+      use croco_namelist, only: dt, tauT_in, tauT_out, testcase_name
+#if defined M2NUDGING || defined M3NUDGING || defined ZNUDGING \
+    || defined NBQ_NUDGING
+      use croco_namelist, only: tauM_in, tauM_out
+#endif
+# if (defined SPONGE && !defined SPONGE_GRID)
+      use croco_namelist, only: x_sponge
+# endif    
 !     implicit none
       integer ierr
 # if defined MPI
@@ -55,11 +63,11 @@
 !--------------------------------------------------------------------
 !
 # if defined SPONGE_GRID || !defined SPONGE
-#  ifdef IGW
-      isp=155
-#  else
-      isp=10
-#  endif
+      if (trim(testcase_name) == 'IGW') then
+        isp=155
+      else
+        isp=10
+      endif
 # else
 !$acc update host(pm(1,1))
 #  ifdef MPI
@@ -106,22 +114,19 @@
 #  endif
 # endif
 
-# ifdef IGW
-          if (ibnd .ge. isp) then
-            wrk(i,j)=0.
+          if (trim(testcase_name) == 'IGW') then
+            if (ibnd .ge. isp) then
+              wrk(i,j)=0.
+            else
+              wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
+            endif
           else
-            wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
-#ifdef OPENACCNUMERIC 
-          wrk(i,j)=real(wrk(i,j), kind=4)
-#endif
+            wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
+!           wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
           endif
-# else
-          wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
-#ifdef OPENACCNUMERIC 
+#ifdef OPENACCNUMERIC
           wrk(i,j)=real(wrk(i,j), kind=4)
 #endif
-!         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
-# endif
 
 # ifdef SPONGE_SED
           if (i.gt.0 .and. j.gt.0)
@@ -193,21 +198,22 @@
         enddo
       enddo
 #  endif /* TNUDGING */
-#  ifdef JET
-      do j=JstrR,JendR
-        do i=IstrR,IendR
+      if (trim(testcase_name) == 'JET' .or.
+     &    trim(testcase_name) == 'ANA_JET') then
+        do j=JstrR,JendR
+          do i=IstrR,IendR
 #   ifdef ZNUDGING
-          Znudgcof(i,j)=tauM_out
+            Znudgcof(i,j)=tauM_out
 #   endif
 #   ifdef M2NUDGING
-          M2nudgcof(i,j)=tauM_out
+            M2nudgcof(i,j)=tauM_out
 #   endif
 #   ifdef M3NUDGING
-          M3nudgcof(i,j)=tauM_out
+            M3nudgcof(i,j)=tauM_out
 #   endif
+          enddo
         enddo
-      enddo
-#  endif /* JET */
+      endif
 # endif /* ROBUST_DIAG */
 
 # ifdef SPONGE

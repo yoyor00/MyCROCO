@@ -38,6 +38,7 @@
 !  OUTPUT
 !  bulkfilename(bvar) (path and file name of the considered variable)
       USE tools_string, ONLY : to_uppercase
+      use croco_namelist, only: yearnum, monthnum, pathbulk
       implicit none
 #  include "param.h"
 #  include "online.h"
