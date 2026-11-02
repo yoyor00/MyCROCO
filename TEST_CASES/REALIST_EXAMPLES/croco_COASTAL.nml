@@ -137,7 +137,6 @@
   psource_Tsrc0(2,3) = 0.
   psource_Tsrc0(2,4) = 0.
   psource_Tsrc0(2,5) = 0.
-
 /
 
 &croco_sediments_mustang
