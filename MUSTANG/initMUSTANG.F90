@@ -893,8 +893,19 @@ CONTAINS
          MPI_master_only  write(stdout,1) 'ksma', inised_name(1:lstr)
          goto 99                                           !--> ERROR
        endif
- 
-      WHERE (ksmi(GLOBAL_2D_ARRAY) < ksdmin ) 
+
+! scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation): restore it exactly 
+       ierr=nf_inq_varid (ncid,'t_dyninsed', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_get_var1_FTYPE (ncid, varid, indx, t_dyninsed)
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 't_dyninsed', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       endif
+
+      WHERE (ksmi(GLOBAL_2D_ARRAY) < ksdmin )
          ksmi(GLOBAL_2D_ARRAY) = 1
          ksma(GLOBAL_2D_ARRAY) = 0
       END WHERE
@@ -973,8 +984,19 @@ CONTAINS
       do k=ksdmin,ksdmax
       WHERE (c_sedtot(k,GLOBAL_2D_ARRAY) == -valmanq) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
       enddo
- 
- 
+
+! land cells
+      do k=ksdmin,ksdmax
+        WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
+        WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) dzs(k,GLOBAL_2D_ARRAY)=0.0_rsh
+        WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) poro(k,GLOBAL_2D_ARRAY)=0.0_rsh
+        do iv=-1,nv_tot
+          WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) cv_sed(iv,k,GLOBAL_2D_ARRAY)=0.0_rsh
+        enddo
+      enddo
+      WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) ksma(GLOBAL_2D_ARRAY)=0
+
+
  ! dredging
       if (l_dredging) then
          ierr=nf_inq_varid (ncid,'dredg_hsed_init', varid)
@@ -1106,7 +1128,7 @@ CONTAINS
 
         DO j=jfirst,jlast
         DO i=ifirst,ilast
-            IF(h(i,j) /= -valmanq) THEN
+            IF(h(i,j) /= -valmanq .AND. rmask(i,j) == 1.0_rsh) THEN
                 DO k=ksmi(i,j),ksma(i,j)
                     c_sedtot(k,i,j)=0.0_rsh
                     DO iv=1,nvpc
@@ -1153,6 +1175,12 @@ CONTAINS
                         cv_sed( 0,k,i,j)=sini_sed
                     ENDIF
                 ENDDO
+            ELSE
+                ! land cell (or invalid depth): no sediment bed here,
+                ! keep cv_sed/c_sedtot at zero instead of leaving
+                ! whatever uniform value a previous pass left behind
+                c_sedtot(ksdmin:ksdmax,i,j)=0.0_rsh
+                cv_sed(:,ksdmin:ksdmax,i,j)=0.0_rsh
             ENDIF
         ENDDO
         ENDDO

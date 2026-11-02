@@ -519,10 +519,43 @@ class Croco:
             self.change_nml(filename_nml_rst , "croco_initial", "nrrec", 2)
             self.change_nml(filename_nml_rst , "croco_initial", "ininame", file_nc_rst)
 
+            # MUSTANG keeps its own sediment bed init, separate from the
+            # hydro ininame/nrrec above: patch it too so the restarted leg
+            # reads the sediment bed back from the restart file instead of
+            # re-doing the uniform init
+            if self.croco_build.cppdef_h_is_defined("MUSTANG"):
+                self.apply_mustang_restart_patch(filename_nml_rst, file_nc_rst)
+
             # and for USE_CALENDAR
             self.change_nml_end_date(filename_nml, 3)
             self.change_nml_output_time_steps_dtrst(filename_nml, 3)
             # no need to change end_date or dtrsr for filename_rst
+
+    def apply_mustang_restart_patch(self, filename_nml_rst, file_nc_rst):
+        """Make the restarted leg read the MUSTANG sediment bed from the
+        restart file instead of re-applying the case's init.
+
+        The ocean nml and its _rst copy originally point at the same
+        MUSTANG param file (sedname_must), so this duplicates that file for
+        the _rst leg and switches it to l_unised=False / filrepsed pointing
+        at the restart file produced by the first leg.
+        """
+        full_filename_nml_rst = os.path.join(self.dirname, filename_nml_rst)
+        nml_rst = f90nml.read(full_filename_nml_rst)
+        sedname_must = nml_rst.get("croco_sediments_mustang", {}).get("sedname_must")
+        if not sedname_must:
+            return
+        sedname_must_rst = sedname_must.replace(".txt", "_rst.txt")
+
+        shutil.copy(
+            os.path.join(self.dirname, sedname_must),
+            os.path.join(self.dirname, sedname_must_rst),
+        )
+        self.change_nml(sedname_must_rst, "namsedim_init", "l_unised", False)
+        self.change_nml(sedname_must_rst, "namsedim_init", "filrepsed", file_nc_rst)
+        self.change_nml(
+            filename_nml_rst, "croco_sediments_mustang", "sedname_must", sedname_must_rst
+        )
 
     def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)

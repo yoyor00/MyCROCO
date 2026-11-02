@@ -505,6 +505,7 @@ MODULE comMUSTANG
     REAL(KIND=rlg)   :: tstart_dyninsed ! time beginning dynamic in sediment
     REAL(KIND=rlg)   :: t_dyninsed      ! time of next dynamic in sediment step
     REAL(KIND=rlg)   :: dt_dyninsed     ! time step for dynamic in sediment (min of dt for each process)
+    INTEGER          :: rstT_dyninsed   ! netCDF id for t_dyninsed in the restart file
     LOGICAL :: l_dyn_insed ! true if (l_consolid .OR. l_bioturb .OR. l_diffused .OR. l_biodiffs)
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fludif
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: fluconsol
