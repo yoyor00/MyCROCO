@@ -5,6 +5,13 @@
 # add croco suffixes
 .SUFFIXES: .o .f .i .F .F90 .f90
 
+# Optional PSyclone pass, off unless CROCO_PSYCLONE is set in the environment
+# (e.g. CROCO_PSYCLONE=psyclone, or "psyclone -s script.py"). OpenMP
+# directives and conditional (C$) lines must be kept for OpenMP builds.
+ PSYCLONE = $(CROCO_PSYCLONE)
+ PSYOPTS  = --keep-directives --keep-conditional-openmp-statements
+PSYFFLAGS = $(PSYFFLAGS1)
+
 .f.o:
 	$(CFT) -c $(FFLAGS) $*.f -o $*.o
 # rm -f $*.f
@@ -20,22 +27,51 @@ else
 CROCO_TIMINGS_CONVERT = cp
 endif
 
+ifeq ($(PSYCLONE),)
 .F.o:
 	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
 	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f2
 	python3 ./change_loops.py $*_.f2 $*_.tmp
 	cat $*_.tmp | ./mpc > $*_.f && \rm -f $*_.tmp $*_.f1 $*_.f2
 	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
+else
+# PSyclone pass: the preprocessed source goes through $(PSYCLONE) and its
+# (free-form) output is compiled instead. A source PSyclone cannot process
+# is compiled as is, with a warning.
+.F.o:
+	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
+	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f2
+	python3 ./change_loops.py $*_.f2 $*_.tmp
+	cat $*_.tmp | ./mpc > $*_.f && \rm -f $*_.tmp $*_.f1 $*_.f2
+	if $(PSYCLONE) $(PSYOPTS) --fixed-form -o $*_psy.f90 $*_.f > $*_psy.log 2>&1 ; then \
+	  $(CFT) -c $(FFLAGS90) $(PSYFFLAGS) $*_psy.f90 -o $*.o ; \
+	else \
+	  echo "PSYCLONE WARNING: $*.F not processed, see $*_psy.log" ; \
+	  $(CFT) -c $(FFLAGS) $*_.f -o $*.o ; \
+	fi
+endif
 
 .f90.o:
 	$(CFT) -c $(FFLAGS90) $*.f90 -o $*.o
 .F90.f90:
 	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f1
 	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f90 && \rm -f $*_.f1
+ifeq ($(PSYCLONE),)
 .F90.o:
 	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f1
 	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f90 && \rm -f $*_.f1
 	$(CFT) -c $(FFLAGS90) $*_.f90 -o $*.o
+else
+.F90.o:
+	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f1
+	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f90 && \rm -f $*_.f1
+	if $(PSYCLONE) $(PSYOPTS) --free-form -o $*_psy.f90 $*_.f90 > $*_psy.log 2>&1 ; then \
+	  $(CFT) -c $(FFLAGS90) $(PSYFFLAGS) $*_psy.f90 -o $*.o ; \
+	else \
+	  echo "PSYCLONE WARNING: $*.F90 not processed, see $*_psy.log" ; \
+	  $(CFT) -c $(FFLAGS90) $*_.f90 -o $*.o ; \
+	fi
+endif
 
 .F:
 	$(LDR) -o $@ $(LDFLAGS) $<
