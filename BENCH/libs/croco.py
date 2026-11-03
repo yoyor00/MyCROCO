@@ -545,7 +545,8 @@ class Croco:
         sedname_must = nml_rst.get("croco_sediments_mustang", {}).get("sedname_must")
         if not sedname_must:
             return
-        sedname_must_rst = sedname_must.replace(".txt", "_rst.txt")
+        sedname_must_base, sedname_must_ext = os.path.splitext(sedname_must)
+        sedname_must_rst = f"{sedname_must_base}_rst{sedname_must_ext}"
 
         shutil.copy(
             os.path.join(self.dirname, sedname_must),
