@@ -459,11 +459,21 @@ if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
 fi
 
 #
+# extra flags to compile the free-form output of the optional PSyclone
+# pass (CROCO_PSYCLONE, see Makedefs.generic): PSyclone does not wrap lines
+#
+PSYFFLAGS1=""
+if [[ $FC == gfortran || $FC == gfortran-* ]] ; then
+   PSYFFLAGS1="-ffree-line-length-none"
+fi
+
+#
 # rewrite Makedefs according to previous flags
 # with openmp flags if needed
 #
 rm -f Makedefs
-echo 's?$(FFLAGS1)?'$FFLAGS1'?g' > flags.tmp
+echo 's?$(PSYFFLAGS1)?'$PSYFFLAGS1'?g' > flags.tmp
+echo 's?$(FFLAGS1)?'$FFLAGS1'?g' >> flags.tmp
 echo 's?$(LDFLAGS1)?'$LDFLAGS1'?g' >> flags.tmp
 echo 's?$(CPP1)?'$CPP1'?g' >> flags.tmp
 echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp

@@ -53,6 +53,33 @@ gfortran:
     reports:
       junit: BENCH/results/$TITLE-host_ci/junit_report.xml
 
+# ─── psyclone (second pass, no-op) ────────────────────────────────────────
+# Same tests as above, but every source is passed through PSyclone (no
+# transformation script) and PSyclone's output is what gets compiled, run and
+# checked (see CROCO_PSYCLONE in OCEAN/Makedefs.generic). Sources PSyclone
+# cannot process are compiled as is and listed at the end of the job.
+psyclone:
+  <<: *gfortran
+  allow_failure: true
+  variables:
+    CROCO_PSYCLONE: "psyclone"
+  parallel:
+    matrix:
+      - { CASES: "BASIN", VARIANTS: "sequential,openmp-4,mpi-4", TITLE: "psyclone_basin", OPTIONS: "" }
+  script:
+    - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
+    - pip install psyclone==3.3.1 && psyclone --version
+    - |
+      ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
+      --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
+  after_script:
+    - echo "Sources not processed by PSyclone (compiled as is):"
+    - grep -h "^PSYCLONE WARNING" BENCH/rundir/*/*/jobcomp.log | sort -u || true
+  artifacts:
+    <<: *artifacts
+    reports:
+      junit: BENCH/results/$TITLE-host_ci/junit_report.xml
+
 # ─── gfortran_parallel (always-on) ────────────────────────────────────────
 
 gfortran_parallel:
