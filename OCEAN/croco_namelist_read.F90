@@ -185,8 +185,9 @@ contains
       namelist /croco_diag_avg/ ldefdia_avg, ntsdia_avg, nwrtdia_avg, &
          nrpfdia_avg, dianame_avg
 #  endif
-#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-      namelist /croco_diag_mld_dens/ mld_crit_D, mld_crit_T, mld_depth_ref
+#  if defined DIAGNOSTICS_TS_MLD
+      namelist /croco_diag_mld/ mld_crit_type, mld_crit_AKt, mld_crit_D, &
+              mld_crit_T, mld_depth_ref
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV
@@ -1102,14 +1103,14 @@ contains
          end if
       end if
 #  endif
-#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-      ! --- croco_diag_mld_dens (optional) ---
-      call check_nml_presence(nmlunit, "croco_diag_mld_dens", .false., found, ierr)
+#  if defined DIAGNOSTICS_TS_MLD
+      ! --- croco_diag_mld (optional) ---
+      call check_nml_presence(nmlunit, "croco_diag_mld", .false., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_diag_mld_dens, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         read (nmlunit, nml=croco_diag_mld, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_diag_mld_dens (parse error)", nmlunit, ios, iomsg)
-            MPI_master_only WRITE (stdout, nml=croco_diag_mld_dens)
+            call fatal_nml_error("croco_diag_mld (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_diag_mld)
             ierr = ierr + 1
          end if
       end if
@@ -2456,8 +2457,8 @@ contains
 #  ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diag_avg)
 #  endif
-#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-      MPI_master_only WRITE (stdout, nml=croco_diag_mld_dens)
+#  if defined DIAGNOSTICS_TS_MLD
+      MPI_master_only WRITE (stdout, nml=croco_diag_mld)
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV

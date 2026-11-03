@@ -143,9 +143,11 @@
   dianame_avg = "croco_dia_avg.nc"
 /
 
-&croco_diag_mld_dens
+&croco_diag_mld
+  mld_crit_type = "turbulence"
   mld_crit_D = 3.d-2
   mld_crit_T = 2.d-1
+  mld_crit_AKt = 2.d-5
   mld_depth_ref = 10
 /
 

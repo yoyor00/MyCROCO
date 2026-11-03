@@ -40,6 +40,9 @@ C$    integer omp_get_thread_num
         USE croco_namelist, ONLY: Akv_bak, Akt_bak
 # endif
 # endif
+#ifdef DIAGNOSTICS_TS_MLD
+        USE croco_namelist, ONLY: mld_crit_type
+#endif
 !     implicit none
 #include "param.h"
 #include "ncscrum.h"
@@ -503,10 +506,8 @@ C$    integer omp_get_thread_num
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
             Taver_mld(i,j,itrc)=init
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
-            Tcrit_mld(i,j,itrc)=init
-            kbld(i,j)=init
-#   endif
+            diagTS_mld(i,j)=init
+            diagTS_kmld(i,j)=init
             kbl_nstp(i,j)=init
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
@@ -518,9 +519,7 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
             Taver_mld_avg(i,j,itrc)=init
-#    ifdef DIAGNOSTICS_TS_MLD_DENS
-            Tcrit_mld_avg(i,j,itrc)=init
-#    endif
+            diagTS_mld_avg(i,j)=init
 #   endif /* AVERAGES*/
           enddo
         enddo

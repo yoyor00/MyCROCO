@@ -35,11 +35,9 @@
       real Trate_mld(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld(GLOBAL_2D_ARRAY,NT)
       real Taver_mld(GLOBAL_2D_ARRAY,NT)
-#  ifdef DIAGNOSTICS_TS_MLD_DENS
-      real Tcrit_mld(GLOBAL_2D_ARRAY,NT)
-! kbld  Index of the deepest level within the MLD (density criterion)
-      integer kbld(GLOBAL_2D_ARRAY)
-#  endif
+      real diagTS_mld(GLOBAL_2D_ARRAY)
+! diagTS_kmld  Index of the deepest level within the MLD
+      integer diagTS_kmld(GLOBAL_2D_ARRAY)
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
 # ifdef AVERAGES
@@ -65,9 +63,7 @@
       real Trate_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Taver_mld_avg(GLOBAL_2D_ARRAY,NT)
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
-      real Tcrit_mld_avg(GLOBAL_2D_ARRAY,NT)
-#   endif
+      real diagTS_mld_avg(GLOBAL_2D_ARRAY)
 #  endif
 # endif
       common /diag_TXadv/TXadv
@@ -91,10 +87,8 @@
       common /diag_Trate_mld/Trate_mld
       common /diag_Tentr_mld/Tentr_mld
       common /diag_Taver_mld/Taver_mld
-#  ifdef DIAGNOSTICS_TS_MLD_DENS
-      common /diag_Tcrit_mld/Tcrit_mld
-      common /diag_kbld/kbld
-#  endif
+      common /diag_diagTS_mld/diagTS_mld
+      common /diag_diagTS_kmld/diagTS_kmld
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
@@ -120,9 +114,7 @@
       common /diag_Trate_mld_avg/Trate_mld_avg
       common /diag_Tentr_mld_avg/Tentr_mld_avg
       common /diag_Taver_mld_avg/Taver_mld_avg
-#   ifdef DIAGNOSTICS_TS_MLD_DENS
-      common /diag_Tcrit_mld_avg/Tcrit_mld_avg
-#   endif
+      common /diag_diagTS_mld_avg/diagTS_mld_avg
 #  endif
 # endif
 #endif /* DIAGNOSTICS_TS */

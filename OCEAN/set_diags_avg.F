@@ -161,14 +161,17 @@
               Taver_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*Taver_mld_avg(i,j,itrc) +
      &                           Taver_mld(i,j,itrc) )
-#  ifdef DIAGNOSTICS_TS_MLD_DENS
-              Tcrit_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Tcrit_mld_avg(i,j,itrc) +
-     &                           Tcrit_mld(i,j,itrc) )
-#  endif
             enddo
           enddo
         enddo
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            diagTS_mld_avg(i,j) = cff *
+     &                    ( cff1*diagTS_mld(i,j) +
+     &                           diagTS_mld_avg(i,j) )
+          enddo
+        enddo
+
 # endif /* DIAGNOSTICS_TS_MLD  */
 
       endif

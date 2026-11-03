@@ -288,27 +288,6 @@
     "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
                       "CROCO_FILES/croco_dia.nc"],
   },
-  "BENGUELA_LR_AGRIF_2WAY_MLD_DENS": {
-    "title": "BENGUELA_LR_AGRIF_2WAY",
-    "case": "REGIONAL",
-    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
-    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
-    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
-    "croco_files_path": "LR_CROCO_FILES_BCK",
-    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
-    "cppkeys": {
-      "FRC_BRY": true,
-      "BULK_FLUX": false,
-      "AGRIF": true,
-      "AGRIF_2WAY": true,
-      "DIAGNOSTICS_TS": true,
-      "DIAGNOSTICS_TS_MLD": true,
-      "DIAGNOSTICS_TS_MLD_DENS": true,
-    },
-    "patches": {},
-    "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
-                      "CROCO_FILES/croco_dia.nc"],
-  },
   // BENGUELA NBQ
   "BENGUELA_LR_NBQ": {
     "title": "BENGUELA_LR_NBQ",
