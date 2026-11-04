@@ -113,7 +113,11 @@
       my_volume=QuadZero
       do j=Jstr,Jend
         do i=Istr,Iend
-          my_volume=my_volume+h(i,j)/(pm(i,j)*pn(i,j))
+          my_volume=my_volume+
+#ifdef MASKING
+     &                  rmask(i,j)*
+#endif
+     &                  h(i,j)/(pm(i,j)*pn(i,j))
         enddo
       enddo
 
