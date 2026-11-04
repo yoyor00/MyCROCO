@@ -25,7 +25,8 @@
      &                          dt_rst
 # endif
 # ifdef DIAGNOSTICS_TS_MLD
-      use croco_namelist, only: mld_crit_type
+      use croco_namelist, only: mld_crit_type, 
+     &                          wrt_mld_turb,wrt_mld_dens,wrt_mld_temp
 # endif
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
@@ -2985,28 +2986,64 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
        vname(5,indxTaver_mld+itrc-1)='                            '
        vname(6,indxTaver_mld+itrc-1)='                            '
        vname(7,indxTaver_mld+itrc-1)='                            '
-       if (itrc.eq.1) then
-CR       write(stdout,'(1x,A,I3)') 'indxdiagTS_mld = ',indxdiagTS_mld+itrc-1
+       if (wrt_mld_turb .and. itrc.eq.1) then
+CR       write(stdout,'(1x,A,I3)') 'indxmld_turb = ',indxmld_turb+itrc-1
          nametrc=vname(1,indxT+itrc-1)
          unitt=vname(3,indxT+itrc-1)
-         if (mld_crit_type=='density') then
-           vname(1,indxdiagTS_mld+itrc-1)='dens_mld_depth            '
-           vname(2,indxdiagTS_mld+itrc-1)='MLD (density criterion)   '
-         else if (mld_crit_type=='temperature') then
-           vname(1,indxdiagTS_mld+itrc-1)='temp_mld_depth            '
-           vname(2,indxdiagTS_mld+itrc-1)='MLD (temp criterion)   '
-         else if (mld_crit_type=='turbulence') then
-           vname(1,indxdiagTS_mld+itrc-1)='turb_mld_depth            '
-           vname(2,indxdiagTS_mld+itrc-1)='MLD (turbulence criterion) '
+         vname(1,indxmld_turb+itrc-1)='turb_mld_depth            '
+         if (mld_crit_type == 'turbulence') then
+           vname(2,indxmld_turb+itrc-1)=
+     &   'MLD (turbulence criterion) - used for diag TS integration '
+         else
+           vname(2,indxmld_turb+itrc-1)='MLD (turbulence criterion) '
          endif
-CR       write(stdout,'(20x,A)') vname(1,indxdiagTS_mld+itrc-1)
+CR       write(stdout,'(20x,A)') vname(1,indxmld_turb+itrc-1)
          write(vname3,*)               ' meter                      '
-         vname(3,indxdiagTS_mld+itrc-1)=vname3
-         vname(4,indxdiagTS_mld+itrc-1)='                            '
-         vname(5,indxdiagTS_mld+itrc-1)='                            '
-         vname(6,indxdiagTS_mld+itrc-1)='                            '
-         vname(7,indxdiagTS_mld+itrc-1)='                            '
+         vname(3,indxmld_turb+itrc-1)=vname3
+         vname(4,indxmld_turb+itrc-1)='                            '
+         vname(5,indxmld_turb+itrc-1)='                            '
+         vname(6,indxmld_turb+itrc-1)='                            '
+         vname(7,indxmld_turb+itrc-1)='                            '
        endif
+       if (wrt_mld_dens .and. itrc.eq.1) then
+CR       write(stdout,'(1x,A,I3)') 'indxmld_dens = ',indxmld_dens+itrc-1
+         nametrc=vname(1,indxT+itrc-1)
+         unitt=vname(3,indxT+itrc-1)
+         vname(1,indxmld_dens+itrc-1)='dens_mld_depth            '
+         if (mld_crit_type == 'density') then
+           vname(2,indxmld_dens+itrc-1)=
+     &   'MLD (density criterion) - used for diag TS integration '
+         else
+           vname(2,indxmld_dens+itrc-1)='MLD (density criterion) '
+         endif
+CR       write(stdout,'(20x,A)') vname(1,indxmld_dens+itrc-1)
+         write(vname3,*)               ' meter                      '
+         vname(3,indxmld_dens+itrc-1)=vname3
+         vname(4,indxmld_dens+itrc-1)='                            '
+         vname(5,indxmld_dens+itrc-1)='                            '
+         vname(6,indxmld_dens+itrc-1)='                            '
+         vname(7,indxmld_dens+itrc-1)='                            '
+       endif
+       if (wrt_mld_temp .and. itrc.eq.1) then
+CR       write(stdout,'(1x,A,I3)') 'indxmld_temp = ',indxmld_temp+itrc-1
+         nametrc=vname(1,indxT+itrc-1)
+         unitt=vname(3,indxT+itrc-1)
+         vname(1,indxmld_temp+itrc-1)='temp_mld_depth            '
+         if (mld_crit_type == 'temperature') then
+           vname(2,indxmld_temp+itrc-1)=
+     &   'MLD (temperature criterion) - used for diag TS integration '
+         else
+           vname(2,indxmld_temp+itrc-1)='MLD (temperature criterion) '
+         endif
+CR       write(stdout,'(20x,A)') vname(1,indxmld_temp+itrc-1)
+         write(vname3,*)               ' meter                      '
+         vname(3,indxmld_temp+itrc-1)=vname3
+         vname(4,indxmld_temp+itrc-1)='                            '
+         vname(5,indxmld_temp+itrc-1)='                            '
+         vname(6,indxmld_temp+itrc-1)='                            '
+         vname(7,indxmld_temp+itrc-1)='                            '
+       endif
+
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc

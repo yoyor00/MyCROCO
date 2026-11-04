@@ -20,6 +20,9 @@
       subroutine wrt_diags_avg
 
       use croco_namelist, only: nrpfdia_avg, dianame_avg
+# ifdef DIAGNOSTICS_TS_MLD
+      use croco_namelist, only: wrt_mld_turb,wrt_mld_dens,wrt_mld_temp
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
@@ -249,12 +252,30 @@
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
 !
-!  indxdiagTS_mld
+!  indxmld_turb
 !
-          if (itrc == 1) then
-           work2d=diagTS_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddia_avg,diadiagTS_mld_avg,
-     &                      vname(1,indxdiagTS_mld+itrc-1),
+          if (wrt_mld_turb .and. itrc == 1) then
+           work2d=mld_turb_avg(:,:)
+           call fillvalue2d(work2d,nciddia_avg,diamld_turb_avg,
+     &                      vname(1,indxmld_turb+itrc-1),
+     &                      record,r2dvar,type)
+          endif
+!
+!  indxmld_dens
+!
+          if (wrt_mld_dens .and. itrc == 1) then
+           work2d=mld_dens_avg(:,:)
+           call fillvalue2d(work2d,nciddia_avg,diamld_dens_avg,
+     &                      vname(1,indxmld_dens+itrc-1),
+     &                      record,r2dvar,type)
+          endif
+!
+!  indxmld_temp
+!
+          if (wrt_mld_temp .and. itrc == 1) then
+           work2d=mld_temp_avg(:,:)
+           call fillvalue2d(work2d,nciddia_avg,diamld_temp_avg,
+     &                      vname(1,indxmld_temp+itrc-1),
      &                      record,r2dvar,type)
           endif
         endif

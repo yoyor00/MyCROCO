@@ -506,8 +506,12 @@ C$    integer omp_get_thread_num
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
             Taver_mld(i,j,itrc)=init
-            diagTS_mld(i,j)=init
-            diagTS_kmld(i,j)=init
+            mld_turb(i,j)=init
+            mld_dens(i,j)=init
+            mld_temp(i,j)=init
+            kmld_turb(i,j)=init
+            kmld_dens(i,j)=init
+            kmld_temp(i,j)=init
             kbl_nstp(i,j)=init
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
@@ -519,7 +523,9 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
             Taver_mld_avg(i,j,itrc)=init
-            diagTS_mld_avg(i,j)=init
+            mld_turb_avg(i,j)=init
+            mld_dens_avg(i,j)=init
+            mld_temp_avg(i,j)=init
 #   endif /* AVERAGES*/
           enddo
         enddo

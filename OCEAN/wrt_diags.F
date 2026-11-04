@@ -20,6 +20,9 @@
       subroutine wrt_diags
 #if defined DIAGNOSTICS_TS
       use croco_namelist, only: nrpfdia, dianame
+# ifdef DIAGNOSTICS_TS_MLD
+      use croco_namelist, only: wrt_mld_turb,wrt_mld_dens,wrt_mld_temp
+# endif
 #endif
 
 
@@ -253,12 +256,31 @@
            call fillvalue2d(work2d,nciddia,diaTaver_mld(itrc),
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
-!  indxdiagTS_mld
 !
-          if (itrc.le.1) then
-           work2d=diagTS_mld(:,:)
-           call fillvalue2d(work2d,nciddia,diadiagTS_mld,
-     &                      vname(1,indxdiagTS_mld+itrc-1),
+!  indxmld_turb
+!
+          if (wrt_mld_turb .and. itrc.le.1) then
+           work2d=mld_turb(:,:)
+           call fillvalue2d(work2d,nciddia,diamld_turb,
+     &                      vname(1,indxmld_turb+itrc-1),
+     &                      record,r2dvar,type)
+          endif
+!
+!  indxmld_dens
+!
+          if (wrt_mld_dens .and. itrc.le.1) then
+           work2d=mld_dens(:,:)
+           call fillvalue2d(work2d,nciddia,diamld_dens,
+     &                      vname(1,indxmld_dens+itrc-1),
+     &                      record,r2dvar,type)
+          endif
+!
+!  indxmld_temp
+!
+          if (wrt_mld_temp .and. itrc.le.1) then
+           work2d=mld_temp(:,:)
+           call fillvalue2d(work2d,nciddia,diamld_temp,
+     &                      vname(1,indxmld_temp+itrc-1),
      &                      record,r2dvar,type)
           endif
         endif

@@ -187,7 +187,7 @@ contains
 #  endif
 #  if defined DIAGNOSTICS_TS_MLD
       namelist /croco_diag_mld/ mld_crit_type, mld_crit_AKt, mld_crit_D, &
-              mld_crit_T, mld_depth_ref
+              mld_crit_T, mld_depth_ref, wrt_mld_turb, wrt_mld_dens, wrt_mld_temp
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV

@@ -28,6 +28,9 @@
       use croco_namelist, only: ldefdia, nwrtdia, nrpfdia, dianame,
      &     ldefdia_avg, ntsdia_avg, nwrtdia_avg, nrpfdia_avg,
      &     dianame_avg
+# if defined DIAGNOSTICS_TS_MLD
+      use croco_namelist, only: wrt_mld_turb,wrt_mld_dens,wrt_mld_temp
+# endif
 #endif
 
       implicit none
@@ -82,7 +85,9 @@
 #   define vidTrate_mld diaTrate_mld
 #   define vidTentr_mld diaTentr_mld
 #   define vidTaver_mld diaTaver_mld
-#   define viddiagTS_mld diadiagTS_mld 
+#   define vidmld_turb diamld_turb 
+#   define vidmld_dens diamld_dens 
+#   define vidmld_temp diamld_temp 
 #  endif
 !
 # else /* AVRH */
@@ -115,7 +120,9 @@
 #   define vidTrate_mld diaTrate_mld_avg
 #   define vidTentr_mld diaTentr_mld_avg
 #   define vidTaver_mld diaTaver_mld_avg
-#   define viddiagTS_mld diadiagTS_mld_avg 
+#   define vidmld_turb diamld_turb_avg 
+#   define vidmld_dens diamld_dens_avg 
+#   define vidmld_temp diamld_temp_avg 
 #  endif
 !
         character*60 text
@@ -785,34 +792,100 @@
        call nf_add_attribute(ncid,vidTaver_mld(itrc),
      &      vname(:,indxTaver_mld+itrc-1),5, NF_FOUT, ierr)
 !
-!  diagTS indxdiagTS on MLD (only defined for itrc=1)
+!  mld indxmld_turb (only defined for itrc=1)
 !
-         if (itrc == 1) then
-           lvar=lenstr(vname(1,indxdiagTS_mld+itrc-1))
-           ierr=nf_def_var(ncid, vname(1,indxdiagTS_mld+itrc-1)(1:lvar),
-     &                          NF_FOUT, 3, r2dgrd, viddiagTS_mld)
+         if (wrt_mld_turb) then
+          if (itrc == 1) then
+            lvar=lenstr(vname(1,indxmld_turb+itrc-1))
+            ierr=nf_def_var(ncid, vname(1,indxmld_turb+itrc-1)(1:lvar),
+     &                          NF_FOUT, 3, r2dgrd, vidmld_turb)
 #   ifdef NC4PAR
-           ierr=nf_var_par_access(ncid,viddiagTS_mld,nf_collective)
+            ierr=nf_var_par_access(ncid,vidmld_turb,nf_collective)
 #   endif
 #   ifndef AVRH
-           lvar=lenstr(vname(2,indxdiagTS_mld+itrc-1))
-           ierr=nf_put_att_text (ncid, viddiagTS_mld, 'long_name',
-     &                     lvar, vname(2,indxdiagTS_mld+itrc-1)(1:lvar))
+            lvar=lenstr(vname(2,indxmld_turb+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_turb, 'long_name',
+     &                     lvar, vname(2,indxmld_turb+itrc-1)(1:lvar))
 #   else
-           text='averaged '/ /vname(2,indxdiagTS_mld+itrc-1)
-           lvar=lenstr(text)
-           ierr=nf_put_att_text (ncid, viddiagTS_mld, 'long_name',
+            text='averaged '/ /vname(2,indxmld_turb+itrc-1)
+            lvar=lenstr(text)
+            ierr=nf_put_att_text (ncid, vidmld_turb, 'long_name',
      &                                          lvar, text(1:lvar))
 #   endif
-           lvar=lenstr(vname(3,indxdiagTS_mld+itrc-1))
-           ierr=nf_put_att_text (ncid, viddiagTS_mld,'units',
-     &                     lvar, vname(3,indxdiagTS_mld+itrc-1)(1:lvar))
-           lvar=lenstr(vname(4,indxdiagTS_mld+itrc-1))
-           ierr=nf_put_att_text (ncid, viddiagTS_mld,'field',
-     &                     lvar, vname(4,indxdiagTS_mld+itrc-1)(1:lvar))
+            lvar=lenstr(vname(3,indxmld_turb+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_turb,'units',
+     &                     lvar, vname(3,indxmld_turb+itrc-1)(1:lvar))
+            lvar=lenstr(vname(4,indxmld_turb+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_turb,'field',
+     &                     lvar, vname(4,indxmld_turb+itrc-1)(1:lvar))
 
-       call nf_add_attribute(ncid,viddiagTS_mld,
-     &      vname(:,indxdiagTS_mld+itrc-1),5, NF_FOUT, ierr)
+       call nf_add_attribute(ncid,vidmld_turb,
+     &      vname(:,indxmld_turb+itrc-1),5, NF_FOUT, ierr)
+          endif
+         endif
+!
+!  mld indxmld_dens (only defined for itrc=1)
+!
+         if (wrt_mld_dens) then
+          if (itrc == 1) then
+            lvar=lenstr(vname(1,indxmld_dens+itrc-1))
+            ierr=nf_def_var(ncid, vname(1,indxmld_dens+itrc-1)(1:lvar),
+     &                          NF_FOUT, 3, r2dgrd, vidmld_dens)
+#   ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidmld_dens,nf_collective)
+#   endif
+#   ifndef AVRH
+            lvar=lenstr(vname(2,indxmld_dens+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_dens, 'long_name',
+     &                     lvar, vname(2,indxmld_dens+itrc-1)(1:lvar))
+#   else
+            text='averaged '/ /vname(2,indxmld_dens+itrc-1)
+            lvar=lenstr(text)
+            ierr=nf_put_att_text (ncid, vidmld_dens, 'long_name',
+     &                                          lvar, text(1:lvar))
+#   endif
+            lvar=lenstr(vname(3,indxmld_dens+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_dens,'units',
+     &                     lvar, vname(3,indxmld_dens+itrc-1)(1:lvar))
+            lvar=lenstr(vname(4,indxmld_dens+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_dens,'field',
+     &                     lvar, vname(4,indxmld_dens+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,vidmld_dens,
+     &      vname(:,indxmld_dens+itrc-1),5, NF_FOUT, ierr)
+          endif
+         endif
+!
+!  mld indxmld_temp (only defined for itrc=1)
+!
+         if (wrt_mld_temp) then
+          if (itrc == 1) then
+            lvar=lenstr(vname(1,indxmld_temp+itrc-1))
+            ierr=nf_def_var(ncid, vname(1,indxmld_temp+itrc-1)(1:lvar),
+     &                          NF_FOUT, 3, r2dgrd, vidmld_temp)
+#   ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,vidmld_temp,nf_collective)
+#   endif
+#   ifndef AVRH
+            lvar=lenstr(vname(2,indxmld_temp+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_temp, 'long_name',
+     &                     lvar, vname(2,indxmld_temp+itrc-1)(1:lvar))
+#   else
+            text='averaged '/ /vname(2,indxmld_temp+itrc-1)
+            lvar=lenstr(text)
+            ierr=nf_put_att_text (ncid, vidmld_temp, 'long_name',
+     &                                          lvar, text(1:lvar))
+#   endif
+            lvar=lenstr(vname(3,indxmld_temp+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_temp,'units',
+     &                     lvar, vname(3,indxmld_temp+itrc-1)(1:lvar))
+            lvar=lenstr(vname(4,indxmld_temp+itrc-1))
+            ierr=nf_put_att_text (ncid, vidmld_temp,'field',
+     &                     lvar, vname(4,indxmld_temp+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,vidmld_temp,
+     &      vname(:,indxmld_temp+itrc-1),5, NF_FOUT, ierr)
+          endif
          endif
         endif
 # endif /* DIAGNOSTICS_TS_MLD */
@@ -1175,21 +1248,60 @@
           ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
 #  endif
 !
-!  indxdiagTS on MLD (only defined for itrc=1)
+!  indxmld_turb (only defined for itrc=1)
 !
-       if (itrc == 1) then
-        lvar=lenstr(vname(1,indxdiagTS_mld+itrc-1))
-        ierr=nf_inq_varid (ncid,vname(1,indxdiagTS_mld+itrc-1)(1:lvar),
-     &                                        viddiagTS_mld)
-          if (ierr .ne. nf_noerr) then
-            write(stdout,1) vname(1,indxdiagTS_mld+itrc-1)(1:lvar),
+       if (wrt_mld_turb) then
+        if (itrc == 1) then
+         lvar=lenstr(vname(1,indxmld_turb+itrc-1))
+         ierr=nf_inq_varid (ncid,vname(1,indxmld_turb+itrc-1)(1:lvar),
+     &                                        vidmld_turb)
+           if (ierr .ne. nf_noerr) then
+             write(stdout,1) vname(1,indxmld_turb+itrc-1)(1:lvar),
      &                                         ncname(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
+             goto 99                                       !--> ERROR
+           endif
 #   ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,viddiagTS_mld,nf_collective)
+           ierr=nf_var_par_access(ncid,vidmld_turb,nf_collective)
 #   endif
+        endif
        endif
+!
+!  indxmld_dens (only defined for itrc=1)
+!
+       if (wrt_mld_dens) then
+        if (itrc == 1) then
+         lvar=lenstr(vname(1,indxmld_dens+itrc-1))
+         ierr=nf_inq_varid (ncid,vname(1,indxmld_dens+itrc-1)(1:lvar),
+     &                                        vidmld_dens)
+           if (ierr .ne. nf_noerr) then
+             write(stdout,1) vname(1,indxmld_dens+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+             goto 99                                       !--> ERROR
+           endif
+#   ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidmld_dens,nf_collective)
+#   endif
+        endif
+       endif
+!
+!  indxmld_temp (only defined for itrc=1)
+!
+       if (wrt_mld_temp) then
+        if (itrc == 1) then
+         lvar=lenstr(vname(1,indxmld_temp+itrc-1))
+         ierr=nf_inq_varid (ncid,vname(1,indxmld_temp+itrc-1)(1:lvar),
+     &                                        vidmld_temp)
+           if (ierr .ne. nf_noerr) then
+             write(stdout,1) vname(1,indxmld_temp+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+             goto 99                                       !--> ERROR
+           endif
+#   ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidmld_temp,nf_collective)
+#   endif
+        endif
+       endif
+
         endif
 
 !
@@ -1268,7 +1380,9 @@
 #  undef vidTrate_mld
 #  undef vidTentr_mld
 #  undef vidTaver_mld
-#  undef viddiagTS_mld
+#  undef vidmld_turb
+#  undef vidmld_dens
+#  undef vidmld_temp
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
 # ifdef AVERAGES

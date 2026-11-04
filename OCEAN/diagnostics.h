@@ -35,9 +35,13 @@
       real Trate_mld(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld(GLOBAL_2D_ARRAY,NT)
       real Taver_mld(GLOBAL_2D_ARRAY,NT)
-      real diagTS_mld(GLOBAL_2D_ARRAY)
-! diagTS_kmld  Index of the deepest level within the MLD
-      integer diagTS_kmld(GLOBAL_2D_ARRAY)
+      real mld_turb(GLOBAL_2D_ARRAY)
+      real mld_dens(GLOBAL_2D_ARRAY)
+      real mld_temp(GLOBAL_2D_ARRAY)
+! kmld_xxxx  Index of the deepest level within the MLD (for each criterion)
+      integer kmld_turb(GLOBAL_2D_ARRAY)
+      integer kmld_dens(GLOBAL_2D_ARRAY)
+      integer kmld_temp(GLOBAL_2D_ARRAY)
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
 # ifdef AVERAGES
@@ -63,7 +67,9 @@
       real Trate_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Taver_mld_avg(GLOBAL_2D_ARRAY,NT)
-      real diagTS_mld_avg(GLOBAL_2D_ARRAY)
+      real mld_turb_avg(GLOBAL_2D_ARRAY)
+      real mld_dens_avg(GLOBAL_2D_ARRAY)
+      real mld_temp_avg(GLOBAL_2D_ARRAY)
 #  endif
 # endif
       common /diag_TXadv/TXadv
@@ -87,8 +93,12 @@
       common /diag_Trate_mld/Trate_mld
       common /diag_Tentr_mld/Tentr_mld
       common /diag_Taver_mld/Taver_mld
-      common /diag_diagTS_mld/diagTS_mld
-      common /diag_diagTS_kmld/diagTS_kmld
+      common /diag_mld_turb/mld_turb
+      common /diag_mld_dens/mld_dens
+      common /diag_mld_temp/mld_temp
+      common /diag_kmld_turb/kmld_turb
+      common /diag_kmld_dens/kmld_dens
+      common /diag_kmld_temp/kmld_temp
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
@@ -114,7 +124,9 @@
       common /diag_Trate_mld_avg/Trate_mld_avg
       common /diag_Tentr_mld_avg/Tentr_mld_avg
       common /diag_Taver_mld_avg/Taver_mld_avg
-      common /diag_diagTS_mld_avg/diagTS_mld_avg
+      common /diag_mld_turb_avg/mld_turb_avg
+      common /diag_mld_dens_avg/mld_dens_avg
+      common /diag_mld_temp_avg/mld_temp_avg
 #  endif
 # endif
 #endif /* DIAGNOSTICS_TS */

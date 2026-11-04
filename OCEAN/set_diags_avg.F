@@ -166,9 +166,15 @@
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-            diagTS_mld_avg(i,j) = cff *
-     &                    ( cff1*diagTS_mld(i,j) +
-     &                           diagTS_mld_avg(i,j) )
+            mld_turb_avg(i,j) = cff *
+     &                    ( cff1*mld_turb(i,j) +
+     &                           mld_turb_avg(i,j) )
+            mld_dens_avg(i,j) = cff *
+     &                    ( cff1*mld_dens(i,j) +
+     &                           mld_dens_avg(i,j) )
+            mld_temp_avg(i,j) = cff *
+     &                    ( cff1*mld_temp(i,j) +
+     &                           mld_temp_avg(i,j) )
           enddo
         enddo
 

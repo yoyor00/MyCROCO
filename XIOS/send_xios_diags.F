@@ -3449,8 +3449,14 @@ c !$acc wait
       if (xios_field_is_active("T_aver_mld")) then
           call xios_send_field("T_aver_mld",Taver_mld(:,:,itrc))
       endif
-      if (xios_field_is_active("depth_mld")) then
-          call xios_send_field("depth_mld",diagTS_mld(:,:))
+      if (xios_field_is_active("depth_mld_turb")) then
+          call xios_send_field("depth_mld_turb",mld_turb(:,:))
+      endif
+      if (xios_field_is_active("depth_mld_dens")) then
+          call xios_send_field("depth_mld_dens",mld_dens(:,:))
+      endif
+      if (xios_field_is_active("depth_mld_temp")) then
+          call xios_send_field("depth_mld_temp",mld_temp(:,:))
       endif
 #    endif
 #    ifdef SALINITY

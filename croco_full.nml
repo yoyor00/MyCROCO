@@ -440,18 +440,25 @@
 
 &croco_diag_mld
   ! CPP: DIAGNOSTICS_TS && DIAGNOSTICS_TS_MLD
-  ! criteria for mld computation
+  ! mld criterion used for diagnostic TS integration
   ! ("turbulence" = mixing layer from turbulence scheme)
   ! ("density" = mixed layer from density threshold)
+  ! ("temperature" = mixed layer from temperature threshold)
   mld_crit_type = "turbulence"
   ! Density criterion for mixed-layer depth [kg/m3].
   mld_crit_D = 3.e-2
   ! Temperature criterion for mixed-layer depth [Celsius].
   mld_crit_T = 2.e-1
-  ! AKt criterion for mixed-layer depth [m2/s].
+  ! Turbulence (AKt) criterion for mixed-layer depth [m2/s].
   mld_crit_AKt = 2.e-5
   ! Reference depth for mixed-layer criteria [m]
   mld_depth_ref = 10
+  ! Write mld from turbulence criterion
+  wrt_mld_turb = .true.
+  ! Write mld from density criterion
+  wrt_mld_dens = .true.
+  ! Write mld from temperature criterion
+  wrt_mld_temp = .true.
 /
 
 ! --- Momentum diagnostics  (CPP: DIAGNOSTICS_UV) ---

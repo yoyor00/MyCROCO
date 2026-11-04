@@ -541,7 +541,7 @@ MODULE croco_namelist
 #  if defined DIAGNOSTICS_TS_MLD 
    ! &croco_diag_mld
   character(len=64) :: mld_crit_type = "turbulence"
-  !! criteria for mld computation
+  !! mld criterion used for diagnostic TS integration
   !! ("turbulence" = mixing layer from turbulence scheme)
   !! ("density" = mixed layer from density threshold)
   !! ("temperature" = mixed layer from temperature threshold)
@@ -549,10 +549,16 @@ MODULE croco_namelist
    !! Density criterion to define the mixed layer depth [kg/m3]
    real :: mld_crit_T = 0.2
    !! Temperature criterion to define the mixed layer depth [Celsius]
-  real :: mld_crit_AKt = 2.e-5
-  !! AKt criterion for mixed-layer depth [m2/s].
+   real :: mld_crit_AKt = 2.e-5
+   !! Turbulence (AKt) criterion for mixed-layer depth [m2/s].
    real :: mld_depth_ref = 10
    !! Reference depth to define the mixed layer depth [m]
+   logical :: wrt_mld_turb = .true.
+   !! Write mld from turbulence criterion
+   logical :: wrt_mld_dens = .true.
+   !! Write mld from density criterion
+   logical :: wrt_mld_temp = .true.
+   !! Write mld from temperature criterion
 #  endif
 #endif
 

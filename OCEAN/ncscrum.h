@@ -362,7 +362,7 @@
      &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld,indxTaver_mld,indxKbl_nstp
-     &      , indxdiagTS_mld
+     &      , indxmld_turb,indxmld_dens,indxmld_temp
 #  endif
       parameter (indxTXadv=indxV+ntrc_temp+ntrc_salt+
      &                    ntrc_stogen+ntrc_pas+
@@ -388,8 +388,10 @@
      &           indxTrate_mld=indxTForc_mld+NT,
      &           indxTentr_mld=indxTrate_mld+NT,
      &           indxTaver_mld=indxTentr_mld+NT
-     &          ,indxdiagTS_mld=indxTaver_mld+NT
-     &          ,indxKbl_nstp=indxdiagTS_mld+1
+     &          ,indxmld_turb=indxTaver_mld+NT
+     &          ,indxmld_dens=indxmld_turb+1
+     &          ,indxmld_temp=indxmld_dens+1
+     &          ,indxKbl_nstp=indxmld_temp+1
 #  endif
      &                                         )
 # endif
@@ -1203,7 +1205,7 @@
      &      , diaTHmix_mld(NT), diaTVmix_mld(NT)
      &      , diaTForc_mld(NT), diaTrate_mld(NT), diaTentr_mld(NT)
      &      , diaTaver_mld(NT)
-     &      , diadiagTS_mld
+     &      , diamld_turb,diamld_dens,diamld_temp
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
@@ -1409,7 +1411,7 @@
      &      , diaTHmix_mld_avg(NT), diaTVmix_mld_avg(NT)
      &      , diaTForc_mld_avg(NT), diaTrate_mld_avg(NT)
      &      , diaTentr_mld_avg(NT), diaTaver_mld_avg(NT)
-     &      , diadiagTS_mld_avg
+     &      , diamld_turb_avg, diamld_dens_avg,diamld_temp_avg
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
@@ -1729,7 +1731,7 @@
      &      , diaTXadv_mld, diaTYadv_mld, diaTVadv_mld, diaTHmix_mld
      &      , diaTVmix_mld, diaTForc_mld, diaTrate_mld, diaTentr_mld
      &      , diaTaver_mld
-     &      , diadiagTS_mld
+     &      , diamld_turb, diamld_dens, diamld_temp
 # endif
 # ifdef AVERAGES
      &      , nciddia_avg, nrecdia_avg
@@ -1744,7 +1746,7 @@
      &      , diaTXadv_mld_avg, diaTYadv_mld_avg, diaTVadv_mld_avg
      &      , diaTHmix_mld_avg, diaTVmix_mld_avg, diaTForc_mld_avg
      &      , diaTrate_mld_avg, diaTentr_mld_avg, diaTaver_mld_avg
-     &      , diadiagTS_mld_avg
+     &      , diamld_turb_avg,diamld_dens_avg,diamld_temp_avg
 #  endif
 # endif
 #endif

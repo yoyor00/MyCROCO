@@ -34,8 +34,9 @@
 !==========================================================================
 !==========================================================================
        subroutine get_diagTS_over_mld(Istr,Iend,Jstr,Jend, &
-                          itrc,T_mld_nnew,T_mld_nstp,mode, &
-                          kbl_local,mld_local)
+                  itrc,T_mld_nnew,T_mld_nstp,mode, &
+                  kbl_turb_local,kbl_dens_local,kbl_temp_local, &
+                  mld_turb_local,mld_dens_local,mld_temp_local)
 !--------------------------------------------------------------------------
 ! Purposes : main routine to get TS diagnostics integrated over MLD
 !            3 steps : (1) get mld and vertical index of mld
@@ -45,12 +46,17 @@
 ! Called by : step3d_t.F, t3dmix_ISO.F, t3dmix_S.F, t3dmix_spg.F
 !--------------------------------------------------------------------------
         use param
+        use croco_namelist, only: mld_crit_type
 
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         integer, intent(in) :: mode
-        integer, intent(inout) :: kbl_local(GLOBAL_2D_ARRAY)
-        real, intent(inout) :: mld_local(GLOBAL_2D_ARRAY)
+        integer, intent(inout) :: kbl_turb_local(GLOBAL_2D_ARRAY), &
+                                  kbl_dens_local(GLOBAL_2D_ARRAY), &
+                                  kbl_temp_local(GLOBAL_2D_ARRAY)
+        real, intent(inout) :: mld_turb_local(GLOBAL_2D_ARRAY), &
+                               mld_dens_local(GLOBAL_2D_ARRAY), &
+                               mld_temp_local(GLOBAL_2D_ARRAY)
         real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
                 T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
 
@@ -59,9 +65,20 @@
         integer :: mode_t3dmix_S=2
         integer :: mode_t3dmix_ISO=3
         integer :: mode_t3dmix_spg=4
+        integer :: kbl_local(GLOBAL_2D_ARRAY)
 
 
-        call get_mld_idx(Istr,Iend,Jstr,Jend,kbl_local,mld_local)
+        call get_mld_idx(Istr,Iend,Jstr,Jend, &
+                kbl_turb_local,kbl_dens_local,kbl_temp_local, &
+                mld_turb_local,mld_dens_local,mld_temp_local)
+
+        if (mld_crit_type == 'turbulence') then
+                kbl_local = kbl_turb_local
+        else if (mld_crit_type == 'density') then
+                kbl_local = kbl_dens_local
+        else if (mld_crit_type == 'temperature') then
+                kbl_local = kbl_temp_local
+        endif
 
         call integrate_over_mld(Istr,Iend,Jstr,Jend, &
                        itrc, T_mld_nnew, T_mld_nstp,mode,kbl_local)
@@ -81,38 +98,38 @@
 !==========================================================================
 !==========================================================================
        subroutine get_mld_idx(Istr,Iend,Jstr,Jend, &
-                       kbl_local,mld_local)
+                       kbl_turb_local,kbl_dens_local,kbl_temp_local, &
+                       mld_turb_local,mld_dens_local,mld_temp_local)
 !--------------------------------------------------------------------------
-! Purposes : - get the mld and mld vertical index using the chosen 
-!              criterion
+! Purposes : - get the mld and mld vertical index using the three 
+!              criteria: turbulence, density and temperature
 !--------------------------------------------------------------------------
         use module_mld, only: idx_mld_density, &
                            idx_mld_temperature, &
                            idx_mld_turbulence
-        use croco_namelist, only: mld_crit_type, &
-                               mld_crit_D, mld_crit_T, &
-                               mld_crit_AKt, mld_depth_ref
+        use croco_namelist, only: mld_crit_D, mld_crit_T, &
+                                  mld_crit_AKt, mld_depth_ref
         use param
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend
-        integer, intent(inout) :: kbl_local(GLOBAL_2D_ARRAY)
-        real, intent(inout) :: mld_local(GLOBAL_2D_ARRAY)
+        integer, intent(inout) :: kbl_turb_local(GLOBAL_2D_ARRAY), &
+                                  kbl_dens_local(GLOBAL_2D_ARRAY), &
+                                  kbl_temp_local(GLOBAL_2D_ARRAY) 
+        real, intent(inout) :: mld_turb_local(GLOBAL_2D_ARRAY), &
+                               mld_dens_local(GLOBAL_2D_ARRAY), &
+                               mld_temp_local(GLOBAL_2D_ARRAY)
 
-        if (mld_crit_type == 'density') then
-          call idx_mld_density(Istr,Iend,Jstr,Jend, &
+        call idx_mld_density(Istr,Iend,Jstr,Jend, &
             mld_crit_D,mld_depth_ref, &
-            kbl_local,mld_local)
-        else if (mld_crit_type == 'temperature') then
-          call idx_mld_temperature(Istr,Iend,Jstr,Jend, &
+            kbl_dens_local,mld_dens_local)
+        call idx_mld_temperature(Istr,Iend,Jstr,Jend, &
             mld_crit_T,mld_depth_ref, &
-            kbl_local,mld_local)
+            kbl_temp_local,mld_temp_local)
 #    if defined LMD_SKPP || defined GLS_MIXING || defined ANA_VMIX
-        else if (mld_crit_type == 'turbulence') then
-          call idx_mld_turbulence(Istr,Iend,Jstr,Jend, & 
+        call idx_mld_turbulence(Istr,Iend,Jstr,Jend, & 
             mld_crit_AKt,mld_depth_ref, &
-            kbl_local,mld_local) 
+            kbl_turb_local,mld_turb_local) 
 #    endif
-        endif
        end subroutine get_mld_idx
 
 !==========================================================================
