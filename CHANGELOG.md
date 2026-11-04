@@ -30,13 +30,16 @@ DIAGNOSTICS :
 WET_DRY : 
 - Add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
 
-- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
-           inconsistent with what done for calcite dissolution (#531)
-           Big fix in the calculation of NEW primary productivity with XIOS (#535)
-           Fix the calculation of nitrogen fixation rate with XIOS (#541)
-           Set XIOS write timestep for PISCES identical to ocean (#548)
-           Correct degree to radian conversion (#559)
-           Add the read of pisces namelist for child grid with AGRIF (#561)
+- PISCES : - Switch from relative to potential density for surface pH proxy,
+             inconsistent with what done for calcite dissolution (#531)
+           - Fix in the calculation of NEW primary productivity with XIOS (#535)
+           - Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           - Set XIOS write timestep for PISCES identical to ocean (#548)
+           - Correct degree to radian conversion (#559)
+           - Add the read of pisces namelist for child grid with AGRIF (#561)
+           - Enables use of high-frequency qsr (<24 hrs) with PISCES 
+             in the case of offline reading (#563) - online calculation of 
+             daily mean of qsr needed by PISCES must be implemented
 
 ### Changed
 
