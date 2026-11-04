@@ -440,9 +440,6 @@ MODULE comMUSTANG
 
     REAL(KIND=rsh) :: h0fond  ! residual thickness in water  (m)
 
-    ! fwet =1 if not used  
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: fwet
-
     ! Initialization
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_sed
 

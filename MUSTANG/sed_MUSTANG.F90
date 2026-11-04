@@ -1218,21 +1218,21 @@ ENDIF
        DO ivp = igrav2+1, nvpc
          IF(ivp .LE. isand2) THEN 
             ! Sanford et Halka (1993), Winterwerp (2004), Dufois (2008)
-            flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j) * fwet(i, j)
+            flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)
          ELSE
             tocdpe = tocd(ivp) + 0.00001_rsh
-            flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j) * fwet(i, j)  &
-                          * MAX(0.0_rsh, 1.0_rsh - (tauskin(i, j) / tocdpe)) &  
+            flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)  &
+                          * MAX(0.0_rsh, 1.0_rsh - (tauskin(i, j) / tocdpe)) &
                           * tocd(ivp) / tocdpe
          ENDIF
        ENDDO
        DO ivp = nvpc+1, nvp
          IF(irkm_var_assoc(ivp) > 0 .AND. irkm_var_assoc(ivp) < imud1) THEN
            ! substance sorbed on sand
-           flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j) * fwet(i, j)
+           flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)
          ELSE
            tocdpe = tocd(ivp) + 0.00001_rsh
-           flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j) * fwet(i, j)  &
+           flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)  &
                           * MAX(0.0_rsh,1.0_rsh - (tauskin(i, j) / tocdpe)) &
                           * tocd(ivp) / tocdpe
          ENDIF
@@ -1772,7 +1772,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               IF(htot(i,j) .GT. h0fond) THEN
                 IF(tauskin(i, j) .GT. toce)THEN
                   CALL sed_MUSTANG_comp_eros_flx(tauskin(i, j), toce, excespowr, xeros, sed_eros_flx)
-                  ero = sed_eros_flx * fwet(i, j)
+                  ero = sed_eros_flx
                 ENDIF ! tauskin(i, j) .GT. toce
               ENDIF
               IF (l_erolat) THEN
@@ -1923,10 +1923,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                     ! Output: cumulated time (in hours) elapsed in cohesive regime
                     IF (l_outsed_ero_details) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1*(erodab/erosi)/3600.0_rsh)   ! tero_coh
-                    
-                    ! correction PLH Juillet 2015
-                    !volerod=erodab*fwet(i,j)/csanmud
-                    !volerod=erodab/csanmud
                 
                     DO iv=igrav2+1,nv_use ! nv_use=nvp
                        !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+volerod*cv_sed(iv,k,i,j)/MF
@@ -2220,7 +2216,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             IF(htot(i,j) .GT. h0fond) THEN
               IF(tauskin(i,j) .GT. toce)THEN
                 CALL sed_MUSTANG_comp_eros_flx(tauskin(i,j), toce, excespowr, xeros, sed_eros_flx)
-                ero=sed_eros_flx*fwet(i,j)    
+                ero=sed_eros_flx
               ENDIF ! tauskin(i, j) .GT. toce
             ENDIF
             IF (l_erolat) THEN
@@ -2302,8 +2298,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
 
               ELSE IF(csanmud /= 0.0_rsh) THEN  !erosi/erodab
-                ! correction PLH Juillet 2015
-                !volerod=erodab*fwet(i,j)/csanmud
                 volerod=erodab/csanmud
                 DO iv=igrav2+1,nv_use ! nv_use=nvp
                   !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+volerod*cv_sed(iv,k,i,j)/MF
@@ -6610,7 +6604,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
        ! As already mentioned in paraMUSTANG, if E0_sand_option == 3, 
        !  n_eros_sand should be equal to 1.7 (to be consistent with Wu and Lin formulation)
 
-       sed_eros_flx_class_by_class(iv)=MF*fwet(i,j)*frac_sed(iv)*E0_sand_loc(iv) &
+       sed_eros_flx_class_by_class(iv)=MF*frac_sed(iv)*E0_sand_loc(iv) &
                        *((tauskin(i,j)/toce_loc(iv))-1.0_rsh)**n_eros_sand
 
 
@@ -6712,7 +6706,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
         E0_mud_loc=E0_mud_para_indep*E0_mud
 
         DO iv=imud1,imud2
-         sed_eros_flx_class_by_class(iv)=MF*fwet(i,j)*frac_sed(iv)*E0_mud_loc*  &
+         sed_eros_flx_class_by_class(iv)=MF*frac_sed(iv)*E0_mud_loc*  &
                      MAX((tauskin(i,j)/tauc_mud)-1.0_rsh,0.0_rsh)**n_eros_mud
      
           IF (l_outsed_toce) var2D_toce(iv,i,j) = tauc_mud  ! toce_save
@@ -7796,8 +7790,8 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
     ! Morphological factor
 
-     flx_bxij(iv) = MF * fwet(i, j) * flx_bxij(iv)
-     flx_byij(iv) = MF * fwet(i, j) * flx_byij(iv)
+     flx_bxij(iv) = MF * flx_bxij(iv)
+     flx_byij(iv) = MF * flx_byij(iv)
 
       
      ! flx_bx_int and flx_by_int

@@ -2219,10 +2219,7 @@ CONTAINS
        ALLOCATE(WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N)) ! not operationnal, stil to code **TODO**
        WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N) = 0.0_rsh
     ENDIF
-    
-    ALLOCATE(fwet(GLOBAL_2D_ARRAY))
-    fwet(:,:) = 1.0_rsh
-  
+
 
     END SUBROUTINE MUSTANG_alloc
 
