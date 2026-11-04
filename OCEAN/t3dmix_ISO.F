@@ -137,7 +137,7 @@
 !========================================================================
 !
 #  ifdef MUSTANG
-      USE comMUSTANG,  ONLY : flx_s2w_CROCO
+      USE comMUSTANG,  ONLY : flx_s2w_CROCO, l_diss_insed
 #   endif
 
       use croco_namelist, only: dt

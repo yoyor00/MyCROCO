@@ -22,8 +22,8 @@ MODULE substance
 # if defined BIOLink
    USE comBIOLink
 # endif
-#if defined MUSTANG && ! defined key_noTSdiss_insed
-   USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1
+#if defined MUSTANG
+   USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1,l_diss_insed
 #endif
 
    IMPLICIT NONE
@@ -93,10 +93,8 @@ CONTAINS
    REAL(KIND=rsh), DIMENSION(4,ntrc_subs)     :: ws_free_para_r
    REAL(KIND=rsh), DIMENSION(2,ntrc_subs)     :: ws_hind_para_r 
    INTEGER, DIMENSION(ntrc_subs)              :: ws_hind_opt_r,ws_free_opt_r 
-# if ! defined key_noTSdiss_insed
-      INTEGER, DIMENSION(ntrc_subs)           :: D0_funcT_opt_r
-      REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
-# endif
+   INTEGER, DIMENSION(ntrc_subs)           :: D0_funcT_opt_r
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
    LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n, l_outsandrouse_n, l_bedload_n
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
@@ -411,14 +409,14 @@ CONTAINS
     CALL DEFVAR_DEALLOC(nv_dis,iv)   
     itypv_r(iv0+1:iv)=6
 #if defined MUSTANG
-# if ! defined key_noTSdiss_insed
+   IF (l_diss_insed) THEN
       DO ivr=1,nv_dis
-       D0_funcT_opt_r(iv0+ivr)=D0_funcT_opt_n(ivr)
-       D0_m0_r(iv0+ivr)=D0_m0_n(ivr)
-       D0_m1_r(iv0+ivr)=D0_m1_n(ivr)
+         D0_funcT_opt_r(iv0+ivr)=D0_funcT_opt_n(ivr)
+         D0_m0_r(iv0+ivr)=D0_m0_n(ivr)
+         D0_m1_r(iv0+ivr)=D0_m1_n(ivr)
       ENDDO
-# endif
-      DEALLOCATE(D0_funcT_opt_n,D0_m0_n,D0_m1_n)
+   ENDIF
+   DEALLOCATE(D0_funcT_opt_n,D0_m0_n,D0_m1_n)
 #endif
 
    ENDIF
@@ -672,11 +670,11 @@ CONTAINS
       tocd(:)=0.0
       ros(:)=0.0
       diam_sed(:)=0.0
-# if ! defined key_noTSdiss_insed
-      ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
-      ALLOCATE(D0_m0(nvp+1:nv_tot))
-      ALLOCATE(D0_m1(nvp+1:nv_tot))
-# endif 
+      IF (l_diss_insed) THEN
+         ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
+         ALLOCATE(D0_m0(nvp+1:nv_tot))
+         ALLOCATE(D0_m1(nvp+1:nv_tot))
+      ENDIF
 
 #else
       ALLOCATE(ws_free_min(nvp)) 
@@ -834,9 +832,11 @@ CONTAINS
      MPI_master_only WRITE(stdout,*)'OBC uniforme and constant conc.        : ',cobc_wat_r(isubs)
 #ifdef MUSTANG
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in sediment      : ',cini_sed_r(isubs)
-#if defined BLOOM && defined key_BLOOM_insed && ! defined key_noTSdiss_insed
+#if defined BLOOM && defined key_BLOOM_insed
+     IF (l_diss_insed) THEN
      MPI_master_only WRITE(stdout,*)'type of calculation of in sediment diffusion/biodiff (1or2): ',D0_funcT_opt_r(isubs)
      MPI_master_only WRITE(stdout,*)'coefs for in sediment diffusion/biodiff calculation : ',D0_m0_r(isubs),D0_m1_r(isubs)
+     ENDIF
 #endif
 #endif
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
@@ -953,13 +953,13 @@ CONTAINS
      ros(iv)=ros_r(irk_fil(iv))
      diam_sed(iv)=diam_r(irk_fil(iv))
    END DO
-# if ! defined key_noTSdiss_insed
+   IF (l_diss_insed) THEN
       DO iv=nvp+1,nvp+nv_dis
        D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
        D0_m0(iv)=D0_m0_r(iv)
        D0_m1(iv)=D0_m1_r(iv)
       ENDDO
-# endif
+   ENDIF
 
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.

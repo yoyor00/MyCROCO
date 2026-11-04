@@ -29,7 +29,6 @@
 # endif
 
 # ifdef MUSTANG
-#  define key_noTSdiss_insed
 # endif
 
 # undef  MORPHODYN

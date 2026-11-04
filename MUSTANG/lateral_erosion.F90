@@ -14,10 +14,10 @@ MODULE lateral_erosion
 #if defined MUSTANG
 
    USE comMUSTANG, ONLY: coef_erolat, htncrit_eros, coef_tauskin_lat, &
-                         l_erolat_wet_cell, flx_s2w, &
+                         l_erolat_wet_cell, flx_s2w, l_fluxwat_IWS, &
                          flx_s2w_corip1, flx_s2w_corim1, &
                          flx_s2w_corjp1, flx_s2w_corjm1, &
-                         phieau_s2w_corip1, phieau_s2w_corim1, &
+                         phieau_s2w, phieau_s2w_corip1, phieau_s2w_corim1, &
                          phieau_s2w_corjp1, phieau_s2w_corjm1, &
                          h0fond
    USE comsubstance, ONLY: nv_adv, rsh
@@ -78,12 +78,12 @@ CONTAINS
          flx_s2w_corim1(:, :, :) = 0.0_rsh
          flx_s2w_corjp1(:, :, :) = 0.0_rsh
          flx_s2w_corjm1(:, :, :) = 0.0_rsh
-#if ! defined key_nofluxwat_IWS
+         IF (l_fluxwat_IWS) THEN
          phieau_s2w_corip1(:, :) = 0.0_rsh
          phieau_s2w_corim1(:, :) = 0.0_rsh
          phieau_s2w_corjp1(:, :) = 0.0_rsh
          phieau_s2w_corjm1(:, :) = 0.0_rsh
-#endif
+         ENDIF
       END IF  ! end if coef_erolat
    END SUBROUTINE lateral_erosion_reset
 
@@ -219,13 +219,6 @@ CONTAINS
    SUBROUTINE lateral_erosion_saveflx(erolat_res, flx_s2w_eroij &
                                       , flx_s2w_corip1_ij, flx_s2w_corim1_ij &
                                       , flx_s2w_corjm1_ij, flx_s2w_corjp1_ij &
-#if ! defined key_nofluxwat_IWS
-                                      , phieau_ero_ij &
-                                      , phieau_s2w_corip1_ij &
-                                      , phieau_s2w_corim1_ij &
-                                      , phieau_s2w_corjm1_ij &
-                                      , phieau_s2w_corjp1_ij &
-#endif
                                       )
       !!------------------------------------------------------------------------
       !!                ***  ROUTINE lateral_erosion_saveflx ***
@@ -242,13 +235,6 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(-1:nv_adv), INTENT(INOUT)  ::  flx_s2w_corim1_ij
       REAL(KIND=rsh), DIMENSION(-1:nv_adv), INTENT(INOUT)  ::  flx_s2w_corjm1_ij
       REAL(KIND=rsh), DIMENSION(-1:nv_adv), INTENT(INOUT)  ::  flx_s2w_corjp1_ij
-#if ! defined key_nofluxwat_IWS
-      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_ero_ij
-      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corip1_ij
-      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corim1_ij
-      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corjm1_ij
-      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corjp1_ij
-#endif
 
       INTEGER :: iv
 
@@ -265,7 +251,36 @@ CONTAINS
                                     flx_s2w_eroij(iv)*erolat_res%flx_n
             flx_s2w_eroij(iv) = 0.0_rsh
          END DO
-#if ! defined key_nofluxwat_IWS
+      END IF
+
+   END SUBROUTINE lateral_erosion_saveflx
+
+   !============================================================================
+   SUBROUTINE lateral_erosion_saveflx_IWS(erolat_res, phieau_ero_ij &
+                                      , phieau_s2w_corip1_ij &
+                                      , phieau_s2w_corim1_ij &
+                                      , phieau_s2w_corjm1_ij &
+                                      , phieau_s2w_corjp1_ij &
+                                      )
+      !!------------------------------------------------------------------------
+      !!                ***  ROUTINE lateral_erosion_saveflx_IWS ***
+      !!
+      !! ** Purpose : memorisation of lateral erosion porewater (IWS) fluxes
+      !!              from dry cell. Only to be called when l_fluxwat_IWS.
+      !! ** Called by : MUSTANG_erosion
+      !!------------------------------------------------------------------------
+
+      implicit none
+
+      TYPE(lateral_erosion_type), INTENT(IN) :: erolat_res
+      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_ero_ij
+      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corip1_ij
+      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corim1_ij
+      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corjm1_ij
+      REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_s2w_corjp1_ij
+
+      ! memorisation of lateral erosion for dry cell
+      IF (erolat_res%l_drycell) THEN
          phieau_s2w_corip1_ij = phieau_s2w_corip1_ij + &
                                 phieau_ero_ij*erolat_res%phieau_e
          phieau_s2w_corim1_ij = phieau_s2w_corim1_ij + &
@@ -275,10 +290,9 @@ CONTAINS
          phieau_s2w_corjp1_ij = phieau_s2w_corjp1_ij + &
                                 phieau_ero_ij*erolat_res%phieau_n
          phieau_ero_ij = 0.0_rsh
-#endif
       END IF
 
-   END SUBROUTINE lateral_erosion_saveflx
+   END SUBROUTINE lateral_erosion_saveflx_IWS
 
    !============================================================================
    SUBROUTINE lateral_erosion_apply(ifirst, ilast, jfirst, jlast, dtinv)
@@ -311,13 +325,13 @@ CONTAINS
                                              flx_s2w_corjp1(iv, i, j - 1) + &
                                              flx_s2w_corjm1(iv, i, j + 1))
                END DO
-#if ! defined key_nofluxwat_IWS
+               IF (l_fluxwat_IWS) THEN
                phieau_s2w(i, j) = phieau_s2w(i, j) + &
                                   phieau_s2w_corip1(i - 1, j) + &
                                   phieau_s2w_corim1(i + 1, j) + &
                                   phieau_s2w_corjp1(i, j - 1) + &
                                   phieau_s2w_corjm1(i, j + 1)
-#endif
+               ENDIF
             END DO
          END DO
 

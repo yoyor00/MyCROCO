@@ -25,7 +25,6 @@
 # ifdef MUSTANG
 #  define GLS_MIXING
 #  define GLS_KOMEGA
-#  define key_noTSdiss_insed
 # endif
 
 # ifdef SEDIMENT
