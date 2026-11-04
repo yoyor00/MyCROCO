@@ -45,7 +45,7 @@ except FileNotFoundError:
 # Parameters
 tndx = 6  # Time index to process (convert from MATLAB's 1-based index)
 h = nc.variables["h"][:]
-time = nc.variables["scrum_time"][tndx] / 86400  # Convert time to days
+time = nc.variables["time"][tndx] / 86400  # Convert time to days
 y = nc.variables["y_rho"][:, 1]  # Second column (MATLAB: `(:,2)` -> Python: `[:,1]`)
 zeta = nc.variables["zeta"][tndx, :, :]
 t0 = nc.variables["temp"][

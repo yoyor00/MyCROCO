@@ -48,7 +48,7 @@ makepdf   = 0;             % make pdf file
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname,'r');
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'time'}(:)); % reads last record
 
 if makemovie,
  tstr=1;
@@ -88,7 +88,7 @@ for tindex=tstr:tend % ---------------------------------------------
   x=repmat(x,[N 1]);
  end
 
- time=nc{'scrum_time'}(tindex)/60;
+ time=nc{'time'}(tindex)/60;
  rho=squeeze(nc{'rho'}(tindex,:,2,:));
 
  %============================================================

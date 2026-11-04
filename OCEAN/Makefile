@@ -89,7 +89,7 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
+	get_tides.F\
 	clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
@@ -131,6 +131,7 @@ include Makedefs
 
  SRCS90 = \
 	croco_namelist.F90\
+	mod_tides_mas.F90\
 	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
 	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
 	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
@@ -167,7 +168,7 @@ include Makedefs
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
-	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
+	MUSTANG_namelist.F90 comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
 	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 
@@ -296,6 +297,7 @@ plotter: plotter.F
 #
 my_barrier.o: my_barrier.f
 	$(CFT) -c -O0 my_barrier.f
+#
 #
 # Include automatically generated dependency list:
 #

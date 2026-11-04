@@ -49,7 +49,7 @@ pltvort   = 0;             % plot vort (else plot u)
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname);
-tindex=length(nc{'scrum_time'}(:)); % read last record
+tindex=length(nc{'time'}(:)); % read last record
 tstr=2;
 tend=tindex;
 
@@ -82,7 +82,7 @@ for tindex=tstr:tend  % ---
 
  disp(['Tindex = ',num2str(tindex)])
 
- time=nc{'scrum_time'}(tindex)/86400;
+ time=nc{'time'}(tindex)/86400;
  zeta=nc{'zeta'}(tindex,:,:);
  u=nc{'u'}(tindex,N,:,:);
  v=nc{'v'}(tindex,N,:,:);

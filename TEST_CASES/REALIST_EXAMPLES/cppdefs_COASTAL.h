@@ -240,7 +240,7 @@
 #  define M2FILTER_NONE
 #  define SSH_TIDES
 #  define UV_TIDES
-#  undef  POT_TIDES
+#  define POT_TIDES
 #  define TIDES_MAS
 #  ifndef UV_TIDES
 #   define OBC_REDUCED_PHYSICS

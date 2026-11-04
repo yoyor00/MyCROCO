@@ -41,7 +41,7 @@ except FileNotFoundError:
 # Parameters
 tndx = 5  # Time index (adjusted for Python's 0-based indexing)
 N = 0  # First vertical level (MATLAB 1 -> Python 0)
-time = nc.variables["scrum_time"][tndx] / (24 * 3600)  # Convert time to days
+time = nc.variables["time"][tndx] / (24 * 3600)  # Convert time to days
 h = nc.variables["h"][:]
 x = nc.variables["x_rho"][:] / 1000  # Convert to km
 y = nc.variables["y_rho"][:] / 1000  # Convert to km

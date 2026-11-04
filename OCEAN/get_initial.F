@@ -37,6 +37,9 @@
 # include "grid.h"
 #endif
 #include "mixing.h"
+#ifdef DIAGNOSTICS_TS_MLD
+# include "diagnostics.h"
+#endif
 
 # include "coupling.h"
 # if defined M3FAST
@@ -47,6 +50,9 @@
 !======================================================
 
       real time_scale
+#ifdef DIAGNOSTICS_TS_MLD
+      real workkbl(GLOBAL_2D_ARRAY)
+#endif
       integer itrc
       real time_bak
 #if defined SEDIMENT || defined BBL
@@ -122,8 +128,8 @@
 ! of initial conditions contains sufficient
 ! data, i.e. two consecutive time records of evolving fields one time
 ! step apart from each other.  Thus, in order to accept the file for
-! exact restart, it must pass two consecutive checks: (i) ocean_time
-! values in two consecutive records must differ by "dt" of current
+! exact restart, it must pass two consecutive checks: (i) time
+! values in two consecutive values must differ by "dt" of current
 ! run, and (ii) "ntstart" from two consecutive records of netCDF
 ! structure "time_step" must differ by one.  If either check
 ! fails, forward step is used as the initial time step.  Since
@@ -170,6 +176,13 @@
 !
       lvar=lenstr(vname(1,indxTime))
       ierr=nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), varid)
+!
+! Backward compatibility: initial/restart files written before the
+! netCDF time variable was renamed to "time" still use "scrum_time".
+!
+      if (ierr .ne. nf_noerr) then
+        ierr=nf_inq_varid (ncid, 'scrum_time', varid)
+      endif
 
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
@@ -225,9 +238,6 @@
       READ(origin_date(18:19),fmt='(i2)') origin_second
       ! Modify units when using USE_CALENDAR
       vname(3,indxTime)='seconds since '
-     &                     //tool_sectodat(origin_date_in_sec)
-              ! Modify units when using USE_CALENDAR
-      vname(3,indxTime2)='seconds since '
      &                     //tool_sectodat(origin_date_in_sec)
 # if defined XIOS
       MPI_master_only write(stdout,'(/3x,A,/)')
@@ -922,7 +932,7 @@
 !#   else
 !        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
 !#   endif
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbl)(1:lvar)
      &                                   , record, ininame(1:lstr)
@@ -944,7 +954,7 @@
       ierr=nf_inq_varid (ncid, vname(1,indxHbbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (hbbl(START_2D_ARRAY), ncid, varid,
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbbl)(1:lvar)
      &                                    , record, ininame(1:lstr)
@@ -958,6 +968,32 @@
 #   endif /* LMD_BKPP2005 */
 #  endif /* LMD_BKPP */
 # endif /* LMD_MIXING */
+
+# ifdef DIAGNOSTICS_TS_MLD
+!
+!  MLD vertical index at previous time step (stored as real).
+!  If absent, kbl_nstp stays at zero and the MLD index of the
+!  first time step is used.
+!
+      if (tindx.eq.1) then
+        lvar=lenstr(vname(1,indxKbl_nstp))
+        ierr=nf_inq_varid (ncid, vname(1,indxKbl_nstp)(1:lvar), varid)
+        if (ierr .eq. nf_noerr) then
+          workkbl=0.
+          ierr=nf_fread (workkbl(START_2D_ARRAY), ncid, varid,
+     &                                         record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2)
+     &        vname(1,indxKbl_nstp)(1:lvar), record, ininame(1:lstr)
+            goto 99                                      !--> ERROR
+          endif
+          kbl_nstp=nint(workkbl)
+        else
+          MPI_master_only write(stdout,4)
+     &        vname(1,indxKbl_nstp)(1:lvar), ininame(1:lstr)
+        endif
+      endif
+# endif /* DIAGNOSTICS_TS_MLD */
 
 # ifdef GLS_MIXING
 !

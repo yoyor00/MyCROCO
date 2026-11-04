@@ -40,7 +40,7 @@ except FileNotFoundError:
     exit(1)
 
 # Read data
-time = nc.variables["scrum_time"][:] / 86400  # Convert time to days
+time = nc.variables["time"][:] / 86400  # Convert time to days
 tndx = len(time)  # Number of time steps
 print(f"tndx = {tndx} - Time = {time[-1] * 24 / 12.4:.2f} M2 cycles")
 h = np.squeeze(nc.variables["h"][j, :])

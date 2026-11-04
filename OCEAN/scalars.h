@@ -106,9 +106,6 @@
 !
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
 !
-! mld_crit_D     Density criterion to define the ML [kg/m^3] 
-! mld_crit_T     Temperature criterion to define the ML [Celsius]
-!
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.
 ! nsta     Number of timesteps between storage of station data.

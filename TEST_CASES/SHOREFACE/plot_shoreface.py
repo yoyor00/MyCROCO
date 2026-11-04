@@ -54,11 +54,11 @@ except FileNotFoundError:
 
 # Get dimensions and time info
 print("Reading grid and time information...")
-scrum_time = nc.variables["scrum_time"][:]
+time = nc.variables["time"][:]
 if args.tindex is None:
-    tindex = len(scrum_time) - 1  # Last record
+    tindex = len(time) - 1  # Last record
 else:
-    tindex = min(args.tindex, len(scrum_time) - 1)
+    tindex = min(args.tindex, len(time) - 1)
 
 # Read grid data
 hr = np.squeeze(nc.variables["h"][args.yindex, :])
@@ -95,7 +95,7 @@ D2d = np.tile(D, (N, 1))
 
 # Read model fields
 print("Reading model fields...")
-time = scrum_time[tindex] / 86400.0  # Convert to days
+time = time[tindex] / 86400.0  # Convert to days
 
 zeta1 = zeta.copy()
 

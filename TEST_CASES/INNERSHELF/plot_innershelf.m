@@ -66,7 +66,7 @@ makepdf=0;
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname,'r');
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'time'}(:)); % reads last record
 yindex=3;                           % y index (with periodic conditions
                                     %          all fields are constant in y)
 Av=nc.Akv_bak(:);                   % viscosity

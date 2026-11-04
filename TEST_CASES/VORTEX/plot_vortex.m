@@ -93,7 +93,7 @@ end
 %
 nc=netcdf('vortex_his.nc');
 N=length(nc('s_rho'));
-time=round(nc{'scrum_time'}(tindex)/(24*3600));
+time=round(nc{'time'}(tindex)/(24*3600));
 disp(['Day : ',num2str(time)])
 X=1e-3*nc{'x_rho'}(:);
 Y=1e-3*nc{'y_rho'}(:);
