@@ -1478,7 +1478,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !! * Modules used
 
     USE lateral_erosion, ONLY : lateral_erosion_get, lateral_erosion_compute, &
-                                lateral_erosion_saveflx,lateral_erosion_type
+                                lateral_erosion_saveflx,lateral_erosion_saveflx_IWS, &
+                                lateral_erosion_type
 
 
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
@@ -2144,7 +2145,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E--------------------------------------------------------------------------
    !! * Modules used
    USE lateral_erosion, ONLY : lateral_erosion_get, lateral_erosion_compute, &
-                               lateral_erosion_saveflx,lateral_erosion_type
+                               lateral_erosion_saveflx,lateral_erosion_saveflx_IWS, &
+                               lateral_erosion_type
 
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv

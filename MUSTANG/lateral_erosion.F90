@@ -29,6 +29,7 @@ MODULE lateral_erosion
    PUBLIC lateral_erosion_get
    PUBLIC lateral_erosion_compute
    PUBLIC lateral_erosion_saveflx
+   PUBLIC lateral_erosion_saveflx_IWS
    PUBLIC lateral_erosion_apply
    ! TYPE
    PUBLIC lateral_erosion_type
