@@ -125,11 +125,9 @@
         call idx_mld_temperature(Istr,Iend,Jstr,Jend, &
             mld_crit_T,mld_depth_ref, &
             kmld_temp,mld_temp_local)
-#    if defined LMD_SKPP || defined GLS_MIXING || defined ANA_VMIX
         call idx_mld_turbulence(Istr,Iend,Jstr,Jend, & 
             mld_crit_AKt,mld_depth_ref, &
             kmld_turb,mld_turb_local) 
-#    endif
        end subroutine get_mld_idx
 
 !==========================================================================

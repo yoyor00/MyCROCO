@@ -239,6 +239,7 @@
 
         do j=Jstr,Jend
          do i=Istr,Iend
+#    if defined LMD_SKPP || defined GLS_MIXING || defined ANA_VMIX
         ! -----------------------------------------------------------------
         ! Find the index corresponding to the reference depth depth_ref
         ! -----------------------------------------------------------------
@@ -259,6 +260,9 @@
      &        threshold_turb)  cff=1
 
           enddo
+# else
+          kmld_turb(i,j)=N-5 ! arbitrary ?
+# endif /*LMD_SKPP || defined GLS_MIXING || defined ANA_VMIX*/
          enddo
         enddo
 
