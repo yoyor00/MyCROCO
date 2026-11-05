@@ -150,8 +150,8 @@
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         integer, intent(in) :: mode
         integer, intent(in) :: kmld_integ(GLOBAL_2D_ARRAY)
-        real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
-                T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
+        real, intent(inout) :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
+                               T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
 
         ! Local declarations
         integer :: i,j,k,kmld
