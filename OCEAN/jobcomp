@@ -102,6 +102,7 @@ function show_help() {
    echo "                              (default: if fc=gfortran: '-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy' )."
    echo "                              (default: if fc=nvfortran or pgfortran: '-g -fast -r8 -i4 -mcmodel=medium -Mbackslash' )."
    echo "  --jobs <flags>              Number of processes for compilation (default: 1)"
+   echo "  --timings                   Enable wall-clock timing regions (Experimental feature)."
    echo "  --netcdf-inc <path>         Specify the NetCDF include directory. (default: nf-config --includedir)"
    echo "  --netcdf-lib <path>         Specify the NetCDF library directory. (default: nf-config --flibs)"
    echo "  --xios-dir <path>           Specify the XIOS root directory. (default: $HOME/xios)"
@@ -151,6 +152,10 @@ while [[ $# -gt 0 ]]; do
             NPROCS="$2"
             shift 2
             ;;
+        --timings)
+            CROCO_TIMINGS=1
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             show_help
@@ -161,6 +166,7 @@ done
 
 
 NPROCS="${NPROCS:-1}"
+CROCO_TIMINGS="${CROCO_TIMINGS:-0}"
 SOURCE="${CROCO_SRC-$SOURCE1}"
 SCRDIR="./Compile"
 RUNDIR="`pwd`"
@@ -459,6 +465,16 @@ if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
 fi
 
 #
+# wall-clock timing regions
+#
+if [[ "$CROCO_TIMINGS" == "1" ]] ; then
+   CPPFLAGS1="$CPPFLAGS1 -DCROCO_TIMINGS"
+   echo "Timings: enabled (wall-clock JSON output)"
+else
+   echo "Timings: disabled"
+fi
+
+#
 # rewrite Makedefs according to previous flags
 # with openmp flags if needed
 #
@@ -474,8 +490,8 @@ rm -f flags.tmp
 #
 # compile croco
 #
-$MAKE depend
-$MAKE -j ${NPROCS} || exit 1
+$MAKE CROCO_TIMINGS="$CROCO_TIMINGS" depend
+$MAKE CROCO_TIMINGS="$CROCO_TIMINGS" -j ${NPROCS} || exit 1
 
 
 [[ -f croco  ]] && mv croco "$RUNDIR"

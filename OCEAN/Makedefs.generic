@@ -8,18 +8,30 @@
 .F.f:
 	$(CPP) -P $(CPPFLAGS) $*.F | ./mpc > $*.f
 
+# When timings are enabled the annotations are converted to plain Fortran.
+# Without CROCO_TIMINGS=1 the converter step is a no-op copy, so annotations stay
+# comments and no timing code is generated.
+ifeq ($(CROCO_TIMINGS),1)
+CROCO_TIMINGS_CONVERT = python3 ./timings_convert.py
+else
+CROCO_TIMINGS_CONVERT = cp
+endif
+
 .F.o:
 	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
-	python3 ./change_loops.py $*_.f1 $*_.tmp
-	cat $*_.tmp | ./mpc > $*_.f && \rm $*_.tmp
+	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f2
+	python3 ./change_loops.py $*_.f2 $*_.tmp
+	cat $*_.tmp | ./mpc > $*_.f && \rm -f $*_.tmp $*_.f1 $*_.f2
 	$(CFT) -c $(FFLAGS) $*_.f -o $*.o
 
 .f90.o:
 	$(CFT) -c $(FFLAGS90) $*.f90 -o $*.o
 .F90.f90:
-	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f90
+	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f1
+	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f90 && \rm -f $*_.f1
 .F90.o:
-	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f90
+	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f1
+	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f90 && \rm -f $*_.f1
 	$(CFT) -c $(FFLAGS90) $*_.f90 -o $*.o
 
 .F:
