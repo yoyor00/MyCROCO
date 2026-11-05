@@ -70,6 +70,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
   case in BENCH (#589)
 
+- TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
+  per-rank JSON output), enabled at build time with `jobcomp --timings`
+
 ### Fixed
 
 - PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
