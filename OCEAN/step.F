@@ -19,6 +19,7 @@
 # if defined OA_COUPLING || defined OW_COUPLING
       use croco_namelist, only: ntimes, dt
 # endif
+!$croco timings use
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -52,30 +53,38 @@
        iif = iif+1
       IF (iif .EQ. 0) then
 #endif
+!$croco timings start step3d_pre
 C$OMP PARALLEL
         call prestep3D_thread()
 C$OMP END PARALLEL
+!$croco timings stop step3d_pre
 #ifdef SOLVE3D
       endif
       IF ((iif.GT.0).AND.(iif.LT.(nfast+1))) THEN
 #endif
+!$croco timings start step2d
 C$OMP PARALLEL
         call step2d_thread()
 C$OMP END PARALLEL
+!$croco timings stop step2d
 #ifdef SOLVE3D
       ENDIF
       IF (iif .EQ. (nfast+1)) then
 #endif
+!$croco timings start step3d_uv
 C$OMP PARALLEL
         call step3D_uv_thread()
 C$OMP END PARALLEL
+!$croco timings stop step3d_uv
 #ifdef SOLVE3D
       endif
       IF (iif .EQ. (nfast + 2)) then
 #endif
+!$croco timings start step3d_t
 C$OMP PARALLEL
         call step3D_t_thread()
 C$OMP END PARALLEL
+!$croco timings stop step3d_t
 #ifdef SOLVE3D
         iif = -1
         nbstep3d = nbstep3d + 1

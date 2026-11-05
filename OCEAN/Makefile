@@ -130,6 +130,7 @@ include Makedefs
 
 
  SRCS90 = \
+	timings.F90\
 	croco_namelist.F90\
 	mod_tides_mas.F90\
 	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
@@ -282,7 +283,7 @@ tarfile:
 rmtools:
 	/bin/rm -f $(TOOLS)
 clean:
-	/bin/rm -rf core *.o $(AMRDIR)/*.o *.i *.s *.f *.f90 *.trace *.mod ${COMP_FILES}
+	/bin/rm -rf core *.o $(AMRDIR)/*.o *.i *.s *.f *.f90 *.f1 *.f2 *.tmp *.trace *.mod ${COMP_FILES}
 
 clobber: clean
 	/bin/rm -rf $(SBIN) $(TOOLS) ./rii_files
@@ -297,7 +298,14 @@ plotter: plotter.F
 #
 my_barrier.o: my_barrier.f
 	$(CFT) -c -O0 my_barrier.f
+
 #
+# When timings are enabled, `make depend` scans the original *.F/*.F90
+# sources, where the timing annotations are still comments.
+ifeq ($(CROCO_TIMINGS),1)
+$(filter-out timings.o,$(OBJS) $(OBJS90)): timings.o
+endif
+
 #
 # Include automatically generated dependency list:
 #
