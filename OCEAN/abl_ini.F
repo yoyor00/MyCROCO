@@ -35,7 +35,7 @@
       end
 !======================================================================
       subroutine abl_ini_tile(Istr,Iend,Jstr,Jend)
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, ininame
 #  if defined ABL_NUDGING && defined ABL_NUDGING_TRA
       use croco_namelist, only: ltra_min, ltra_max
 #  endif

@@ -221,24 +221,6 @@
 !----------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)
-! qdmu_nbq is read from rst file
-
-        do k=1,N
-          do j=Jstr-1,Jend+1
-            do i=Istr,Iend+1
-              qdmu_nbq(i,j,k)=0.5*u(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i-1,j,k))
-          enddo
-         enddo
-        enddo
-
-        do k=1,N
-          do j=Jstr,Jend+1
-            do i=Istr-1,Iend+1
-              qdmv_nbq(i,j,k)=0.5*v(i,j,k,nrhs)*(Hz(i,j,k)+Hz(i,j-1,k))
-            enddo
-          enddo
-        enddo
-
 # ifdef NBQ
         do k=1,N-1
           do j=Jstr-1,Jend+1

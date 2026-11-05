@@ -36,6 +36,7 @@
 #include "coupling.h"
 #if defined M3FAST
 # include "nbq.h"
+#endif
 #ifdef DIAGNOSTICS_TS_MLD
 # include "diagnostics.h"
 #endif
