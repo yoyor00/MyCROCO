@@ -38,10 +38,6 @@
       real mld_turb(GLOBAL_2D_ARRAY)
       real mld_dens(GLOBAL_2D_ARRAY)
       real mld_temp(GLOBAL_2D_ARRAY)
-! kmld_xxxx  Index of the deepest level within the MLD (for each criterion)
-      integer kmld_turb(GLOBAL_2D_ARRAY)
-      integer kmld_dens(GLOBAL_2D_ARRAY)
-      integer kmld_temp(GLOBAL_2D_ARRAY)
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
 # ifdef AVERAGES
@@ -96,9 +92,6 @@
       common /diag_mld_turb/mld_turb
       common /diag_mld_dens/mld_dens
       common /diag_mld_temp/mld_temp
-      common /diag_kmld_turb/kmld_turb
-      common /diag_kmld_dens/kmld_dens
-      common /diag_kmld_temp/kmld_temp
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES

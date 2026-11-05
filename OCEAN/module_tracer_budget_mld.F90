@@ -35,7 +35,6 @@
 !==========================================================================
        subroutine get_diagTS_over_mld(Istr,Iend,Jstr,Jend, &
                   itrc,T_mld_nnew,T_mld_nstp,mode, &
-                  kbl_turb_local,kbl_dens_local,kbl_temp_local, &
                   mld_turb_local,mld_dens_local,mld_temp_local)
 !--------------------------------------------------------------------------
 ! Purposes : main routine to get TS diagnostics integrated over MLD
@@ -51,9 +50,6 @@
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         integer, intent(in) :: mode
-        integer, intent(inout) :: kbl_turb_local(GLOBAL_2D_ARRAY), &
-                                  kbl_dens_local(GLOBAL_2D_ARRAY), &
-                                  kbl_temp_local(GLOBAL_2D_ARRAY)
         real, intent(inout) :: mld_turb_local(GLOBAL_2D_ARRAY), &
                                mld_dens_local(GLOBAL_2D_ARRAY), &
                                mld_temp_local(GLOBAL_2D_ARRAY)
@@ -65,32 +61,35 @@
         integer :: mode_t3dmix_S=2
         integer :: mode_t3dmix_ISO=3
         integer :: mode_t3dmix_spg=4
-        integer :: kbl_local(GLOBAL_2D_ARRAY)
+        integer :: kmld_integ(GLOBAL_2D_ARRAY)
+        integer :: kmld_turb(GLOBAL_2D_ARRAY), &
+                   kmld_dens(GLOBAL_2D_ARRAY), &
+                   kmld_temp(GLOBAL_2D_ARRAY)
 
 
         call get_mld_idx(Istr,Iend,Jstr,Jend, &
-                kbl_turb_local,kbl_dens_local,kbl_temp_local, &
+                kmld_turb,kmld_dens,kmld_temp, &
                 mld_turb_local,mld_dens_local,mld_temp_local)
 
         if (mld_crit_type == 'turbulence') then
-                kbl_local = kbl_turb_local
+                kmld_integ = kmld_turb
         else if (mld_crit_type == 'density') then
-                kbl_local = kbl_dens_local
+                kmld_integ = kmld_dens
         else if (mld_crit_type == 'temperature') then
-                kbl_local = kbl_temp_local
+                kmld_integ = kmld_temp
         endif
 
         call integrate_over_mld(Istr,Iend,Jstr,Jend, &
-                       itrc, T_mld_nnew, T_mld_nstp,mode,kbl_local)
+                       itrc, T_mld_nnew, T_mld_nstp,mode,kmld_integ)
 
         if (mode == mode_t3dmix_S .or. mode == mode_t3dmix_ISO &
                    .or. mode == mode_t3dmix_spg) then 
           call get_rate_and_entrainement_terms(Istr,Iend,Jstr,Jend,itrc, &
-                                  T_mld_nnew,T_mld_nstp,kbl_local)
+                                  T_mld_nnew,T_mld_nstp,kmld_integ)
 #  if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2)
         else if (mode == mode_step3d) then
           call get_rate_and_entrainement_terms(Istr,Iend,Jstr,Jend,itrc, &
-                                  T_mld_nnew,T_mld_nstp,kbl_local)
+                                  T_mld_nnew,T_mld_nstp,kmld_integ)
 #  endif
         endif
        end subroutine get_diagTS_over_mld
@@ -98,7 +97,7 @@
 !==========================================================================
 !==========================================================================
        subroutine get_mld_idx(Istr,Iend,Jstr,Jend, &
-                       kbl_turb_local,kbl_dens_local,kbl_temp_local, &
+                       kmld_turb,kmld_dens,kmld_temp, &
                        mld_turb_local,mld_dens_local,mld_temp_local)
 !--------------------------------------------------------------------------
 ! Purposes : - get the mld and mld vertical index using the three 
@@ -112,23 +111,24 @@
         use param
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend
-        integer, intent(inout) :: kbl_turb_local(GLOBAL_2D_ARRAY), &
-                                  kbl_dens_local(GLOBAL_2D_ARRAY), &
-                                  kbl_temp_local(GLOBAL_2D_ARRAY) 
         real, intent(inout) :: mld_turb_local(GLOBAL_2D_ARRAY), &
                                mld_dens_local(GLOBAL_2D_ARRAY), &
                                mld_temp_local(GLOBAL_2D_ARRAY)
+        ! Local declarations
+        integer :: kmld_turb(GLOBAL_2D_ARRAY), &
+                   kmld_dens(GLOBAL_2D_ARRAY), &
+                   kmld_temp(GLOBAL_2D_ARRAY) 
 
         call idx_mld_density(Istr,Iend,Jstr,Jend, &
             mld_crit_D,mld_depth_ref, &
-            kbl_dens_local,mld_dens_local)
+            kmld_dens,mld_dens_local)
         call idx_mld_temperature(Istr,Iend,Jstr,Jend, &
             mld_crit_T,mld_depth_ref, &
-            kbl_temp_local,mld_temp_local)
+            kmld_temp,mld_temp_local)
 #    if defined LMD_SKPP || defined GLS_MIXING || defined ANA_VMIX
         call idx_mld_turbulence(Istr,Iend,Jstr,Jend, & 
             mld_crit_AKt,mld_depth_ref, &
-            kbl_turb_local,mld_turb_local) 
+            kmld_turb,mld_turb_local) 
 #    endif
        end subroutine get_mld_idx
 
@@ -136,7 +136,7 @@
 !==========================================================================
        subroutine integrate_over_mld(Istr,Iend,Jstr,Jend, &
                        itrc, T_mld_nnew, T_mld_nstp,mode, &
-                       kbl_local)
+                       kmld_integ)
 !--------------------------------------------------------------------------
 ! Purposes : - integrate budget terms of TS diagnostics over MLD
 !--------------------------------------------------------------------------
@@ -149,7 +149,7 @@
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         integer, intent(in) :: mode
-        integer, intent(in) :: kbl_local(GLOBAL_2D_ARRAY)
+        integer, intent(in) :: kmld_integ(GLOBAL_2D_ARRAY)
         real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
                 T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
 
@@ -194,7 +194,7 @@
         enddo
         do j=Jstr,Jend
           do i=Istr,Iend
-            kmld=kbl_local(i,j)
+            kmld=kmld_integ(i,j)
             do k=N,kmld,-1
               if (mode == mode_step3d) then
                 TXadv_mld(i,j,itrc)=(TXadv_mld(i,j,itrc)+TXadv(i,j,k,itrc)) SWITCH rmask(i,j)
@@ -238,7 +238,7 @@
 !==========================================================================
 !==========================================================================
        subroutine get_rate_and_entrainement_terms(Istr,Iend,Jstr,Jend,itrc, &
-                                      T_mld_nnew,T_mld_nstp,kbl_local)
+                                      T_mld_nnew,T_mld_nstp,kmld_integ)
 !--------------------------------------------------------------------------
 ! Purposes : - compute the rate and entrainement/detrainement terms for 
 !              TS diagnostics integrated over MLD 
@@ -253,21 +253,21 @@
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
                 T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
-        integer,intent(in) :: kbl_local(GLOBAL_2D_ARRAY)
+        integer,intent(in) :: kmld_integ(GLOBAL_2D_ARRAY)
         ! Local declarations
         integer :: i,j,k,kmld
         real :: cff
 
         do j=Jstr,Jend
           do i=Istr,Iend
-            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl_local(i,j)
+            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kmld_integ(i,j)
             kmld=kbl_nstp(i,j)
             do k=N,kmld,-1
               cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
               T_mld_nstp(i,j)=T_mld_nstp(i,j)+ &
                              t(i,j,k,nstp,itrc)*cff
             enddo
-            if (itrc .eq. NT) kbl_nstp(i,j)=kbl_local(i,j)
+            if (itrc .eq. NT) kbl_nstp(i,j)=kmld_integ(i,j)
           enddo
         enddo
         do j=Jstr,Jend

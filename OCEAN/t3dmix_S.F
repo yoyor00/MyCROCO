@@ -481,7 +481,6 @@
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
         call get_diagTS_over_mld(Istr,Iend,Jstr,Jend,
      &                    itrc,FX,FE,2,
-     &                    kmld_turb,kmld_dens,kmld_temp,
      &                    mld_turb,mld_dens,mld_temp)
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
