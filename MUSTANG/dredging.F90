@@ -1,5 +1,6 @@
-! MUSTANG - This software is governed by the CeCILL-C license
-! see LICENSE_MUSTANG.txt
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
 
 MODULE dredging
    !============================================================================
@@ -366,13 +367,12 @@ CONTAINS
       END IF
 
       dump_layer(:) = dredging_dumping_layer
-#ifdef key_sand2D
+
       DO iv = isand1, isand2
          IF (l_subs2D(iv)) THEN
             dump_layer(iv) = 1
          END IF
       END DO
-#endif
 
    END SUBROUTINE dredging_init_var
    !============================================================================
@@ -685,10 +685,10 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
+
+
 
       INTEGER :: iz, ierror
       REAL(KIND=rsh) :: tmp
@@ -717,11 +717,8 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
-
       INTEGER :: iv, iz, ierror
       REAL(KIND=rsh) :: tmp
 
@@ -755,11 +752,8 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif
-
       INTEGER :: itrc
 
       do itrc = 1, NT

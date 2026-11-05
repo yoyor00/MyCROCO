@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -18,12 +19,18 @@
 ! summation counters, etc; NONE of the physical parameters of
 ! the model is set here.
 !
+      use croco_namelist, only: dt
+# ifdef USE_CALENDAR
+      use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
+     &                          dt_rst
+# endif
+
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
 #if defined ONLINE
       integer blkvar_id
 #endif /* ONLINE */
-      character*20 nametrc, unitt
+      character*20 nametrc, unitt, unitts
       character*60 vname1, vname3
       integer omp_get_num_threads
 #include "param.h"
@@ -34,7 +41,7 @@
 #ifdef DIAGNOSTICS_VRT
 # include "diags_vrt.h"
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 # include "diags_ek.h"
 #endif
 #ifdef DIAGNOSTICS_PV
@@ -226,7 +233,7 @@ C$OMP END PARALLEL
       nrecdiags_vrt_avg=0
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       nciddiags_ek=-1
       nrecdiags_ek=0
 # ifdef AVERAGES
@@ -301,11 +308,7 @@ C$OMP END PARALLEL
 
 !#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
-#ifdef MILES
-      vname(1,indxTime)='ocean_time'
-#else
-      vname(1,indxTime)='scrum_time'
-#endif
+      vname(1,indxTime)='time'
       vname(2,indxTime)='time since initialization'
 #if defined USE_CALENDAR && defined ANA_INITIAL
       vname(3,indxTime)='seconds since '//start_date
@@ -318,25 +321,10 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(7,indxTime)='T'
       vname(8,indxTime)='.NO.'
       vname(9,indxTime)=' '
-#ifdef USE_CALENDAR 
+#ifdef USE_CALENDAR
       vname(10,indxTime)=start_date
-!     vname(11,indxTime)='Gregorian'
+      vname(11,indxTime)='Gregorian'
 #endif
-
-CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
-      vname(1,indxTime2)='time'
-      vname(2,indxTime2)='time since initialization'
-#if defined USE_CALENDAR && defined ANA_INITIAL
-      vname(3,indxTime2)='seconds since '//start_date
-#else
-      vname(3,indxTime2)='second'
-#endif
-      vname(4,indxTime2)='time, scalar, series'
-      vname(5,indxTime2)='time'
-      vname(6,indxTime2)='  '
-      vname(7,indxTime2)='T '
-      vname(8,indxTime2)='.NO.'
-      vname(9,indxTime2)=' '
 
 CR      write(stdout,'(1x,A,I3)') 'indxZ =',indxZ
       vname(1,indxZ)='zeta                                        '
@@ -523,47 +511,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(6,indxT)='x_rho y_rho                                 '
 #  endif
       vname(7,indxT)='                                            '
-
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-CR      write(stdout,'(1x,A,I3)') 'indxCRT2 = ',indxCRT2
-      vname(1,indxCRT2)='temp_CRT2                                  '
-      vname(2,indxCRT2)='potential temperature                       '
-      vname(3,indxCRT2)='Celsius                                     '
-      vname(4,indxCRT2)='temperature, scalar, series                 '
-      vname(5,indxCRT2)='sea_water_potential_temperature             '
-#  ifdef SPHERICAL
-      vname(6,indxCRT2)='lat_rho lon_rho                             '
-#  else
-      vname(6,indxCRT2)='x_rho y_rho                                 '
-#  endif
-      vname(7,indxCRT2)='                                            '
-
-CR      write(stdout,'(1x,A,I3)') 'indxCRT3 = ',indxCRT3
-      vname(1,indxCRT3)='temp_CRT3                                '
-      vname(2,indxCRT3)='potential temperature                       '
-      vname(3,indxCRT3)='Celsius                                     '
-      vname(4,indxCRT3)='temperature, scalar, series                 '
-      vname(5,indxCRT3)='sea_water_potential_temperature             '
-#  ifdef SPHERICAL
-      vname(6,indxCRT3)='lat_rho lon_rho                             '
-#  else
-      vname(6,indxCRT3)='x_rho y_rho                                 '
-#  endif
-      vname(7,indxCRT3)='                                            '
-
-CR      write(stdout,'(1x,A,I3)') 'indxCRT4 = ',indxCRT4
-      vname(1,indxCRT4)='temp_CRT4                                '
-      vname(2,indxCRT4)='potential temperature                       '
-      vname(3,indxCRT4)='Celsius                                     '
-      vname(4,indxCRT4)='temperature, scalar, series                 '
-      vname(5,indxCRT4)='sea_water_potential_temperature             '
-#  ifdef SPHERICAL
-      vname(6,indxCRT4)='lat_rho lon_rho                             '
-#  else
-      vname(6,indxCRT4)='x_rho y_rho                                 '
-#  endif
-      vname(7,indxCRT4)='                                            '
-# endif /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_CRIT */
 # endif /* TEMPERATURE */
 
 # ifdef SALINITY
@@ -580,6 +527,34 @@ CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
 #  endif
       vname(7,indxS)='                                            '
 # endif /* SALINITY */
+
+# ifdef STOGEN
+CR      write(stdout,'(1x,A,I3)') 'indxXIsto2d = ',indxXIsto2d
+      vname(1,indxXIsto2d)='sto_xi_2d                                 '
+      vname(2,indxXIsto2d)='2D Stochastic autoregressive process      '
+      vname(3,indxXIsto2d)='no unit                                   '
+      vname(4,indxXIsto2d)='[attrs]                                   '
+      vname(5,indxXIsto2d)='stochastic_field_2d                       '
+#ifdef SPHERICAL
+      vname(6,indxXIsto2d)='lat_rho lon_rho                           '
+#else
+      vname(6,indxXIsto2d)='x_rho y_rho                               '
+#endif
+      vname(7,indxXIsto2d)='                                          '
+
+CR      write(stdout,'(1x,A,I3)') 'indxXIsto3d = ',indxXIsto3d
+      vname(1,indxXIsto3d)='sto_xi_3d                                 '
+      vname(2,indxXIsto3d)='3D Stochastic autoregressive process      '
+      vname(3,indxXIsto3d)='no unit                                   '
+      vname(4,indxXIsto3d)='[attrs]                                   '
+      vname(5,indxXIsto3d)='stochastic_field_3d                       '
+#ifdef SPHERICAL
+      vname(6,indxXIsto3d)='lat_rho lon_rho                           '
+#else
+      vname(6,indxXIsto3d)='x_rho y_rho                               '
+#endif
+      vname(7,indxXIsto3d)='                                          '
+# endif /* STOGEN */
 
 # ifdef PASSIVE_TRACER
       do i=1,ntrc_pas
@@ -1883,8 +1858,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       vname(5,indxR)='sea_water_sigma_t                           '
       vname(7,indxR)='                                            '
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+      || defined LMD_SKPP || defined LMD_BKPP \
       || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
@@ -1894,6 +1869,24 @@ CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(5,indxbvf)='brunt_vaisala_frequency                   '
       vname(7,indxbvf)='                                          '
 # endif
+
+CR      write(stdout,'(1x,A,I3)') 'indxZ_r =',indxZ_r
+      vname(1,indxZ_r)='z_r                                         '
+      vname(2,indxZ_r)='depth of rho-points                         '
+      vname(3,indxZ_r)='meter                                       '
+      vname(4,indxZ_r)='z_r, scalar, series                         '
+      vname(5,indxZ_r)='                                            '
+      vname(6,indxZ_r)='lat_rho lon_rho                             '
+      vname(7,indxZ_r)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxZ_w =',indxZ_w
+      vname(1,indxZ_w)='z_w                                         '
+      vname(2,indxZ_w)='depth of w-points                           '
+      vname(3,indxZ_w)='meter                                       '
+      vname(4,indxZ_w)='z_w, scalar, series                         '
+      vname(5,indxZ_w)='                                            '
+      vname(6,indxZ_w)='lat_rho lon_rho                             '
+      vname(7,indxZ_w)='                                            '
 
 # ifdef VIS_COEF_3D
 CR      write(stdout,'(1x,A,I3)') 'indxVisc =',indxVisc
@@ -2732,6 +2725,15 @@ CR      write(stdout,'(1x,A,I3)') 'indxVWND =',indxVWND
 #endif /* BULK_FLUX */
 
 #ifdef DIAGNOSTICS_TS
+!
+! Tracer diagnostics are cell-volume integrals
+! (tracer variance budget if DIAGNOSTICS_TSVAR)
+!
+# ifdef DIAGNOSTICS_TSVAR
+      unitts='2 meter3 second-1   '
+# else
+      unitts=' meter3 second-1    '
+# endif
       do itrc=1,NT
 
 CR       write(stdout,'(1x,A,I3)') 'indxTXadv = ',indxTXadv+itrc-1
@@ -2743,7 +2745,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTXadv = ',indxTXadv+itrc-1
        vname(1,indxTXadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTXadv+itrc-1)
        vname(2,indxTXadv+itrc-1)='Horizontal (xi) advection term  '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTXadv+itrc-1)=vname3
        vname(4,indxTXadv+itrc-1)='                                '
        vname(5,indxTXadv+itrc-1)='                                '
@@ -2756,7 +2758,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTYadv = ',indxTYadv+itrc-1
        vname(1,indxTYadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTYadv+itrc-1)
        vname(2,indxTYadv+itrc-1)='Horizontal (eta) advection term '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTYadv+itrc-1)=vname3
        vname(4,indxTYadv+itrc-1)='                                '
        vname(5,indxTYadv+itrc-1)='                                '
@@ -2770,7 +2772,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTVadv = ',indxTVadv+itrc-1
        vname(1,indxTVadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTVadv+itrc-1)
        vname(2,indxTVadv+itrc-1)='Vertical advection term         '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTVadv+itrc-1)=vname3
        vname(4,indxTVadv+itrc-1)='                                '
        vname(5,indxTVadv+itrc-1)='                                '
@@ -2784,7 +2786,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTHmix = ',indxTHmix+itrc-1
        vname(1,indxTHmix+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTHmix+itrc-1)
        vname(2,indxTHmix+itrc-1)='Horizontal mixing term          '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTHmix+itrc-1)=vname3
        vname(4,indxTHmix+itrc-1)='                                '
        vname(5,indxTHmix+itrc-1)='                                '
@@ -2798,7 +2800,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTVmix = ',indxTVmix+itrc-1
        vname(1,indxTVmix+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTVmix+itrc-1)
        vname(2,indxTVmix+itrc-1)='Vertical mixing term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTVmix+itrc-1)=vname3
        vname(4,indxTVmix+itrc-1)='                                '
        vname(5,indxTVmix+itrc-1)='                                '
@@ -2814,7 +2816,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTVmixt = ',indxTVmixt+itrc-1
        vname(1,indxTVmixt+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTVmixt+itrc-1)
        vname(2,indxTVmixt+itrc-1)='Vertical mixing term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTVmixt+itrc-1)=vname3
        vname(4,indxTVmixt+itrc-1)='                                '
        vname(5,indxTVmixt+itrc-1)='                                '
@@ -2830,7 +2832,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTForc = ',indxTForc+itrc-1
        vname(1,indxTForc+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTForc+itrc-1)
        vname(2,indxTForc+itrc-1)='Forcing term (Q & Nudging)      '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTForc+itrc-1)=vname3
        vname(4,indxTForc+itrc-1)='                                '
        vname(5,indxTForc+itrc-1)='                                '
@@ -2844,7 +2846,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTrate = ',indxTrate+itrc-1
        vname(1,indxTrate+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTrate+itrc-1)
        vname(2,indxTrate+itrc-1)='Time rate of change             '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTrate+itrc-1)=vname3
        vname(4,indxTrate+itrc-1)='                                '
        vname(5,indxTrate+itrc-1)='                                '
@@ -2854,11 +2856,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxTrate+itrc-1)
 ! Tracer diagnostics variables averaged over the MLD
 !
 # ifdef DIAGNOSTICS_TS_MLD
-
-# if defined DIAGNOSTICS_TS_MLD_CRIT
-       vname(1,indxT)='temp_CRT1                                  '
-# endif
-
 CR       write(stdout,'(1x,A,I3)') 'indxTXadv_mld = ',indxTXadv_mld+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
@@ -2868,7 +2865,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTXadv_mld = ',indxTXadv_mld+itrc-1
        vname(1,indxTXadv_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTXadv_mld+itrc-1)
        vname(2,indxTXadv_mld+itrc-1)='MLD xi advection term       '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTXadv_mld+itrc-1)=vname3
        vname(4,indxTXadv_mld+itrc-1)='                            '
        vname(5,indxTXadv_mld+itrc-1)='                            '
@@ -2882,7 +2879,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTYadv_mld = ',indxTYadv_mld+itrc-1
        vname(1,indxTYadv_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTYadv_mld+itrc-1)
        vname(2,indxTYadv_mld+itrc-1)='MLD eta advection term      '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTYadv_mld+itrc-1)=vname3
        vname(4,indxTYadv_mld+itrc-1)='                            '
        vname(5,indxTYadv_mld+itrc-1)='                            '
@@ -2894,9 +2891,9 @@ CR       write(stdout,'(1x,A,I3)') 'indxTVadv_mld = ',indxTVadv_mld+itrc-1
        unitt=vname(3,indxT+itrc-1)
        write(vname1,*) trim(nametrc),'_vadv_mld                   '
        vname(1,indxTVadv_mld+itrc-1)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxTVadv+itrc-1)
+CR       write(stdout,'(20x,A)') vname(1,indxTVadv_mld+itrc-1)
        vname(2,indxTVadv_mld+itrc-1)='MLD vertical advection term '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTVadv_mld+itrc-1)=vname3
        vname(4,indxTVadv_mld+itrc-1)='                            '
        vname(5,indxTVadv_mld+itrc-1)='                            '
@@ -2910,7 +2907,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTHmix_mld = ',indxTHmix_mld+itrc-1
        vname(1,indxTHmix_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTHmix_mld+itrc-1)
        vname(2,indxTHmix_mld+itrc-1)='MLD xi mixing term          '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTHmix_mld+itrc-1)=vname3
        vname(4,indxTHmix_mld+itrc-1)='                            '
        vname(5,indxTHmix_mld+itrc-1)='                            '
@@ -2924,7 +2921,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTVmix_mld = ',indxTVmix_mld+itrc-1
        vname(1,indxTVmix_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTVmix_mld+itrc-1)
        vname(2,indxTVmix_mld+itrc-1)='MLD vertical mixing term    '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTVmix_mld+itrc-1)=vname3
        vname(4,indxTVmix_mld+itrc-1)='                            '
        vname(5,indxTVmix_mld+itrc-1)='                            '
@@ -2938,7 +2935,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTForc_mld = ',indxTForc_mld+itrc-1
        vname(1,indxTForc_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTForc_mld+itrc-1)
        vname(2,indxTForc_mld+itrc-1)='MLD Forcing term (Q & Nudg) '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTForc_mld+itrc-1)=vname3
        vname(4,indxTForc_mld+itrc-1)='                            '
        vname(5,indxTForc_mld+itrc-1)='                            '
@@ -2952,7 +2949,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTrate_mld = ',indxTrate_mld+itrc-1
        vname(1,indxTrate_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTrate_mld+itrc-1)
        vname(2,indxTrate_mld+itrc-1)='MLD time rate of change     '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTrate_mld+itrc-1)=vname3
        vname(4,indxTrate_mld+itrc-1)='                            '
        vname(5,indxTrate_mld+itrc-1)='                            '
@@ -2966,7 +2963,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxTentr_mld = ',indxTentr_mld+itrc-1
        vname(1,indxTentr_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTentr_mld+itrc-1)
        vname(2,indxTentr_mld+itrc-1)='MLD entrainment rate        '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),unitts
        vname(3,indxTentr_mld+itrc-1)=vname3
        vname(4,indxTentr_mld+itrc-1)='                            '
        vname(5,indxTentr_mld+itrc-1)='                            '
@@ -2979,56 +2976,48 @@ CR       write(stdout,'(1x,A,I3)') 'indxTaver_mld = ',indxTaver_mld+itrc-1
        write(vname1,*) trim(nametrc),'_aver_mld                   '
        vname(1,indxTaver_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
-       vname(2,indxTaver_mld+itrc-1)='MLD averaged                 '
-       write(vname3,*) trim(unitt)
+       vname(2,indxTaver_mld+itrc-1)='MLD average                 '
+       write(vname3,*) trim(unitt),'                              '
        vname(3,indxTaver_mld+itrc-1)=vname3
        vname(4,indxTaver_mld+itrc-1)='                            '
        vname(5,indxTaver_mld+itrc-1)='                            '
        vname(6,indxTaver_mld+itrc-1)='                            '
        vname(7,indxTaver_mld+itrc-1)='                            '
-
-# if defined DIAGNOSTICS_TS_MLD_CRIT
+#  if defined DIAGNOSTICS_TS_MLD_DENS
 CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        nametrc=vname(1,indxT+itrc-1)
-       write(vname1,*) trim(nametrc),'_depth_mld                  '
-       vname(1,indxTcrit_mld+itrc-1)=vname1
+       unitt=vname(3,indxT+itrc-1)
+       if (itrc.eq.1) then
+         vname(1,indxTcrit_mld+itrc-1)='dens_mld_depth            '
+         vname(2,indxTcrit_mld+itrc-1)='MLD (density criterion)   '
+       endif
+       if (itrc.eq.2) then
+         vname(1,indxTcrit_mld+itrc-1)='temp_mld_depth            '
+         vname(2,indxTcrit_mld+itrc-1)='MLD (temp criterion)      '
+       endif
 CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
-       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
-       vname(3,indxTcrit_mld+itrc-1)=' meters                     '
-       if (itrc.eq.iCRT2) then
-         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
-     &   mld_crit_T,' °C'
-       elseif (itrc.eq.iCRT3) then
-         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
-     &   mld_crit_T2,' °C'
-       elseif (itrc.eq.iCRT4) then
-         write(vname3,'(A,1pe10.3,A)') 'Criterion : BVF with rho_ref = '
-     &   ,mld_crit_D,' kg/m3'
-       else
-         write(vname3,'(A,1pe10.3,A)') 'Criterion : rho_ref + ',
-     &   mld_crit_D,' kg/m3'
-       endif
-       vname(4,indxTcrit_mld+itrc-1)=vname3
-       if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
-         write(vname3,'(A,I4,A)') 'Reference depth of T_ref = ',
-     &   mld_depth_ref,' m'
-       elseif (itrc.eq.iCRT4) then
-         write(vname3,'(A,I4,A)') '            '
-       else
-         write(vname3,'(A,I4,A)') 'Reference depth of rho_ref = ',
-     &   mld_depth_ref,' m'
-       endif
-       vname(5,indxTcrit_mld+itrc-1)=vname3
+       write(vname3,*)               ' meter                      '
+       vname(3,indxTcrit_mld+itrc-1)=vname3
+       vname(4,indxTcrit_mld+itrc-1)='                            '
+       vname(5,indxTcrit_mld+itrc-1)='                            '
        vname(6,indxTcrit_mld+itrc-1)='                            '
        vname(7,indxTcrit_mld+itrc-1)='                            '
-
-       vname(1,indxT)='temp                                        '
-
-# endif /* DIAGNOSTICS_TS_MLD_CRIT */
-
+#  endif 
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc
+# ifdef DIAGNOSTICS_TS_MLD
+!
+! MLD vertical index at previous time step (restart file only)
+!
+      vname(1,indxKbl_nstp)='kbl_nstp                                  '
+      vname(2,indxKbl_nstp)='MLD vertical index at previous time step  '
+      vname(3,indxKbl_nstp)='nondimensional                            '
+      vname(4,indxKbl_nstp)='kbl_nstp, scalar, series                  '
+      vname(5,indxKbl_nstp)='                                          '
+      vname(6,indxKbl_nstp)='lat_rho lon_rho                           '
+      vname(7,indxKbl_nstp)='                                          '
+# endif
 #endif  /* DIAGNOSTICS_TS */
 
 #ifdef DIAGNOSTICS_UV
@@ -3037,12 +3026,11 @@ CR       write(stdout,'(1x,A,I3)') 'indxMXadv = ',indxMXadv+itrc-1
        lvar=lenstr(vname(1,indxU+itrc-1))
        nametrc=vname(1,indxU+itrc-1)(1:lvar)
        lvar=lenstr(nametrc)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_xadv                       '
        vname(1,indxMXadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMxadv+itrc-1)
        vname(2,indxMXadv+itrc-1)='Horizontal (xi) advection term  '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMXadv+itrc-1)=vname3
        vname(4,indxMXadv+itrc-1)='                                '
        write(vname3,*) 'horizontal_Xi_advection_term_',trim(nametrc)
@@ -3053,12 +3041,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMxadv+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMYadv = ',indxMYadv+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_yadv                       '
        vname(1,indxMYadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMYadv+itrc-1)
        vname(2,indxMYadv+itrc-1)='Horizontal (eta) advection term '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter2 second-2                           '
        vname(3,indxMYadv+itrc-1)=vname3
        vname(4,indxMYadv+itrc-1)='                                '
        write(vname3,*) 'horizontal_eta_advection_term_',trim(nametrc)
@@ -3069,12 +3056,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMYadv+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMVadv = ',indxMVadv+itrc-1
                     nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_vadv                       '
        vname(1,indxMVadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVadv+itrc-1)
        vname(2,indxMVadv+itrc-1)='Vertical advection term         '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMVadv+itrc-1)=vname3
        vname(4,indxMVadv+itrc-1)='                                '
        write(vname3,*) 'vertical_advection_term_',trim(nametrc)
@@ -3085,12 +3071,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMVadv+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMCor = ',indxMCor+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_cor                        '
        vname(1,indxMCor+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMcor+itrc-1)
        vname(2,indxMCor+itrc-1)='Coriolis term                    '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMCor+itrc-1)=vname3
        vname(4,indxMCor+itrc-1)='                                 '
        write(vname3,*) 'coriolis_term_in_momentum_',trim(nametrc)
@@ -3101,12 +3086,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMcor+itrc-1)
 
 CR      write(stdout,'(1x,A,I3)') 'indxMPrsgrd = ',indxMPrsgrd+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_prsgrd                     '
        vname(1,indxMPrsgrd+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMPrsgrd+itrc-1)
        vname(2,indxMPrsgrd+itrc-1)='Pressure gradient term        '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMPrsgrd+itrc-1)=vname3
        vname(4,indxMPrsgrd+itrc-1)='                              '
        write(vname3,*) 'pressure_gradient_term_',trim(nametrc)
@@ -3117,12 +3101,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMPrsgrd+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMHmix = ',indxMHmix+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_hmix                       '
        vname(1,indxMHmix+itrc-1)=vname1
 C     R       write(stdout,'(20x,A)') vname(1,indxMHmix+itrc-1)
        vname(2,indxMHmix+itrc-1)='Horizontal mixing term          '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMHmix+itrc-1)=vname3
        vname(4,indxMHmix+itrc-1)='                                '
        write(vname3,*) 'horizontal_mixing_term_',trim(nametrc)
@@ -3133,12 +3116,11 @@ C     R       write(stdout,'(20x,A)') vname(1,indxMHmix+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMHdiff = ',indxMHdiff+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_hdiff                      '
        vname(1,indxMHdiff+itrc-1)=vname1
 C     R       write(stdout,'(20x,A)') vname(1,indxMHdiff+itrc-1)
        vname(2,indxMHdiff+itrc-1)='Horizontal diffusion term      '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMHdiff+itrc-1)=vname3
        vname(4,indxMHdiff+itrc-1)='                               '
        write(vname3,*) 'horizontal_diffusion_term_',trim(nametrc)
@@ -3149,12 +3131,11 @@ C     R       write(stdout,'(20x,A)') vname(1,indxMHdiff+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMVmix = ',indxMVmix+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_vmix                       '
        vname(1,indxMVmix+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVmix+itrc-1)
        vname(2,indxMVmix+itrc-1)='Vertical mixing term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMVmix+itrc-1)=vname3
        vname(4,indxMVmix+itrc-1)='                                '
        write(vname3,*) 'vertical_mixing_term_',trim(nametrc)
@@ -3165,12 +3146,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMVmix+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMVmix2 = ',indxMVmix2+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_nudg                       '
        vname(1,indxMVmix2+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVmix2+itrc-1)
        vname(2,indxMVmix2+itrc-1)='Momentum nudging term          '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMVmix2+itrc-1)=vname3
        vname(4,indxMVmix2+itrc-1)='                               '
        write(vname3,*) 'momentum_nudging_term_',trim(nametrc)
@@ -3182,12 +3162,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMVmix2+itrc-1)
 # if defined DIAGNOSTICS_BARO
 CR      write(stdout,'(1x,A,I3)') 'indxMBaro = ',indxMBaro+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_baro                       '
        vname(1,indxMBaro+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
        vname(2,indxMBaro+itrc-1)='Barotropic coupling term        '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMBaro+itrc-1)=vname3
        vname(4,indxMBaro+itrc-1)='                                '
        write(vname3,*) 'barotropic_coupling_term_',trim(nametrc)
@@ -3200,12 +3179,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
 # if defined M3FAST
 CR      write(stdout,'(1x,A,I3)') 'indxMfast = ',indxMfast+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_fast                       '
        vname(1,indxMfast+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMfast+itrc-1)
        vname(2,indxMfast+itrc-1)='fast term                       '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMfast+itrc-1)=vname3
        vname(4,indxMfast+itrc-1)='                                '
        write(vname3,*) 'fast_term_',trim(nametrc)
@@ -3218,12 +3196,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMfast+itrc-1)
 # ifdef MRL_WCI
 CR       write(stdout,'(1x,A,I3)') 'indxMvf = ',indxMvf+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_vf                         '
        vname(1,indxMvf+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMvf+itrc-1)
        vname(2,indxMvf+itrc-1)='Vortex body force term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMvf+itrc-1)=vname3
        vname(4,indxMvf+itrc-1)='                                  '
        vname(5,indxMvf+itrc-1)=vname1
@@ -3232,12 +3209,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMvf+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMbrk = ',indxMbrk+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_brk                        '
        vname(1,indxMbrk+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMbrk+itrc-1)
        vname(2,indxMbrk+itrc-1)='Breaking body force term         '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMbrk+itrc-1)=vname3
        vname(4,indxMbrk+itrc-1)='                                 '
        vname(5,indxMbrk+itrc-1)=vname1
@@ -3246,12 +3222,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMbrk+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMStCo = ',indxMStCo+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_StCo                       '
        vname(1,indxMStCo+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMStCo+itrc-1)
        vname(2,indxMStCo+itrc-1)='Stokes-Coriolis term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMStCo+itrc-1)=vname3
        vname(4,indxMStCo+itrc-1)='                                '
        vname(5,indxMStCo+itrc-1)=vname1
@@ -3260,12 +3235,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMStCo+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMVvf = ',indxMVvf+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_Vvf                        '
        vname(1,indxMVvf+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVvf+itrc-1)
        vname(2,indxMVvf+itrc-1)='Vertical vortex force term       '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMVvf+itrc-1)=vname3
        vname(4,indxMVvf+itrc-1)='                                 '
        vname(5,indxMVvf+itrc-1)=vname1
@@ -3274,12 +3248,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMVvf+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMPrscrt = ',indxMPrscrt+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_Prscrt                     '
        vname(1,indxMPrscrt+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMPrscrt+itrc-1)
        vname(2,indxMPrscrt+itrc-1)='Pressure correction term      '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMPrscrt+itrc-1)=vname3
        vname(4,indxMPrscrt+itrc-1)='                              '
        vname(5,indxMPrscrt+itrc-1)=vname1
@@ -3288,12 +3261,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMPrscrt+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMsbk = ',indxMsbk+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_sbk                        '
        vname(1,indxMsbk+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMsbk+itrc-1)
        vname(2,indxMsbk+itrc-1)='Surface breaking term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMsbk+itrc-1)=vname3
        vname(4,indxMsbk+itrc-1)='                                 '
        vname(5,indxMsbk+itrc-1)=vname1
@@ -3302,12 +3274,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMsbk+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMbwf = ',indxMbwf+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_bwf                        '
        vname(1,indxMbwf+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMbwf+itrc-1)
        vname(2,indxMbwf+itrc-1)='Bed wave friction term           '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMbwf+itrc-1)=vname3
        vname(4,indxMbwf+itrc-1)='                                 '
        vname(5,indxMbwf+itrc-1)=vname1
@@ -3316,12 +3287,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxMbwf+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMfrc = ',indxMfrc+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_frc                        '
        vname(1,indxMfrc+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMfrc+itrc-1)
        vname(2,indxMfrc+itrc-1)='Wave streaming                   '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter4 second-2                           '
        vname(3,indxMfrc+itrc-1)=vname3
        vname(4,indxMfrc+itrc-1)='                                 '
        vname(5,indxMfrc+itrc-1)=vname1
@@ -3331,13 +3301,12 @@ CR       write(stdout,'(20x,A)') vname(1,indxMfrc+itrc-1)
 
 CR       write(stdout,'(1x,A,I3)') 'indxMrate = ',indxMrate+itrc-1
        nametrc=vname(1,indxU+itrc-1)
-       unitt=vname(3,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_rate                       '
        vname(1,indxMrate+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMrate+itrc-1)
        vname(2,indxMrate+itrc-1)='Time rate of change             '
-       write(vname3,*) trim(unitt),' second-1                     '
-       vname(3,indxMrate+itrc-1)=vname3
+       write(vname3,*) trim(unitt),' m second-1                   '
+       write(vname3,*) 'meter4 second-2                           '
        vname(4,indxMrate+itrc-1)='                                '
        write(vname3,*) 'time_rate_of_change_term_',trim(nametrc)
      &               //'_component'
@@ -3351,97 +3320,87 @@ CR       write(stdout,'(20x,A)') vname(1,indxMrate+itrc-1)
 CR       write(stdout,'(1x,A,I3)') 'indxvrtXadv = ',indxvrtXadv+itrc-1
        nametrc='vrt'
        lvar=lenstr(nametrc)
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_xadv                       '
        vname(1,indxvrtXadv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtxadv)
        vname(2,indxvrtXadv)='Horizontal (xi) advection term       '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtXadv)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtYadv = ',indxvrtYadv+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_yadv                       '
        vname(1,indxvrtYadv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtYadv)
        vname(2,indxvrtYadv)='Horizontal (eta) advection term      '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtYadv)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtHdiff = ',indxvrtHdiff+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hdiff                      '
        vname(1,indxvrtHdiff)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtHdiff)
        vname(2,indxvrtHdiff)='Horizontal diffusion term (implicit)'
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtHdiff)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtCor = ',indxvrtCor+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_cor                        '
        vname(1,indxvrtCor)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtCor)
        vname(2,indxvrtCor)='Coriolis term                         '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtCor)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtPrsgrd = ',indxvrtPrsgrd+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_prsgrd                     '
        vname(1,indxvrtPrsgrd)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtPrsgrd)
        vname(2,indxvrtPrsgrd)='Pressure gradient term             '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtPrsgrd)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtHmix = ',indxvrtHmix+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hmix                       '
        vname(1,indxvrtHmix)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtHmix)
        vname(2,indxvrtHmix)='Horizontal mixing term               '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtHmix)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtVmix = ',indxvrtVmix+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vmix                       '
        vname(1,indxvrtVmix)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtVmix)
        vname(2,indxvrtVmix)='Vertical mixing term                 '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtVmix)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtrate = ',indxvrtrate+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_rate                       '
        vname(1,indxvrtrate)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtrate)
        vname(2,indxvrtrate)='Time rate of change                  '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtrate)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtVmix2 = ',indxvrtVmix2+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_nudg                       '
        vname(1,indxvrtVmix2)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtVmix2)
        vname(2,indxvrtVmix2)='Momentum nudging term               '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtVmix2)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtWind = ',indxvrtWind+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_wind                       '
        vname(1,indxvrtWind)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtWind)
@@ -3450,7 +3409,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtWind)
 
 CR       write(stdout,'(1x,A,I3)') 'indxvrtDrag = ',indxvrtDrag+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_drag                       '
        vname(1,indxvrtDrag)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtDrag)
@@ -3460,122 +3418,110 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtDrag)
 # if defined DIAGNOSTICS_BARO
 CR       write(stdout,'(1x,A,I3)') 'indxvrtBaro = ',indxvrtBaro+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_baro                       '
        vname(1,indxvrtBaro)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtBaro)
        vname(2,indxvrtBaro)='Barotropic coupling term             '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtBaro)=vname3
 # endif
 
 # if defined M3FAST
 CR       write(stdout,'(1x,A,I3)') 'indxvrtfast = ',indxvrtfast+itrc-1
        nametrc='vrt'
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_fast                       '
        vname(1,indxvrtfast)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxvrtfast)
        vname(2,indxvrtfast)='Fast term                            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) 'meter second-2                            '
        vname(3,indxvrtfast)=vname3
 # endif
 
 #endif /* DIAGNOSTICS_VRT */
 
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 
        nametrc='ke'
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHadv = ',indxekHadv+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hadv                       '
        vname(1,indxekHadv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekHadv)
        vname(2,indxekHadv)='Horizontal  advection term            '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekHadv)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHdiff = ',indxekHdiff+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hdiff                      '
        vname(1,indxekHdiff)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekHdiff)
        vname(2,indxekHdiff)='Implicit diffusion term              '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekHdiff)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVadv = ',indxekVadv+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vadv                       '
        vname(1,indxekVadv)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekVadv)
        vname(2,indxekVadv)='Vertical advection term               '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekVadv)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekCor = ',indxekCor+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_cor                        '
        vname(1,indxekCor)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekCor)
        vname(2,indxekCor)='Coriolis term                          '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekCor)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekPrsgrd = ',indxekPrsgrd+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_prsgrd                     '
        vname(1,indxekPrsgrd)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekPrsgrd)
        vname(2,indxekPrsgrd)='Pressure gradient term              '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekPrsgrd)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekHmix = ',indxekHmix+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_hmix                       '
        vname(1,indxekHmix)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekHmix)
        vname(2,indxekHmix)='Horizontal mixing term                '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekHmix)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVmix = ',indxekVmix+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vmix                       '
        vname(1,indxekVmix)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekVmix)
        vname(2,indxekVmix)='Vertical mixing term                  '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekVmix)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekrate = ',indxekrate+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_rate                       '
        vname(1,indxekrate)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekrate)
        vname(2,indxekrate)='Time rate of change                   '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekrate)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekvol = ',indxekvol+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_vol                        '
        vname(1,indxekvol)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekvol)
        vname(2,indxekvol)='Volume change                          '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekvol)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekVmix2 = ',indxekVmix2+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_nudg                       '
        vname(1,indxekVmix2)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekVmix2)
        vname(2,indxekVmix2)='Momentum nudging term                '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekVmix2)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekWind = ',indxekWind+itrc-1
@@ -3584,143 +3530,39 @@ CR       write(stdout,'(1x,A,I3)') 'indxekWind = ',indxekWind+itrc-1
        vname(1,indxekWind)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekWind)
        vname(2,indxekWind)='Wind stress                           '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekWind)=vname3
 
 CR       write(stdout,'(1x,A,I3)') 'indxekDrag = ',indxekDrag+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_drag                       '
        vname(1,indxekDrag)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekDrag)
        vname(2,indxekDrag)='Bottom drag                           '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekDrag)=vname3
 
 # if defined DIAGNOSTICS_BARO
 CR       write(stdout,'(1x,A,I3)') 'indxekBaro = ',indxekBaro+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_baro                       '
        vname(1,indxekBaro)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
        vname(2,indxekBaro)='Barotropic coupling term              '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekBaro)=vname3
 # endif
 
 # if defined M3FAST
 CR       write(stdout,'(1x,A,I3)') 'indxekfast = ',indxekfast+itrc-1
-       unitt=vname(3,indxU)
        write(vname1,*) trim(nametrc),'_fast                       '
        vname(1,indxekfast)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxekfast)
        vname(2,indxekfast)='Fast term                             '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
+       write(vname3,*) 'meter5 second-3                           '
        vname(3,indxekfast)=vname3
 # endif
 
-# ifdef DIAGNOSTICS_EK_MLD
-CR       write(stdout,'(1x,A,I3)') 'indxekHadv = ',indxekHadv+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_hadv_mld                   '
-       vname(1,indxekHadv_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekHadv)
-       vname(2,indxekHadv_mld)='Horizontal  advection term        '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekHadv_mld)=vname3
 
-CR       write(stdout,'(1x,A,I3)') 'indxekHdiff = ',indxekHdiff+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_hdiff_mld                  '
-       vname(1,indxekHdiff_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekHdiff)
-       vname(2,indxekHdiff_mld)='Implicit diffusion term          '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekHdiff_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekVadv = ',indxekVadv+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_vadv_mld                   '
-       vname(1,indxekVadv_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekVadv)
-       vname(2,indxekVadv_mld)='Vertical advection term           '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekVadv_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekCor = ',indxekCor+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_cor_mld                    '
-       vname(1,indxekCor_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekCor)
-       vname(2,indxekCor_mld)='Coriolis term                      '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekCor_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekPrsgrd = ',indxekPrsgrd+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_prsgrd_mld                 '
-       vname(1,indxekPrsgrd_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekPrsgrd)
-       vname(2,indxekPrsgrd_mld)='Pressure gradient term          '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekPrsgrd_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekHmix = ',indxekHmix+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_hmix_mld                   '
-       vname(1,indxekHmix_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekHmix)
-       vname(2,indxekHmix_mld)='Horizontal mixing term            '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekHmix_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekVmix = ',indxekVmix+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_vmix_mld                   '
-       vname(1,indxekVmix_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekVmix)
-       vname(2,indxekVmix_mld)='Vertical mixing term              '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekVmix_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekrate = ',indxekrate+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_rate_mld                   '
-       vname(1,indxekrate_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekrate)
-       vname(2,indxekrate_mld)='Time rate of change               '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekrate_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekvol = ',indxekvol+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_vol_mld                    '
-       vname(1,indxekvol_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekvol)
-       vname(2,indxekvol_mld)='Volume change                      '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekvol_mld)=vname3
-
-CR       write(stdout,'(1x,A,I3)') 'indxekVmix2 = ',indxekVmix2+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_nudg_mld                   '
-       vname(1,indxekVmix2_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekVmix2)
-       vname(2,indxekVmix2_mld)='Momentum nudging term            '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekVmix2_mld)=vname3
-
-#  if defined DIAGNOSTICS_BARO
-CR       write(stdout,'(1x,A,I3)') 'indxekBaro = ',indxekBaro+itrc-1
-       unitt=vname(3,indxU)
-       write(vname1,*) trim(nametrc),'_baro_mld                   '
-       vname(1,indxekBaro_mld)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
-       vname(2,indxekBaro_mld)='Pressure gradient term            '
-       write(vname3,*) trim(unitt),' meter4 second-2               '
-       vname(3,indxekBaro_mld)=vname3
-#  endif
-# endif /* DIAGNOSTICS_EK_MLD */
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */
 
 #ifdef DIAGNOSTICS_PV
 # ifdef DIAGNOSTICS_PV_FULL

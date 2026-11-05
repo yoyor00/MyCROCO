@@ -1,0 +1,51 @@
+# MUSTANG module
+
+## Description
+MUSTANG (MUd and Sand TrANsport modellinG) is a sediment module derived from 
+the IFREMER SIAM / MARS community. It has been coded by Le Hir et al, initially 
+coupled with the hydrodynamic model SiAM, then with the parallelized MARS3D 
+hydrodynamic model, and now with CROCO since release 1.2 (2022).
+The particularity of MUSTANG lies in its ability to simulate, with a 
+process-based approach, the behaviours of mixed sediments constituted of 
+cohesive and non-cohesive materials. MUSTANG manages sediment with 3 
+types of particle classes: 
+
+- coarse particle class (first sediment type) is only transported as bedload; 
+- sand class (second sediment type, applies to fine and medium sand) is 
+  transported in suspension and bedload; 
+- mud class (third sediment type) is transported only in suspension and may 
+  consolidate and flocculate. 
+
+Each process treated by MUSTANG contributes to the global sediment evolution 
+during simulation. To this aim, MUSTANG computes bottom shear stress (from 
+current and waves), settling (time-variable settling velocities depending on 
+mud concentration), flocculation (explicit or implicit flocculation modelling), 
+erosion fluxes (depending on sand/mud mixture), deposit fluxes, sediment layer 
+management, consolidation in sediment bed, bedload transport for non-cohesive 
+sediment (with or without slope effect) and morphodynamic. 
+Several options are available, differing with layer and porosity managements, 
+bedload processes and erosion formulations.
+
+## Features
+- Two transport modes: Bedload, Suspension
+- Three sediment types:
+
+| Type   | Bedload | Suspension | Flocculation   |
+|--------|---------|------------|----------------|
+| MUD    | no      | yes        | yes (optional) |
+| SAND   | yes     | yes        | no             |
+| GRAVEL | yes     | no         | no             |
+
+- Sediment processes: settling, flocculation, erosion, deposition,
+  consolidation, bedload transport, morphodynamic coupling, dredging
+- Substance module interaction for additional tracers
+
+## References
+- Le Hir et al., 2011
+- Rivier et al., 2017
+- Mengual & Le Hir, 2018
+
+## License
+Copyright (C) 2022-2026 IFREMER  
+License: CeCILL-C  
+See `LICENSES/LICENSE_MUSTANG.txt` for the full text.

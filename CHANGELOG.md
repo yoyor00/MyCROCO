@@ -5,79 +5,259 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ## [x.x.x] - xxxx-xx-xx
 
 ### Added
-- Issue #361 : Integration of slight reformulation of zooplankton grazing 
-  according to prey size done in PISCES standard version (#340) into quota version
 
-- BENCH : Add performance tracking (Issue #378)
+- LICENSE : Clarify license (#7)
+
+- STOGEN : add stochastic parametrizations (Issue #301)
+
+- BENCH : Add performance tracking (Issue #378 and #423)
+- BENCH : Add missing plot scripts for test cases (#379)
+
+- STATION : Add TEMPERATURE cppkey for stations (#445)
+
+- TIDES_MAS : Add online tidal prediction (SHOM Simon method) for currents and
+  potential, in addition to elevation; works now with both
+  ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
+
+- OUTPUTS : add z\_r and z\_w to history and averages files, activated with
+  out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
+  auxiliary fields namelist blocks (Issue #543)
 
 ### Fixed
 
-- COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
-- COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
-- BENCH : do not put report status to True for reference variant to avoid
-  to mark test passed even if not (Issue #342)
-- BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
-- BENCH : remove openmp reproducibility check on SHOREFACE case (Incident #358)
-- BENCH : fix typo AGRIF_2W to AGRIF_2WAY in realist and vortex json files (Issue #368)
+- DIAGNOSTICS : tracer budget fixes (Issue #320)
+	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
+	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
+	- DIAGNOSTICS\_PV right-hand side (Trhs) kept in (unit of tracers) s-1
+	- MLD budget closure: same MLD index at both time levels with GLS\_MIXING, THmix from split upstream advection, TVmix with implicit sponge
+	- sediment settling/erosion diagnostics are now cell-volume integrals like the other terms
+	- TForc nudging diagnostic uses the actual nudging increment (and tclmzon with ZONAL\_NUDGING)
+	- no empty-named Tcrit\_mld variables written for passive tracers
+	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
 
-- PISCES : Fix dummy line (kt variable) at end in p4zche.F90  (Issue #420)
-- PISCES : Fixed error on diagnostic ligands and add Fe2+ oxydation rate (Issue #371)
-
-- DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
+- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
+  non equal to 1 and initialisation from file and restart (Issue #469)
+- MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
+  restart inconsistencies with MORPHODYN, update testcase plot script 
+  accordingly (#470)
+- MUSTANG : Fix MUSTANG restart bit-exactness (#562)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
+- Cleaning : useless sponge option in croco.in.1 (#436)
+  
+- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
+- BENCH : Fix report check status in case of several files (#498)
+- BENCH : Fix label in plot_realist.py (#494)
+
+- NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
+  2d and 3d U-momentum for northern open boundary conditions when 
+  QDM_OBC_TANG_CORRECT is activated (#508).
+
+- XIOS : fix wrong name for mask_rho in field_def_croco.xml_full_withcpp (#513)
+
+- WAVEMAKER : fix use of wavemaker spectrum from data (bulk wave parameters not 
+  initialized in this case). This was done through key ROGUE_WAVES, now changed 
+  to WAVE_MAKER_DATA (#518)
+
+- SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
+- COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
+- COUPLING : Fix missing restart file update for OASIS (#501). 
+
+- Fix time in surf average output file (#388)
+- Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
+  surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
+- Fix grid variables writing in average and diagnostic file (#522)
+
+- Fix ABORT MPI when problem in reading netcdf (#167)
+
+- PISCES : - Switch from relative to potential density for surface pH proxy,
+             inconsistent with what done for calcite dissolution (#531)
+           - Fix in the calculation of NEW primary productivity with XIOS (#535)
+           - Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           - Set XIOS write timestep for PISCES identical to ocean (#548)
+           - Correct degree to radian conversion (#559)
+           - Add the read of pisces namelist for child grid with AGRIF (#561)
+           - Enables use of high-frequency qsr (<24 hrs) with PISCES 
+             in the case of offline reading (#563) - online calculation of 
+             daily mean of qsr needed by PISCES must be implemented
+           - Fix no update of POC/GOC prod by diazotropy - minor effect (#583)
+
+- jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
+  Update BENCH accordingly.
+
+- VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
+
+- Restart : Fix restart with OBC_PATM (#496)
+
+- KPP : bug fix for the non-local term in surface KPP parameterisation
+        wrong sign and + correction to recover the empirical free convection scaling of 0.2 
+
+- MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
 
 ### Changed
 
+- Input file croco.in replace by a standard namelist (#497)
+  Replace the fixed-format croco.in reader with a Fortran namelist system
+  (croco.nml). All configuration parameters are now in structured &croco_*
+  namelists.
+  A convert_in_to_nml.py utility is provided to easily convert 
+  previous croco.in into croco.nml.
+  A detailed error message (raw content, iostat/iomsg, expected array size)
+  is now written in case of a malformed namelist (#555)
+  (#568, #570, #572, #573)
+
+- Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
+  with standardized uppercase filenames. Update all BENCH jsonc configs
+  and plot scripts accordingly, as well as production run scripts.
+
+- AGRIF : update conv version (#510)
+
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
+
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
-  cleaning exit status, see !172 and Issue#176)
+  cleaning exit status, see !172 and Issue#176), 
+  update NETCDF paths default from nf-config and nc-config (Issue #473)
+
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
 - MUSTANG : review lateral erosion feature (Issue #349)
+- MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
+- MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
+- MUSTANG : change init and roughness length computation (#562)
+- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
+
+- DIAGNOSTICS : 
+	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
+	- kinetic energy budget is now 3d
+	- momentum, energy and tracer diagnostics (DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_MLD) terms are now volume-integrated (Issue #320)
+	- DIAGNOSTICS\_TS\_MLD\_DENS : MLD depths (density and temperature criteria) are both computed at w-levels, and the density criterion is used whatever the vertical mixing scheme (Issue #320)
+	- MLD depths (density and temperature criteria) are both computed starting from a reference depth (10 m by default) instead of the surface. The reference depth can be set with the namelist parameter mld_depth_ref (Issue #545)
+
+- BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
+
+- WAVES : wepb output now includes roller delay when roller is activated (#579)
+          the old wepb output can be diagnose from wepb and wepr
+
+- BULK_FLUX : Update wasp bulk flux parametrization, 
+  cppkey BULK_WASP (Issue #453)
+
+- RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
+  distribution of flow, enabling a transition from the AKIMA scheme to 
+  SPLINES (#478)
+
+- OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
+  part of the computation of omega (#447)
+
+- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
+- XIOS : Align density anomaly computation with native netCDF writer,
+  now with respect to 1000 kg m-3 (Issue #484)
+
+- XIOS : Unmask output grid/geometry variables so that they keep valid
+  values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
 ### Deprecated
 
 
 ### Removed
 
+- Remove duplicate `scrum_time` netCDF variable from history, restart, 
+  averages, diagnostics, surf and station output files; only `time` is 
+  written now (matches the `time` dimension name). get_initial.F still 
+  falls back to reading `scrum_time` when restarting from older files 
+  (Issue #189)
 
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
 - MUSTANG : 
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
+  - remove key_sand2D, activation only by a boolean in 
+    namelist (Issue #351 and #525)
+  - remove MUSTANG_CORFLUX replace by a boolean in 
+    namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
+  - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
+    replace by booleans in namelist (Issue #348)
+  - remove key_MUSTANG_slipdeposit replace by boolean l_slipdeposit in
+    namelist (Issue #350)
+  - remove key_MUSTANG_bedload, bedload transport (l_bedload_n()) now only
+    conditioned by key_MUSTANG_V2 (Issue #385)
+  - remove key_MUSTANG_splitlayersurf replace by boolean l_splitlayersurf
+    in namelist (Issue #350)
+  - remove key_MUSTANG_flocmod replace by boolean l_flocmod in namelist
+    (Issue #350)
+
+- Test cases CPP keys replace by namelist parameter (#497)
+  Remove all test-case CPP guards from the solver. Test-case selection is
+  now done at runtime via testcase_name in the namelist, not at compile
+  time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
+  cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
+  Benguela example is also copied to OCEAN.
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - WET_DRY0 (#393) never used 
+  - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
+  - BVF_MIXING (#398)
+  - LMD_NUW_GARGETT, obsolete (#402)
+  - ROBUST_DIURNAL_SRFLUX (#405)
+  - DUKO_2001 was always def (#407)
+  - PRED_COUPLED_MODE was always def (#408) 
   - START_DATE (#417)
   - ICE (#416)
   - DECALPHA (#414)
   - CRAY, VAX, SGI, AIX (#413)
   - AUTOTILING (#411)
+  - DEBUG_ARMOR, DEBUG, DIAGNOSTICS_DEBUG, NBQ_HZCORR_DEBUG (#415)
+  - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
+  - XCOMM_FORMAT (#419)
+  - TR (#395)
+  - LMD_SKPP_MONOB never define (#400)
+  - LIMIT_UNSTABLE_ONLY is always define (#401)
+  - MLCONVEC (#399)
+  - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
+  - TENDENCY, DIAGNOSTICS_EK_FULL, DIAGNOSTICS_EK_MLD (Issue #388)
 
 ### Other
 
-- remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
-- remove files parameter.passivetrc.pisces.h, not used (Issue #387)
+- Cleaning :
+  - remove TEST_CASES/IGW_OA directory with PDFs, namelist, XIOS XML files, and README  (#337)
+  - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
+  - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
+  - comments refering to BASIN in step2D.F (#409)
+  - remove routine set_HUV1, not used (#410)
+  - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
+  - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
+  - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
+    in cppdefs_dev.h (#403)
+  - remove hard coded keys in mpc.F (#404)
+  - typo and file mode (#499)
 
+- Support :
+  - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
+  - use matrix capabilities in gitlab-ci (#519)
+  - avoid misnaming ifort/ifx in gitlab-ci (#492)
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person
+  R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
+  J. Gula, C. Mazoyer, M. Le Corre, P. Penven
 
 - New contributors : 
-  M. Plus, M. Schreiber 
+  M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
+  S. Theetten, L. Maillard, N. Herry

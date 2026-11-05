@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
-! CROCO website : http://www.croco-ocean.org
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
+!
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -64,17 +65,25 @@
 ! ******************************Common Code***************************
 !---------------------------------------------------------------------
 !!   
+      use croco_namelist, only: dt
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      use croco_namelist, only: mld_crit_D, mld_crit_T, mld_depth_ref
+#  endif
       implicit none
 #include "param.h"
 #include "ncscrum.h"
       integer itrc, istr,iend,jstr,jend, i,j,k, kmld,
      &        imin,imax,jmin,jmax
-      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
       real    FX(PRIVATE_2D_SCRATCH_ARRAY),     cff,
      &        FE(PRIVATE_2D_SCRATCH_ARRAY),     cff1,
      &        LapT(PRIVATE_2D_SCRATCH_ARRAY),   cff2,
      &        diff3u(PRIVATE_2D_SCRATCH_ARRAY),
      &        diff3v(PRIVATE_2D_SCRATCH_ARRAY)
+# ifdef DIAGNOSTICS_TS_MLD_DENS
+      integer kblt(PRIVATE_2D_SCRATCH_ARRAY),
+     &        indx_depth
+      real    nearest_diff, diff_k
+# endif
 #include "grid.h"
 #include "ocean3d.h"
 #include "mixing.h"
@@ -95,12 +104,6 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
-#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      real    nearest_diff
-      integer indx_depth
-      real rho0i, zN2_c
-      real hmlp(Istr:Iend,Jstr:Jend)
-# endif
 #ifdef CHILD_SPG
 # define TCLM tsponge
 #else
@@ -168,8 +171,8 @@
 #  ifdef TS_HADV_RSUP3
      &                     +diff3d_u(i,j,k)
 #  endif
-     &                           )
 # endif
+     &                           )
 #endif
           enddo
         enddo
@@ -192,8 +195,8 @@
 #  ifdef TS_HADV_RSUP3
      &                     +diff3d_v(i,j,k)
 #  endif
-     &                           )
 # endif
+     &                           )
 #endif
           enddo
         enddo
@@ -253,8 +256,9 @@
         do j=jstr,jend
           do i=istr,iend
             cff1=pm(i,j)*pn(i,j)
-            THmix(i,j,k,itrc)=FX(i+1,j)-FX(i,j)
-     &                       +FE(i,j+1)-FE(i,j)
+            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)
+     &                         +FX(i+1,j)-FX(i,j)
+     &                         +FE(i,j+1)-FE(i,j)
 #  ifdef MASKING
      &                                        * rmask(i,j)
 #  endif
@@ -265,13 +269,6 @@
 #  ifdef MASKING
      &                                        * rmask(i,j)
 #  endif
-!
-! Divide all diagnostic terms by the cell volume
-! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
-! of diag terms are: (unit of tracers)* s-1.
-!
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1/Hz(i,j,k)
-            Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff1/Hz(i,j,k)
           enddo
         enddo
 # endif /* DIAGNOSTICS */
@@ -452,8 +449,7 @@
         do j=jstr,jend
           do i=istr,iend
             cff1=pm(i,j)*pn(i,j)
-            cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)
      &                       +FX(i+1,j)-FX(i,j)
      &                       +FE(i,j+1)-FE(i,j)
 #  ifdef MASKING
@@ -465,17 +461,9 @@
 #  ifdef MASKING
      &                                        * rmask(i,j)
 #  endif
-!
-! Divide all diagnostic terms by the cell volume
-! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
-! of diag terms are: (unit of tracers)* s-1.
-!
 
-            cff=cff1/Hz(i,j,k)
 
-            THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
-            Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
-            
+        
 #  if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2
 
 #   include "finalize_diagnostics_tsadv.h"
@@ -490,158 +478,125 @@
 !---------------------------------------------------------------------
 !
 #ifdef DIAGNOSTICS_TS
-# if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
+!
 !==========================================================
-! Tracer diagnostics averaged over the MLD
+! Tracer diagnostics integrated over the MLD
 !==========================================================
 !
+# if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
-#   ifdef DIAGNOSTICS_TS_MLD_CRIT
-
-
-        if (itrc.eq.iCRT4) then
-          rho0i = 1.0/rho0
-          zN2_c = g * mld_crit_D * rho0i
-          do j=Jstr,Jend
-            do i=Istr,Iend
-              kbl(i,j)  = N                  ! Initialization to the number of w ocean point
-              hmlp(i,j)  = 0.0                  ! here hmlp used as a dummy variable, integrating vertically N^2
-            enddo
-          enddo
-        endif
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
 
         do j=Jstr,Jend
           do i=Istr,Iend
-            indx_depth = N
-            nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+! -----------------------------------------------------------------
 ! Find the index corresponding to the reference depth mld_depth_ref
-            do k=N-1,1,-1
-              if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
-                nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
-                indx_depth = k
-              endif
-            enddo
-
-            if (itrc.eq.iCRT4) then
-! for criterion based on brunt-vaisala frequency !
-              do k=indx_depth,1,-1
-                if (k.eq.N) then
-                  hmlp(i,j) = hmlp(i,j) +  max(bvf(i,j,k),0.0) *
-     &                        (2.0* (z_w(i,j,k+1) - z_r(i,j,k)))
-                else
-                  hmlp(i,j) = hmlp(i,j) + max(bvf(i,j,k),0.0) *
-     &                        (z_r(i,j,k+1) - z_r(i,j,k))
-                endif
-                if (hmlp(i,j) < zN2_c) then
-                  kbl(i,j) = k
-                endif
-              enddo
-
-
+! -----------------------------------------------------------------
+            if (z_w(i,j,0) .gt. -mld_depth_ref) then
+! if bathymetry shallower than reference depth, clamp to bottom
+              indx_depth = 1
             else
-! for criteria based on density and temperature !
-              kbl(i,j)=N
-              cff=0
-              do k=N,1,-1
-                if (itrc.eq.iCRT2) then
-                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
-     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
-                    kbl(i,j)=k
-                  endif
-                  if (t(i,j,k,nnew,itemp).le.
-     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
-
-                elseif (itrc.eq.iCRT3) then
-                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
-     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
-                    kbl(i,j)=k
-                  endif
-                  if (t(i,j,k,nnew,itemp).le.
-     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
-            
-                else
-                  if (cff.eq.0.and.rho(i,j,k).lt.
-     &            rho(i,j,indx_depth)+mld_crit_D) then
-                    kbl(i,j)=k
-                  endif
-                  if (rho(i,j,k).ge.
-     &            rho(i,j,indx_depth)+mld_crit_D)  cff=1
-                endif
+              indx_depth = N
+              nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+              do k=N-1,1,-1
+                 diff_k = abs(z_r(i,j,k)+mld_depth_ref)
+                 if (diff_k .le. nearest_diff) then
+                    nearest_diff = diff_k
+                    indx_depth = k
+                 else
+                    exit
+                 endif
               enddo
             endif
-           
-! CALCULATE MIXED LAYER DEPTH            
-            Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl(i,j))
-#    ifdef MASKING
-     &                        * rmask(i,j)
-#    endif
+! ---------------------------------------------------
+! Compute kbld (density) and kblt (temperature)
+! both starting from indx_depth downward
+! ---------------------------------------------------
+            kbld(i,j)=indx_depth
+            kblt(i,j)=indx_depth
+            cff=0
+            cff1=0
+            do k=indx_depth,1,-1
+             if (cff.eq.0.and.rho(i,j,k).le.
+     &            rho(i,j,indx_depth)+mld_crit_D) then
+               kbld(i,j)=k
+             endif
+             if (rho(i,j,k).gt.
+     &            rho(i,j,indx_depth)+mld_crit_D)  cff=1
+
+             if (cff1.eq.0.and.t(i,j,k,nnew,itemp).ge.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
+               kblt(i,j)=k
+             endif
+             if (t(i,j,k,nnew,itemp).lt.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T) cff1=1
+            enddo
+! -------------------------------------------------------------------------------------
+! Store MLD (density criterion) for itrc=1, and MLD (temperature criterion) for itrc=2
+! -------------------------------------------------------------------------------------
+            if (itrc.eq.1) then
+              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kbld(i,j)-1) SWITCH rmask(i,j)
+
+            elseif (itrc.eq.2) then
+              Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kblt(i,j)-1) SWITCH rmask(i,j)
+            endif
           enddo
         enddo
-
-#    endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
+#  endif /* DIAGNOSTICS_TS_MLD_DENS */
 
        do j=Jstr,Jend
          do i=Istr,Iend
-           THmix_mld(i,j,itrc)=0.
-           T_mld_nnew(i,j)=0.
-           T_mld_nstp(i,j)=0.
+            THmix_mld(i,j,itrc)=0.
+            Taver_mld(i,j,itrc)=0.
+            T_mld_nnew(i,j)=0.
+            T_mld_nstp(i,j)=0.
          enddo
        enddo
        do j=Jstr,Jend
          do i=Istr,Iend
-#  ifdef LMD_SKPP
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+           kmld=kbld(i,j)
+#  elif defined LMD_SKPP || defined GLS_MIXING
            kmld=kbl(i,j)
 #  else
            kmld=N-5
 #  endif
            do k=N,kmld,-1
-             cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-#   ifdef DIAGNOSTICS_TS_MLD_CRIT
-             if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3 
-     &       .or. itrc.eq.iCRT4) then 
-               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
-     &                           THmix(i,j,k,itemp)*cff
-               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
-     &                       t(i,j,k,nnew,itemp)*cff
+             THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+     &                           THmix(i,j,k,itrc)
+             cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
 
-             else
-# endif
-               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
-     &                           THmix(i,j,k,itrc)*cff
-               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+             T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
-#   ifdef DIAGNOSTICS_TS_MLD_CRIT
-             endif
-# endif
            enddo
-         enddo
+           Taver_mld(i,j,itrc)=T_mld_nnew(i,j)
+     &                        /(z_w(i,j,N)-z_w(i,j,kmld-1))
+     &                        *(pm(i,j)*pn(i,j))                  ! mean over mld
+          enddo
        enddo
 
        do j=Jstr,Jend
          do i=Istr,Iend
-#  if defined LMD_SKPP || defined GLS_MIXING
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbld(i,j)
+           kmld=kbl_nstp(i,j)
+#  elif defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
            kmld=kbl_nstp(i,j)
 #  else
            kmld=N-5
 #  endif
            do k=N,kmld,-1
-             cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-#   ifdef DIAGNOSTICS_TS_MLD_CRIT
-             if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3 
-     &       .or. itrc.eq.iCRT4) then 
-               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
-     &                       t(i,j,k,nstp,itemp)*cff
-             else
-# endif
-               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+             cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
+             T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
-#   ifdef DIAGNOSTICS_TS_MLD_CRIT
-             endif
-# endif
            enddo
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+           if (itrc .eq. NT) kbl_nstp(i,j)=kbld(i,j)
+#  elif defined LMD_SKPP || defined GLS_MIXING
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
+#  endif
          enddo
        enddo
        do j=Jstr,Jend
@@ -660,31 +615,6 @@
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
-# ifdef DIAGNOSTICS_DEBUG
-       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
-         i=5
-         j=5
-#  if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
-         cff=Trate_mld(i,j,itrc)-
-     &       TXadv_mld(i,j,itrc)-
-     &       TYadv_mld(i,j,itrc)-
-     &       TVadv_mld(i,j,itrc)-
-     &       TVmix_mld(i,j,itrc)-
-     &       THmix_mld(i,j,itrc)-
-     &       Tentr_mld(i,j,itrc)-
-     &       TForc_mld(i,j,itrc)
-       print *,'T3DMIX_S  : T budget closure MLD   : ',cff
-#  endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
-          cff=Trate(i,j,N-5,itrc)-
-     &        TXadv(i,j,N-5,itrc)-
-     &        TYadv(i,j,N-5,itrc)-
-     &        TVadv(i,j,N-5,itrc)-
-     &        TVmix(i,j,N-5,itrc)-
-     &        THmix(i,j,N-5,itrc)-
-     &        TForc(i,j,N-5,itrc)
-       print *,'T3DMIX_S  : T budget closure k=N-5 : ',cff
-      endif
-# endif /* DIAGNOSTICS_DEBUG */
 #endif /* DIAGNOSTICS_TS */
 
 !$acc end kernels
@@ -694,11 +624,9 @@
 # ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
-# else
-!#   ifndef BASIN        
+# else     
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          t(START_2D_ARRAY,1,nnew,itrc))
-!#    endif        
+     &                          t(START_2D_ARRAY,1,nnew,itrc))    
 # endif
 #endif
 !

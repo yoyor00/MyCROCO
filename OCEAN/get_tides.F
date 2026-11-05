@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -14,11 +15,12 @@
                               ! Scale them.
 #if defined SSH_TIDES || defined UV_TIDES
 # ifdef TIDES_MAS
-      USE MOD_TIDES_MAS
+      USE mod_tides_mas
 # endif
 #ifdef OPENACC
       use exchange_device_host
 #endif
+      use croco_namelist, only : frcname
       implicit none
 
 # ifndef TIDES_MAS
@@ -204,12 +206,23 @@
           write(6,3) 'tide_Cmin',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
+#  ifndef TIDES_MAS
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
             UV_Tangle(i,j,itide)=UV_Tangle(i,j,itide)*deg2rad
             UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#  else
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            if (UV_Tangle(i,j,itide)<0.0)
+     &        UV_Tangle(i,j,itide)=UV_Tangle(i,j,itide)+360
+            if (UV_Tphase(i,j,itide)<0.0)
+     &        UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)+360
+          enddo
+        enddo
+#  endif
 #ifdef OPENACC
           call update_device(UV_Tangle(:,:,itide))
           call update_device(UV_Tphase(:,:,itide))
@@ -236,11 +249,20 @@
           write(6,3) 'tide_Pphase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
+#  ifndef TIDES_MAS
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
             POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#  else
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            if (POT_Tphase(i,j,itide)<0.0)
+     &        POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)+360.
+          enddo
+        enddo
+#  endif
 #ifdef OPENACC
           call update_device(POT_Tphase(:,:,itide))
 #endif
@@ -249,6 +271,8 @@
       enddo !Ntides
 # ifdef TIDES_MAS
       Tperiod=Tperiod*3600.0
+!  Called once here rather than per-tile in clm_tide
+      call mas_init_waves(Ntides,k_of,nn_of)
 # endif
 
 

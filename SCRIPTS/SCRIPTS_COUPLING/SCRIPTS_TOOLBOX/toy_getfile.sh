@@ -8,9 +8,9 @@
 echo 'create input files for TOY'
 for k in `seq 0 $(( ${nbtoy} - 1))` ; do
     echo ". ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_toy_files.sh ${toyfile[$k]} toy_${toytype[$k]}.nc ${model_to_toy[$k]} ${toytimerange[$k]}"
-    module load $ncomod
+    [[ -n ${ncomod} ]] && module load $ncomod
     ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_toy_files.sh ${toyfile[$k]} toy_${toytype[$k]}.nc ${model_to_toy[$k]} ${toytimerange[$k]}
-    module unload $ncomod
+    [[ -n ${ncomod} ]] && module unload $ncomod
 done
 
 

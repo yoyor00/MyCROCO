@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -31,18 +32,20 @@
       call clm_tides_tile (Istr,Iend,Jstr,Jend,
      &                     A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd),
      &                     A2d(1,4,trd),A2d(1,5,trd),A2d(1,6,trd),
-     &                                               A2d(1,7,trd))
+     &                     A2d(1,7,trd),A2d(1,8,trd))
       return
       end
 !
 !*********************************************************************
       subroutine clm_tides_tile (Istr,Iend,Jstr,Jend,Cangle,Sangle,
-     &                           Cphase,Sphase,Etide,Utide,Vtide)
+     &                           Cphase,Sphase,Etide,Utide,Vtide,
+     &                           Ptide_loc)
 !*********************************************************************
 !
 # ifdef TIDES_MAS
-      USE MOD_TIDES_MAS
+      USE mod_tides_mas
 # endif
+      USE croco_namelist, only:dt
       implicit none
 # ifndef TIDES_MAS
 #  include "param.h"
@@ -54,11 +57,9 @@
 # include "boundary.h"
 !
 # ifdef TIDES_MAS
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-      logical :: flag=.false.
-      INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
-      integer :: nn,l,k,kk
-      INTEGER, dimension(0:10) :: esp_corres=(/1,2,3,4,5,0,6,0,7,0,8/)
+      INTEGER               :: ian,imois,ijour
+      real                  :: tempis
+      logical               :: new_day
 # endif
       integer
      &     Iend, Istr, Jend, Jstr, i, j, itide
@@ -71,7 +72,8 @@
      &        Sphase(PRIVATE_2D_SCRATCH_ARRAY),
      &        Etide(PRIVATE_2D_SCRATCH_ARRAY),
      &        Utide(PRIVATE_2D_SCRATCH_ARRAY),
-     &        Vtide(PRIVATE_2D_SCRATCH_ARRAY)
+     &        Vtide(PRIVATE_2D_SCRATCH_ARRAY),
+     &        Ptide_loc(PRIVATE_2D_SCRATCH_ARRAY)
 !
 # include "compute_auxiliary_bounds.h"
 # ifdef MPI
@@ -90,145 +92,177 @@
 # endif
       cff=2.*pi*time
 !
-# if defined SSH_TIDES
-#  ifdef TIDES_MAS
+# ifdef TIDES_MAS
 !-------------
 ! MAS INIT
 !-------------
       IF (FIRST_RST_TIME_STEP) THEN
 !$acc kernels if(compute_on_device) default(present)
-
-! lecture des conditions aux limites
-!-----------------------------------
-! a faire une bonne fois pour toute
-!----------------------------------
-!
-       IF (WESTERN_EDGE) THEN
-        do j=JstrR,JendR
-         num(:)=0
-         rouest(:,:,j,:)=0.0
-         gouest(:,:,j,:)=0.0
-         nomd(:,:)=0
-         fr1(:,:)=0.0
-         fr2(:,:)=0.0
-         do i=1,tide_nbharmcp
-          if (l_presence(nu(i))) then
-           nol=ide(nu(i))
-           ir0=rr0(nu(i))
-           ir1=rr1(nu(i))
-           ir2=rr2(nu(i))
-           k=esp_corres(int(nol/100000))
-           num(k)=num(k)+1
-           nn=num(k)
-           do l=1,2
-            rouest(nn,k,j,l)=SSH_Tamp(Istr+l-2,j,i)*100.0
-            gouest(nn,k,j,l)=SSH_Tphase(Istr+l-2,j,i)
-            nomd(nn,k)=nol
-            if(ir0 < 0) gouest(nn,k,j,l)=gouest(nn,k,j,l)+180.0
-            fr1(nn,k)=ir1/float(ir0)
-            fr2(nn,k)=ir2/float(ir0)
-            hnouest(129,j,l)=-999.
-           end do
-          endif
-         end do
-        end do
-       ENDIF
-!
-       IF (EASTERN_EDGE) THEN
-        do j=JstrR,JendR
-         num(:)=0
-         rest(:,:,j,:)=0.0
-         gest(:,:,j,:)=0.0
-         nomd(:,:)=0
-         fr1(:,:)=0.0
-         fr2(:,:)=0.0
-         do i=1,tide_nbharmcp
-          if (l_presence(nu(i))) then
-           nol=ide(nu(i))
-           ir0=rr0(nu(i))
-           ir1=rr1(nu(i))
-           ir2=rr2(nu(i))
-           k=esp_corres(int(nol/100000))
-           num(k)=num(k)+1
-           nn=num(k)
-           do l=1,2
-            rest(nn,k,j,l)=SSH_Tamp(Iend+l-1,j,i)*100.0
-            gest(nn,k,j,l)=SSH_Tphase(Iend+l-1,j,i)
-            nomd(nn,k)=nol
-            if(ir0 < 0) gest(nn,k,j,l)=gest(nn,k,j,l)+180.0
-            fr1(nn,k)=ir1/float(ir0)
-            fr2(nn,k)=ir2/float(ir0)
-            hnest(129,j,l)=-999.
-           end do
-          endif
-         end do
-        end do
-       ENDIF
-!
-       IF (NORTHERN_EDGE) THEN
-        do i=IstrR,IendR
-         num(:)=0
-         rnord(:,:,i,:)=0.0
-         gnord(:,:,i,:)=0.0
-         fr1(:,:)=0.0
-         fr2(:,:)=0.0
-         do j=1,tide_nbharmcp
-          if (l_presence(nu(j))) then
-           nol=ide(nu(j))
-           ir0=rr0(nu(j))
-           ir1=rr1(nu(j))
-           ir2=rr2(nu(j))
-           k=esp_corres(int(nol/100000))
-           num(k)=num(k)+1
-           nn=num(k)
-           do l=1,2
-            rnord(nn,k,i,l)=SSH_Tamp(i,Jend+l-1,j)*100.0
-            gnord(nn,k,i,l)=SSH_Tphase(i,Jend+l-1,j)
-            if(ir0 < 0) gnord(nn,k,i,l)=gnord(nn,k,i,l)+180.0
-            nomd(nn,k)=nol
-            fr1(nn,k)=ir1/float(ir0)
-            fr2(nn,k)=ir2/float(ir0)
-            hnnord(129,i,l)=-999.
-           end do
-          end if
-         end do
-        end do
-       ENDIF
-!
-       IF (SOUTHERN_EDGE) THEN
-        do i=IstrR,IendR
-         num(:)=0
-         rsud(:,:,i,:)=0.0
-         gsud(:,:,i,:)=0.0
-         fr1(:,:)=0.0
-         fr2(:,:)=0.0
-         do j=1,tide_nbharmcp
-          if (l_presence(nu(j))) then
-           nol=ide(nu(j))
-           ir0=rr0(nu(j))
-           ir1=rr1(nu(j))
-           ir2=rr2(nu(j))
-           k=esp_corres(int(nol/100000))
-           num(k)=num(k)+1
-           nn=num(k)
-           do l=1,2
-            rsud(nn,k,i,l)=SSH_Tamp(i,Jstr+l-2,j)*100.0
-            gsud(nn,k,i,l)=SSH_Tphase(i,Jstr+l-2,j)
-            if(ir0 < 0) gsud(nn,k,i,l)=gsud(nn,k,i,l)+180.0
-            nomd(nn,k)=nol
-            fr1(nn,k)=ir1/float(ir0)
-            fr2(nn,k)=ir2/float(ir0)
-            hnsud(129,i,l)=-999.
-           end do
-          end if
-         end do
-        end do
-       ENDIF
-
-!$acc end kernels     
+#  if defined SSH_TIDES
+        call mas_init_ssh(Istr,Iend,Jstr,Jend,IstrR,IendR,JstrR,JendR,
+     &                     Ntides,k_of,nn_of,
+     &                     SSH_Tamp,SSH_Tphase,mrssh,mgssh,mhssh)
+#  endif
+#  if defined UV_TIDES
+        call mas_init_uv(Istr,Iend,Jstr,Jend,IstrR,IendR,JstrR,JendR,
+     &                    Ntides,k_of,nn_of,
+     &                    UV_Tmajor,UV_Tminor,UV_Tangle,UV_Tphase,
+     &                    angler,mru,mgu,mrv,mgv,mhu,mhv)
+#  endif
+#  if defined POT_TIDES
+        call mas_init_pot(Istr,Iend,Jstr,Jend,IstrR,IendR,JstrR,JendR,
+     &                     Ntides,k_of,nn_of,
+     &                     POT_Tamp,POT_Tphase,mrpot,mgpot,mhpot)
+#  endif
+!$acc end kernels
       ENDIF ! FIRST TIME STEP
-#  endif /* MAS INIT */
+# endif /* MAS INIT */
 
+# if defined TIDES_MAS
+      ijour  = mas_ijour
+      imois  = mas_imois
+      ian    = mas_ian
+      tempis = mas_tempis
+      new_day = mas_is_new_day
+!$acc kernels if(compute_on_device) default(present)
+#  if defined SSH_TIDES
+#   if defined ZCLIMATOLOGY
+      call mas_daily_update(IstrR,IendR,JstrR,JendR,new_day,
+     &                       ijour,imois,ian,mrssh,mgssh,mhssh)
+      call mas_interpolate(IstrR,IendR,JstrR,JendR,
+     &                      Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+#   else /* Z_FRC_BRY only*/
+#    ifdef OBC_WEST
+      if (WESTERN_EDGE) then
+        call mas_daily_update(Istr-1,Istr-1,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(Istr-1,Istr-1,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#    ifdef OBC_EAST
+      if (EASTERN_EDGE) then
+        call mas_daily_update(Iend+1,Iend+1,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(Iend+1,Iend+1,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#    ifdef OBC_SOUTH
+      if (SOUTHERN_EDGE) then
+        call mas_daily_update(IstrR,IendR,Jstr-1,Jstr-1,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(IstrR,IendR,Jstr-1,Jstr-1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#    ifdef OBC_NORTH
+      if (NORTHERN_EDGE) then
+        call mas_daily_update(IstrR,IendR,Jend+1,Jend+1,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(IstrR,IendR,Jend+1,Jend+1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#   endif
+#  endif
+#  if defined UV_TIDES
+#   if defined M2CLIMATOLOGY
+      call mas_daily_update(Istr,IendR,JstrR,JendR,new_day,
+     &                       ijour,imois,ian,mru,mgu,mhu)
+      call mas_daily_update(IstrR,IendR,Jstr,JendR,new_day,
+     &                       ijour,imois,ian,mrv,mgv,mhv)
+      call mas_interpolate(IstrR,IendR,JstrR,JendR,
+     &                      Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+      call mas_interpolate(IstrR,IendR,JstrR,JendR,
+     &                      Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+#   else /* M2_FRC_BRY only */
+#    ifdef OBC_WEST
+      if (WESTERN_EDGE) then
+        call mas_daily_update(Istr,Istr,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Istr,Istr,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(Istr-1,Istr-1,Jstr,JendR,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(Istr-1,Istr-1,Jstr,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#    ifdef OBC_EAST
+      if (EASTERN_EDGE) then
+        call mas_daily_update(Iend+1,Iend+1,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Iend+1,Iend+1,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(Iend+1,Iend+1,Jstr,JendR,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(Iend+1,Iend+1,Jstr,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#    ifdef OBC_SOUTH
+      if (SOUTHERN_EDGE) then
+        call mas_daily_update(Istr,IendR,Jstr-1,Jstr-1,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Istr,IendR,Jstr-1,Jstr-1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(IstrR,IendR,Jstr,Jstr,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(IstrR,IendR,Jstr,Jstr,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#    ifdef OBC_NORTH
+      if (NORTHERN_EDGE) then
+        call mas_daily_update(Istr,IendR,Jend+1,Jend+1,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Istr,IendR,Jend+1,Jend+1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(IstrR,IendR,Jend+1,Jend+1,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(IstrR,IendR,Jend+1,Jend+1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#   endif
+#  endif
+#  if defined POT_TIDES
+      call mas_daily_update(IstrR,IendR,JstrR,JendR,new_day,
+     &                       ijour,imois,ian,mrpot,mgpot,mhpot)
+      call mas_interpolate(IstrR,IendR,JstrR,JendR,
+     &                      Istr,Iend,Jstr,Jend,tempis,mhpot,Ptide_loc)
+#  endif
+#  if defined SSH_TIDES && defined MASKING
+      do j=JRANGE
+        do i=IRANGE
+          Etide(i,j)=Etide(i,j)*ramp*rmask(i,j)
+        enddo
+      enddo
+#  endif
+#  if defined UV_TIDES && defined MASKING
+      do j=JstrR,JendR
+        do i=Istr,IendR
+          Utide(i,j)=Utide(i,j)*ramp*umask(i,j)
+        enddo
+      enddo
+      do j=Jstr,JendR
+        do i=IstrR,IendR
+          Vtide(i,j)=Vtide(i,j)*ramp*vmask(i,j)
+        enddo
+      enddo
+#  endif
+#  if defined POT_TIDES && defined MASKING
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          Ptide_loc(i,j)=Ptide_loc(i,j)*ramp*rmask(i,j)
+        enddo
+      enddo
+#  endif
+!$acc end kernels
+# endif /* TIDES_MAS */
+
+# if defined SSH_TIDES
 #  ifndef TIDES_MAS
 !$acc kernels if(compute_on_device) default(present)
 !---------------------------------------------------------------------
@@ -255,121 +289,8 @@
           enddo
         endif
       enddo
-!$acc end kernels      
-#  else
-!--------------------------------------------
-! USE MAS COMPOSITION FOR HARMONIC PREDICTION
-!--------------------------------------------
-      cdate = tool_sectodat(time)
-      CALL tool_decompdate(cdate,ijour,imois,ian,iheure,iminu,isec)
-      tempis =iheure*3600.0+iminu*60.0+isec
-!
-! calcul des 128 hauteurs par jour
-!---------------------------------
-!
-      t_0=0.0
-      k=0
-      if(ijour /= jourmem) then
-
-       if (SOUTHERN_EDGE) then
-        do i=IstrR,IendR
-         do l=1,2
-           if(rmask(i,Jstr+l-2)/=0)
-     &      call ma1(flag,mynode,i,l,
-     &    t_0,ijour,imois,ian,hnsud(1,i,l),rsud(1,1,i,l),
-     &                 gsud(1,1,i,l),nomd,fr1,fr2,num)
-         end do
-        end do
-       end if
-
-       if (NORTHERN_EDGE) then
-        do i=IstrR,IendR
-         do l=1,2
-           if(rmask(i,Jend+l-1)/=0)  then
-             call ma1(flag,mynode,i,l,t_0,
-     &                ijour,imois,ian,hnnord(1,i,l),rnord(1,1,i,l),
-     &                gnord(1,1,i,l),nomd,fr1,fr2,num)
-           end if
-         end do
-        end do
-       end if
-
-       if (WESTERN_EDGE) then
-        do j=JstrR,JendR
-         do l=1,2
-           if(rmask(Istr+l-2,j)/=0)   then
-             call ma1(flag,mynode,j,l,
-     &            t_0,ijour,imois,ian,hnouest(1,j,l),rouest(1,1,j,l),
-     &            gouest(1,1,j,l),nomd,fr1,fr2,num)
-           endif
-         end do
-        end do
-       end if
-
-       if (EASTERN_EDGE) then
-        do j=JstrR,JendR
-         do l=1,2
-           if(rmask(Iend+l-1,j)/=0)
-     &     call ma1(flag,mynode,j,l
-     &         ,t_0,ijour,imois,ian,hnest(1,j,l),rest(1,1,j,l),
-     &         gest(1,1,j,l),nomd,fr1,fr2,num)
-         end do
-        end do
-       end if
-
-      end if
-
-      jourmem=ijour
-
-! interpolation parmi les 128 hauteurs par jour
-!----------------------------------------------
-
-       if (SOUTHERN_EDGE) then
-        do i=IstrR,IendR
-         do l=1,2
-           if(rmask(i,Jstr+l-2)/=0)
-     &        call ma7(flag,tempis,hnsud(1,i,l),Etide(i,Jstr+l-2),k)
-         end do
-        end do
-       end if
-
-       if (NORTHERN_EDGE) then
-        do i=IstrR,IendR
-         do l=1,2
-           if(rmask(i,Jend+l-1)/=0) then
-           call ma7(flag,tempis,hnnord(1,i,l),Etide(i,Jend+l-1),k)
-           endif
-         end do
-        end do
-       end if
-
-       if (WESTERN_EDGE) then
-        do j=JstrR,JendR
-         do l=1,2
-           if(rmask(Istr+l-2,j)/=0) then
-            call ma7(flag,tempis,hnouest(1,j,l),Etide(Istr+l-2,j),k)
-           endif
-         end do
-        end do
-       end if
-
-       if (EASTERN_EDGE) then
-        do j=JstrR,JendR
-         do l=1,2
-           if(rmask(Iend+l-1,j)/=0)
-     &       call ma7(flag,tempis,hnest(1,j,l),Etide(Iend+l-1,j),k)
-         end do
-        end do
-       end if
-#   ifdef MASKING
-       do j=JRANGE
-         do i=IRANGE
-           Etide(i,j)=Etide(i,j)*ramp*rmask(i,j)
-         end do
-       end do
-#   endif
 !$acc end kernels
-#  endif /* MAS COMPOSITION */
+#  endif 
 !$acc kernels if(compute_on_device) default(present)
 !----------------------------------------------------------------
 !  Add sub-tidal forcing and adjust climatology to include tides.
@@ -449,6 +370,7 @@
 !  Add tidal currents (m/s) to 2D momentum climatologies.
 !---------------------------------------------------------------------
 !
+#  ifndef TIDES_MAS
       do j=JstrR,JendR
         do i=Istr,IendR
           Utide(i,j)=0.
@@ -509,6 +431,8 @@
           enddo
         endif
       enddo
+#  endif 
+
 #  if defined M2CLIMATOLOGY
 !
 !  Add sub-tidal forcing and adjust climatology to include tides.
@@ -574,13 +498,7 @@
 
 # if defined POT_TIDES
 !$acc kernels if(compute_on_device) default(present)
-!
-!-----------------------------------------------------------------------
-!  Compute tidal potential (m)
-!  -- > to be applied as a pressure-gradient force
-!       in prsgrd (if SOLVE3D) or step2d (if not SOLVE3D)
-!-----------------------------------------------------------------------
-!
+#  ifndef TIDES_MAS
       do j=JstrR,JendR
         do i=IstrR,IendR
           Ptide(i,j)=0.
@@ -594,13 +512,20 @@
               Ptide(i,j)=Ptide(i,j)+
      &                   ramp*POT_Tamp(i,j,itide)*
      &                   COS(omega_loc-POT_Tphase(i,j,itide))
-#  ifdef MASKING
+#   ifdef MASKING
               Ptide(i,j)=Ptide(i,j)*rmask(i,j)
-#  endif
+#   endif
             enddo
           enddo
         endif
       enddo
+#  else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          Ptide(i,j)=Ptide_loc(i,j)
+        enddo
+      enddo
+#  endif
 
 !$acc end kernels
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI

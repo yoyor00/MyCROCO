@@ -1,6 +1,5 @@
 #include "cppdefs.h"
 
-
 MODULE sedjac
    !!======================================================================
    !!              ***  MODULE  sedjac  ***
@@ -26,8 +25,6 @@ MODULE sedjac
   !!* Substitution
 #  include "ocean2pisces.h90"
 
-
-   !! $Id: sedsol.F90 5215 2015-04-15 16:11:56Z nicolasmartin $
 CONTAINS
    
    SUBROUTINE sed_jac( NEQ, X, jacvode, NROWPD, accmask ) 

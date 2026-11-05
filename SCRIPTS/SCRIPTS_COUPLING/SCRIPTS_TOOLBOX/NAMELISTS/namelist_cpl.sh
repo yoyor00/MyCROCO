@@ -18,13 +18,21 @@ export CPL_FREQ=3600
 # If TRUE: create OASIS restart files from pre-existing atm/oce/wav outputs.
 # If FALSE: create OASIS restart files from calm conditions (need to read at least the grid for each model)
 export CPL_restart="FALSE"
-export oce_rst_file="${OCE_FILES_DIR}/croco_grd.nc" 
-export oce_rst_timeind=-1 # time index (-1 is last) in the file to extract as restart
-export atm_rst_file="${ATM_FILES_DIR}/wrfinput_dXX_2005_01_01_00" # the domain dXX will be automatically replaced
-export atm_rst_timeind=-1 # time index (-1 is last) in the file to extract as restart
-export wav_rst_file="${WAV_FILES_DIR}/ww3.200501.nc" 
-export wav_rst_timeind=-1 # time index (-1 is last) in the file to extract as restart
-
+# requested if coupling the ocean model
+if [[ $RUNtype =~ .*o.* ]] ; then
+    export oce_rst_file="${OCE_FILES_DIR}/croco_grd.nc"
+    export oce_rst_timeind=-1 # time index (-1 is last) in the file to extract as restart
+fi
+# requested if coupling the atmospheric model
+if [[ $RUNtype =~ .*a.* ]] ; then
+    export atm_rst_file="${ATM_FILES_DIR}/wrfinput_dXX_2005_01_01_00" # the domain dXX will be automatically replaced
+    export atm_rst_timeind=-1 # time index (-1 is last) in the file to extract as restart
+fi
+# requested if coupling the wave model (output from a previous wave run)
+if [[ $RUNtype =~ .*w.* ]] ; then
+    export wav_rst_file="${CWORK}/rundir/BENGUELA_w.Afrc_outputs/20050101_20050103/ww3.200501.nc"
+    export wav_rst_timeind=-1 # time index (-1 is last) in the file to extract as restart
+fi
 # Weight files for grid interpolations
 #-------------------------------------
 # If FALSE files for grid interpolations will automatically be generated during the run

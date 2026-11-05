@@ -1,3 +1,7 @@
+! Copyright (C) 2023 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_OBSTRUCTION.txt
+
 #include "cppdefs.h"
 
 #if defined OBSTRUCTION
@@ -6,6 +10,9 @@ MODULE plug_OBSTRUCTIONS
    ! interface between croco and obstruction module
 
    USE module_OBSTRUCTIONS
+# ifdef WET_DRY
+   USE croco_namelist, only: D_wetdry
+# endif
 
    USE init_OBSTRUCTIONS, ONLY: obst_init
    USE OBSTRUCTIONS, ONLY: obst_update

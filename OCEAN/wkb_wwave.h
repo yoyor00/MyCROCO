@@ -8,12 +8,8 @@
 ! wsb       breaking dissipation, epsilon_b/rho/sigma (m3/s2)
 ! wfc       frictional dissipation, epsilon_d/rho/sigma (m3/s2)
 !
-      real wkb_btg, wkb_gam, wkb_rsb, wkb_roller,
-     &     wkb_amp, wkb_ang, wkb_prd, wkb_tide
       logical wkb_agrif_done
-      common /wkb_par/ wkb_btg, wkb_gam, wkb_rsb, wkb_roller,
-     &                 wkb_amp, wkb_ang, wkb_prd, wkb_tide,
-     &                 wkb_agrif_done
+      common /wkb_par/ wkb_agrif_done
 
       real wkx(GLOBAL_2D_ARRAY,2)
       real wke(GLOBAL_2D_ARRAY,2)

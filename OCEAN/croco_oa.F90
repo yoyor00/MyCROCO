@@ -23,6 +23,7 @@
 !#endif
       use module_interface_oa, only : init_oa, main_oa
       use scalars
+      use croco_namelist, only: ntimes, dt
       implicit none
 ! BLXD
 ! # include "param.h"

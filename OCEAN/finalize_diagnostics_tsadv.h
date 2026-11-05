@@ -1,17 +1,19 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 ! This block is inside  itrc,k,j,i loops
-
-              cff1= Hz(i,j,k) / (pm(i,j)*pn(i,j))
-     &              * 0.5*(t(i,j,k,nstp,itrc)+t(i,j,k,nnew,itrc))
+! Diagnostic terms are already integrated over the cell volume:
+! multiply by the tracer to get the tracer variance budget
+!
+              cff1= 0.5*(t(i,j,k,nstp,itrc)+t(i,j,k,nnew,itrc))
 
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff1
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff1

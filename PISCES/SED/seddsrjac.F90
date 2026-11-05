@@ -22,7 +22,6 @@ MODULE seddsrjac
       !!* Substitution
 #  include "ocean2pisces.h90"
 
-   !! $Id: seddsr.F90 10362 2018-11-30 15:38:17Z aumont $
 CONTAINS
    
    SUBROUTINE sed_dsrjac( NEQ, NROWPD, jacvode, accmask )

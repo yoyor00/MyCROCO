@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifdef M3FAST
@@ -14,8 +15,6 @@
       common /nbq_M2bc/ M2bc_nbq_flag
 
 !**********************************************************************
-      integer iteration_nbq_max
-      common /nbq_var1/ iteration_nbq_max
       integer iteration_nbq
       common /nbq_var2/ iteration_nbq
       integer ifl_nbq
@@ -41,15 +40,9 @@
       common /nbq_param7/ ifl_imp_nbq
 
 !**********************************************************************
-      integer ndtnbq
-      common /time_nbq1/ ndtnbq
+
       real dtnbq
       common /time_nbq2/ dtnbq
-      real csound_nbq
-      common /nbq_csound/ csound_nbq
-      real visc2_nbq
-      common /nbq_visc2/ visc2_nbq
-
       real dtgrid_nbq
       common /nbq_dtgrid/ dtgrid_nbq
 
@@ -157,10 +150,6 @@
 # ifdef NBQ_HZCORRECT
        real Hz_correct(GLOBAL_2D_ARRAY,N)
        common /grid_Hz_correct/ Hz_correct
-#  ifdef NBQ_HZCORR_DEBUG
-      real  Hz_corr(GLOBAL_2D_ARRAY,N)
-      common/corr_Hz/Hz_corr
-#  endif
 # endif
 
 # ifdef NBQ_HZ_PROGNOSTIC
@@ -256,7 +245,7 @@
 # endif
 
 !**********************************************************************
-# ifdef ACOUSTIC
+# ifdef ACOUSTIC_FORCING
       real  period_exp
       common/ACOUS1/period_exp
       real  for_a_exp

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -22,6 +23,7 @@
       end
 
       subroutine diag_tile (Istr,Iend,Jstr,Jend, ke2d,pe2d)
+        use croco_namelist, only: ninfo, dt, rho0
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -41,6 +43,9 @@
      &     pe2d(PRIVATE_2D_SCRATCH_ARRAY)
       real*QUAD cff, my_avgke, my_avgpe, my_volume
       character echar*8
+#ifdef USE_CALENDAR
+       character*19 :: tool_sectodat
+#endif
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
@@ -159,6 +164,9 @@
           do i=Istr,Iend
             ke2d(i,j)=0.
             pe2d(i,j)=0.5*g*z_w(i,j,N)*z_w(i,j,N)
+#  ifdef MASKING
+     &                *rmask(i,j)
+#  endif
                                      !!!zeta(i,j,kstp)*zeta(i,j,kstp)
           enddo
           cff=g/rho0
@@ -169,8 +177,14 @@
      &                               u(i+1,j,k,nstp)*u(i+1,j,k,nstp)+
      &                               v(i,j  ,k,nstp)*v(i,j  ,k,nstp)+
      &                               v(i,j+1,k,nstp)*v(i,j+1,k,nstp))
+#  ifdef MASKING
+     &                           *rmask(i,j)
+#  endif
              pe2d(i,j)=pe2d(i,j)+cff*HZR(i,j,k)*rho(i,j,k)
      &                                       *(z_r(i,j,k)-z_w(i,j,0))
+#  ifdef MASKING
+     &                           *rmask(i,j)
+#  endif
             enddo
           enddo
 #else
@@ -181,7 +195,13 @@
      &                             ubar(i+1,j,krhs)*ubar(i+1,j,krhs)+
      &                             vbar(i,j  ,krhs)*vbar(i,j  ,krhs)+
      &                             vbar(i,j+1,krhs)*vbar(i,j+1,krhs))
+#  ifdef MASKING
+     &                           *rmask(i,j)
+#  endif
             pe2d(i,j)=cff*zeta(i,j,krhs)*zeta(i,j,krhs)
+#  ifdef MASKING
+     &                           *rmask(i,j)
+#  endif
           enddo
 #endif /* SOLVE3D */
         enddo
@@ -202,7 +222,11 @@
         enddo
         do j=Jstr,Jend
           do i=Istr,Iend
+#ifdef MASKING
+            cff=rmask(i,j)/(pm(i,j)*pn(i,j))
+#else
             cff=1./(pm(i,j)*pn(i,j))
+#endif
 #ifdef SOLVE3D
             pe2d(i,Jend+1)=pe2d(i,Jend+1)+cff*(z_w(i,j,N)-z_w(i,j,0))
 #else
@@ -332,7 +356,7 @@ C$OMP CRITICAL (diag_cr_rgn)
               endif
               trd=omp_get_thread_num()
               write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
-#ifdef CALENDAR
+#ifdef USE_CALENDAR
               write(stdout,'(a)') tool_sectodat(time)
 #endif
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)

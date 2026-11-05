@@ -1,23 +1,26 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
+      USE croco_namelist, only: dt, rho0
+      USE croco_namelist, ONLY: nrpfhis, hisname
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif
 #ifdef MUSTANG
-      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
-      USE comsubstance, ONLY : ws_part
+      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
+      USE comsubstance, ONLY : ws_part, l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : vname_Must, hisMust, outMust,
      &                         nk_nivsed_out, var3D_cvsed, var3D_dzs,
      &                         var3D_TEMP, var3D_SAL, var3D_poro,
@@ -38,11 +41,7 @@
      &                         var3Dksed_loadograv, var3Dksed_permeab, 
      &                         var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &                         var3Dksed_sigmapsg, var3Dksed_hinder, 
-     &                         var3Dksed_stateconsol
-# ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
-# endif
+     &                         var3Dksed_stateconsol, rouse2D_integral, rouse2D
 #endif
 
 #ifdef OBSTRUCTION
@@ -65,6 +64,11 @@
      &     obst_drag3d, obst_a2d, obst_a3d,
      &     obst_s2d, obst_s3d,
      &     obst_tau, obst_fuz, obst_fvz
+#endif
+
+#ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
 #endif
 
 !     implicit none
@@ -112,6 +116,7 @@
 #include "netcdf.inc"
 
 #ifdef MUSTANG
+      integer  isand
       real     workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &         workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
       real     workrsed_nv(GLOBAL_2D_ARRAY),
@@ -221,22 +226,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
      &        MYID
         goto 99                !--> ERROR
       endif
-
-!
-!     Time2
-!
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
-     &  )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
 CR      write(*,*) 'wrt_his:  time  ' MYID
 !
 !     Barotropic mode variables: free-surface and 2D momentum
@@ -245,15 +234,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
       if (wrthis(indxZ)) then
 !$acc update if(compute_on_device) host(zeta(:,:,fast_indx_out))
         work2d=zeta(:,:,fast_indx_out)
-#if defined WET_DRY && ! defined ZETA_DRY_IO
-        do j=0,Mm
-          do i=0,Lm
-            if (h(i,j) .le. Dcrit(i,j)) then
-              work2d(i,j)=work2d(i,j)+h(i,j)
-            endif
-          enddo
-        enddo
-#endif
         call fillvalue2d(work2d,ncidhis,hisZ,vname(1,indxZ),
      &        record,r2dvar,type)
       endif
@@ -475,8 +455,8 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-!$acc update if(compute_on_device) host(wepb0(:,:))
-        ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
+!$acc update if(compute_on_device) host(wepb(:,:))
+            ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
@@ -703,14 +683,35 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
 !
+!     STOGEN stochastic modeling components 
+!
+#ifdef STOGEN
+!- 2D stochastic field -
+      if (ln_stogen.AND.wrthis(indxXIsto2d)) then
+        work2d=sto_xi2d
+        ierr=nf_fwrite(work2d, ncidhis, hisXIsto2d, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          MPI_master_only write(stdout,1)
+     &        vname(1,indxXIsto2d)(1:lvar), record, ierr
+     &           MYID
+          goto 99             !--> ERROR
+        endif
+CR      write(stdout,*) 'wrt_his:  wrtstoXI2d' MYID
+      endif
+!- 3D stochastic field -
+      if (ln_stogen.AND.wrthis(indxXIsto3d)) then
+        workr=sto_xi3d
+        call fillvalue3d(workr,ncidhis,hisXIsto3d,indxXIsto3d,
+     &        record,r3dvar,type)
+CR      write(stdout,*) 'wrt_his:    wrtstoXI3d' MYID
+      endif
+#endif /* STOGEN */
+!
 !     Tracer variables.
 !
 # ifdef TRACERS
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
          if (wrthis(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,itrc))
             workr=t(:,:,:,nstp,itrc)
@@ -732,9 +733,6 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-      endif
-# endif
       enddo
 # endif /* TRACERS */
 !
@@ -747,9 +745,8 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
 !     Brunt vaisala frequency.
 !
@@ -813,6 +810,23 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 # endif
 
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
+      endif
+!
+!     Write out depth of rho- and w-points (m).
+!
+      if (wrthis(indxZ_r)) then
+!$acc update if(compute_on_device) host(z_r(:,:,:))
+        workr=z_r
+        call fillvalue3d(workr,ncidhis,hisZ_r,vname(1,indxZ_r),
+     &        record,r3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_r' MYID
+      endif
+      if (wrthis(indxZ_w)) then
+!$acc update if(compute_on_device) host(z_w(:,:,:))
+        work=z_w
+        call fillvalue3d_w(work,ncidhis,hisZ_w,vname(1,indxZ_w),
+     &        record,w3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_w' MYID
       endif
 !
 # ifdef VIS_COEF_3D
@@ -1372,44 +1386,27 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Tracer variables.
 !
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
         if (wrthis(indxT+itrc-1)) then
           workr=t(:,:,:,nstp,itrc)
-# if defined MUSTANG & defined key_sand2D
+# if defined MUSTANG
           if (itrc .ge. itsubs1+nv_grav .and.
      &        itrc .le. itsubs1+nv_grav+nv_sand-1) then ! isand1,isand2
-            if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
-     &         .and. l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
-              do j=0,Mm+1
-                do i=0,Lm+1
-                  do k=1,N
-                    if ( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) .gt. 0.) then
-                      workr(i,j,k)=t(i,j,1,nstp,itrc)*
-     &                             (z_w(i,j,1)-z_w(i,j,0))*
-     &                           ( (z_w(i,j,N)-z_r(i,j,k))
-     &                            /(z_r(i,j,k)-z_w(i,j,0))
-     &                           )**rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-                      workr(i,j,k)=workr(i,j,k)/
-     &                             sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
-                    else
-                      workr(i,j,k)=0.
-                    endif
-                  enddo
-                enddo
-              enddo
-            endif
+          isand = itrc - (itsubs1 + nv_grav) + 1
+          if (l_subs2D(isand) .and. l_outsandrouse(isand)) then
+            CALL MUSTANG_reconstruct_rouse2D_profile(0, Lm+1, 0, Mm+1, N,
+     &          rouse2D(isand, 0:Lm+1, 0:Mm+1),
+     &        rouse2D_integral(isand, 0:Lm+1, 0:Mm+1),
+     &        t(0:Lm+1, 0:Mm+1, 1, nstp, itrc),
+     &        z_w(0:Lm+1, 0:Mm+1, 0:N),
+     &        z_r(0:Lm+1, 0:Mm+1, 1:N),
+     &        workr(0:Lm+1, 0:Mm+1, 1:N))
+          endif
           endif
 # endif
           call fillvalue3d(workr,ncidhis,hisT(itrc),
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         endif
-# endif
       enddo
 
 !
@@ -1551,7 +1548,6 @@ CR      write(*,*) 'wrt_his var2D_flx_w2s'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pephm_fcor'  MYID
             endif
-#ifdef key_MUSTANG_bedload
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_bx(itrc,:,:)
@@ -1580,7 +1576,6 @@ CR      write(*,*) 'wrt_his var2D_bil_bedload'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
             endif
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
       enddo
 
@@ -1683,7 +1678,6 @@ CR      write(*,*) 'wrt_his var2D_pct_iter_coh'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_niter_ero'  MYID
       endif
-#ifdef key_MUSTANG_bedload
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_flx_bx_int(:,:)
@@ -1706,7 +1700,6 @@ CR      write(*,*) 'wrt_his var2D_flx_by_int'  MYID
 CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
       endif
 
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN

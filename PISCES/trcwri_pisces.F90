@@ -45,7 +45,7 @@ CONTAINS
       DO jn = jp_pcs0, jp_pcs1
          cltra = TRIM( ctrcnm(jn) )                  ! short title for tracer
          DO_3D( 0, 0, 0, 0, 1, jpk)
-            ztra(ji,jj,N+1-jk) = MAX( 0., tr(ji,jj,jk,jn,nnew) )
+            ztra(ji,jj,N+1-jk) = MAX( 0., tr(ji,jj,jk,jn,nstp) )
          END_3D   
          CALL iom_put( cltra, ztra )
       END DO
@@ -64,6 +64,6 @@ CONTAINS
    !!----------------------------------------------------------------------
    !! NEMO/TOP 3.3 , NEMO Consortium (2010)
    !! $Id: trcwri_pisces.F90 3160 2011-11-20 14:27:18Z cetlod $ 
-   !! Software governed by the CeCILL licence (NEMOGCM/NEMO_CeCILL.txt)
+   !! Software governed by the CeCILL licence (../LICENSES/LICENSE_PISCES.txt)
    !!======================================================================
 END MODULE trcwri_pisces
