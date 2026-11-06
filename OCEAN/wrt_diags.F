@@ -20,9 +20,6 @@
       subroutine wrt_diags
 #if defined DIAGNOSTICS_TS
       use croco_namelist, only: nrpfdia, dianame
-# ifdef DIAGNOSTICS_TS_MLD
-      use croco_namelist, only: wrt_mld_turb,wrt_mld_dens,wrt_mld_temp
-# endif
 #endif
 
 
@@ -259,7 +256,7 @@
 !
 !  indxmld_turb
 !
-          if (wrt_mld_turb .and. itrc.le.1) then
+          if (wrtdia_mld(1) .and. itrc.le.1) then
            work2d=mld_turb(:,:)
            call fillvalue2d(work2d,nciddia,diamld_turb,
      &                      vname(1,indxmld_turb+itrc-1),
@@ -268,7 +265,7 @@
 !
 !  indxmld_dens
 !
-          if (wrt_mld_dens .and. itrc.le.1) then
+          if (wrtdia_mld(2) .and. itrc.le.1) then
            work2d=mld_dens(:,:)
            call fillvalue2d(work2d,nciddia,diamld_dens,
      &                      vname(1,indxmld_dens+itrc-1),
@@ -277,7 +274,7 @@
 !
 !  indxmld_temp
 !
-          if (wrt_mld_temp .and. itrc.le.1) then
+          if (wrtdia_mld(3) .and. itrc.le.1) then
            work2d=mld_temp(:,:)
            call fillvalue2d(work2d,nciddia,diamld_temp,
      &                      vname(1,indxmld_temp+itrc-1),

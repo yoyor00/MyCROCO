@@ -187,7 +187,7 @@ contains
 #  endif
 #  if defined DIAGNOSTICS_TS_MLD
       namelist /croco_diag_mld/ mld_crit_type, mld_crit_AKt, mld_crit_D, &
-              mld_crit_T, mld_depth_ref, wrt_mld_turb, wrt_mld_dens, wrt_mld_temp
+              mld_crit_T, mld_depth_ref
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV
@@ -257,13 +257,19 @@ contains
 # ifdef TRACERS
       namelist /croco_diag3D_history_fields/ out_his_dia3D_tracer
 #  ifdef DIAGNOSTICS_TS_MLD
-      namelist /croco_diag2D_history_fields/ out_his_dia2D_tracer
+      namelist /croco_diag2D_history_fields/ &
+              out_his_dia2D_tracer, & 
+              out_his_dia2D_mld_turb,out_his_dia2D_mld_dens, &
+              out_his_dia2D_mld_temp
 #  endif
 # endif
 # if defined AVERAGES && defined TRACERS
       namelist /croco_diag3D_average_fields/ out_avg_dia3D_tracer
 #  ifdef DIAGNOSTICS_TS_MLD
-      namelist /croco_diag2D_average_fields/ out_avg_dia2D_tracer
+      namelist /croco_diag2D_average_fields/ &
+              out_avg_dia2D_tracer, & 
+              out_avg_dia2D_mld_turb,out_avg_dia2D_mld_dens, &
+              out_avg_dia2D_mld_temp
 #  endif
 # endif
 #endif

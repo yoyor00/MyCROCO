@@ -1050,9 +1050,11 @@
 #ifdef DIAGNOSTICS_TS
 !$acc&, wrtdia3D
 !$acc&, wrtdia2D
+!$acc&, wrtdia_mld
 # ifdef AVERAGES
 !$acc&, wrtdia3D_avg
 !$acc&, wrtdia2D_avg
+!$acc&, wrtdia_mld_avg
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV

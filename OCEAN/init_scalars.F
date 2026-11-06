@@ -25,8 +25,7 @@
      &                          dt_rst
 # endif
 # ifdef DIAGNOSTICS_TS_MLD
-      use croco_namelist, only: mld_crit_type, 
-     &                          wrt_mld_turb,wrt_mld_dens,wrt_mld_temp
+      use croco_namelist, only: mld_crit_type 
 # endif
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
@@ -2986,7 +2985,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
        vname(5,indxTaver_mld+itrc-1)='                            '
        vname(6,indxTaver_mld+itrc-1)='                            '
        vname(7,indxTaver_mld+itrc-1)='                            '
-       if (wrt_mld_turb .and. itrc.eq.1) then
+       if (itrc.eq.1) then
 CR       write(stdout,'(1x,A,I3)') 'indxmld_turb = ',indxmld_turb+itrc-1
          nametrc=vname(1,indxT+itrc-1)
          unitt=vname(3,indxT+itrc-1)
@@ -3005,7 +3004,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxmld_turb+itrc-1)
          vname(6,indxmld_turb+itrc-1)='                            '
          vname(7,indxmld_turb+itrc-1)='                            '
        endif
-       if (wrt_mld_dens .and. itrc.eq.1) then
+       if (itrc.eq.1) then
 CR       write(stdout,'(1x,A,I3)') 'indxmld_dens = ',indxmld_dens+itrc-1
          nametrc=vname(1,indxT+itrc-1)
          unitt=vname(3,indxT+itrc-1)
@@ -3024,7 +3023,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxmld_dens+itrc-1)
          vname(6,indxmld_dens+itrc-1)='                            '
          vname(7,indxmld_dens+itrc-1)='                            '
        endif
-       if (wrt_mld_temp .and. itrc.eq.1) then
+       if (itrc.eq.1) then
 CR       write(stdout,'(1x,A,I3)') 'indxmld_temp = ',indxmld_temp+itrc-1
          nametrc=vname(1,indxT+itrc-1)
          unitt=vname(3,indxT+itrc-1)

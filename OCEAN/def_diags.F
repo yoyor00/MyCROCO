@@ -28,9 +28,6 @@
       use croco_namelist, only: ldefdia, nwrtdia, nrpfdia, dianame,
      &     ldefdia_avg, ntsdia_avg, nwrtdia_avg, nrpfdia_avg,
      &     dianame_avg
-# if defined DIAGNOSTICS_TS_MLD
-      use croco_namelist, only: wrt_mld_turb,wrt_mld_dens,wrt_mld_temp
-# endif
 #endif
 
       implicit none
@@ -76,6 +73,7 @@
 !
 #  ifdef DIAGNOSTICS_TS_MLD
 #   define wrt2D wrtdia2D
+#   define wrt_mld wrtdia_mld
 #   define vidTXadv_mld diaTXadv_mld
 #   define vidTYadv_mld diaTYadv_mld
 #   define vidTVadv_mld diaTVadv_mld
@@ -111,6 +109,7 @@
 !
 #  ifdef DIAGNOSTICS_TS_MLD
 #   define wrt2D wrtdia2D_avg
+#   define wrt_mld wrtdia_mld_avg
 #   define vidTXadv_mld diaTXadv_mld_avg
 #   define vidTYadv_mld diaTYadv_mld_avg
 #   define vidTVadv_mld diaTVadv_mld_avg
@@ -794,7 +793,7 @@
 !
 !  mld indxmld_turb (only defined for itrc=1)
 !
-         if (wrt_mld_turb) then
+         if (wrt_mld(1)) then
           if (itrc == 1) then
             lvar=lenstr(vname(1,indxmld_turb+itrc-1))
             ierr=nf_def_var(ncid, vname(1,indxmld_turb+itrc-1)(1:lvar),
@@ -826,7 +825,7 @@
 !
 !  mld indxmld_dens (only defined for itrc=1)
 !
-         if (wrt_mld_dens) then
+         if (wrt_mld(2)) then
           if (itrc == 1) then
             lvar=lenstr(vname(1,indxmld_dens+itrc-1))
             ierr=nf_def_var(ncid, vname(1,indxmld_dens+itrc-1)(1:lvar),
@@ -858,7 +857,7 @@
 !
 !  mld indxmld_temp (only defined for itrc=1)
 !
-         if (wrt_mld_temp) then
+         if (wrt_mld(3)) then
           if (itrc == 1) then
             lvar=lenstr(vname(1,indxmld_temp+itrc-1))
             ierr=nf_def_var(ncid, vname(1,indxmld_temp+itrc-1)(1:lvar),
@@ -1250,7 +1249,7 @@
 !
 !  indxmld_turb (only defined for itrc=1)
 !
-       if (wrt_mld_turb) then
+       if (wrt_mld(1)) then
         if (itrc == 1) then
          lvar=lenstr(vname(1,indxmld_turb+itrc-1))
          ierr=nf_inq_varid (ncid,vname(1,indxmld_turb+itrc-1)(1:lvar),
@@ -1268,7 +1267,7 @@
 !
 !  indxmld_dens (only defined for itrc=1)
 !
-       if (wrt_mld_dens) then
+       if (wrt_mld(2)) then
         if (itrc == 1) then
          lvar=lenstr(vname(1,indxmld_dens+itrc-1))
          ierr=nf_inq_varid (ncid,vname(1,indxmld_dens+itrc-1)(1:lvar),
@@ -1286,7 +1285,7 @@
 !
 !  indxmld_temp (only defined for itrc=1)
 !
-       if (wrt_mld_temp) then
+       if (wrt_mld(3)) then
         if (itrc == 1) then
          lvar=lenstr(vname(1,indxmld_temp+itrc-1))
          ierr=nf_inq_varid (ncid,vname(1,indxmld_temp+itrc-1)(1:lvar),
@@ -1371,6 +1370,7 @@
 !
 # ifdef DIAGNOSTICS_TS_MLD
 #  undef wrt2D
+#  undef wrt_mld
 #  undef vidTXadv_mld
 #  undef vidTYadv_mld
 #  undef vidTVadv_mld

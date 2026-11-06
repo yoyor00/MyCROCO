@@ -544,7 +544,8 @@ C$OMP BARRIER
 #  endif
 #  if defined DIAGNOSTICS_TS
         if (ldefdia_avg
-     &      .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1)))
+     &      .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1) 
+     &              .or. wrtdia_mld_avg(4)))
      &      call set_diags_avg (tile)
 #  endif
 #  if defined DIAGNOSTICS_UV

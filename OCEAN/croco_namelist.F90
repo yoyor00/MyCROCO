@@ -553,12 +553,6 @@ MODULE croco_namelist
    !! Turbulence (AKt) criterion for mixed-layer depth [m2/s].
    real :: mld_depth_ref = 10
    !! Reference depth to define the mixed layer depth [m]
-   logical :: wrt_mld_turb = .true.
-   !! Write mld from turbulence criterion
-   logical :: wrt_mld_dens = .true.
-   !! Write mld from density criterion
-   logical :: wrt_mld_temp = .true.
-   !! Write mld from temperature criterion
 #  endif
 #endif
 
@@ -806,6 +800,9 @@ MODULE croco_namelist
 #  ifdef DIAGNOSTICS_TS_MLD
    ! &croco_diag2D_history_fields
    logical, allocatable :: out_his_dia2D_tracer(:)
+   logical :: out_his_dia2D_mld_turb = .true.
+   logical :: out_his_dia2D_mld_dens = .true.
+   logical :: out_his_dia2D_mld_temp = .true.
 #  endif
 # endif
 # if defined AVERAGES && defined TRACERS
@@ -814,6 +811,9 @@ MODULE croco_namelist
 #  ifdef DIAGNOSTICS_TS_MLD
    ! &croco_diag2D_average_fields
    logical, allocatable :: out_avg_dia2D_tracer(:)
+   logical :: out_avg_dia2D_mld_turb = .true.
+   logical :: out_avg_dia2D_mld_dens = .true.
+   logical :: out_avg_dia2D_mld_temp = .true.
 #  endif
 # endif
 #endif

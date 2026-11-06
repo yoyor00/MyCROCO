@@ -82,8 +82,11 @@
 # endif
 # if defined DIAGNOSTICS_TS_MLD
      &    .or. (mod(ilc-1,nwrtdia).eq.0 .and. wrtdia2D(NT+1))
+     &    .or. (mod(ilc-1,nwrtdia).eq.0 .and. wrtdia_mld(4))
 #  ifdef AVERAGES
      &    .or. (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.0 .and. wrtdia2D_avg(NT+1))
+     &    .or. (mod(ilc-ntsdia_avg,nwrtdia_avg).eq.0 .and.
+     &         wrtdia_mld_avg(4))
 #  endif
 # endif
 #endif
@@ -266,11 +269,12 @@
         if (mod(ilc-1,nwrtdia).eq.0
      &      .and. ldefdia
      &      .and. (wrtdia3D(NT+1) .or.
-     &      wrtdia2D(NT+1)))
+     &      wrtdia2D(NT+1) .or. wrtdia_mld(4)))
      &                                                 call wrt_diags
 #  ifdef AVERAGES
         if (ldefdia_avg .and. mod(ilc-ntsdia_avg,nwrtdia_avg).eq.0
-     &     .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1)))
+     &     .and. (wrtdia3D_avg(NT+1) .or. wrtdia2D_avg(NT+1) 
+     &            .or. wrtdia_mld_avg(4)))
      &                                             call wrt_diags_avg
 #  endif
 # endif

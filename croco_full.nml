@@ -453,12 +453,6 @@
   mld_crit_AKt = 2.e-5
   ! Reference depth for mixed-layer criteria [m]
   mld_depth_ref = 10
-  ! Write mld from turbulence criterion
-  wrt_mld_turb = .true.
-  ! Write mld from density criterion
-  wrt_mld_dens = .true.
-  ! Write mld from temperature criterion
-  wrt_mld_temp = .true.
 /
 
 ! --- Momentum diagnostics  (CPP: DIAGNOSTICS_UV) ---
@@ -1100,7 +1094,11 @@
   ! CPP: DIAGNOSTICS_TS && TRACERS && DIAGNOSTICS_TS_MLD
   ! Array of size NT.
   out_his_dia2D_tracer = 2*.true.   ! 2-D MLD-integrated tracer tendency terms
+  out_his_dia2D_mld_turb = .true.
+  out_his_dia2D_mld_dens = .true.
+  out_his_dia2D_mld_temp = .true.
 /
+
 
 &croco_diagM_history_fields
   ! CPP: DIAGNOSTICS_UV
@@ -1350,7 +1348,11 @@
   ! CPP: DIAGNOSTICS_TS && AVERAGES && TRACERS && DIAGNOSTICS_TS_MLD
   ! Array of size NT.
   out_avg_dia2D_tracer = 2*.true.
+  out_avg_dia2D_mld_turb = .true.
+  out_avg_dia2D_mld_dens = .true.
+  out_avg_dia2D_mld_temp = .true.
 /
+
 
 &croco_diagM_average_fields
   ! CPP: DIAGNOSTICS_UV && AVERAGES

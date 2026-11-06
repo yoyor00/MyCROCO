@@ -1861,18 +1861,23 @@ contains
    subroutine init_diag_ts_fields()
       use croco_namelist, ONLY: out_his_dia3D_tracer
 # ifdef DIAGNOSTICS_TS_MLD
-      use croco_namelist, ONLY: out_his_dia2D_tracer
+      use croco_namelist, ONLY: out_his_dia2D_tracer, &
+              out_his_dia2D_mld_turb, out_his_dia2D_mld_dens, &
+              out_his_dia2D_mld_temp
 # endif
 # ifdef AVERAGES
       use croco_namelist, ONLY: out_avg_dia3D_tracer
 #  ifdef DIAGNOSTICS_TS_MLD
-      use croco_namelist, ONLY: out_avg_dia2D_tracer
+      use croco_namelist, ONLY: out_avg_dia2D_tracer, &
+              out_avg_dia2D_mld_turb, out_avg_dia2D_mld_dens, &
+              out_avg_dia2D_mld_temp
 #  endif
 # endif
       use param, ONLY: NT
-      use ncscrum, ONLY: wrtdia3D, wrtdia2D
+      use ncscrum, ONLY: wrtdia3D, wrtdia2D, wrtdia_mld
 # ifdef AVERAGES
-      use ncscrum, ONLY: wrtdia3D_avg, wrtdia2D_avg
+      use ncscrum, ONLY: wrtdia3D_avg, wrtdia2D_avg, &
+              wrtdia_mld_avg
 # endif
       implicit none
       integer :: itrc
@@ -1886,6 +1891,11 @@ contains
          wrtdia2D(itrc) = out_his_dia2D_tracer(itrc)
          if (out_his_dia2D_tracer(itrc)) wrtdia2D(NT + 1) = .true.
       end do
+      wrtdia_mld(1) = out_his_dia2D_mld_turb 
+      wrtdia_mld(2) = out_his_dia2D_mld_dens 
+      wrtdia_mld(3) = out_his_dia2D_mld_temp 
+      if (out_his_dia2D_mld_turb .or. out_his_dia2D_mld_dens .or. &
+              out_his_dia2D_mld_temp) wrtdia_mld(4) = .true.
 #  endif
 # endif
 # if defined AVERAGES && defined TRACERS
@@ -1898,6 +1908,11 @@ contains
          wrtdia2D_avg(itrc) = out_avg_dia2D_tracer(itrc)
          if (out_avg_dia2D_tracer(itrc)) wrtdia2D_avg(NT + 1) = .true.
       end do
+      wrtdia_mld_avg(1) = out_avg_dia2D_mld_turb
+      wrtdia_mld_avg(2) = out_avg_dia2D_mld_dens
+      wrtdia_mld_avg(3) = out_avg_dia2D_mld_temp
+      if (out_avg_dia2D_mld_turb .or. out_avg_dia2D_mld_dens .or. &
+              out_avg_dia2D_mld_temp) wrtdia_mld_avg(4) = .true.
 #  endif
 # endif
    end subroutine init_diag_ts_fields
