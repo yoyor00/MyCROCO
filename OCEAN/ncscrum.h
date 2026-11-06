@@ -1528,7 +1528,7 @@
      &      , wrtdia3D(NT+1)
      &      , wrtdia2D(NT+1)
 # ifdef DIAGNOSTICS_TS_MLD
-     &      , wrtdia_mld(3)
+     &      , wrtdia_mld(4)
 # endif
 # ifdef AVERAGES
      &      , wrtdia3D_avg(NT+1)
