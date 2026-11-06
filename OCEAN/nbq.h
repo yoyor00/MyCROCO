@@ -51,6 +51,8 @@
       common /nbq_qdmu_nbq/ qdmu_nbq
       real qdmv_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_qdmv_nbq/ qdmv_nbq
+      logical got_qdmu_nbq, got_qdmv_nbq
+      common /nbq_got_qdm/ got_qdmu_nbq, got_qdmv_nbq
 # ifdef NBQ
       real qdmw_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_qdmw_nbq/ qdmw_nbq

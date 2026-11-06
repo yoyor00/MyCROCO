@@ -1506,6 +1506,8 @@ C$    integer omp_get_thread_num
 # endif
 
 # ifdef M3FAST
+      got_qdmu_nbq=.false.
+      got_qdmv_nbq=.false.
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef NBQ_MASS

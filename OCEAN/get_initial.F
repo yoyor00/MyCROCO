@@ -1247,6 +1247,7 @@
 ! qdmu_nbq.
 !
       lvar=lenstr(vname(1,indxqdmu_nbq))
+      got_qdmu_nbq=.true.
       ierr=nf_inq_varid (ncid,
      &                  vname(1,indxqdmu_nbq)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
@@ -1261,11 +1262,13 @@
       else
         MPI_master_only write(stdout,4) vname(1,indxqdmu_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
+        got_qdmu_nbq=.false.
       endif
 !
 ! qdmv_nbq.
 !
       lvar=lenstr(vname(1,indxqdmv_nbq))
+      got_qdmv_nbq=.true.
       ierr=nf_inq_varid (ncid,
      &                  vname(1,indxqdmv_nbq)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
@@ -1280,6 +1283,7 @@
       else
         MPI_master_only write(stdout,4) vname(1,indxqdmv_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
+        got_qdmv_nbq=.false.
       endif
 
 #  endif  /* M3FAST */
