@@ -24,12 +24,18 @@
 #  else
 #   define SWITCH !
 #  endif
+        use param
+        use scalars, only: nnew
 
       implicit none
  
       private 
  
       public :: idx_mld_density,idx_mld_temperature,idx_mld_turbulence
+
+#include "grid.h"
+#include "ocean3d.h"
+#include "mixing.h"
 
       contains
 !==========================================================================
@@ -38,9 +44,6 @@
 ! Purposes : - find vertical index of reference depth (depth_ref)
 !
 !----------------------------------------------------------------------
-        use param
-        use scalars
-#include "ocean3d.h"
 
         ! Arguments 
         integer, intent(in) :: i,j
@@ -77,9 +80,6 @@
 ! Purposes : compute the depth of MLD from vertical index
 !
 !----------------------------------------------------------------------
-        use param
-#include "grid.h"
-#include "ocean3d.h"
 
         ! Arguments 
         integer, intent(in) :: Istr,Iend,Jstr,Jend
@@ -107,9 +107,6 @@
 !            - compute the depth of MLD for density criteria 
 !
 !----------------------------------------------------------------------
-        use param
-        use scalars
-#include "ocean3d.h"
      
         ! Arguments 
         integer, intent(in) :: Istr,Iend,Jstr,Jend
@@ -164,10 +161,6 @@
 !            - compute the depth of MLD for temperature criteria 
 !
 !----------------------------------------------------------------------
-        use param
-        use scalars
-#include "ocean3d.h"
-
         ! Arguments 
         integer, intent(in) :: Istr,Iend,Jstr,Jend
         real, intent(in) :: threshold_temp,depth_ref
@@ -221,10 +214,6 @@
 !            - compute the depth of MLD for turbulence criterion
 !
 !----------------------------------------------------------------------
-        use param
-        use scalars
-#include "ocean3d.h"
-#include "mixing.h"
 
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend

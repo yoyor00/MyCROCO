@@ -23,12 +23,25 @@
 #  else
 #   define SWITCH !
 #  endif
+      use param
+      use scalars, only: nstp,nnew
+      use module_mld, only: idx_mld_density, &
+                         idx_mld_temperature, &
+                         idx_mld_turbulence
+      use croco_namelist, only: mld_crit_type, &
+              mld_crit_D, mld_crit_T, &
+              mld_crit_AKt, mld_depth_ref
+      use croco_namelist, only: dt
 
       implicit none
  
       private 
  
       public :: get_diagTS_over_mld
+
+#include "diagnostics.h"
+#include "grid.h"
+#include "ocean3d.h"
 
       contains
 !==========================================================================
@@ -44,8 +57,6 @@
 !
 ! Called by : step3d_t.F, t3dmix_ISO.F, t3dmix_S.F, t3dmix_spg.F
 !--------------------------------------------------------------------------
-        use param
-        use croco_namelist, only: mld_crit_type
 
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
@@ -103,12 +114,6 @@
 ! Purposes : - get the mld and mld vertical index using the three 
 !              criteria: turbulence, density and temperature
 !--------------------------------------------------------------------------
-        use module_mld, only: idx_mld_density, &
-                           idx_mld_temperature, &
-                           idx_mld_turbulence
-        use croco_namelist, only: mld_crit_D, mld_crit_T, &
-                                  mld_crit_AKt, mld_depth_ref
-        use param
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend
         real, intent(inout) :: mld_turb_local(GLOBAL_2D_ARRAY), &
@@ -138,11 +143,6 @@
 !--------------------------------------------------------------------------
 ! Purposes : - integrate budget terms of TS diagnostics over MLD
 !--------------------------------------------------------------------------
-        use param
-        use scalars
-#include "diagnostics.h"
-#include "grid.h"
-#include "ocean3d.h"
 
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
@@ -241,12 +241,6 @@
 ! Purposes : - compute the rate and entrainement/detrainement terms for 
 !              TS diagnostics integrated over MLD 
 !--------------------------------------------------------------------------
-        use croco_namelist, only: dt
-        use scalars
-        use param
-#include "diagnostics.h"
-#include "grid.h"
-#include "ocean3d.h"
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
