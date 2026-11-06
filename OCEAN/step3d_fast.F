@@ -332,11 +332,11 @@ C$    trd=omp_get_thread_num()
 !$acc kernels if(compute_on_device) default(present)
 
 # ifdef NBQ
-      if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
+      if (FIRST_RST_TIME_STEP.and.FIRST_FAST_STEP) then
          do k=1,N
            do j=JstrV-2,Jend+1
              do i=IstrU-2,Iend+1
-               rho_bak(i,j,k)=rho(i,j,k) 
+               rho_bak(i,j,k)=rho(i,j,k)
              enddo
             enddo
           enddo
@@ -796,13 +796,13 @@ C$OMP END MASTER
 !
 # ifdef ZNUDGING
 #  ifdef ZONAL_NUDGING
-      if (FIRST_TIME_STEP .or. mod(iic,10).eq.0) then
+      if (FIRST_RST_TIME_STEP .or. mod(iic,10).eq.0) then
         if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew),zetazon)
         endif
       endif
-      if (FIRST_TIME_STEP) then
+      if (FIRST_RST_TIME_STEP) then
         if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ssh(START_2D_ARRAY),sshzon)
@@ -877,7 +877,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # if defined NBQ && !defined NBQ_GRID_SLOW
-      if ( (FIRST_TIME_STEP .and. FIRST_FAST_STEP) NSTEP_GRID ) then
+      if ( (FIRST_RST_TIME_STEP .and. FIRST_FAST_STEP) NSTEP_GRID ) then
 !
 ! Update main grid parameters
 !
@@ -1436,7 +1436,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # ifdef NBQ
-      if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
+      if (FIRST_RST_TIME_STEP .and. FIRST_FAST_STEP) then
         do j=JstrR,JendR
           do k=0,N
             do i=IstrR,IendR
@@ -1451,14 +1451,14 @@ C$OMP END MASTER
 !  Acoustic wave emission
 !-------------------------------------------------------------------
 !
-# ifdef ACOUSTIC_FORCING 
-      if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
+# ifdef ACOUSTIC_FORCING
+      if (FIRST_RST_TIME_STEP .and. FIRST_FAST_STEP) then
         period_exp = 0.025/2.
         for_a_exp  = 2.5
         amp_exp    = 1.e-2
         hmax_exp   = 128.
         dg_exp     = 2.
-        time_nbq   = 0. 
+        time_nbq   = 0.
       endif
 # endif
 !
@@ -3468,7 +3468,7 @@ C$OMP END MASTER
 # if defined M2NUDGING && defined M2CLIMATOLOGY
 
 #  ifdef ZONAL_NUDGING
-      if (FIRST_TIME_STEP .or. mod(iic,10).eq.0) then
+      if (FIRST_RST_TIME_STEP .or. mod(iic,10).eq.0) then
         if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ubar(START_2D_ARRAY,knew),ubzon)
@@ -3476,8 +3476,8 @@ C$OMP END MASTER
      &                   vbar(START_2D_ARRAY,knew),vbzon)
         endif
       endif
-      if (FIRST_TIME_STEP) then
-        if (FIRST_FAST_STEP) then 
+      if (FIRST_RST_TIME_STEP) then
+        if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ubclm(START_2D_ARRAY),ubclmzon)
           call zonavg_2d(Istr,Iend,Jstr,Jend,
