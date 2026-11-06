@@ -24,8 +24,8 @@
 /
 
 &croco_calendar
-  start_date = "<dstart>-<mstart>-<ystart> 00:00:00"
-  end_date = "<dend>-<mend>-<yend> 00:00:00"
+  start_date = "<dstart>"
+  end_date = "<dend>"
   calendar_type = "gregorian"
 /
 
@@ -243,11 +243,11 @@
 /
 
 &croco_online
-  yearnum = <yr1>
-  monthnum = <mo1>
+  yearnum = <ystart>
+  monthnum = <mstart>
   recordsperday = <rpd>
-  yearend = <yr2>
-  monthend = <mo2>
+  yearend = <yend>
+  monthend = <mend>
   pathbulk = "<online_frc>"
 /
 

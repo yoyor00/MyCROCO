@@ -20,6 +20,7 @@ MODULE tools_calendar
 !!              subroutines, 2026, Croco Team
 !!
 !!---------------------------------------------------------------------
+   USE param
    IMPLICIT NONE
    PRIVATE
 
@@ -347,7 +348,9 @@ CONTAINS
       IMPLICIT NONE
 #if defined MPI
       include 'mpif.h'
-
+# if defined OA_COUPLING || defined OW_COUPLING
+#     include "mpi_cpl.h"
+# endif
       call mpi_abort (MPI_COMM_WORLD, 1)
 #endif
       STOP

@@ -1,3 +1,4 @@
+# include "cppdefs.h"
 !======================================================================
 ! CROCO is derived from the ROMS-AGRIF branch of ROMS.
 ! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits

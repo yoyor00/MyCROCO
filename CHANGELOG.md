@@ -19,6 +19,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   potential, in addition to elevation; works now with both
   ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
+- SCRIPTS_COUPLING : deal with hours (in addition to year, month, day). (#593)
+
 ### Fixed
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 

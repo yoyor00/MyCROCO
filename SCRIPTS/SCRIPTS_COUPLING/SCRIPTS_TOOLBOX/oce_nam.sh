@@ -60,7 +60,8 @@ do
 
     printf "Compute number of time steps\n"
     OCE_NDT_DAY=$(( 86400 / ${DT_OCE_2} ))
-    OCE_NTIMES=$(( ( ${JDAY_END_JOB} - ${JDAY_BEGIN_JOB} + 1 ) * ${OCE_NDT_DAY}     ))
+    #OCE_NTIMES=$(( ( ${JDAY_END_JOB} - ${JDAY_BEGIN_JOB} + 1 ) * ${OCE_NDT_DAY}     ))
+    OCE_NTIMES=$(( ${TOTAL_JOB_DUR_SEC} / ${DT_OCE_2}     ))
 
     # Change in endding date for online interpolation
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
@@ -84,6 +85,11 @@ do
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
+    end_Y=$( echo $DATE_END_JOB | cut -c 1-4 )
+    end_M=$( echo $DATE_END_JOB | cut -c 5-6 )
+    end_D=$( echo $DATE_END_JOB | cut -c 7-8 )
+    echo "date end is : "
+    echo  $DATE_END_JOB
 
     if [[ ${EXACT_RESTART} == "TRUE" ]]; then
         idx_rst=0
@@ -156,10 +162,11 @@ sed -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<ocendtfast>/${NDTFAST}/g" \
     -e "s/<theta_s>/${ts}/g" -e "s/<theta_b>/${tb}/g" -e "s/<hc>/${hc}/g" \
     -e "s/<oce_nrst>/${OCE_NTIMES}/g" \
     -e "s|<oce_nhis>|$(( ${oce_his_sec}/${DT_OCE_2} ))|g" -e "s|<oce_navg>|$(( ${oce_avg_sec}/${DT_OCE_2} ))|g" \
-    -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${MONTH_BEGIN_JOB}/g" -e "s/<rpd>/${rpd}/g" -e "s|<online_frc>|${online_frc}|g" \
-    -e "s/<dstart>/${cur_D}/g"  -e "s/<mstart>/${cur_M}/g" -e "s/<ystart>/${cur_Y}/g" \
-    -e "s/<dend>/${end_D}/g"  -e "s/<mend>/${end_M}/g" -e "s/<yend>/${end_Y}/g" \
-    -e "s/<yr2>/${end_Y}/g"             -e "s/<mo2>/${end_M}/g"           \
+    -e "s/<ystart>/${YEAR_BEGIN_JOB}/g"  -e "s/<mstart>/${MONTH_BEGIN_JOB}/g" \
+    -e "s/<rpd>/${rpd}/g" -e "s|<online_frc>|${online_frc}|g" \
+    -e "s/<yend>/${YEAR_BEGIN_JOBp1}/g"   -e "s/<mend>/${MONTH_BEGIN_JOBp1}/g" \
+    -e "s/<dstart>/${START_DATE_RUN}/g" \
+    -e "s/<dend>/${END_DATE_RUN}/g" \
     ${namfile} > namelist.tmp
 
 if [ ${USE_XIOS_OCE} -eq 1 ]; then
