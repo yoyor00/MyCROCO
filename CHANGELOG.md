@@ -73,6 +73,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
   surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
 - Fix grid variables writing in average and diagnostic file (#522)
+- Fix bvf fields units in history and average files (#567)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
