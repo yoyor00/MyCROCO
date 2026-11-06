@@ -115,7 +115,7 @@ They include:
 
 - The definition of the CPP key STOGEN in `cppdefs.h`  
 
-- The compilation STOGEN scripts in `jobcomp`
+- The compilation STOGEN scripts in `jobcomp.sh` / `jobcomp.py`
 
 - The initialization of the stochastic modules in `main.F`.
 

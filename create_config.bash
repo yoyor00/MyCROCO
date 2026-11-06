@@ -337,9 +337,19 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CROCO_DIR.
     
-    PAT=$(grep ^SOURCE1 ${CROCO_DIR}/OCEAN/jobcomp)
-    sed -e "s!${PAT}!SOURCE1=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
-    chmod +x $MY_CROCO_DIR/jobcomp
+    # jobcomp: the python driver (and its package), with "jobcomp" a symlink
+    # to it, "jobcomp.sh" the unmodified bash original (reachable with
+    # "jobcomp --sh") and "jobcomp.conf" the settings the scripts used to sed
+    # into the script itself.
+    cp -f ${CROCO_DIR}/OCEAN/jobcomp.py $MY_CROCO_DIR.
+    chmod +x $MY_CROCO_DIR/jobcomp.py
+    ln -sf jobcomp.py $MY_CROCO_DIR/jobcomp
+    cp -f ${CROCO_DIR}/OCEAN/jobcomp.sh $MY_CROCO_DIR.
+    cp -rf ${CROCO_DIR}/OCEAN/python $MY_CROCO_DIR.
+    # the generated configuration needs the driver, not its tests
+    rm -rf $MY_CROCO_DIR/python/tests
+    find $MY_CROCO_DIR/python -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null
+    printf 'SOURCE1=%s\n' "${CROCO_DIR}/OCEAN" > $MY_CROCO_DIR/jobcomp.conf
 
     if [[ ${options[@]} =~ "runcpl" ]]; then
         cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.
@@ -612,25 +622,20 @@ if [[ ${options[@]} =~ "runcpl" ]] ; then
 
     chmod 755 mynamelist.sh
 
-    # Edit jobcomp in CROCO_IN
+    # Configure jobcomp in CROCO_IN
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         cd ${MY_CONFIG_HOME}/CROCO_IN
-	sed -e 's|SOURCE1=.*|source ../myenv_mypath.sh\nSOURCE1=${OCE}|g' \
-	    -e 's|FC=gfortran|FC=\${FC}|' \
-	    -e 's|MPIF90=.*|MPIF90=\${MPIF90}|' \
-	    jobcomp > jobcomp.tmp
-	mv jobcomp.tmp jobcomp
-	if [[ ${options[@]} =~ "cpl" ]]; then
-	    sed -e 's|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=\${CPL}|' \
-		jobcomp > jobcomp.tmp
-            mv jobcomp.tmp jobcomp
-	fi
-        if [[ ${options[@]} =~ "xios" ]]; then
-            sed -e 's|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=\${XIOS}|' \
-                jobcomp > jobcomp.tmp
-            mv jobcomp.tmp jobcomp
+        # jobcomp reads jobcomp.conf before the environment does; the values
+        # below keep their ${...} so that the run shell expands them from
+        # myenv_mypath.sh, exactly like the sed'ed bash script used to do.
+        printf 'SOURCE1=${OCE}\nFC=${FC}\nMPIF90=${MPIF90}\n' > jobcomp.conf
+        if [[ ${options[@]} =~ "cpl" ]]; then
+            printf 'PRISM_ROOT_DIR=${CPL}\n' >> jobcomp.conf
         fi
-	chmod 755 jobcomp
+        if [[ ${options[@]} =~ "xios" ]]; then
+            printf 'XIOS_ROOT_DIR=${XIOS}\n' >> jobcomp.conf
+        fi
+        chmod 755 jobcomp.py jobcomp.sh
     fi
     # 
     cp -f ${MY_CROCO_DIR}/cppdefs.h ${MY_CROCO_DIR}/cppdefs.h.base

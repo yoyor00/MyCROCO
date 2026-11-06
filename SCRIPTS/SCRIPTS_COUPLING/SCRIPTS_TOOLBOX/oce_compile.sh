@@ -11,30 +11,66 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
 #   sed on files
 #-------------------------------------------------------------------------------
     cd ${JOBDIR_ROOT}
-    cpfile ${OCE_EXE_DIR}/jobcomp .
+    # Two generations of jobcomp are supported, decide once and for all:
+    #   - this release: ``jobcomp.py`` (the driver, with its ``python/``
+    #     package and ``jobcomp.conf`` for the settings that used to be sed'ed
+    #     into the script), ``jobcomp`` a symlink to it, and the unmodified
+    #     bash original ``jobcomp.sh`` reachable through ``./jobcomp --sh``
+    #   - older releases: ``jobcomp`` is a single bash script
+    if [ -f ${OCE_EXE_DIR}/jobcomp.py ] ; then
+        JOBCOMP_PY=TRUE
+        JOBCOMP_EXE=./jobcomp
+        cpfile ${OCE_EXE_DIR}/jobcomp.py .
+        ln -sf jobcomp.py jobcomp
+        cpfile2 ${OCE_EXE_DIR}/jobcomp.conf .
+        cpfile2 ${OCE_EXE_DIR}/jobcomp.sh .
+        if [ -d ${OCE_EXE_DIR}/python ] ; then cp -rf ${OCE_EXE_DIR}/python . ; fi
+    else
+        JOBCOMP_PY=FALSE
+        JOBCOMP_EXE=./jobcomp
+        cpfile ${OCE_EXE_DIR}/jobcomp .
+    fi
     cpfile ${OCE_EXE_DIR}/cppdefs_dev.h .
     cpfile ${OCE_EXE_DIR}/param.h.base .
     cpfile ${OCE_EXE_DIR}/cppdefs.h.base .
 
+    #----------------------------------------------------------------------------
     #   Jobcomp
-    #----------
+    #----------------------------------------------------------------------------
     printf "      Preparing jobcomp \n"
-    sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
-        -e "s|SCRDIR=./Compile|SCRDIR=${JOBDIR_ROOT}/Compile |g" \
-        -e "s|RUNDIR=.*|RUNDIR=${JOBDIR_ROOT} |g" \
-        -e "s|FC=gfortran|FC=${FC}|g" \
-        -e "s|MPIF90=.*|MPIF90=${MPIF90}|g" \
-        -e "s|-O3|-O2|g" \
-        ./jobcomp > tmp$$
-    mv tmp$$ jobcomp
-    #
-    line=$(grep -n -m1 'PRISM_ROOT_DIR=' jobcomp | cut -d: -f1)
-    sed "${line} s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=${CPL}|" ./jobcomp > tmp$$
-    mv tmp$$ jobcomp
-    #
-    line=$(grep -n -m1 'XIOS_ROOT_DIR=' jobcomp | cut -d: -f1)
-    sed "${line} s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|" ./jobcomp > tmp$$
-    mv tmp$$ jobcomp
+    [ ${JOBCOMP_PY} == "TRUE" ] || \
+        printf "      Legacy bash jobcomp detected, using it as is \n"
+    if [ ${JOBCOMP_PY} == "TRUE" ] ; then
+        # OCE is usually unset here: otherwise keep the SOURCE1 written into
+        # jobcomp.conf by create_config.bash
+        [[ -n ${OCE} ]] && export CROCO_SRC="${OCE}"
+        export CROCO_CFT1="${FC}"
+        export CROCO_MPIF90="${MPIF90}"
+        export CROCO_PRISM_ROOT_DIR="${CPL}"
+        export CROCO_XIOS_ROOT_DIR="${XIOS}"
+        # the bash script used to be sed'ed from -O3 to -O2: keep doing it
+        if [ -z "${CROCO_FFLAGS1}" ] ; then
+            CROCO_FFLAGS1=$(${JOBCOMP_EXE} --print-fflags) && \
+                export CROCO_FFLAGS1=$(echo "${CROCO_FFLAGS1}" | sed -e 's/-O3/-O2/g')
+        fi
+    else
+        sed -e "s|SOURCE=.*|SOURCE=${OCE} |g" \
+            -e "s|SCRDIR=./Compile|SCRDIR=${JOBDIR_ROOT}/Compile |g" \
+            -e "s|RUNDIR=.*|RUNDIR=${JOBDIR_ROOT} |g" \
+            -e "s|FC=gfortran|FC=${FC}|g" \
+            -e "s|MPIF90=.*|MPIF90=${MPIF90}|g" \
+            -e "s|-O3|-O2|g" \
+            ./jobcomp > tmp$$
+        mv tmp$$ jobcomp
+        #
+        line=$(grep -n -m1 'PRISM_ROOT_DIR=' jobcomp | cut -d: -f1)
+        sed "${line} s|PRISM_ROOT_DIR=.*|PRISM_ROOT_DIR=${CPL}|" ./jobcomp > tmp$$
+        mv tmp$$ jobcomp
+        #
+        line=$(grep -n -m1 'XIOS_ROOT_DIR=' jobcomp | cut -d: -f1)
+        sed "${line} s|XIOS_ROOT_DIR=.*|XIOS_ROOT_DIR=${XIOS}|" ./jobcomp > tmp$$
+        mv tmp$$ jobcomp
+    fi
 
     printf "      Reading grid size in ${OCE_FILES_DIR}/croco_grd.nc \n"
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
@@ -243,8 +279,9 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
         sed -e "s/#  *define  *AGRIF/# undef AGRIF/g" \
             -e "s/#  *define   *AGRIF_2WAY/# undef AGRIF_2WAY/g" \
             cppdefs.h > tmp$$
-        sed -e "s/MAKE  *\-j  *[1-9]/MAKE -j 8/g" jobcomp > tmp2$$
-        
+        JOBCOMP_JOBS=8
+        [ ${JOBCOMP_PY} == "TRUE" ] || sed -e "s/MAKE  *\-j  *[1-9]/MAKE -j 8/g" jobcomp > tmp2$$
+
     else
         sed -e "s/#  *undef  *AGRIF/# define AGRIF/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
@@ -255,18 +292,19 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
         else
             sed -e "s/#  *define  *AGRIF_2WAY/# undef AGRIF_2WAY/g" cppdefs.h > tmp$$
 	fi
-        sed -e "s/MAKE  *\-j  *[1-9]/MAKE -j 1/g" jobcomp > tmp2$$
+        JOBCOMP_JOBS=1
+        [ ${JOBCOMP_PY} == "TRUE" ] || sed -e "s/MAKE  *\-j  *[1-9]/MAKE -j 1/g" jobcomp > tmp2$$
     fi
 
     mv tmp$$ cppdefs.h
-    mv tmp2$$ jobcomp
+    [ ${JOBCOMP_PY} == "TRUE" ] || mv tmp2$$ jobcomp
 
 #-------------------------------------------------------------------------------
 #   compile
 #-------------------------------------------------------------------------------
     printf "     Launching jobcomp... \n"
-    chmod 755 jobcomp
-    time ./jobcomp >& log.compil
+    chmod 755 ${JOBCOMP_EXE}
+    time ${JOBCOMP_EXE} --jobs ${JOBCOMP_JOBS} >& log.compil
     if [ -f croco ]; then
         printf "\n Successful compilation, copying executable in ${EXEDIR} \n"
     else

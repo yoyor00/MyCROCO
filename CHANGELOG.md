@@ -102,6 +102,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- COMPILATION : `jobcomp` now runs the Python build driver `jobcomp.py`
+  (same options, same `CROCO_*`/`NPROCS` variables, same `Compile/` tree and
+  `Makedefs`), with new `--copy-mode`, `--keep-scratch`, `--dry-run` and
+  `-v/-q/--log-file` options. The historical bash script is kept unmodified
+  as `jobcomp.sh`; `jobcomp --sh` hands the options over to it.
+
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
   (croco.nml). All configuration parameters are now in structured &croco_*
