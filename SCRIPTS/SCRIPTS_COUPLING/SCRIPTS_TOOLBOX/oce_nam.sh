@@ -85,15 +85,21 @@ do
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
     cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
 
-    idx_rst=0
-	if [[ ${RESTART_FLAG} == "TRUE" ]]; then
-        idx_ini=2
-        scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ',' -f 2 | cut -d ';' -f 1)
-	else
-        idx_ini=1
-        scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+    ini_times=$(ncdump -v time "croco_ini.nc${agrif_ext}" | grep '^[[:space:]]*time =' | cut -d '=' -f 2 | tr -d ' ;')
+
+    idx_ini=1
+    idx_rst=-1
+    scrumt=${times%%,*}
+
+    if [[ ${EXACT_RESTART} == "TRUE" ]]; then
+        idx_rst=0
+        if [[ ${RESTART_FLAG} == "TRUE" ]]; then
+            idx_ini=2
+            scrumt=${times##*,}
+        fi
     fi
-    scrumtindays=$(( $scrumt/86400))
+
+    scrumtindays=$(( scrumt / 86400 ))
 
     mdy=$( valid_date $MONTH_BEGIN_JOB $(( $DAY_BEGIN_JOB - $scrumtindays )) $YEAR_BEGIN_JOB )
     or_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
