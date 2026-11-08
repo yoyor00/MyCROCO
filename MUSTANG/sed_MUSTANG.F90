@@ -221,7 +221,7 @@ MODULE sed_MUSTANG
     ! Update sediment roughness length
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (.not. l_z0seduni) then
-      call sed_MUSTANG_comp_z0sed(ifirst, ilast, jfirst, jlast, h)
+      call sed_MUSTANG_comp_z0sed(ifirst, ilast, jfirst, jlast)
     endif
 
 #ifdef OBSTRUCTION
@@ -936,6 +936,7 @@ ENDIF
               ! all layers are saved - k=1 bottom layer
                 IF(ksma(i,j) >= 1 .AND. ksma(i,j) /= INT(rg_valmanq_io)) THEN
                   var3D_cvs(ksdmin:ksma(i,j),i,j)=var3D(ksdmin:ksma(i,j),i,j)*unitmudbinv
+                  var3D_cvs(ksma(i,j)+1:nk_nivsed_out,i,j)=-rg_valmanq_io
                 ELSE
                   var3D_cvs(:,i,j)=-rg_valmanq_io
                 END IF
@@ -1044,7 +1045,7 @@ ENDIF
   
    !!==============================================================================
 
-   SUBROUTINE sed_MUSTANG_comp_z0sed(ifirst,ilast,jfirst,jlast,BATHY_H0)
+   SUBROUTINE sed_MUSTANG_comp_z0sed(ifirst,ilast,jfirst,jlast)
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_comp_z0sed ***
@@ -1059,36 +1060,45 @@ ENDIF
 
    !! * Arguments
    INTEGER, INTENT(IN)                                  :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)  :: BATHY_H0
 
    !! * Local declarations
    INTEGER        :: i,j,ksmax
-   REAL(KIND=rsh) :: diamgravsan
+   REAL(KIND=rsh) :: inv_csedtot ! 1/c_sedtot
+   REAL(KIND=rsh) :: diamgravsan ! ponderation of diameter of gravel and sand from each sediment fraction
+   REAL(KIND=rsh) :: z0gravsan ! application of nikuradse to obtain gravel+sand roughness
+   REAL(KIND=rsh) :: fracgravsan ! fraction of gravel + sand
+   REAL(KIND=rsh) :: fracmud ! fraction of mud
    !!---------------------------------------------------------------------------
    !! * Executable part
 
+     z0sed(:,:) = z0sedbedrock ! no sediment
      DO j=jfirst,jlast
        DO i=ifirst,ilast
-         IF(BATHY_H0(i,j).EQ.-valmanq) THEN
-           ! Here value not set to -valmanq, since in skinstress
-           ! computation, there are calls in i+1, i-1, j+1, j-1 whihtout test on
-           ! land : in case of land velocities =0 ; and velocities are averaged
-           z0sed(i,j) = z0sedmud
-         ELSE
-           ksmax = ksma(i,j)
-           IF((ksmax.NE.0).AND. c_sedtot(ksmax,i,j).NE.0.0_rsh)THEN !There is sediment
-             diamgravsan = MAX(diam_sed(isand2),  &
-                          SUM( (cv_sed(igrav1:isand2,ksmax,i,j)/c_sedtot(ksmax,i,j))*diam_sed(igrav1:isand2) ))
-             ! Application of Nikurasde z0 = (d50/12)
-             ! If only mud diamgravsan = 0., so z0seduni is used
-             z0sed(i,j) = MAX(z0seduni,diamgravsan/12.0_rsh)
-           ELSE ! There is no sediment
-             z0sed(i,j) = z0sedbedrock
-           ENDIF
-         ENDIF 
+          ksmax = ksma(i,j)
+          IF (ksmax /= 0) THEN
+            IF (c_sedtot(ksmax,i,j) > 0.0_rsh) THEN ! sediment presence
+              inv_csedtot = 1.0_rsh / c_sedtot(ksmax,i,j)
 
+              diamgravsan = SUM(cv_sed(igrav1:isand2,ksmax,i,j) * &
+                                  diam_sed(igrav1:isand2)) * inv_csedtot
+
+              ! Application of Nikurasde z0 = (d50/12)
+              z0gravsan = diamgravsan / 12.0_rsh
+
+              fracmud     = SUM(cv_sed(imud1:imud2,ksmax,i,j)) * inv_csedtot
+              fracgravsan = SUM(cv_sed(igrav1:isand2,ksmax,i,j)) * inv_csedtot
+
+              z0sed(i,j) = MAX(z0sedmin, z0gravsan * fracgravsan + z0sedmin * fracmud)
+            END IF
+          END IF
        ENDDO
      ENDDO
+
+#ifdef MPI
+     if (.not. l_tauskin_center) then
+       call exchange_r2d_tile (ifirst, ilast, jfirst, jlast, z0sed(START_2D_ARRAY))
+     endif
+#endif
 
    END SUBROUTINE sed_MUSTANG_comp_z0sed
 
@@ -1265,7 +1275,7 @@ ENDIF
     DO i = ifirst, ilast
  
        altc1 = alt_cw1(i,j)
- 
+
        IF ( altc1 > aref_sand      .AND. & ! first layer above aref_sand
             htot(i,j) > h0fond     .AND. & ! wet cell
             htot(i,j) > aref_sand  .AND. & ! prevents h_total = aref in compute_rouse_correction
@@ -1275,10 +1285,10 @@ ENDIF
           alogaltc1sz0 = LOG(altc1 / z0sed(i,j))
           CALL build_rouse_grid(nbcche, epn_bottom_MUSTANG(i,j), aref_sand, hzi)
           CALL build_rouse_grid(nbcche, htot(i,j), aref_sand, hzi_2d)
- 
+
           DO ivp = isand1, isand2
              rouse = compute_rouse_number(ws3_bottom_MUSTANG(ivp,i,j), ustarbot(i,j))
- 
+
              IF (l_subs2D(ivp)) THEN
                 CALL integrate_rouse_profile(nbcche, rouse, hzi_2d, htot(i,j), z0sed(i,j), som, einstein)
                 rouse2D(ivp,i,j) = rouse
@@ -1290,12 +1300,13 @@ ENDIF
              CALL compute_rouse_correction(                                              &
                 l_subs2D(ivp), hzi(1), htot(i,j), aref_sand, alogaltc1sz0, rouse, som, einstein,     &
                 extrap, corflux(ivp,i,j), corfluy(ivp,i,j))
- 
+
              flx_w2s(ivp,i,j) = flx_w2s(ivp,i,j) * extrap
+
              DO ivpp = nvpc+1, nvp
                 IF (irkm_var_assoc(ivpp) == ivp) flx_w2s(ivpp,i,j) = flx_w2s(ivpp,i,j) * extrap
              ENDDO
- 
+
           ENDDO ! ivp on sand
        ENDIF ! test first layer above aref_sand, wet cell and prevent all floating point
  
@@ -1550,10 +1561,10 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                                         surf_cell(i,j), &
                                         surf_cell(i+1,j), surf_cell(i-1,j), &
                                         surf_cell(i,j-1), surf_cell(i,j+1), &
-                                        (vbar(i+1,j,nrhs) + vbar(i+1,j+1,nrhs))/2.0_rsh,&
-                                        (vbar(i-1,j,nrhs) + vbar(i-1,j+1,nrhs))/2.0_rsh,&
-                                        (ubar(i,j-1,nrhs) + ubar(i+1,j-1,nrhs))/2.0_rsh,&
-                                        (ubar(i,j+1,nrhs) + ubar(i+1,j+1,nrhs))/2.0_rsh,&
+                                        (vbar(i+1,j,knew) + vbar(i+1,j+1,knew))/2.0_rsh,&
+                                        (vbar(i-1,j,knew) + vbar(i-1,j+1,knew))/2.0_rsh,&
+                                        (ubar(i,j-1,knew) + ubar(i+1,j-1,knew))/2.0_rsh,&
+                                        (ubar(i,j+1,knew) + ubar(i+1,j+1,knew))/2.0_rsh,&
                                         erolat_res)
             ENDIF
 
@@ -2199,10 +2210,10 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                                         surf_cell(i,j), &
                                         surf_cell(i+1,j), surf_cell(i-1,j), &
                                         surf_cell(i,j-1), surf_cell(i,j+1), &
-                                        (vbar(i+1,j,nrhs) + vbar(i+1,j+1,nrhs))/2.0_rsh,&
-                                        (vbar(i-1,j,nrhs) + vbar(i-1,j+1,nrhs))/2.0_rsh,&
-                                        (ubar(i,j-1,nrhs) + ubar(i+1,j-1,nrhs))/2.0_rsh,&
-                                        (ubar(i,j+1,nrhs) + ubar(i+1,j+1,nrhs))/2.0_rsh,&
+                                        (vbar(i+1,j,knew) + vbar(i+1,j+1,knew))/2.0_rsh,&
+                                        (vbar(i-1,j,knew) + vbar(i-1,j+1,knew))/2.0_rsh,&
+                                        (ubar(i,j-1,knew) + ubar(i+1,j-1,knew))/2.0_rsh,&
+                                        (ubar(i,j+1,knew) + ubar(i+1,j+1,knew))/2.0_rsh,&
                                         erolat_res)
             ENDIF
                        
@@ -2339,9 +2350,11 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 phieau_ero_ij=phieau_ero_ij+ REAL(volerod*poro(k,i,j)*surf_cell(i,j),rlg)/MF
 #endif
                 IF(cvolgrv.LE.0.0_rsh)THEN
-                  ! reset  dzs and poro
+                  ! reset  dzs, poro, and the now-inactive layer's concentrations
                   dzs(ksmax,i,j)=0.0_rsh
                   poro(ksmax,i,j)=0.0_rsh
+                  cv_sed(:,ksmax,i,j)=0.0_rsh
+                  c_sedtot(ksmax,i,j)=0.0_rsh
                   ksmax=ksmax-1
                 ELSE
                   dzsa=dzs(k,i,j)
@@ -2867,9 +2880,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
       DO j=jfirst,jlast
         DO i=ifirst,ilast
-          ! test 0 (water or not)
-          IF(htot(i,j) > h0fond) THEN
-
             ksmax=ksma(i,j)
             ksmin=ksmi(i,j)
             flx_w2s_loc(:)=0.0_rsh
@@ -3477,7 +3487,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
             IF (l_outsed_dzs_ksmax) var2D_dzs_ksmax(i,j)=dzs(ksmax,i,j)  ! dzs at sediment surface
         
-          END IF ! test on htot
         END DO  ! loop on i
     END DO    ! loop on j
 
@@ -3537,8 +3546,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
       DO j=jfirst,jlast
         DO i=ifirst,ilast
-
-          IF(htot(i,j) > h0fond) THEN
 
             ksmax=ksma(i,j)
             ksmin=ksmi(i,j)
@@ -4185,8 +4192,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ksma(i,j)=ksmax
 
             IF (l_outsed_dzs_ksmax) var2D_dzs_ksmax(i,j)=dzs(ksmax,i,j)  ! dzs at sediment surface
-       
-          END IF ! test on htot
 
         END DO  ! loop on i
     END DO    ! loop on j
@@ -5764,7 +5769,14 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                          poro_mud(kk,i,j)=poro_mud(kk+1,i,j)
 #endif
                     ENDDO
-                    ksmax=ksmax-1 
+                    ksmax=ksmax-1
+                    ! the layer vacated by the shift above (old ksmax,
+                    ! now beyond the decremented ksmax) must be cleared,
+                    ! otherwise c_sedtot/cv_sed stay stale there
+                    dzs(ksmax+1,i,j)=0.0_rsh
+                    poro(ksmax+1,i,j)=0.0_rsh
+                    cv_sed(:,ksmax+1,i,j)=0.0_rsh
+                    c_sedtot(ksmax+1,i,j)=0.0_rsh
                     nlayer_splitk(k+1)=nlayer_splitk(k+1)-1
                   ENDIF
               ENDIF
@@ -6582,6 +6594,16 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
        c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)+cv_sed(iv,ksmax,i,j)*typart(iv)
      END DO
 
+     ! layer ksmaxa (the pre-fusion top layer, now beyond the
+     ! decremented ksmax) has been fully folded into ksmax above;
+     ! clear it so c_sedtot/cv_sed don't stay stale there
+     dzs(ksmaxa,i,j)=0.0_rsh
+     poro(ksmaxa,i,j)=0.0_rsh
+     poro_mud(ksmaxa,i,j)=0.0_rsh
+     crel_mud(ksmaxa,i,j)=0.0_rsh
+     cv_sed(:,ksmaxa,i,j)=0.0_rsh
+     c_sedtot(ksmaxa,i,j)=0.0_rsh
+
      !print *,'Apres fusion'
      !print *,'ksmax=',ksmax
      !print *,'dzs(ksmax,i,j)=',dzs(ksmax,i,j)
@@ -6700,7 +6722,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
        ! Warning tauskin suspension = tauskin bedload while different in Wu and Lin
 
        IF (l_bedload .and. l_fsusp .and. iv.le.ibedload2) THEN
-         speed = SQRT( ubar(i+1,j,3)**2+ vbar(i,j+1,3)**2)
+         speed = SQRT( ubar(i+1,j,knew)**2+ vbar(i,j+1,knew)**2)
          fsusp= (0.0000262_rsh*((speed/ws_sand(iv))**1.74_rsh)) /  &
                 ( (0.0000262_rsh*((speed/ws_sand(iv))**1.74_rsh))  &
                 + (0.0053_rsh*(tauskin(i,j)/toce_loc(iv)-1.0_rsh)**0.46_rsh) )
@@ -7281,7 +7303,8 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
      poro_mud(ksmax+1,i,j)=0.0_rsh
      dzs(ksmax+1,i,j)=0.0_rsh
      cv_sed(:,ksmax+1,i,j)=0.0_rsh
-     
+     c_sedtot(ksmax+1,i,j)=0.0_rsh
+
      !print *,'Apres fusion'
      !print *,'ksmax=',ksmax
      !print *,'dzs(ksmax,i,j)=',dzs(ksmax,i,j)
@@ -7888,7 +7911,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
      END IF
 
 # if defined key_ANA_bedload
-     phi_bed=0.001*ubar(i,j,nrhs)**3.0_rsh
+     phi_bed=0.001*ubar(i,j,knew)**3.0_rsh
      qb=phi_bed & !  m2/s
                   *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_MUSTANG) ! kg/m/s
 # else

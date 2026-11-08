@@ -16,7 +16,8 @@
 
       USE croco_namelist, ONLY: rstname, nrpfrst
 #if defined MUSTANG
-      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs,
+     &                      t_dyninsed, rstT_dyninsed
       USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
 
@@ -31,6 +32,9 @@
 #include "mpi_cpl.h"
 #if defined GLS_MIXING || defined LMD_MIXING
 # include "mixing.h"
+#endif
+#ifdef DIAGNOSTICS_TS_MLD
+# include "diagnostics.h"
 #endif
 #if defined EXACT_RESTART
 # include "coupling.h"
@@ -68,6 +72,9 @@
       integer status(MPI_STATUS_SIZE), blank
 #endif
 
+#ifdef DIAGNOSTICS_TS_MLD
+      real workkbl(GLOBAL_2D_ARRAY)
+#endif
 #if defined MUSTANG
       real workrsed(GLOBAL_2D_ARRAY,ksdmax)
       real work2d(GLOBAL_2D_ARRAY)
@@ -386,6 +393,22 @@
 #   endif /* LMD_BKPP2005  */
 #  endif /* LMD_BKPP  */
 # endif /* LMD_MIXING */
+
+# ifdef DIAGNOSTICS_TS_MLD
+!
+!     Write out MLD vertical index at previous time step
+!     (integer array written as real)
+!
+        workkbl=real(kbl_nstp)
+        ierr=nf_fwrite(workkbl(START_2D_ARRAY), ncidrst,
+     &                             rstKbl_nstp, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxKbl_nstp))
+            write(stdout,1) vname(1,indxKbl_nstp)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+# endif /* DIAGNOSTICS_TS_MLD */
 
 # if defined GLS_MIXING
 !
@@ -764,6 +787,15 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           endif
        endif
 
+! scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation): a single scalar, not a gridded field
+       ierr=nf_put_var1_FTYPE (ncidrst, rstT_dyninsed, record,
+     &                                                  t_dyninsed)
+       if (ierr .ne. nf_noerr) then
+         write(stdout,1) 't_dyninsed', record, ierr
+     &                   MYID
+         goto 99                                         !--> ERROR
+       endif
 
 # endif /* MUSTANG */
 

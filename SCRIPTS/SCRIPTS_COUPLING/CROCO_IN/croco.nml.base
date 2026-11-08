@@ -164,6 +164,7 @@
 &croco_diag_mld_dens
   mld_crit_D = 3.d-2
   mld_crit_T = 2.d-1
+  mld_depth_ref = 10
 /
 
 &croco_diagnosticsM
@@ -316,14 +317,14 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
-  psource_Lsrc(2,1) = T
-  psource_Lsrc(2,2) = T
-  psource_Tsrc0(1,1) = 20.
-  psource_Tsrc0(1,2) = 15.
-  psource_Tsrc0(2,1) = 20.
-  psource_Tsrc0(2,2) = 15.
+  psource_Lsrc(1,1) = T      ! River #1, tracer #1 (temperature)
+  psource_Lsrc(1,2) = T      ! River #1, tracer #2 (salinity)
+  psource_Lsrc(2,1) = T      ! River #2, tracer #1 (temperature)
+  psource_Lsrc(2,2) = T      ! River #2, tracer #2 (salinity)
+  psource_Tsrc0(1,1) = 20.   ! River #1, tracer #1 (temperature)
+  psource_Tsrc0(1,2) = 15.   ! River #1, tracer #2 (salinity)
+  psource_Tsrc0(2,1) = 20.   ! River #2, tracer #1 (temperature)
+  psource_Tsrc0(2,2) = 15.   ! River #2, tracer #2 (salinity)
 /
 
 &croco_auxiliary_history_fields
