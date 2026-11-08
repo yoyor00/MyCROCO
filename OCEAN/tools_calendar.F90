@@ -20,7 +20,6 @@ MODULE tools_calendar
 !!              subroutines, 2026, Croco Team
 !!
 !!---------------------------------------------------------------------
-   USE param
    IMPLICIT NONE
    PRIVATE
 
@@ -348,8 +347,11 @@ CONTAINS
       IMPLICIT NONE
 #if defined MPI
       include 'mpif.h'
-# if defined OA_COUPLING || defined OW_COUPLING
-#     include "mpi_cpl.h"
+# if defined OA_COUPLING || defined OW_COUPLING || defined XIOS || defined ENSEMBLE
+!$AGRIF_DO_NOT_TREAT
+      INTEGER :: ocean_grid_comm
+      common /cpl_comm/ ocean_grid_comm
+!$AGRIF_END_DO_NOT_TREAT
 # endif
       call mpi_abort (MPI_COMM_WORLD, 1)
 #endif
