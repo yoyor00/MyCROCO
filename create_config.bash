@@ -379,6 +379,8 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
     # MUSTANG
     if [[ ${options[@]} =~ "mustang" ]] ; then
+    cp -f ${CROCO_DIR}/MUSTANG/paraMUSTANG_full_example.nml $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/MUSTANG/parasubstance_full_example.nml $MY_CROCO_DIR.
     fi
     # OANALYSIS
     if [[ ${options[@]} =~ "oanalysis" ]] ; then
