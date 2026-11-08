@@ -23,6 +23,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
+- MUSTANG : add Van der A et al. (2013) wave skewness/asymmetry bedload
+  formulation (zero-current case), activated with l\_vandera in
+  namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
+  case in BENCH (#589)
+
 ### Fixed
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)

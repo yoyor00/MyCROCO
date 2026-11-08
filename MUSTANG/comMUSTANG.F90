@@ -226,6 +226,8 @@ MODULE comMUSTANG
         ! of simultaneous bedload transport, according to Wu & Lin formulations
         ! set to .true. if erosion flux is fitted to total transport
         ! should be set to .false. if E0_sand_option=3 (Wu & Lin)
+    LOGICAL :: l_vandera = .false. ! set to .true. to take into account Vandera wave
+        ! skewness and asymmetry effect on bedload (Van der A et al., 2013)
     REAL(KIND=rsh) :: alphabs = 1.0_rsh ! coefficient for slope effects (default
         ! coefficients Lesser et al. (2004), alphabs = 1.)
     REAL(KIND=rsh) :: alphabn = 1.5_rsh ! coefficient for slope effects (default

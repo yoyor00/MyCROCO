@@ -108,7 +108,7 @@
       cini_sed_n(1)=0.2
       cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
-      l_bedload_n(1)=.FALSE.
+      l_bedload_n(1)=.TRUE.
       init_cv_name_n(1)='GRAV'
       obc_cv_name_n(1)='GRAV'
       tocd_n(1)=1000.
@@ -126,7 +126,7 @@
       cini_sed_n(2)=0.2
       cini_air_n(2)=0.0
       l_out_subs_n(2)=.TRUE.
-      l_bedload_n(2)=.FALSE.
+      l_bedload_n(2)=.TRUE.
       init_cv_name_n(2)='SAND'
       obc_cv_name_n(2)='SAND'
       tocd_n(2)=1000.

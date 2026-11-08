@@ -17,4 +17,32 @@
     "unsupported": ["openmp","restart"],
     // no restartability due to WET_DRY key
   },
+  // VILAINE case with MUSTANG V2 bedload + Vandera wave skewness/asymmetry
+  // effect (Van der A et al., 2013). Same forcing (WAVE_OFFLINE already
+  // enabled for VILAINE) and same input data as VILAINE, only the sediment
+  // bedload formulation differs (key_MUSTANG_V2 + l_vandera).
+  // l_vandera=.TRUE. is set directly in paraMUSTANG_COASTAL.nml
+  // (namsedim_bedload group, only read when key_MUSTANG_V2 is defined,
+  // so it has no effect on the plain VILAINE case above).
+  "VILAINE_VANDERA": {
+    "title": "VILAINE - MUSTANG V2 + Vandera bedload",
+    "case": "COASTAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_COASTAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_COASTAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_COASTAL.h",
+    "croco_files_path": "COASTAL_VILAINE_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2", "8": "2x4" },
+    "cppkeys": {
+      "key_MUSTANG_V2": true,
+      "key_noTSdiss_insed": true,
+    },
+    "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
+      "plotphy_script_input": "croco_his.nc",
+    },
+    "check_outputs": ["croco_his.nc"],
+    "unsupported": ["openmp","restart"],
+    // no restartability due to WET_DRY key
+  },
 }

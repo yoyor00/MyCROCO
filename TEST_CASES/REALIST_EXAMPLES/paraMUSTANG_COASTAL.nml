@@ -92,6 +92,11 @@
 /   
 &namdredging
 /
+: Only read if key_MUSTANG_V2 is defined (VILAINE_VANDERA case in BENCH);
+: ignored otherwise (VILAINE case).
+&namsedim_bedload
+   l_vandera = .TRUE.
+/
 &namsedim_poro
 /
 

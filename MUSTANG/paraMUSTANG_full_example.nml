@@ -339,19 +339,24 @@
 :              until 5-10 (Gerald Herling experience))
 :    hmin_bedload : real, no bedload in u/v directions if 
 :                   h0+ssh <= hmin_bedload in neighbouring cells
-:    l_fsusp : boolean, limitation erosion fluxes of non-coh sediment in case 
-:              of simultaneous bedload transport, according to Wu & Lin 
+:    l_fsusp : boolean, limitation erosion fluxes of non-coh sediment in case
+:              of simultaneous bedload transport, according to Wu & Lin
 :              formulations
-:              set to .true. if erosion flux is fitted to total transport 
+:              set to .true. if erosion flux is fitted to total transport
 :              should be set to .false. if E0_sand_option=3 (Wu & Lin)
+:    l_vandera : boolean, set to .true. to add the wave skewness and asymmetry
+:                contribution to bedload transport (Van der A et al., 2013),
+:                on top of the current-driven bedload transport. Requires
+:                wave forcing (WAVE_OFFLINE, MRL_WCI or OW_COUPLING).
 :------------------------------------------------------------------------------
 &namsedim_bedload
    l_peph_bedload = .FALSE.
-   l_slope_effect_bedload = .TRUE. 
-   alphabs = 1.0           
-   alphabn = 1.5 
-   hmin_bedload = 0.1    
-   l_fsusp = .FALSE. / 
+   l_slope_effect_bedload = .TRUE.
+   alphabs = 1.0
+   alphabn = 1.5
+   hmin_bedload = 0.1
+   l_fsusp = .FALSE.
+   l_vandera = .FALSE. /
 :
 :------------------------------------------------------------------------------
 :  namsedim_lateral_erosion : Namelist relative to lateral sediment erosion

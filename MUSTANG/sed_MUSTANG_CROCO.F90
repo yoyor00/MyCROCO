@@ -38,12 +38,17 @@
     USE flocmod, ONLY: f_ws
     IMPLICIT NONE
 
-    !! * Accessibility 
+    !! * Accessibility
     PUBLIC sed_skinstress
     PUBLIC sed_gradvit
     PUBLIC sed_MUSTANG_settlveloc
 #ifdef key_MUSTANG_V2
     PUBLIC sed_bottom_slope
+#if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+    PUBLIC wave_height
+    PUBLIC wave_period
+    PUBLIC wave_direction
+#endif
 #if defined MPI
     PUBLIC sed_exchange_flxbedload
     PUBLIC sed_exchange_maskbedload
@@ -728,6 +733,17 @@ REAL(KIND=rsh) :: Dw(ifirst:ilast, jfirst:jlast)
     Dw = Dwave(ifirst:ilast, jfirst:jlast)
 #  endif
 END FUNCTION wave_direction
+
+PURE FUNCTION wave_height(ifirst, ilast, jfirst, jlast) RESULT(Hs)
+! Wave height (RMS, m), from whichever wave forcing is active.
+INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
+REAL(KIND=rsh) :: Hs(ifirst:ilast, jfirst:jlast)
+#  if defined OW_COUPLING
+    Hs = whrm(ifirst:ilast, jfirst:jlast)
+#  else
+    Hs = 2.0_rsh*Awave(ifirst:ilast, jfirst:jlast)
+#  endif
+END FUNCTION wave_height
 
 ELEMENTAL PURE FUNCTION compute_fws2(Uwave, Pwave, z0sed, &
              l_fricwave, fws2_default) &

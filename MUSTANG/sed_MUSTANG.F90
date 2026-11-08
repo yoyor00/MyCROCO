@@ -7862,15 +7862,25 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
    !&E
    !&E--------------------------------------------------------------------------
 
+   !! * Modules used
+# if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+    USE mustang_vandera, ONLY: vandera_qbw
+    USE sed_MUSTANG_CROCO, ONLY: wave_height, wave_period, wave_direction
+# endif
+
    !! * Arguments
    INTEGER,INTENT(IN)                                      :: i, j, ksmax
-   REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(out)             :: flx_bxij, flx_byij 
+   REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(out)             :: flx_bxij, flx_byij
 
    !! * Local declarations
    INTEGER        ::  iv, jiv
    REAL(KIND=rsh) ::  ph, pe, pephm_fcor
    REAL(KIND=rsh) ::  phi_bed, qb
    REAL(KIND=rsh) ::  dhdx, dhdy, betas, betan, alphas, alphan, flx_bxij_star, flx_byij_star
+   REAL(KIND=rsh) ::  qbw_x, qbw_y
+# if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+   REAL(KIND=rsh),DIMENSION(i:i,j:j) :: Hs_vandera, Td_vandera, Dw_vandera
+# endif
    REAL(KIND=rsh),DIMENSION(nvpc) :: toce_loc
    REAL(KIND=rsh),PARAMETER :: m = 0.6_rsh ! for hinding / exposure processes
    REAL(KIND=rsh), PARAMETER :: tand30 = 0.577350269189626  ! TAND(30.0_rsh)=TAN(30*pi/180)=TAN(0.523599)
@@ -7880,11 +7890,21 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
    !nu=0.00000136_rsh !a utiliser si capacite de transport pour suspension
 
     ! Bedload Flux  calculated in center of the mesh i,j (will intervene in the computation of "mass_out")
-    ! see Rivier et al. (2017) Coastal Dynamics)   
+    ! see Rivier et al. (2017) Coastal Dynamics)
     flx_bxij(:) = 0.0_rsh
     flx_byij(:) = 0.0_rsh
-    ! Critical shear stress for each class based on masking / exposure processes   
+    ! Critical shear stress for each class based on masking / exposure processes
     toce_loc(:) = 0.0_rsh
+    ! Vandera - wave skewness and asymmetry effect
+    qbw_x = 0.0_rsh
+    qbw_y = 0.0_rsh
+# if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+    IF (l_vandera) THEN
+       Hs_vandera = wave_height(i, i, j, j)
+       Td_vandera = wave_period(i, i, j, j)
+       Dw_vandera = wave_direction(i, i, j, j)
+    ENDIF
+# endif
 
 
    DO iv=ibedload1,ibedload2
@@ -7962,7 +7982,17 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
            flx_byij(iv)=flx_byij_star+alphan*flx_bxij_star
 
            !!==============================================================================
-     ENDIF                                   
+     ENDIF
+
+# if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+     IF (l_vandera) THEN
+        CALL vandera_qbw(htot(i,j), Hs_vandera(i,j), Td_vandera(i,j), Dw_vandera(i,j), &
+                         ros(iv), diam_sed(iv), qbw_x, qbw_y)
+        ! qbw_x, qbw_y in kg/m/s
+        flx_bxij(iv) = flx_bxij(iv) + qbw_x
+        flx_byij(iv) = flx_byij(iv) + qbw_y
+     ENDIF
+# endif
 
      ! sedimask_h0plusxe : = 1 si h+ssh .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre

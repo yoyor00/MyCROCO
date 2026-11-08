@@ -130,7 +130,8 @@ MODULE MUSTANG_namelist
                              Awooster, Bwooster, Bmax_wu
 #ifdef key_MUSTANG_V2
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
-                                alphabs, alphabn, hmin_bedload, l_fsusp
+                                alphabs, alphabn, hmin_bedload, l_fsusp,      &
+                                l_vandera
 #endif
 
     namelist /namflocmod/ l_flocmod, l_ADS, l_ASH, l_COLLFRAG,                &
