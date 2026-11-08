@@ -379,8 +379,6 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
     # MUSTANG
     if [[ ${options[@]} =~ "mustang" ]] ; then
-	mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
-	cp -f ${CROCO_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
     fi
     # OANALYSIS
     if [[ ${options[@]} =~ "oanalysis" ]] ; then

@@ -155,7 +155,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
 - MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
 - MUSTANG : change init and roughness length computation (#562)
-- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353)
+- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353, #594)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
