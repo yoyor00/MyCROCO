@@ -43,7 +43,12 @@
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition 
 :                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    obc_cv_name_n() : string, name of substance read from obc file.
+:                       Special values: 'none' disables OBC forcing for
+:                       this substance (no variable read from the bry
+:                       file); 'nullGradient' imposes a zero-gradient
+:                       (Neumann) OBC instead of reading a bry-file
+:                       variable. Left empty (''), it defaults to 'none'
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    tocd_n() : real, critical stress of deposition (N/m2)
@@ -85,7 +90,12 @@
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition 
 :                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    obc_cv_name_n() : string, name of substance read from obc file.
+:                       Special values: 'none' disables OBC forcing for
+:                       this substance (no variable read from the bry
+:                       file); 'nullGradient' imposes a zero-gradient
+:                       (Neumann) OBC instead of reading a bry-file
+:                       variable. Left empty (''), it defaults to 'none'
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    tocd_n() : real, critical stress of deposition (N/m2) 
@@ -153,7 +163,12 @@
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition 
 :                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    obc_cv_name_n() : string, name of substance read from obc file.
+:                       Special values: 'none' disables OBC forcing for
+:                       this substance (no variable read from the bry
+:                       file); 'nullGradient' imposes a zero-gradient
+:                       (Neumann) OBC instead of reading a bry-file
+:                       variable. Left empty (''), it defaults to 'none'
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
@@ -215,7 +230,12 @@
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition 
 :                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    obc_cv_name_n() : string, name of substance read from obc file.
+:                       Special values: 'none' disables OBC forcing for
+:                       this substance (no variable read from the bry
+:                       file); 'nullGradient' imposes a zero-gradient
+:                       (Neumann) OBC instead of reading a bry-file
+:                       variable. Left empty (''), it defaults to 'none'
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
 :                   (kg/m3)
 :    ws_free_min_n() : real, minimum setling velocity (m/s)
@@ -278,7 +298,12 @@
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition 
 :                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    obc_cv_name_n() : string, name of substance read from obc file.
+:                       Special values: 'none' disables OBC forcing for
+:                       this substance (no variable read from the bry
+:                       file); 'nullGradient' imposes a zero-gradient
+:                       (Neumann) OBC instead of reading a bry-file
+:                       variable. Left empty (''), it defaults to 'none'
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
@@ -317,7 +342,12 @@
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition 
 :                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    obc_cv_name_n() : string, name of substance read from obc file.
+:                       Special values: 'none' disables OBC forcing for
+:                       this substance (no variable read from the bry
+:                       file); 'nullGradient' imposes a zero-gradient
+:                       (Neumann) OBC instead of reading a bry-file
+:                       variable. Left empty (''), it defaults to 'none'
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 

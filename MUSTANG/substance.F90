@@ -1056,7 +1056,7 @@ CONTAINS
         init_cv_name_n(ivr)=name_var_n(ivr)
      ENDIF
      IF(obc_cv_name_n(ivr)=='') THEN
-        obc_cv_name_n(ivr)=name_var_n(ivr)
+        obc_cv_name_n(ivr)='none'
      ENDIF
    ENDDO
    DO ivr=1,nballoc

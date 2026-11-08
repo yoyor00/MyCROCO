@@ -23,6 +23,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
+- MUSTANG : substance boundary conditions (`obc_cv_name`) now support
+  `'nullGradient'` and `'none'`;
+  `'none'` falls back to the uniform `cobc_wat` concentration (#590)
+
 ### Fixed
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)

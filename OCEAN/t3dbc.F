@@ -56,6 +56,9 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #if defined T_FRC_BRY || defined TCLIMATOLOGY
       USE croco_namelist, only: tauT_in, tauT_out
 #endif
+# ifdef SUBSTANCE
+      use comsubstance, ONLY : obc_cv_name
+# endif
 # include "set_obc_definitions.h"
 !
       implicit none
@@ -200,6 +203,22 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           enddo
         enddo
 #  endif
+#  if defined T_FRC_BRY && defined SUBSTANCE
+        if (itrc.ge.itsubs1) then
+          if (obc_cv_name(itrc).eq.'nullGradient') then
+            do k=1,N
+              do j=Jstr,Jend
+!                                            Western edge gradient BC
+!                                            ======= ==== ======== ==
+                t(Istr-1,j,k,indx,itrc)=t(Istr,j,k,indx,itrc)
+#   ifdef MASKING
+     &                                      *rmask(Istr-1,j)
+#   endif
+              enddo
+            enddo
+          endif
+        endif
+#  endif
       endif     ! <-- WESTERN_EDGE
 !
 !====================================================================
@@ -310,6 +329,22 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   endif
           enddo
         enddo
+#  endif
+#  if defined T_FRC_BRY && defined SUBSTANCE
+        if (itrc.ge.itsubs1) then
+          if (obc_cv_name(itrc).eq.'nullGradient') then
+            do k=1,N
+              do j=Jstr,Jend
+!                                            Eastern edge gradient BC
+!                                            ======= ==== ======== ==
+                t(Iend+1,j,k,indx,itrc)=t(Iend,j,k,indx,itrc)
+#   ifdef MASKING
+     &                                       *rmask(Iend+1,j)
+#   endif
+              enddo
+            enddo
+          endif
+        endif
 #  endif
       endif    ! <-- EASTERN_EDGE
 # endif        /* !EW_COM_PERIODIC */
@@ -423,6 +458,22 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
           enddo
         enddo
 #  endif
+#  if defined T_FRC_BRY && defined SUBSTANCE
+        if (itrc.ge.itsubs1) then
+          if (obc_cv_name(itrc).eq.'nullGradient') then
+            do k=1,N
+              do i=Istr,Iend
+!                                           Southern edge gradient BC
+!                                           ======== ==== ======== ==
+                t(i,Jstr-1,k,indx,itrc)=t(i,Jstr,k,indx,itrc)
+#   ifdef MASKING
+     &                                       *rmask(i,Jstr-1)
+#   endif
+              enddo
+            enddo
+          endif
+        endif
+#  endif
       endif    ! <-- SOUTHERN_EDGE
 !
 !====================================================================
@@ -532,6 +583,22 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 #   endif
           enddo
         enddo
+#  endif
+#  if defined T_FRC_BRY && defined SUBSTANCE
+        if (itrc.ge.itsubs1) then
+          if (obc_cv_name(itrc).eq.'nullGradient') then
+            do k=1,N
+              do i=Istr,Iend
+!                                           Northern edge gradient BC
+!                                           ======== ==== ======== ==
+                t(i,Jend+1,k,indx,itrc)=t(i,Jend,k,indx,itrc)
+#   ifdef MASKING
+     &                                       *rmask(i,Jend+1)
+#   endif
+              enddo
+            enddo
+          endif
+        endif
 #  endif
       endif    ! <-- NORTHERN_EDGE
 # endif /* ! NS_COM_PERIODIC */
