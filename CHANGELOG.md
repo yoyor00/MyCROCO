@@ -100,7 +100,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Restart : Fix restart with OBC_PATM (#496)
 
 - KPP : bug fix for the non-local term in surface KPP parameterisation
-        wrong sign and + correction to recover the empirical free convection scaling of 0.2 
+        wrong sign and + correction to recover the empirical free convection scaling of 0.2
+
+- TIDES : Adds an error message if POT_TIDES is defined but no potentials are present in the frc file (#431)
 
 - MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
 
