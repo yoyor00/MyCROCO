@@ -115,12 +115,19 @@ XIOS/OpenMPI combination.
 - XIOS runtime helper: BASIN now gets through namelist reading, `ana_grid`,
   XIOS initialization and file creation with the local OCEAN patches.  It
   writes `Basin_Example_9600s_inst_*` and `Basin_Example_5d_aver_*` files.
-- The remaining runtime failure is in the XIOS write path:
+- XIOS 2.5 with serial NetCDF still fails in the write path:
   `CONetCDF4::writeData` reports `input array size = 7930` versus an internal
-  size of `1586` or `2379` elements.  The generated files show that the
-  vertical `s_rho` axis is split across the four rank files (three levels per
-  file) while CROCO sends ten levels per rank.  This is a separate
-  CROCO/XIOS axis-distribution issue and is still unresolved.
+  size of `1586` or `2379` elements.  In `multiple_file` mode the vertical
+  `s_rho` axis is split across the four rank files (3/3/2/2 levels) while
+  CROCO sends ten levels per rank.
+- XIOS 3.0.x with parallel NetCDF avoids that axis split and writes a single
+  file with the correct `s_rho=10`, `s_w=11` and global horizontal dimensions.
+  However the model then stops at timestep 1 with `MPI_ERR_TRUNCATE`, even
+  with all output files disabled.  A non-XIOS build runs the same 10-step
+  BASIN case normally, so the remaining failure is in the CROCO/XIOS
+  integration rather than the model itself.
+- XIOS server mode (`using_server=true`) still crashes in the local OpenMPI
+  launch setup, so client-only mode is the only usable configuration here.
 - The earlier `CScattererConnector::transfer` segfault is gone once the output
   frequency is compatible with the BASIN timestep (`9600s` instead of `3h`).
 - `run_checks.sh` builds from a symlink source overlay in
