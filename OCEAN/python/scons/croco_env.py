@@ -9,16 +9,21 @@ environment: every variable that must reach the compiler is set explicitly.
 from __future__ import annotations
 
 import os
+from typing import List, Sequence, Tuple
 
 from SCons.Environment import Environment
 from SCons.Script import Dir
 
-from .config import CrocoBuildConfig
+from .config import ConfigError, CrocoBuildConfig
 from .deps.scanner_fortran import ScannerFortran
 from .deps.scanner_preprocess import ScannerPreprocess
 
 
-def _without(values, prefixes, suffixes=()):
+def _without(
+    values: Sequence[str],
+    prefixes: Tuple[str, ...],
+    suffixes: Tuple[str, ...] = (),
+) -> List[str]:
     """Drop one-token and two-token options such as ``-I``/``-L``/``-l``."""
     result = []
     index = 0
@@ -41,7 +46,7 @@ class CrocoEnv:
     def __init__(self, config: CrocoBuildConfig):
         self.config = config
         if config.features.get("agrif"):
-            raise RuntimeError(
+            raise ConfigError(
                 "The SCons backend does not yet support AGRIF builds; "
                 "use the default make backend."
             )
@@ -51,11 +56,13 @@ class CrocoEnv:
         self.setup_env_vars()
         self.setup_workarounds()
         self.setup_scanners()
-        self.print_config()
+        if os.environ.get("CROCO_SCONS_VERBOSE") == "1":
+            self.print_config()
 
-        assert self.env["CPPPATH"][0] == ".", (
-            "The first entry in CPPPATH must be the current directory ('.')"
-        )
+        if self.env["CPPPATH"][0] != ".":
+            raise RuntimeError(
+                "the first entry in CPPPATH must be the current directory"
+            )
 
     # -- manifest values ---------------------------------------------------
     def setup_env_vars(self) -> None:

@@ -30,6 +30,6 @@ croco_config = CrocoBuildConfig.load(config_path)
 croco_env = CrocoEnv(croco_config)
 croco_build = CrocoBuild(croco_env)
 croco_tools = CrocoTools(croco_build)
-croco_bin = CrocoBin(croco_build)
+croco_bin = CrocoBin(croco_build, croco_tools=croco_tools)
 
 Default(croco_bin.program, croco_tools.dep_partit, croco_tools.dep_ncjoin)

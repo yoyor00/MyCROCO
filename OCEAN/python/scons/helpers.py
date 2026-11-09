@@ -1,130 +1,87 @@
+"""Small helpers for manipulating SCons ``File`` nodes and names."""
 
 from __future__ import annotations
-import os
-from typing import Union, List
 
-from SCons.Node.FS import File
-from SCons.Node import Node, NodeList
+import os
+from typing import List, Union
+
 from SCons.Environment import Environment
+from SCons.Node import Node, NodeList
+from SCons.Node.FS import File
 
 from .croco_env import CrocoEnv
 
 
 class Helpers:
-    """
-    Some little helper routines
-    """
+    """Name and node helpers shared by the SCons build classes."""
 
     def __init__(self, croco_env: CrocoEnv):
-        self.croco_env: CrocoEnv = croco_env
+        self.croco_env = croco_env
         self.env: Environment = croco_env.env
 
-    def _derive_new_file(self, original_file: File, name: str):
-        """
-        Add a new file with given name.
-        Also inherit original_file attribute if it exists or use current one.
-        """
-        file: File = self.env.File(name)
-        if hasattr(original_file.attributes, "original_file"):
-            file.attributes.original_file = (
-                original_file.attributes.original_file
-            )
-        else:
-            file.attributes.original_file = original_file
-
+    def _derive_new_file(self, original_file: File, name: str) -> File:
+        """Create ``name`` and propagate the original source attribute."""
+        file = self.env.File(name)
+        file.attributes.original_file = getattr(
+            original_file.attributes, "original_file", original_file
+        )
         return file
 
+    @staticmethod
+    def _split_name(file: File) -> tuple[str, str]:
+        base, extension = os.path.splitext(file.name)
+        if not extension:
+            raise ValueError(f"file has no extension: {file.name}")
+        return base, extension[1:]
+
     def file_add_stage(self, file: File, stage_name: str) -> File:
-        """
-        Add a stage to an scons `File`.
-
-        E.g.
-        `foo.f90` => `foo.stage_new.f90`
-        """
-
-        assert isinstance(file, File)
-        base, ext = os.path.splitext(file.name)
-        assert ext[0] == "."
-        ext = ext[1:]
-
-        return self._derive_new_file(file, f"{base}.{stage_name}.{ext}")
+        """Add a stage suffix: ``foo.f90`` -> ``foo.stage.f90``."""
+        base, extension = self._split_name(file)
+        return self._derive_new_file(
+            file, f"{base}.{stage_name}.{extension}"
+        )
 
     def file_change_ext(self, file: File, new_ext: str) -> File:
-        """
-        Swap the extension of an scons `File`.
-
-        E.g.
-        `foo.f90` => `foo.o`
-        """
-
-        assert isinstance(file, File)
-
-        base, ext = os.path.splitext(file.name)
-        assert ext[0] == "."
-
+        """Change the extension: ``foo.f90`` -> ``foo.o``."""
+        base, _ = self._split_name(file)
         return self._derive_new_file(file, f"{base}.{new_ext}")
 
     def file_remove_stages(self, file: File) -> File:
-        """
-        Remove stages from an scons `File`.
-
-        This is required to obtain the original object file output name
-        to create dependencies to it.
-
-        E.g.
-        `foo.stage1.stage2.stage3.f90` => `foo.f90`
-        """
-
-        assert isinstance(file, File)
-
-        s = file.name.split(".")
-        assert len(s) >= 2
-
-        return self._derive_new_file(file, f"{s[0]}.{s[-1]}")
+        """Drop intermediate stages: ``foo.pre.cl.f90`` -> ``foo.f90``."""
+        base, extension = self._split_name(file)
+        stem = base.split(".", 1)[0]
+        return self._derive_new_file(file, f"{stem}.{extension}")
 
     def convert_to_nodelist_file(
-        self, input_files: Union[List, File, str]
+        self, input_files: Union[List, File, str, Node]
     ) -> NodeList:
-        """
-        Convert input files to be a `NodeList` of scons `File`.
-        """
-
-        if type(input_files) is str:
-            ret_files = NodeList([self.env.File(input_files)])
-        elif isinstance(input_files, Node):
-            ret_files = NodeList([input_files])
+        """Convert strings, nodes or lists into a ``NodeList`` of files."""
+        if isinstance(input_files, (str, File)):
+            items = [input_files]
         elif isinstance(input_files, NodeList):
-            ret_files = input_files
+            items = list(input_files)
+        elif isinstance(input_files, Node):
+            items = [input_files]
         elif isinstance(input_files, list):
-            ret_files = NodeList(input_files)
+            items = input_files
         else:
             raise TypeError(
-                "Don't know how to handle type "
-                f"'{type(input_files)}: {input_files}'"
+                f"don't know how to handle type {type(input_files)!r}"
             )
 
-        for idx, file in enumerate(ret_files):
-            file: File
+        nodes = []
+        for item in items:
+            if isinstance(item, str):
+                nodes.append(self.env.File(item))
+            elif isinstance(item, Node):
+                nodes.append(item)
+            else:
+                raise TypeError(
+                    f"don't know how to handle type {type(item)!r}"
+                )
+        return NodeList(nodes)
 
-            if isinstance(file, Node):
-                continue
-
-            if isinstance(file, str):
-                ret_files[idx] = self.env.File(file)
-                continue
-
-            raise Exception(f"Don't know how to handle type '{type(file)}'")
-
-        return ret_files
-
-    def is_f90(self, file: File) -> File:
-        """
-        return True if the file has a .f90 extension, False otherwise.
-        """
-
-        assert isinstance(file, File)
-
-        base, ext = os.path.splitext(file.name)
-        assert ext[0] == "."
-
-        return ext[1:].lower() == "f90"
+    def is_f90(self, file: File) -> bool:
+        """Return True for free-form Fortran files."""
+        _, extension = self._split_name(file)
+        return extension.lower() == "f90"

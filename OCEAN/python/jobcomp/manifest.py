@@ -23,17 +23,6 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 SCHEMA_VERSION = 1
 MANIFEST_NAME = "croco_build.json"
 
-#: Informational list of helper programs the SCons backend knows how to build.
-SCONS_TOOLS = (
-    "mpc",
-    "cross_matrix",
-    "cppcheck",
-    "srcscheck",
-    "partit",
-    "ncjoin",
-    "ncrename",
-)
-
 _ENVIRONMENT_KEYS = (
     "PATH",
     "HOME",
@@ -98,7 +87,6 @@ class BuildManifest:
                     "jobs": tools.nprocs,
                     "copy_mode": ctx.copy_mode.value,
                     "targets": list(targets),
-                    "tools": list(SCONS_TOOLS),
                 },
                 "toolchain": {
                     "os": tools.os,

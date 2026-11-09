@@ -1,65 +1,70 @@
+"""Find preprocessor ``#include`` dependencies for the SCons scanner."""
 
 from __future__ import annotations
-import os
+
 import re
-from typing import List
 import sys
+from typing import Iterable, List, Optional
 
 from SCons.Node.FS import FS
 
+_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*["\']([^"\']+)["\']', re.M)
+
+#: Compiler-provided headers that are not part of the CROCO source tree.
+_COMPILER_INCLUDES = frozenset(
+    {
+        "mpif.h",
+        "mpi_f08.h",
+        "omp_lib.h",
+        "openacc.h",
+    }
+)
+
 
 class Preprocessor:
+    """Extract existing ``#include`` dependencies from a source node."""
+
     def __init__(self, node: FS.File):
         self.node = node
 
-    def gen_deps_exists(self, paths: List[FS.Dir], inc_files=None):
-        """
-        Generate found include dependencies which are also in `paths`
+    def _contents(self) -> str:
+        if not hasattr(self.node.attributes, "contents"):
+            self.node.attributes.contents = self.node.get_text_contents()
+        return self.node.attributes.contents
 
-        :param self: Description
-        :param path: Description
-        """
-
+    def gen_deps_exists(
+        self,
+        paths: List[FS.Dir],
+        inc_files: Optional[Iterable[str]] = None,
+    ) -> List[str]:
+        """Return the include files that exist in ``paths``."""
         if hasattr(self.node.attributes, "cache_preprocess_inc_files"):
             return self.node.attributes.cache_preprocess_inc_files
 
-        if not inc_files:
-            # Note that this is internally cached in `re` module
-            inc_regex = r'^\s*#\s*include\s*["\']([^"\']+)["\']'
-            regexp = re.compile(inc_regex, re.M)
+        includes = list(inc_files) if inc_files is not None else None
+        if includes is None:
+            includes = _INCLUDE_RE.findall(self._contents())
 
-            if not hasattr(self.node.attributes, "cache_content"):
-                self.node.attributes.contents = self.node.get_text_contents()
-            contents = self.node.attributes.contents
-
-            inc_files = regexp.findall(
-                contents,
-                re.MULTILINE,
-            )
-
-        # Search for matching file in paths
-        existing_inc_deps = []
-
-        for inc in inc_files:
-            found = False
-            for dirname in paths:
-                file = str(dirname) + os.sep + inc
-                if os.path.exists(file):
-                    if file.startswith("./"):
-                        file = file[2:]
-                    existing_inc_deps.append(file)
-                    found = True
-                    break
-
-            if not found:
-                # Ignore dependencies which we did not find, but make the
-                # omission visible to the user.
+        existing = []
+        for include in includes:
+            if include in _COMPILER_INCLUDES:
+                continue
+            for directory in paths:
+                candidate = directory.File(include)
+                if not candidate.exists():
+                    continue
+                path = str(candidate)
+                if path.startswith("./"):
+                    path = path[2:]
+                existing.append(path)
+                break
+            else:
                 print(
                     "WARNING: Preprocessor scanner - File "
-                    f"'{inc}' not found in paths "
+                    f"'{include}' not found in paths "
                     f"'{[str(_) for _ in paths]}'",
                     file=sys.stderr,
                 )
 
-        self.node.attributes.cache_preprocess_inc_files = existing_inc_deps
-        return existing_inc_deps
+        self.node.attributes.cache_preprocess_inc_files = existing
+        return existing

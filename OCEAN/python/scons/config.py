@@ -62,7 +62,6 @@ class BuildSection:
     jobs: int
     copy_mode: str
     targets: Tuple[str, ...]
-    tools: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -143,9 +142,6 @@ class CrocoBuildConfig:
                     copy_mode=str(_get(data, "build", "copy_mode")),
                     targets=_strings(
                         _get(data, "build", "targets"), "build.targets"
-                    ),
-                    tools=_strings(
-                        _get(data, "build", "tools"), "build.tools"
                     ),
                 ),
                 toolchain=ToolchainSection(

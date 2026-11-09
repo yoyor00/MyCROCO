@@ -13,21 +13,26 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Protocol
 
+from jobcomp.build import EXECUTABLES
 from jobcomp.errors import BuildError
 from jobcomp.manifest import MANIFEST_NAME
 
 SCONS_SCRIPT = Path(__file__).resolve().parent / "SConstruct"
 
-#: Targets jobcomp installs next to the executable, like the make backend.
-TARGETS = ("croco", "partit", "ncjoin")
-
 #: Directory containing the local ``scons`` package (``OCEAN/python``).
 PACKAGE_DIR = Path(__file__).resolve().parent.parent
 
 
-def environment(ctx) -> Dict[str, str]:
+class BuildContextLike(Protocol):
+    """The small part of ``jobcomp.BuildContext`` used here."""
+
+    paths: Any
+    tools: Any
+
+
+def environment(ctx: BuildContextLike) -> Dict[str, str]:
     """Environment pointing SCons at the local package and build manifest."""
     env = dict(os.environ)
     env["CROCO_SCONS_PACKAGE"] = str(PACKAGE_DIR)
@@ -47,16 +52,18 @@ def scons_argv() -> Optional[List[str]]:
     return None
 
 
-def command(ctx, *, require: bool = True) -> List[str]:
+def command(
+    ctx: BuildContextLike, *, require: bool = True
+) -> List[str]:
     """The SCons command line for a :class:`BuildContext`-like object."""
     argv = scons_argv()
     if argv is None:
         if require:
+            requirements = SCONS_SCRIPT.parent / "requirements.txt"
             raise BuildError(
                 "SCons is not installed. Install it with "
-                "`python3 -m pip install -r "
-                "OCEAN/python/scons/requirements.txt` or use the default "
-                "make backend."
+                f"`python3 -m pip install -r {requirements}` or use the "
+                "default make backend."
             )
         # A dry run should show the plan even on a machine without SCons.
         argv = ["scons"]
@@ -66,5 +73,5 @@ def command(ctx, *, require: bool = True) -> List[str]:
         str(SCONS_SCRIPT),
         "-j",
         str(ctx.tools.nprocs),
-        *TARGETS,
+        *EXECUTABLES,
     ]

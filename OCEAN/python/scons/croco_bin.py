@@ -21,13 +21,14 @@ class CrocoBin:
         compile_passes_pre: Optional[List[CompilePassBase]] = None,
         compile_passes_default: Optional[List[CompilePassBase]] = None,
         compile_passes_post: Optional[List[CompilePassBase]] = None,
+        croco_tools: Optional[CrocoTools] = None,
     ):
         self.croco_build = croco_build
         self.env = croco_build.env
 
-        # Set up the tools so that all dependencies found by the scanners are
-        # available as build targets too.
-        self.croco_tools = CrocoTools(self.croco_build)
+        # Tool builders must exist before the generated check_* sources are
+        # compiled.  Reuse the caller's instance when one is provided.
+        self.croco_tools = croco_tools or CrocoTools(self.croco_build)
 
         # Source lists come from the jobcomp manifest, not from a second
         # parse of the Makefile.

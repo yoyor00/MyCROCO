@@ -1,16 +1,21 @@
+"""Run the CROCO ``mpc`` source pass."""
 
 from __future__ import annotations
-from typing import Union, List
-from SCons.Environment import Environment
+
+from typing import List
+
 from SCons.Node.FS import File
-from SCons.Node import NodeList
-from SCons.Scanner import Scanner
 
 from ..croco_env import CrocoEnv
-from ..helpers import Helpers
+from .compile_pass_base import CommandPass
 
 
-class CrocoMPC:
+class CrocoMPC(CommandPass):
+    """Apply ``mpc`` to fixed-form sources."""
+
+    stage = "mpc"
+    action = './mpc < "$SOURCE" > "$TARGET"'
+    skip_f90 = True
 
     def __init__(
         self,
@@ -18,39 +23,8 @@ class CrocoMPC:
         dep_mpc: File,
         skip_f90_files: bool = True,
     ):
-        self.croco_env: CrocoEnv = croco_env
-        self.env: Environment = croco_env.env
-        self.skip_f90_files: bool = skip_f90_files
+        super().__init__(croco_env, skip_f90_files=skip_f90_files)
+        self.dep_mpc = dep_mpc
 
-        # Dependency to the mpc executable used by this pass.
-        self.dep_mpc: File = dep_mpc
-
-        self.helpers: Helpers = Helpers(croco_env)
-
-        self.dummy_scanner = Scanner(
-            function=lambda node, env, path: []
-        )
-
-    def apply(self, input_files: Union[List, File, str], **kwargs) -> NodeList:
-        input_files = self.helpers.convert_to_nodelist_file(input_files)
-        output_deps: list[File] = NodeList()
-
-        for input_file in input_files:
-            input_file: File
-
-            if self.skip_f90_files and self.helpers.is_f90(input_file):
-                # Skip F90 files
-                output_deps += [input_file]
-                continue
-
-            output_file = self.helpers.file_add_stage(input_file, "mpc")
-
-            output_deps += self.env.Command(
-                target=output_file,
-                source=[input_file, self.dep_mpc],
-                action="""./mpc < "$SOURCE" > "$TARGET" """,
-                source_scanner=self.dummy_scanner,  # Disable scanner
-                **kwargs,
-            )
-
-        return output_deps
+    def sources(self, source: File) -> List[File]:
+        return [source, self.dep_mpc]
