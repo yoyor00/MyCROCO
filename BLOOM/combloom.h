@@ -5,7 +5,19 @@
 !---------------------------------------------------------------------------
 
  LOGICAL, PUBLIC     :: l_filtbenthsinus,l_SNeffect_settle, &
-                        l_filtbenthmes,l_phyzoodeteffect_settle,l_ChlNratio_var
+                        l_filtbenthmes,l_phyzoodeteffect_settle,l_ChlNratio_var, &
+			l_atmdepo
+
+	!!-----------------------------------------
+	!!   Atmospheric deposition 
+	!!-----------------------------------------
+
+   CHARACTER(len=100), PUBLIC  :: path_dust
+   CHARACTER(len=20) , PUBLIC  :: dust_filename_prefix
+   !INTEGER, PARAMETER :: max_vars = 10
+   CHARACTER(LEN=50), PUBLIC   :: dust_vname(10)
+   CHARACTER(LEN=25) , PUBLIC   :: mod_vars(10)
+   REAL(KIND=rsh),DIMENSION(10) ,PUBLIC      :: conv_fac
 
 
   !!!!  ---------------------------------------
@@ -773,7 +785,8 @@ REAL(KIND=rsh), PUBLIC       ::     &
                       id_columnprodtotal,   &
                       id_diatsettling,      &
                       id_detsettling,       &
-                      id_spm_total
+                      id_spm_total,         &
+		      nb_dust_vars
 #if defined key_zoo_prod
    INTEGER, PUBLIC :: id_zoo_micr_columnprod,   &
                       id_zoo_meso_columnprod,   &

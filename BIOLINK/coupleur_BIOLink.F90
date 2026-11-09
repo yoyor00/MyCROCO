@@ -402,6 +402,8 @@
 
    USE bloom_initdefine, ONLY : bloom_userinit ! Initialization of the tables
                                                ! used to store variables of BLOOM
+   USE atm_deposition, ONLY : atm_deposition_init
+
 #endif /* BLOOM */
 
 #if defined METeOR
@@ -409,6 +411,7 @@
    USE meteor_initdefine, ONLY : meteor_read_react      ! I do not know
 
 #endif /* METeOR */
+
 
   IMPLICIT NONE
 
@@ -472,6 +475,14 @@
       END DO
 
 #endif /* MUSTANG */
+
+!*********************** Atmospheric deposition **************************
+#if defined BLOOM
+
+        if(l_atmdepo) CALL atm_deposition_init() 
+            
+
+#endif
 
      !****************** Verification of conservation *********************!
 
@@ -1707,6 +1718,9 @@ END SUBROUTINE  BIOLink2hydro
       !***************** We test if the tracer concentration ***************!
       !************************* becomes negative **************************!
 
+      ! ECO3M takes care itself of the negative concentrations, no need to do
+      ! this here        
+#if ! defined ECO3M
          xnegtr(:,:,:,:) = 1.e+0 ! 
 
 !$OMP DO SCHEDULE(RUNTIME)
@@ -1751,6 +1765,7 @@ END SUBROUTINE  BIOLink2hydro
 
          END DO
 !$OMP END DO
+#endif
 
 !$OMP DO SCHEDULE(RUNTIME)
          DO i1=IRANGE1
@@ -1760,10 +1775,15 @@ END SUBROUTINE  BIOLink2hydro
              DO i3=IRANGE3
 
                DO i4=IRANGE4  
+#if !defined ECO3M
                  WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
                                                          + xnegtr(i4,i3,i2,i1) &
                                                          * BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) &
                                                          * TRANSPORT_TIME_STEP    
+#else
+                 WATER_CONCENTRATION(WATCONC_INDEX_EQ) = WATER_CONCENTRATION(WATCONC_INDEX_EQ)    &
+                                                         + BIO_SKSC_ADV(BIOSKSC_INDEX_EQ) 
+#endif
                  ! Computation of the flux from the advection terms 
                  ! with the transport time step
                END DO

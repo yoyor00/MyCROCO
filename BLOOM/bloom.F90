@@ -372,6 +372,10 @@
    !&E      !  2019-08   (B.Thouvenin ) : adaptation for transfert
    !&E---------------------------------------------------------------------
    !! * Modules used
+   use atm_deposition
+#if defined XIOS
+   use iom
+#endif
    
    !! * Arguments
    INTEGER, INTENT(IN)                                        :: ifirst,ilast,jfirst,jlast   !,kmax
@@ -708,6 +712,11 @@
    REAL(KIND=rsh)  :: tocdpe,depo
 #endif
 
+    REAL(KIND=rsh),DIMENSION(ARRAY_WINDSPEED) :: NO3_dep = 0._rsh, NH4_dep = 0._rsh
+    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE :: N_atm_flx
+
+    ALLOCATE(N_atm_flx(nb_dust_vars))
+
   !! * Executable part
 
    dtbiojour=REAL(dtbio/86400.0_rlg,rsh)
@@ -738,6 +747,9 @@
       IF (htot(i,j) > RESIDUAL_THICKNESS_WAT)  THEN
             
 #ifdef key_MARS
+
+         N_atm_flx(:) = 0._rsh
+
        IF(htot(i,j) < hm) THEN
           ! 3D to 1D for variable cv_wat(nb_var,NB_LAYER_WAT,limin:limax,ljmin:ljmax)
           DO iv=1,nv_adv
@@ -764,6 +776,8 @@
 #else
        kkmax=NB_LAYER_WAT
 #endif
+        
+        
        !!!!!!!!!!!!!!!!!!!!!!
        !!    loop on k     !!
        !!!!!!!!!!!!!!!!!!!!!!
@@ -804,8 +818,11 @@
           dc(:)=0.0_rsh
           
          ELSE
+
+
          
           epn=thicklayerW_C(k,i,j)
+
 
           ! temperature & effetchaleur
           tempabs=TEMP_BIOLink(k,i,j)+273.15_rsh
@@ -1401,6 +1418,14 @@
                   +reminpdeteau*c(iv_detr_P)
 #endif
 
+   ! Addition of atmospheric deposition
+           IF((l_atmdepo) .AND. (k==kkmax)) THEN
+               CALL include_atm_deposition(i,j,epn,dc,N_atm_flx)
+               NO3_dep(i,j) = N_atm_flx(1) *  rmask(i,j)
+               NH4_dep(i,j) = N_atm_flx(2) *  rmask(i,j)
+           ENDIF
+
+
    ! Evolution du phosphate adsorbe
    ! --------
           dc(iv_nutr_Pads)=adsorpeau*c(iv_nutr_PO4)-desorpeau*c(iv_nutr_Pads)
@@ -1820,6 +1845,12 @@
      END IF  ! H>RESIDUAL_THICKNESS_WAT
    END DO
    END DO
+
+#if defined XIOS
+       CALL iom_put("atm_dep_NOY", NO3_dep)
+       CALL iom_put("atm_dep_NHX", NH4_dep)
+#endif
+    DEALLOCATE(N_atm_flx)
 !$OMP END DO
 
   END SUBROUTINE bloom_sksc_wat

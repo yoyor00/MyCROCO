@@ -178,6 +178,8 @@
 #endif
    NAMELIST/namgrazing/ p_mesz_captdiat,p_mesz_captdino,p_mesz_captmicz,p_micz_captdiat,      &
                         p_micz_captnano,p_micz_captdet,p_micz_captdino,p_txfiltbenthmax
+   NAMELIST/namatmdepo/ l_atmdepo, nb_dust_vars, dust_vname, mod_vars, conv_fac, path_dust, &
+                        dust_filename_prefix
 #ifdef key_ulvas
    NAMELIST/namulva/ p_ulv_mumax,p_ulv_iksmith,p_ulv_kNO3,p_ulv_kPO4,p_ulv_maxabsN,   &
                      p_ulv_maxabsP,p_ulv_minNWratio,p_ulv_maxNWratio,p_ulv_minPWratio,  &
@@ -311,6 +313,8 @@ IF(rw == 'r')THEN
 #endif
 #endif
    READ(50,namgrazing)
+   READ(50,namatmdepo)
+
 #ifdef key_ulvas
    READ(50,namulva)
 #endif
@@ -430,6 +434,7 @@ ELSE
 #endif
 #endif
      MPI_master_only WRITE(iscreenlog,namgrazing)
+     MPI_master_only WRITE(iscreenlog,namatmdepo)
 
 #if defined key_microtracers
      MPI_master_only  WRITE(iscreenlog,nammicrotrace)
