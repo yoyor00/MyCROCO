@@ -24,6 +24,11 @@ chmod +x "$RUN_DIR/process_xios_xml.sh"
   OCE_XIOS=TRUE ATM_XIOS=FALSE USE_OASIS=FALSE ./process_xios_xml.sh
 ) > "$HERE/logs/xios-xml.log" 2>&1
 
+if [[ -n "${XIOS_USING_SERVER:-}" ]]; then
+    sed -i "s|<variable id=\"using_server\" type=\"bool\">[^<]*</variable>|<variable id=\"using_server\" type=\"bool\">${XIOS_USING_SERVER}</variable>|" \
+        "$RUN_DIR/iodef.xml"
+fi
+
 cat > "$RUN_DIR/xios_launch_mini.file" <<'LAUNCH'
 -np 4 ./croco
 -np 1 ./xios_server.exe

@@ -101,6 +101,9 @@ XIOS/OpenMPI combination.
 - The XIOS `generic_testcase.exe` runs successfully on its own, so the XIOS
   installation itself is functional; the remaining failure is specific to the
   CROCO/XIOS configuration or interface.
+- A static 2D field (`h`) was written successfully; the crash occurs when
+  CROCO sends the time-varying `zeta` field through XIOS
+  (`CScattererConnector::transfer`).
 - OASIS runtime: not implemented; build/link check only
 
 This builds a BASIN configuration with:
