@@ -55,10 +55,17 @@ class _F90Scanner(Classic):
         # Load 'use [module]' modules
         use_modules = fcompiler.getUseModules()
 
-        # Append .mod file suffix
-        use_modules_files = [
-            f"{module}{mod_suffix}" for module in use_modules
-        ]
+        # Append the .mod suffix and look for prebuilt modules in the
+        # include path (AGRIF builds its library before SCons runs).
+        use_modules_files = []
+        for module in use_modules:
+            name = f"{module}{mod_suffix}"
+            for directory in path:
+                candidate = directory.File(name)
+                if candidate.exists():
+                    name = str(candidate)
+                    break
+            use_modules_files.append(name)
 
         return env.File(inc_files + use_modules_files)
 

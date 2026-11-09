@@ -40,6 +40,11 @@ class CrocoEnv:
 
     def __init__(self, config: CrocoBuildConfig):
         self.config = config
+        if config.features.get("agrif"):
+            raise RuntimeError(
+                "The SCons backend does not yet support AGRIF builds; "
+                "use the default make backend."
+            )
         self.env = Environment(tools=["default"])
         self.env["CPPPATH"] = ["."]
         self.load_basic_os_env()

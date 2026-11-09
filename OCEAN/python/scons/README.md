@@ -72,11 +72,14 @@ compile_passes/             cpp/mpc/change_loops stages
 toolchain, flags, feature switches, source lists and the selected OS
 environment.  SCons does not parse `Makedefs` or `Makefile` again.
 
-## Known limitation
+## Known limitations
 
-The dependency scanners follow preprocessor includes from the original source
-file.  Dependencies introduced only by a source-to-source pass are not tracked.
-This is inherited from the original standalone SCons example.
+- AGRIF source conversion is not implemented in the SCons backend yet.  Use
+  the make backend for AGRIF builds; SCons raises an explicit error when the
+  manifest reports `features.agrif: true`.
+- The dependency scanners follow preprocessor includes from the original
+  source file.  Dependencies introduced only by a source-to-source pass are
+  not tracked.
 
 ## Not included
 
