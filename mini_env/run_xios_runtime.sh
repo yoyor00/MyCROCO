@@ -24,15 +24,21 @@ chmod +x "$RUN_DIR/process_xios_xml.sh"
   OCE_XIOS=TRUE ATM_XIOS=FALSE USE_OASIS=FALSE ./process_xios_xml.sh
 ) > "$HERE/logs/xios-xml.log" 2>&1
 
-if [[ -n "${XIOS_USING_SERVER:-}" ]]; then
-    sed -i "s|<variable id=\"using_server\" type=\"bool\">[^<]*</variable>|<variable id=\"using_server\" type=\"bool\">${XIOS_USING_SERVER}</variable>|" \
-        "$RUN_DIR/iodef.xml"
-fi
+USING_SERVER="${XIOS_USING_SERVER:-false}"
+OUTPUT_FREQ="${XIOS_OUTPUT_FREQ:-9600s}"
+sed -i "s|<variable id=\"using_server\" type=\"bool\">[^<]*</variable>|<variable id=\"using_server\" type=\"bool\">${USING_SERVER}</variable>|" \
+    "$RUN_DIR/iodef.xml"
+sed -i "s/output_freq=\"3h\"/output_freq=\"${OUTPUT_FREQ}\"/g" \
+    "$RUN_DIR/file_def_croco.xml"
 
-cat > "$RUN_DIR/xios_launch_mini.file" <<'LAUNCH'
+if [[ "$USING_SERVER" == "false" ]]; then
+    printf -- '-np 4 ./croco\n' > "$RUN_DIR/xios_launch_mini.file"
+else
+    cat > "$RUN_DIR/xios_launch_mini.file" <<'LAUNCH'
 -np 4 ./croco
 -np 1 ./xios_server.exe
 LAUNCH
+fi
 
 echo "Starting XIOS runtime smoke test in $RUN_DIR"
 ulimit -s unlimited 2>/dev/null || true
