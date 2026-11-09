@@ -63,8 +63,9 @@ XIOS/OpenMPI combination.
 
 - XIOS build/link: PASS with make and SCons
 - OASIS build/link: PASS with make and SCons
-- XIOS runtime helper: currently fails with a segmentation fault in the
-  local XIOS/OpenMPI launch; this is unresolved
+- XIOS runtime helper: currently hits a segmentation fault while CROCO reads
+  the namelist in the experimental BASIN+XIOS feature combination, before the
+  XIOS exchange starts; this is unresolved
 - OASIS runtime: not implemented; build/link check only
 
 This builds a BASIN configuration with:
