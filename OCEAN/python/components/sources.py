@@ -20,9 +20,4 @@ class ModelSources(Component):
 
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:
         for pattern in self.SOURCE_PATTERNS:
-            yield CopySpec(
-                src=ctx.paths.source,
-                dst=ctx.paths.scratch,
-                glob=pattern,
-                optional=True,
-            )
+            yield CopySpec.glob(ctx.paths.source, ctx.paths.scratch, pattern)

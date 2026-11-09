@@ -106,7 +106,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (same options, same `CROCO_*`/`NPROCS` variables, same `Compile/` tree and
   `Makedefs`), with new `--copy-mode`, `--keep-scratch`, `--dry-run` and
   `-v/-q/--log-file` options. The historical bash script is kept unmodified
-  as `jobcomp.sh`; `jobcomp --sh` hands the options over to it.
+  as `jobcomp.sh`; `jobcomp --sh` hands the options over to it.  The driver
+  resolves its settings once, derives its command line from a single option
+  table, shares the component pipeline with `BuildParameters`, and reads
+  `jobcomp.conf` only once per run.
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system

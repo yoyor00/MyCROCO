@@ -12,7 +12,7 @@ import platform
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Mapping, Optional, Tuple
 
 from .errors import LOG, BuildError
 from .shell import Shell
@@ -107,85 +107,129 @@ class Paths:
         )
 
 
+@dataclass(frozen=True)
+class ToolchainSettings:
+    """The values :class:`Toolchain` needs, already resolved."""
+
+    fc: str
+    fc_from_env: bool
+    mpif90: str
+    fflags_override: Optional[str]
+    nprocs: int
+    netcdf_lib: str
+    netcdf_inc: str
+    netcdf_lib_default: str
+    netcdf_inc_default: str
+    cc_override: Optional[str] = None
+    cflags_override: Optional[str] = None
+    make_override: Optional[str] = None
+    mpilib: str = ""
+    mpiinc: str = ""
+    environ: Optional[Mapping[str, str]] = None
+
+
+@dataclass
 class Toolchain:
     """Everything the build needs to know about compilers and flags.
 
-    ``add_*`` append a non-empty fragment, separated by single blanks, so the
+    ``append`` adds a non-empty fragment, separated by single blanks, so the
     flags stay readable in ``Makedefs`` and in the ``make`` command line.
     """
 
-    def __init__(
-        self,
-        os: str,
-        fc: str,
-        cft: str,
-        mpif90: str,
-        mpilib: str,
-        mpiinc: str,
-        cpp: str = "",
-        fflags: str = "",
-        ldflags: str = "",
-        cppflags: str = "",
-        cc: str = "",
-        cflags: str = "",
-        make: str = "make",
-        nprocs: int = 1,
-    ) -> None:
-        self.os = os  # "Linux" | "Darwin"
-        self.fc = fc  # compiler requested by the user
-        self.cft = cft  # compiler actually invoked (may become mpif90)
-        self.mpif90 = mpif90
-        self.mpilib = mpilib
-        self.mpiinc = mpiinc
-        self.cpp = cpp
-        self.fflags = fflags
-        self.ldflags = ldflags
-        self.cppflags = cppflags
-        self.cc = cc
-        self.cflags = cflags
-        self.make = make
-        self.nprocs = nprocs
+    os: str  # "Linux" | "Darwin"
+    fc: str  # compiler requested by the user
+    cft: str  # compiler actually invoked (may become mpif90)
+    mpif90: str
+    mpilib: str = ""
+    mpiinc: str = ""
+    cpp: str = ""
+    fflags: str = ""
+    ldflags: str = ""
+    cppflags: str = ""
+    cc: str = ""
+    cflags: str = ""
+    make: str = "make"
+    nprocs: int = 1
 
     # -- flag accumulation -------------------------------------------------
+    def append(self, attribute: str, flags: str) -> None:
+        """Append ``flags`` to ``attribute`` when it is not empty."""
+        if flags:
+            current = getattr(self, attribute)
+            setattr(self, attribute, " ".join((current, flags)) if current
+                    else flags)
+
     def add_fflags(self, flags: str) -> None:
-        self.fflags = " ".join(filter(None, (self.fflags, flags)))
+        self.append("fflags", flags)
 
     def add_cppflags(self, flags: str) -> None:
-        self.cppflags = " ".join(filter(None, (self.cppflags, flags)))
+        self.append("cppflags", flags)
 
     def add_ldflags(self, flags: str) -> None:
-        self.ldflags = " ".join(filter(None, (self.ldflags, flags)))
+        self.append("ldflags", flags)
+
+    # -- make probes -------------------------------------------------------
+    def make_variable(self, shell: Shell, name: str, cwd=None) -> str:
+        """Ask make for the value of a variable (``CC``, ``CFLAGS``, ...)."""
+        snippet = f"dummy_target:\n\t@echo $({name})\n"
+        return shell.capture(
+            [self.make, "-f", "-", "dummy_target"],
+            cwd=cwd,
+            text_input=snippet,
+        ).strip()
+
+    def is_gnu_c(self, shell: Shell, cc: Optional[str] = None) -> bool:
+        """Is ``cc`` (or the resolved C compiler) the GNU C compiler?"""
+        compiler = cc or self.cc
+        if not compiler:
+            return False
+        proc = shell.probe([compiler, "-v"])
+        return "gcc version" in (proc.stdout + proc.stderr)
 
     # -- construction ------------------------------------------------------
     @classmethod
-    def resolve(
-        cls,
-        *,
-        shell: Shell,
-        os_name: str,
-        fc: str,
-        fc_from_env: bool,
-        mpif90: str,
-        fflags_override: Optional[str],
-        nprocs: int,
-        netcdf_lib: str,
-        netcdf_inc: str,
-        netcdf_lib_default: str,
-        netcdf_inc_default: str,
-        cc_override: Optional[str],
-        cflags_override: Optional[str],
-        make_override: Optional[str],
-        mpilib: str = "",
-        mpiinc: str = "",
-        environ: Optional[dict] = None,
+    def from_settings(
+        cls, settings: ToolchainSettings, os_name: str
     ) -> "Toolchain":
         """Build the toolchain, reproducing the bash branch selection."""
-        environ = os.environ if environ is None else environ
+        environ = os.environ if settings.environ is None else settings.environ
         if os_name not in ("Linux", "Darwin"):
             raise BuildError(
                 f"Unknown Operating System, please add it to jobcomp "
                 f"({os_name})"
             )
+        cft, cpp, fflags = cls._compiler_flags(
+            settings.fc, settings.fc_from_env
+        )
+        toolchain = cls(
+            os=os_name,
+            fc=settings.fc,
+            cft=cft,
+            mpif90=settings.mpif90,
+            mpilib=environ.get("CROCO_MPILIB") or settings.mpilib,
+            mpiinc=environ.get("CROCO_MPIINC") or settings.mpiinc,
+            cpp=cpp,
+            fflags=fflags,
+            ldflags=settings.netcdf_lib,
+            cppflags=f"{settings.netcdf_inc} -ICROCOFILES/AGRIF_INC".strip(),
+            cc=settings.cc_override or "",
+            cflags=settings.cflags_override or "",
+            make=settings.make_override or cls.default_make(),
+            nprocs=settings.nprocs,
+        )
+        if settings.fflags_override:
+            toolchain.fflags = settings.fflags_override
+        # NetCDF modules are needed by the Fortran compiler itself.  The bash
+        # script uses the *detected* NETCDFINC here, not the user override;
+        # kept for bug-for-bug compatibility.
+        toolchain.add_fflags(settings.netcdf_inc_default)
+        return toolchain
+
+    @classmethod
+    def _compiler_flags(
+        cls, fc: str, fc_from_env: bool
+    ) -> Tuple[str, str, str]:
+        """Return ``(cft, cpp, fflags)`` for a requested compiler."""
         spec = CompilerSpec.find(fc)
         if spec is None:
             # Historical behaviour: an unknown compiler is only fatal when it
@@ -197,39 +241,24 @@ class Toolchain:
                     "Unknown Fortran compiler, please add it to jobcomp"
                 )
             LOG.warning("(Ignoring unknown Fortran compiler)")
-            cft = fc
-            cpp = ""
-            fflags = ""
-        else:
-            cft = spec.cft or fc
-            cpp = spec.cpp
-            fflags = spec.fflags
-            if spec.name in ("pgfortran", "nvfortran"):
-                if cls.hostname().startswith("jean-zay"):
-                    cpp = f"{cpp} -DJEANZAY"
-        toolchain = cls(
-            os=os_name,
-            fc=fc,
-            cft=cft,
-            mpif90=mpif90,
-            mpilib=environ.get("CROCO_MPILIB") or mpilib,
-            mpiinc=environ.get("CROCO_MPIINC") or mpiinc,
-            cpp=cpp,
-            fflags=fflags,
-            ldflags=netcdf_lib,
-            cppflags=f"{netcdf_inc} -ICROCOFILES/AGRIF_INC".strip(),
-            cc=cc_override or "",
-            cflags=cflags_override or "",
-            make=make_override or cls.default_make(),
-            nprocs=nprocs,
-        )
-        if fflags_override:
-            toolchain.fflags = fflags_override
-        # NetCDF modules are needed by the Fortran compiler itself.  The bash
-        # script uses the *detected* NETCDFINC here, not the user override;
-        # kept for bug-for-bug compatibility.
-        toolchain.add_fflags(netcdf_inc_default)
-        return toolchain
+            return fc, "", ""
+        cft = spec.cft or fc
+        cpp = spec.cpp
+        if spec.name in ("pgfortran", "nvfortran"):
+            if cls.hostname().startswith("jean-zay"):
+                cpp = f"{cpp} -DJEANZAY"
+        return cft, cpp, spec.fflags
+
+    @classmethod
+    def resolve(cls, *, shell: Shell, os_name: str, **kwargs) -> "Toolchain":
+        """Compatibility wrapper: resolve from keyword values."""
+        return cls.from_settings(ToolchainSettings(**kwargs), os_name=os_name)
+
+    @staticmethod
+    def default_fflags(fc: str) -> str:
+        """The compiler-table FFLAGS for ``fc`` (``""`` when unknown)."""
+        spec = CompilerSpec.find(fc)
+        return spec.fflags if spec is not None else ""
 
     # -- environment probes ------------------------------------------------
     @staticmethod

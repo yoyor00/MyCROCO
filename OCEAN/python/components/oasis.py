@@ -14,8 +14,6 @@ class OasisComponent(Component):
     announce = True
 
     def configure(self, ctx: BuildContext) -> None:
-        if not self.enabled(ctx):
-            return
         tools = ctx.tools
         root = ctx.prism_dir
         channel = "MPI1"

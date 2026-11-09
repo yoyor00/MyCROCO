@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, Optional
+from typing import TYPE_CHECKING, Dict, Iterable, Optional
 
 from .copy import Copier, CopyMode, CopySpec
 from .features import FeatureDetector
 from .shell import Shell
 from .toolchain import Paths, Toolchain
+
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    from .settings import BuildSettings
 
 
 @dataclass
@@ -28,6 +31,28 @@ class BuildContext:
     prism_dir: Path = Path(".")
     copier: Optional[Copier] = None
     features: Dict[str, bool] = field(default_factory=dict)
+
+    @classmethod
+    def from_settings(
+        cls, settings: "BuildSettings", shell: Shell
+    ) -> "BuildContext":
+        """Build the context from the resolved settings of one invocation."""
+        paths = Paths.create(settings.source, settings.scratch)
+        tools = Toolchain.from_settings(settings.tools, settings.os_name)
+        return cls(
+            paths=paths,
+            tools=tools,
+            detector=FeatureDetector(
+                shell, tools.cpp, paths.scratch, paths.source, paths.run_dir
+            ),
+            shell=shell,
+            copy_mode=settings.copy_mode,
+            dry_run=settings.dry_run,
+            keep_scratch=settings.keep_scratch,
+            delete_stale=settings.delete_stale,
+            xios_dir=settings.xios_dir,
+            prism_dir=settings.prism_dir,
+        )
 
     def __post_init__(self) -> None:
         if self.copier is None:

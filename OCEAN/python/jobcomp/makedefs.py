@@ -29,18 +29,20 @@ class Makedefs:
     def __init__(self, tools: Toolchain) -> None:
         self.tools = tools
 
+    def items(self):
+        """Yield ``(token, make variable, value)`` for every substitution."""
+        for token, attribute in self.TOKENS:
+            yield token, token[2:-1], getattr(self.tools, attribute)
+
     def variables(self) -> Dict[str, str]:
         """The make variables it defines (``FFLAGS1``, ``CFT1``, ...)."""
-        return {
-            token.strip("$()"): getattr(self.tools, attribute)
-            for token, attribute in self.TOKENS
-        }
+        return {name: value for _, name, value in self.items()}
 
     def render(self, template: str) -> str:
         """The ``Makedefs`` text for ``template`` (``Makedefs.generic``)."""
         text = template
-        for token, attribute in self.TOKENS:
-            text = text.replace(token, getattr(self.tools, attribute))
+        for token, _, value in self.items():
+            text = text.replace(token, value)
         return text
 
     def write(self, directory: Path, *, dry_run: bool = False) -> None:

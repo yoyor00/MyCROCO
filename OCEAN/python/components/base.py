@@ -15,14 +15,11 @@ from jobcomp.context import BuildContext
 from jobcomp.copy import CopySpec
 from jobcomp.errors import LOG
 
-#: Lines dropped from preprocessor output, like the bash ``grep -v`` filter.
-CPP_OUTPUT_DROP = ("!", "#", "%", "*")
-
 
 class Component:
     """One independent feature of the build.
 
-    Subclasses override the hooks they need; ``enabled`` performs the
+    Subclasses override the hooks they need; ``detect`` performs the
     historical "Checking COMPILE<label>..." dance and caches the answer in
     the context.
     """
@@ -32,8 +29,10 @@ class Component:
     label: Optional[str] = None
     announce = False  # does the bash script print " => <label> activated"?
 
-    def enabled(self, ctx: BuildContext) -> bool:
+    def detect(self, ctx: BuildContext) -> bool:
+        """Detect this feature once and cache the answer in the context."""
         if self.key is None:
+            ctx.features[self.name] = True
             return True
         if self.label:
             LOG.info("Checking COMPILE%s...", self.label)
@@ -42,6 +41,12 @@ class Component:
             LOG.info(" => %s activated", self.label)
         ctx.features[self.name] = active
         return active
+
+    def enabled(self, ctx: BuildContext) -> bool:
+        """Was this feature detected?  Detection is lazy if not done yet."""
+        if self.name in ctx.features:
+            return ctx.feature(self.name)
+        return self.detect(ctx)
 
     # -- hooks -------------------------------------------------------------
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:

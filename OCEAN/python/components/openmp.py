@@ -16,8 +16,6 @@ class OpenMpComponent(Component):
     label = "OMP"
 
     def configure(self, ctx: BuildContext) -> None:
-        if not self.enabled(ctx):
-            return
         if ctx.tools.os not in ("Linux", "Darwin"):
             return
         ctx.tools.add_fflags(self.flag_for(ctx, ctx.tools.fc))

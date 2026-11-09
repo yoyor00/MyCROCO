@@ -3,6 +3,10 @@
 The bash script copied everything unconditionally (``cp`` / ``cp -r``); here a
 copy is described by a :class:`CopySpec` and applied by a :class:`Copier`,
 which owns the "copy always / only if newer" rule and the counters.
+
+The four kinds of copy are explicit (:class:`CopyKind`), so a call site reads
+``CopySpec.tree(...)`` or ``CopySpec.contents(...)`` instead of a combination
+of boolean flags.
 """
 
 from __future__ import annotations
@@ -26,6 +30,15 @@ class CopyMode(str, Enum):
     ALWAYS = "always"
 
 
+class CopyKind(str, Enum):
+    """What a :class:`CopySpec` describes."""
+
+    FILE = "file"
+    GLOB = "glob"
+    TREE = "tree"
+    CONTENTS = "contents"
+
+
 @dataclass
 class CopyStats:
     """Accounting for a copy phase."""
@@ -46,33 +59,41 @@ class CopyStats:
 class CopySpec:
     """Declarative description of "what goes where, under which rule".
 
-    ``src`` is a directory, a file, or the base directory of ``glob``.
-    ``tree`` copies ``src`` as a whole into ``dst/<name>`` (``cp -r src dst``).
-    ``contents`` copies the entries of ``src`` into ``dst``
+    ``src`` is a directory, a file, or the base directory of ``pattern``.
+    ``TREE`` copies ``src`` as a whole into ``dst/<name>`` (``cp -r src dst``).
+    ``CONTENTS`` copies the entries of ``src`` into ``dst``
     (``cp -r src/* dst``), recursing into sub-directories.
     """
 
     src: Path
     dst: Path
-    glob: Optional[str] = None
-    tree: bool = False
-    contents: bool = False
+    kind: CopyKind = CopyKind.FILE
+    pattern: Optional[str] = None
     overwrite: bool = True
     optional: bool = True
     mode: Optional[CopyMode] = None  # None: the mode of the Copier
 
-    def replace(self, *, src=None, dst=None) -> "CopySpec":
-        """The same rule applied to another source and/or destination."""
-        return CopySpec(
-            src=self.src if src is None else src,
-            dst=self.dst if dst is None else dst,
-            glob=self.glob,
-            tree=self.tree,
-            contents=self.contents,
-            overwrite=self.overwrite,
-            optional=self.optional,
-            mode=self.mode,
+    @classmethod
+    def file(cls, src, dst, **kwargs) -> "CopySpec":
+        """A single-file copy (``cp src dst``)."""
+        return cls(Path(src), Path(dst), CopyKind.FILE, **kwargs)
+
+    @classmethod
+    def glob(cls, src, dst, pattern: str, **kwargs) -> "CopySpec":
+        """Files matching ``pattern`` in ``src`` (``cp src/<glob> dst``)."""
+        return cls(
+            Path(src), Path(dst), CopyKind.GLOB, pattern=pattern, **kwargs
         )
+
+    @classmethod
+    def tree(cls, src, dst, **kwargs) -> "CopySpec":
+        """A whole directory tree (``cp -r src dst/<name>``)."""
+        return cls(Path(src), Path(dst), CopyKind.TREE, **kwargs)
+
+    @classmethod
+    def contents(cls, src, dst, **kwargs) -> "CopySpec":
+        """The entries of one directory (``cp -r src/* dst``)."""
+        return cls(Path(src), Path(dst), CopyKind.CONTENTS, **kwargs)
 
 
 class Copier:
@@ -185,46 +206,63 @@ class Copier:
 
     # -- specs -------------------------------------------------------------
     def apply(self, spec: CopySpec) -> None:
-        """Apply one :class:`CopySpec` (glob, tree, contents or plain file)."""
-        src = spec.src
-        mode = self.mode if spec.mode is None else spec.mode
-        if spec.glob is not None:
-            if not src.is_dir():
-                if spec.optional:
-                    return
-                raise BuildError(f"missing source directory: {src}")
-            matches = sorted(src.glob(spec.glob))
-            if not matches and not spec.optional:
-                raise BuildError(f"no {spec.glob} in {src}")
-            for match in matches:
-                self._entry(match, spec)
-        elif spec.tree or spec.contents:
-            if not src.exists():
-                if spec.optional:
-                    return
-                raise BuildError(f"missing source directory: {src}")
-            if spec.tree:
-                self.tree(spec.src, spec.dst / src.name, mode=mode)
-            else:
-                for entry in sorted(src.iterdir()):
-                    self._entry(entry, spec)
+        """Apply one :class:`CopySpec`."""
+        if spec.kind is CopyKind.GLOB:
+            self._apply_glob(spec)
+        elif spec.kind is CopyKind.TREE:
+            self._apply_tree(spec)
+        elif spec.kind is CopyKind.CONTENTS:
+            self._apply_contents(spec)
         else:
-            if not src.exists():
-                if spec.optional:
-                    return
-                raise BuildError(f"missing source file: {src}")
-            self.file(
-                src, spec.dst, overwrite=spec.overwrite, mode=mode
-            )
+            self._apply_file(spec)
 
-    def _entry(self, path: Path, spec: CopySpec) -> None:
+    def _apply_glob(self, spec: CopySpec) -> None:
+        if not spec.src.is_dir():
+            self._missing(spec, f"missing source directory: {spec.src}")
+            return
+        matches = sorted(spec.src.glob(spec.pattern))
+        if not matches:
+            self._missing(spec, f"no {spec.pattern} in {spec.src}")
+            return
+        for match in matches:
+            self._entry(match, spec, spec.dst)
+
+    def _apply_tree(self, spec: CopySpec) -> None:
+        if not spec.src.exists():
+            self._missing(spec, f"missing source directory: {spec.src}")
+            return
+        self.tree(spec.src, spec.dst / spec.src.name, mode=spec.mode)
+
+    def _apply_contents(self, spec: CopySpec) -> None:
+        if not spec.src.exists():
+            self._missing(spec, f"missing source directory: {spec.src}")
+            return
+        for entry in sorted(spec.src.iterdir()):
+            self._entry(entry, spec, spec.dst)
+
+    def _apply_file(self, spec: CopySpec) -> None:
+        if not spec.src.exists():
+            self._missing(spec, f"missing source file: {spec.src}")
+            return
+        self.file(
+            spec.src,
+            spec.dst,
+            overwrite=spec.overwrite,
+            mode=spec.mode,
+        )
+
+    def _missing(self, spec: CopySpec, message: str) -> None:
+        if not spec.optional:
+            raise BuildError(message)
+
+    def _entry(self, path: Path, spec: CopySpec, dst: Path) -> None:
         if path.is_dir():
             # ``cp -r src/<dir> dst/<dir>``: the child becomes the new source
-            self.tree(path, spec.dst / path.name, mode=spec.mode)
+            self.tree(path, dst / path.name, mode=spec.mode)
         else:
             self.file(
                 path,
-                spec.dst,
+                dst,
                 overwrite=spec.overwrite,
                 mode=spec.mode,
             )

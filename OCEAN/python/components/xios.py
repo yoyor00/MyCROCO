@@ -20,12 +20,11 @@ class XiosComponent(Component):
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:
         # XIOS coupling sources (e.g. oxide.F) live in the XIOS directory, not
         # in OCEAN; the bash script copies them unconditionally when present.
-        yield CopySpec(src=ctx.paths.root / "XIOS", dst=ctx.paths.scratch,
-                       glob="*.F", optional=True)
+        yield CopySpec.glob(
+            ctx.paths.root / "XIOS", ctx.paths.scratch, "*.F"
+        )
 
     def configure(self, ctx: BuildContext) -> None:
-        if not self.enabled(ctx):
-            return
         tools = ctx.tools
         root = ctx.xios_dir
         tools.add_ldflags(f"{root}/lib/libxios.a -lstdc++ -lnetcdff -lnetcdf")
@@ -33,8 +32,6 @@ class XiosComponent(Component):
         tools.add_fflags(f"-I{root}/inc")
 
     def prepare(self, ctx: BuildContext) -> None:
-        if not ctx.feature(self.name):
-            return
         self.symlink(
             ctx, Path(f"{ctx.xios_dir}/bin/xios_server.exe"), ctx.run_dir
         )

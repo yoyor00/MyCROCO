@@ -14,5 +14,4 @@ class MustangComponent(Component):
     name = "mustang"
 
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:
-        yield CopySpec(src=ctx.paths.root / "MUSTANG", dst=ctx.paths.scratch,
-                       contents=True)
+        yield CopySpec.contents(ctx.paths.root / "MUSTANG", ctx.paths.scratch)

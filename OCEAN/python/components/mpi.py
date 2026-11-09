@@ -14,8 +14,6 @@ class MpiComponent(Component):
     announce = True
 
     def configure(self, ctx: BuildContext) -> None:
-        if not self.enabled(ctx):
-            return
         tools = ctx.tools
         tools.add_ldflags(tools.mpilib)
         tools.add_cppflags(tools.mpiinc)

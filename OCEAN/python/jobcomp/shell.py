@@ -38,7 +38,7 @@ class Shell:
         Without ``capture`` the child inherits our streams, so ``make`` output
         is visible exactly like it was with the bash script.
         """
-        pretty = " ".join(shlex.quote(str(part)) for part in argv)
+        pretty = self._pretty(argv)
         if cwd is not None:
             self.log.debug("run (in %s): %s", cwd, pretty)
         else:
@@ -46,12 +46,8 @@ class Shell:
         if self.dry_run:
             self.log.info("would run: %s", pretty)
             return subprocess.CompletedProcess(argv, 0, "", "")
-        proc = subprocess.run(
-            list(argv),
-            cwd=str(cwd) if cwd is not None else None,
-            input=text_input,
-            text=True,
-            capture_output=capture,
+        proc = self._call(
+            argv, cwd=cwd, text_input=text_input, capture=capture
         )
         if check and proc.returncode != 0:
             raise BuildError(
@@ -72,16 +68,10 @@ class Shell:
         Feature detection, compiler probing and ``make`` variable lookups must
         answer the same way whether the plan is executed or only printed.
         """
-        pretty = " ".join(shlex.quote(str(part)) for part in argv)
-        self.log.debug("probe: %s", pretty)
+        self.log.debug("probe: %s", self._pretty(argv))
         try:
-            return subprocess.run(
-                list(argv),
-                cwd=str(cwd) if cwd is not None else None,
-                input=text_input,
-                text=True,
-                capture_output=True,
-                check=False,
+            return self._call(
+                argv, cwd=cwd, text_input=text_input, capture=True
             )
         except OSError:  # command not installed: empty answer, never fatal
             return subprocess.CompletedProcess(argv, 127, "", "")
@@ -95,3 +85,24 @@ class Shell:
     ) -> str:
         """Standard output of a read-only query (``""`` if it cannot run)."""
         return self.probe(argv, cwd=cwd, text_input=text_input).stdout or ""
+
+    # -- plumbing ----------------------------------------------------------
+    @staticmethod
+    def _pretty(argv: Sequence[str]) -> str:
+        return " ".join(shlex.quote(str(part)) for part in argv)
+
+    @staticmethod
+    def _call(
+        argv: Sequence[str],
+        *,
+        cwd: Optional[Path],
+        text_input: Optional[str],
+        capture: bool,
+    ) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            list(argv),
+            cwd=str(cwd) if cwd is not None else None,
+            input=text_input,
+            text=True,
+            capture_output=capture,
+        )

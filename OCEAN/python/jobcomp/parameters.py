@@ -23,8 +23,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Mapping, Tuple
 
-from components import CONFIGURE_AFTER, CONFIGURE_BEFORE
-from components.agrif import AgrifComponent
+from components import (
+    AGRIF,
+    configure_after,
+    configure_before,
+    detect_features,
+)
 
 from .build import EXECUTABLES
 from .context import BuildContext
@@ -59,13 +63,12 @@ class BuildParameters:
     @classmethod
     def resolve(cls, ctx: BuildContext) -> "BuildParameters":
         """Resolve the flags of ``ctx`` without copying or compiling."""
-        for component in CONFIGURE_BEFORE:
-            component.configure(ctx)
+        detect_features(ctx)
+        configure_before(ctx)
         if ctx.feature("agrif"):
             # only the AGRIF library is built from C
-            AgrifComponent().resolve_c_compiler(ctx)
-        for component in CONFIGURE_AFTER:
-            component.configure(ctx)
+            AGRIF.resolve_c_compiler(ctx)
+        configure_after(ctx)
         tools = ctx.tools
         defines, includes, library_dirs, libraries = _classify(
             tools.cpp, tools.cppflags, tools.fflags, tools.ldflags
@@ -78,9 +81,7 @@ class BuildParameters:
             nprocs=tools.nprocs,
             cpp=tools.cpp,
             agrif_cppflags=(
-                AgrifComponent().cppflags(ctx)
-                if ctx.feature("agrif")
-                else ""
+                AGRIF.cppflags(ctx) if ctx.feature("agrif") else ""
             ),
             fc=tools.cft,
             cc=tools.cc,

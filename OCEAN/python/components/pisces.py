@@ -19,10 +19,10 @@ class PiscesComponent(Component):
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:
         root = ctx.paths.root
         scratch = ctx.paths.scratch
-        yield CopySpec(src=root / "PISCES", dst=scratch, contents=True)
-        yield CopySpec(src=root / "PISCES" / "LIB", dst=scratch, contents=True)
-        yield CopySpec(src=root / "PISCES" / "SED", dst=scratch, contents=True)
-        yield CopySpec(src=root / "PISCES", dst=ctx.run_dir, glob="kRGB61*")
+        yield CopySpec.contents(root / "PISCES", scratch)
+        yield CopySpec.contents(root / "PISCES" / "LIB", scratch)
+        yield CopySpec.contents(root / "PISCES" / "SED", scratch)
+        yield CopySpec.glob(root / "PISCES", ctx.run_dir, "kRGB61*")
 
     def run_dir_files(self, ctx: BuildContext) -> None:
         if (ctx.run_dir / "namelist_pisces_ref").exists():

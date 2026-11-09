@@ -14,8 +14,6 @@ class OpenAccComponent(Component):
     label = "OPENACC"
 
     def configure(self, ctx: BuildContext) -> None:
-        if not self.enabled(ctx):
-            return
         spec = CompilerSpec.find(ctx.tools.fc)
         if spec is not None and spec.name in ("pgfortran", "nvfortran"):
             ctx.tools.add_fflags("-acc -Minfo=accel")

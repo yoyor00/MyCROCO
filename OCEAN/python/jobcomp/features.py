@@ -7,11 +7,11 @@ The bash script preprocessed ``testkeys.F`` once per feature
 
 from __future__ import annotations
 
-import shlex
 from pathlib import Path
 from typing import Optional
 
 from .errors import LOG
+from .preprocessor import Preprocessor
 from .shell import Shell
 
 
@@ -28,6 +28,7 @@ class FeatureDetector:
     ) -> None:
         self.shell = shell
         self.cpp = cpp
+        self.preprocessor = Preprocessor(shell, cpp)
         self.scratch = Path(scratch)
         self.source = Path(source)
         self.run_dir = run_dir if run_dir is not None else Path.cwd()
@@ -58,9 +59,10 @@ class FeatureDetector:
         )
         if header is not None:
             text = header.read_text(errors="replace") + "\n" + text
-        argv = shlex.split(self.cpp) + ["-P"]
-        self._output = self.shell.capture(
-            argv, cwd=testkeys.parent, text_input=text
+        self._output = self.preprocessor.run(
+            self.preprocessor.argv("-P"),
+            cwd=testkeys.parent,
+            text_input=text,
         )
         LOG.debug("feature detection: cpp on %s + %s", header, testkeys)
         return self._output

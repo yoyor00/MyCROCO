@@ -14,5 +14,6 @@ class ObstructionComponent(Component):
     name = "obstruction"
 
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:
-        yield CopySpec(src=ctx.paths.root / "OBSTRUCTION",
-                       dst=ctx.paths.scratch, contents=True)
+        yield CopySpec.contents(
+            ctx.paths.root / "OBSTRUCTION", ctx.paths.scratch
+        )

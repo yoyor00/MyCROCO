@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-import shlex
 import shutil
-from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable
 
 from jobcomp.context import BuildContext
 from jobcomp.copy import CopyMode, CopySpec
 from jobcomp.errors import LOG
 
-from .base import CPP_OUTPUT_DROP, Component
+from .base import Component
+from .crocofiles import Crocofiles
 
 
 class AgrifComponent(Component):
@@ -23,18 +22,14 @@ class AgrifComponent(Component):
     announce = True
 
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:
-        yield CopySpec(src=ctx.paths.agrif, dst=ctx.paths.scratch, tree=True)
+        yield CopySpec.tree(ctx.paths.agrif, ctx.paths.scratch)
 
     def configure(self, ctx: BuildContext) -> None:
-        if not self.enabled(ctx):
-            return
         tools = ctx.tools
         tools.add_fflags("-IAGRIF")
         tools.ldflags = f"-LAGRIF -lagrif {tools.ldflags}".strip()
 
     def prepare(self, ctx: BuildContext) -> None:
-        if not ctx.feature(self.name):
-            return
         tools = ctx.tools
         # The AGRIF variant of Makedefs carries the extra rules.  It must win
         # whatever the copy mode says: a stale template means a broken build.
@@ -58,9 +53,10 @@ class AgrifComponent(Component):
         argv += [f"FFLAGS={tools.fflags}", f"CFLAGS={tools.cflags}"]
         ctx.shell.run(argv, cwd=ctx.paths.scratch)
         if tools.os == "Darwin":
-            ctx.shell.run(["ranlib", "AGRIF/libagrif.a"],
-                          cwd=ctx.paths.scratch)
-        self._prepare_crocofiles(ctx)
+            ctx.shell.run(
+                ["ranlib", "AGRIF/libagrif.a"], cwd=ctx.paths.scratch
+            )
+        Crocofiles(ctx).generate()
 
     def cppflags(self, ctx: BuildContext) -> str:
         """Extra preprocessor flags of the AGRIF library (MPI variant)."""
@@ -72,87 +68,14 @@ class AgrifComponent(Component):
     def resolve_c_compiler(self, ctx: BuildContext) -> None:
         """Fill ``ctx.tools.cc``/``cflags`` the way the bash script does."""
         tools = ctx.tools
-        cflags = tools.cflags or self._make_variable(ctx, "CFLAGS")
-        cc = tools.cc or self._make_variable(ctx, "CC")
-        if cc and shutil.which(cc) and self._is_gnu_c(ctx, cc):
+        scratch = ctx.paths.scratch
+        cwd = scratch if scratch.is_dir() else None
+        cflags = tools.cflags or tools.make_variable(
+            ctx.shell, "CFLAGS", cwd=cwd
+        )
+        cc = tools.cc or tools.make_variable(ctx.shell, "CC", cwd=cwd)
+        if cc and shutil.which(cc) and tools.is_gnu_c(ctx.shell, cc):
             LOG.info("Using the GNU C compiler. Adding -fcommon to CFLAGS")
             cflags = f"{cflags} -fcommon -std=gnu11".strip()
         tools.cc = cc
         tools.cflags = cflags
-
-    @staticmethod
-    def _make_variable(ctx: BuildContext, name: str) -> str:
-        """Ask make for the value of a variable (``CC``, ``CFLAGS``, ...)."""
-        snippet = f"dummy_target:\n\t@echo $({name})\n"
-        scratch = ctx.paths.scratch
-        cwd = scratch if scratch.is_dir() else None
-        argv = [ctx.tools.make, "-f", "-", "dummy_target"]
-        return ctx.shell.capture(argv, cwd=cwd, text_input=snippet).strip()
-
-    @staticmethod
-    def _is_gnu_c(ctx: BuildContext, cc: str) -> bool:
-        proc = ctx.shell.probe([cc, "-v"])
-        return "gcc version" in (proc.stdout + proc.stderr)
-
-    # -- the CROCOFILES header tree ---------------------------------------
-    def _prepare_crocofiles(self, ctx: BuildContext) -> None:
-        """Build the ``CROCOFILES`` header tree consumed by ``conv``."""
-        scratch = ctx.paths.scratch
-        crocofiles = scratch / "CROCOFILES"
-        headers = sorted(scratch.glob("*.h")) + sorted(scratch.glob("*.h90"))
-        if ctx.dry_run:
-            LOG.info("would create %s (+%d preprocessed headers)",
-                     crocofiles, len(headers))
-            return
-        (crocofiles / "AGRIF_MODELFILES").mkdir(parents=True, exist_ok=True)
-        (crocofiles / "AGRIF_INC").mkdir(parents=True, exist_ok=True)
-
-        amr = self._cpp(
-            ctx, shlex.split(ctx.tools.cpp) + ["amr.in"], cwd=scratch
-        )
-        (crocofiles / "amr.scrum").write_text(self._filter(amr))
-
-        conv = scratch / "AGRIF" / "conv"
-        if conv.exists():
-            shutil.move(str(conv), str(crocofiles / conv.name))
-
-        cppdefs = scratch / "cppdefs.h"
-        prefix = ""
-        if cppdefs.exists():
-            prefix = cppdefs.read_text(errors="replace")
-        for path in headers:
-            LOG.info("%s", path.name)
-            data = prefix + path.read_text(errors="replace")
-            output = self._cpp(
-                ctx, ["cpp", "-P"], text_input=data, cwd=scratch
-            )
-            (crocofiles / path.name).write_text(self._filter(output))
-
-        amr_header = crocofiles / "private_scratch_AMR.h"
-        if amr_header.exists():
-            amr_header.replace(crocofiles / "private_scratch.h")
-
-    @staticmethod
-    def _filter(text: str) -> str:
-        """Drop the lines the bash script filters out with ``grep -v``."""
-        return "".join(
-            line
-            for line in text.splitlines(True)
-            if not any(char in line for char in CPP_OUTPUT_DROP)
-        )
-
-    @staticmethod
-    def _cpp(
-        ctx: BuildContext,
-        argv: List[str],
-        *,
-        text_input: Optional[str] = None,
-        cwd: Optional[Path] = None,
-    ) -> str:
-        """Run the preprocessor; never fatal, like ``cpp ... | grep``."""
-        proc = ctx.shell.probe(argv, cwd=cwd, text_input=text_input)
-        if proc.returncode not in (0, 127):
-            LOG.debug(
-                "cpp returned %s: %s", proc.returncode, proc.stderr.strip()
-            )
-        return proc.stdout or ""

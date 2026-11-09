@@ -17,8 +17,7 @@ class StogenComponent(Component):
     name = "stogen"
 
     def copy_specs(self, ctx: BuildContext) -> Iterable[CopySpec]:
-        yield CopySpec(src=ctx.paths.root / "STOGEN", dst=ctx.paths.scratch,
-                       contents=True)
+        yield CopySpec.contents(ctx.paths.root / "STOGEN", ctx.paths.scratch)
 
     def run_dir_files(self, ctx: BuildContext) -> None:
         if (ctx.run_dir / "namelist_sto").exists():

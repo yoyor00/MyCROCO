@@ -71,6 +71,7 @@ class Config:
             os.path.realpath(str(script_path)) if script_path else None
         )
         self.environ = os.environ if environ is None else environ
+        self._conf_cache: Optional[Dict[str, str]] = None
 
     # -- files next to the driver -----------------------------------------
     @property
@@ -81,9 +82,24 @@ class Config:
         return Path(os.path.realpath(sys.argv[0])).parent
 
     def load_conf(self, path: Optional[Path] = None) -> Dict[str, str]:
-        """Read the optional ``jobcomp.conf`` (next to ``jobcomp.py``)."""
+        """Read the optional ``jobcomp.conf`` (next to ``jobcomp.py``).
+
+        The default file is parsed once and cached: :meth:`pick` consults it
+        many times during one invocation.  An explicit ``path`` is always read
+        afresh, which keeps the file-oriented tests independent of the cache.
+        """
+        if path is not None:
+            return self._parse_conf(Path(path))
+        if self._conf_cache is None:
+            self._conf_cache = self._parse_conf(
+                self.script_dir / self.CONF_NAME
+            )
+        return self._conf_cache
+
+    @staticmethod
+    def _parse_conf(path: Path) -> Dict[str, str]:
         try:
-            text = Path(path or self.script_dir / self.CONF_NAME).read_text()
+            text = Path(path).read_text()
         except OSError:
             return {}
         values: Dict[str, str] = {}

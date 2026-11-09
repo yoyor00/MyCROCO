@@ -13,11 +13,12 @@ import shutil
 import sys
 
 from components import (
-    CONFIGURE_AFTER,
-    CONFIGURE_BEFORE,
-    COPY_COMPONENTS,
-    PREPARE_COMPONENTS,
-    RUN_DIR_COMPONENTS,
+    configure_after,
+    configure_before,
+    copy_into_scratch,
+    detect_features,
+    install_run_dir_files,
+    prepare as prepare_components,
 )
 
 from .context import BuildContext
@@ -72,16 +73,14 @@ class Build:
     def copy_sources(self) -> None:
         """Copy every component in, then the run-directory overrides."""
         ctx = self.ctx
-        for component in COPY_COMPONENTS:
-            ctx.copy_many(component.copy_specs(ctx))
-        for component in RUN_DIR_COMPONENTS:
-            component.run_dir_files(ctx)
+        copy_into_scratch(ctx)
+        install_run_dir_files(ctx)
         for pattern in OVERRIDES:
             ctx.copier.apply(
-                CopySpec(
-                    src=ctx.run_dir,
-                    dst=ctx.paths.scratch,
-                    glob=pattern,
+                CopySpec.glob(
+                    ctx.run_dir,
+                    ctx.paths.scratch,
+                    pattern,
                     mode=CopyMode.ALWAYS,
                 )
             )
@@ -89,15 +88,13 @@ class Build:
 
     def configure(self) -> None:
         """Feature-dependent flags, before the AGRIF library is built."""
-        for component in CONFIGURE_BEFORE:
-            component.configure(self.ctx)
+        detect_features(self.ctx)
+        configure_before(self.ctx)
 
     def prepare(self) -> None:
         """Pre-build work (PISCES namelists, AGRIF library and headers)."""
-        for component in PREPARE_COMPONENTS:
-            component.prepare(self.ctx)
-        for component in CONFIGURE_AFTER:
-            component.configure(self.ctx)
+        prepare_components(self.ctx)
+        configure_after(self.ctx)
 
     def write_makedefs(self) -> None:
         Makedefs(self.ctx.tools).write(

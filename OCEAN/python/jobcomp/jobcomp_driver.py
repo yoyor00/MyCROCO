@@ -1,8 +1,8 @@
 """Command line, configuration and entry point of the CROCO build driver.
 
-``Jobcomp`` is the whole program: it parses the options, resolves the
-toolchain and the directories, and hands over to :class:`jobcomp.build.Build`.
-``main`` is only the entry point used by ``OCEAN/jobcomp.py``.
+``Jobcomp`` parses the options, resolves the settings, and hands over to
+:class:`jobcomp.build.Build`.  ``main`` is only the entry point used by
+``OCEAN/jobcomp.py``.
 """
 
 from __future__ import annotations
@@ -13,81 +13,235 @@ import os
 import platform
 import subprocess
 import sys
-from pathlib import Path
-from typing import List, Optional, Sequence
+from dataclasses import dataclass
+from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 from .build import Build
 from .config import Config
 from .context import BuildContext
 from .copy import CopyMode
 from .errors import LOG, BuildError
-from .features import FeatureDetector
 from .parameters import BuildParameters
+from .settings import BuildSettings
 from .shell import Shell
-from .toolchain import CompilerSpec, Paths, Toolchain
+from .toolchain import Toolchain
 
-HELP = """-----------------------------------------------------------------
-JOBCOMP script to compile CROCO on OS = Linux or Darwin (Mac OS)
+USAGE = (
+    "%(prog)s [OPTIONS]\n"
+    "       %(prog)s --sh [OPTIONS]    "
+    "(run the historical bash script jobcomp.sh)"
+)
+
+HELP_DESCRIPTION = """\
 -----------------------------------------------------------------
-Usage: jobcomp [OPTIONS]
-       jobcomp --sh [OPTIONS]    (run the historical bash script jobcomp.sh)
+JOBCOMP script to compile CROCO on OS = Linux or Darwin (Mac OS)
+-----------------------------------------------------------------"""
 
-Options:
-  -h, --help                  Show this help message and exit.
-  --sh                        Hand over to the original bash implementation
-                              (jobcomp.sh, shipped unmodified).  All other
-                              options are passed through to it untouched.
-  --src <path>                Specify the CROCO source directory
-                              (default: ../croco/OCEAN).
-  --fc <compiler>             Specify the Fortran compiler
-                              (default: gfortran).  Available = gfortran,
-                              ifort, ifc, ifx, nvfortran, pgfortran
-  --mpif90 <compiler>         Specify the MPI Fortran compiler
-                              (default: mpif90).
-  --fflags <flags>            Specify the compilation flags
-                              (default: if fc=ifort or ifx:
-                               '-O2 -mcmodel=medium -fno-alias -i4 -r8
-                                -fp-model precise' ).
-                              (default: if fc=gfortran:
-                               '-O2 -mcmodel=medium -fdefault-real-8
-                                -fdefault-double-8 -std=legacy' ).
-                              (default: if fc=nvfortran or pgfortran:
-                               '-g -fast -r8 -i4 -mcmodel=medium
-                                -Mbackslash' ).
-  --jobs <n>                  Number of processes for compilation (default: 1)
-  --netcdf-inc <path>         Specify the NetCDF include directory.
-                              (default: nf-config --includedir)
-  --netcdf-lib <path>         Specify the NetCDF library directory.
-                              (default: nf-config --flibs)
-  --xios-dir <path>           Specify the XIOS root directory.
-                              (default: $HOME/xios)
-  --prism-dir <path>          Specify the OASIS-MCT root directory.
-                              (default: ../../../oasis3-mct/compile_oa3-mct)
-
-Incremental build options:
-  --copy-mode <mode>          newer (default) | always.  "newer" only copies
-                              a file when it is missing or its timestamp is
-                              newer than the copy in Compile/.
-  --keep-scratch              Do not wipe ./Compile before building.
-  --clean                     Wipe ./Compile before building (default).
-  --delete-stale              With --keep-scratch, remove files that no longer
-                              exist in the source tree.
-
-Advanced options:
-  --cc <compiler>             C compiler (default: value of $(CC) in make)
-  --cflags <flags>            C flags (appended to the make value)
-  --make <command>            Make command (default: gmake if available)
-  --dry-run                   Print what would be done, change nothing.
-  -v, --verbose               Verbose output (repeat for more).
-  -q, --quiet                 Only report errors.
-  --log-file <path>           Also write the log to this file.
-
+HELP_EPILOG = """\
 Configuration file:
-  A ``jobcomp.conf`` file next to this script is read before the environment
+  A jobcomp.conf file next to this script is read before the environment
   variables are looked at, using the historical names: SOURCE1, FC, MPIF90,
   MPILIB, MPIINC, PRISM_ROOT_DIR, XIOS_ROOT_DIR (one KEY=VALUE per line).
-  Precedence: command line > CROCO_* environment > jobcomp.conf > defaults.
-"""
+  Precedence: command line > CROCO_* environment > jobcomp.conf > defaults."""
+
+_UNSET = object()
+
+
+@dataclass(frozen=True)
+class Option:
+    """One command-line option, described once for parser and help."""
+
+    flags: Tuple[str, ...]
+    dest: str
+    help: str
+    section: str = "Options"
+    action: Optional[str] = None
+    takes_value: bool = False
+    value_type: Optional[Callable[[str], Any]] = None
+    choices: Optional[Tuple[str, ...]] = None
+    default: Any = _UNSET
+
+
+OPTIONS: Tuple[Option, ...] = (
+    Option(
+        ("-h", "--help"),
+        "help",
+        "Show this help message and exit.",
+        action="store_true",
+    ),
+    Option(
+        ("--sh",),
+        "sh",
+        "Hand over to the original bash implementation (jobcomp.sh, shipped "
+        "unmodified).  All other options are passed through to it untouched.",
+        action="store_true",
+    ),
+    Option(
+        ("--src",),
+        "src",
+        "Specify the CROCO source directory (default: ../croco/OCEAN).",
+        takes_value=True,
+    ),
+    Option(
+        ("--fc",),
+        "fc",
+        "Specify the Fortran compiler (default: gfortran).  Available = "
+        "gfortran, ifort, ifc, ifx, nvfortran, pgfortran",
+        takes_value=True,
+    ),
+    Option(
+        ("--mpif90",),
+        "mpif90",
+        "Specify the MPI Fortran compiler (default: mpif90).",
+        takes_value=True,
+    ),
+    Option(
+        ("--fflags",),
+        "fflags",
+        "Specify the compilation flags, overriding the compiler defaults.  "
+        "A value may start with a dash.",
+        takes_value=True,
+    ),
+    Option(
+        ("--jobs",),
+        "jobs",
+        "Number of processes for compilation (default: 1).",
+        takes_value=True,
+        value_type=int,
+    ),
+    Option(
+        ("--netcdf-inc",),
+        "netcdf_inc",
+        "Specify the NetCDF include directory (default: nf-config "
+        "--includedir).",
+        takes_value=True,
+    ),
+    Option(
+        ("--netcdf-lib",),
+        "netcdf_lib",
+        "Specify the NetCDF library directory (default: nf-config --flibs).",
+        takes_value=True,
+    ),
+    Option(
+        ("--xios-dir",),
+        "xios_dir",
+        "Specify the XIOS root directory (default: $HOME/xios).",
+        takes_value=True,
+    ),
+    Option(
+        ("--prism-dir",),
+        "prism_dir",
+        "Specify the OASIS-MCT root directory (default: "
+        "../../../oasis3-mct/compile_oa3-mct).",
+        takes_value=True,
+    ),
+    Option(
+        ("--copy-mode",),
+        "copy_mode",
+        "newer (default) | always.  \"newer\" only copies a file when it is "
+        "missing or its timestamp is newer than the copy in Compile/.",
+        section="Incremental build options",
+        takes_value=True,
+        choices=tuple(mode.value for mode in CopyMode),
+        default=None,
+    ),
+    Option(
+        ("--keep-scratch",),
+        "keep_scratch",
+        "Do not wipe ./Compile before building.",
+        section="Incremental build options",
+        action="store_true",
+    ),
+    Option(
+        ("--clean",),
+        "clean",
+        "Wipe ./Compile before building (default).",
+        section="Incremental build options",
+        action="store_true",
+    ),
+    Option(
+        ("--delete-stale",),
+        "delete_stale",
+        "With --keep-scratch, remove files that no longer exist in the "
+        "source tree.",
+        section="Incremental build options",
+        action="store_true",
+    ),
+    Option(
+        ("--cc",),
+        "cc",
+        "C compiler (default: value of $(CC) in make).",
+        section="Advanced options",
+        takes_value=True,
+    ),
+    Option(
+        ("--cflags",),
+        "cflags",
+        "C flags (appended to the make value).",
+        section="Advanced options",
+        takes_value=True,
+    ),
+    Option(
+        ("--make",),
+        "make",
+        "Make command (default: gmake if available).",
+        section="Advanced options",
+        takes_value=True,
+    ),
+    Option(
+        ("--print-fflags",),
+        "print_fflags",
+        "Print the FFLAGS the toolchain would use, then exit.",
+        section="Advanced options",
+        action="store_true",
+    ),
+    Option(
+        ("--dry-run",),
+        "dry_run",
+        "Print what would be done, change nothing.",
+        section="Advanced options",
+        action="store_true",
+    ),
+    Option(
+        ("-v", "--verbose"),
+        "verbose",
+        "Verbose output (repeat for more).",
+        section="Advanced options",
+        action="count",
+        default=0,
+    ),
+    Option(
+        ("-q", "--quiet"),
+        "quiet",
+        "Only report errors.",
+        section="Advanced options",
+        action="store_true",
+    ),
+    Option(
+        ("--log-file",),
+        "log_file",
+        "Also write the log to this file.",
+        section="Advanced options",
+        takes_value=True,
+    ),
+)
+
+#: Options that take a value (``--fflags -O2`` must work like in bash).
+VALUE_OPTIONS = tuple(
+    flag
+    for option in OPTIONS
+    if option.takes_value
+    for flag in option.flags
+    if flag.startswith("--")
+)
+
+#: Options that take no value (never glued onto the previous option).
+FLAGS = tuple(
+    flag
+    for option in OPTIONS
+    if not option.takes_value
+    for flag in option.flags
+)
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -96,46 +250,15 @@ class _ArgumentParser(argparse.ArgumentParser):
     def error(self, message: str):  # pragma: no cover - argparse plumbing
         text = message.replace("unrecognized arguments: ", "Unknown option: ")
         sys.stderr.write(f"{text}\n")
-        sys.stderr.write(HELP)
+        sys.stderr.write(self.format_help())
         raise SystemExit(1)
 
 
 class Jobcomp:
     """The driver: one instance per invocation."""
 
-    #: Options that take a value (``--fflags -O2`` must work like in bash).
-    VALUE_OPTIONS = (
-        "--src",
-        "--fc",
-        "--mpif90",
-        "--fflags",
-        "--jobs",
-        "--netcdf-inc",
-        "--netcdf-lib",
-        "--xios-dir",
-        "--prism-dir",
-        "--copy-mode",
-        "--cc",
-        "--cflags",
-        "--make",
-        "--log-file",
-    )
-
-    #: Options that take no value (never glued onto the previous option).
-    FLAGS = (
-        "-h",
-        "--help",
-        "--sh",
-        "--print-fflags",
-        "-v",
-        "--verbose",
-        "-q",
-        "--quiet",
-        "--keep-scratch",
-        "--clean",
-        "--delete-stale",
-        "--dry-run",
-    )
+    VALUE_OPTIONS = VALUE_OPTIONS
+    FLAGS = FLAGS
 
     def __init__(
         self, argv: Optional[Sequence[str]] = None, script_path=None
@@ -155,7 +278,7 @@ class Jobcomp:
                 return exc.returncode or 1
         args = self.parse_args()
         if args.help:
-            sys.stdout.write(HELP)
+            sys.stdout.write(self.build_parser().format_help())
             return 0
         if args.print_fflags:
             sys.stdout.write(self.default_fflags(args) + "\n")
@@ -195,7 +318,7 @@ class Jobcomp:
                 found = True
                 continue
             passthrough.append(token)
-            expect_value = token in self.VALUE_OPTIONS
+            expect_value = token in VALUE_OPTIONS
         return passthrough if found else None
 
     def run_legacy(self, argv: Sequence[str]) -> int:
@@ -213,36 +336,30 @@ class Jobcomp:
 
     def build_parser(self) -> _ArgumentParser:
         parser = _ArgumentParser(
-            prog="jobcomp", add_help=False, allow_abbrev=False
+            prog="jobcomp",
+            add_help=False,
+            allow_abbrev=False,
+            usage=USAGE,
+            description=HELP_DESCRIPTION,
+            epilog=HELP_EPILOG,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
         )
-        parser.add_argument("-h", "--help", action="store_true", dest="help")
-        parser.add_argument("--sh", action="store_true")
-        # plumbing for the scripts: print the FFLAGS the toolchain would use
-        parser.add_argument("--print-fflags", action="store_true")
-        parser.add_argument("--src")
-        parser.add_argument("--fc")
-        parser.add_argument("--mpif90")
-        parser.add_argument("--fflags")
-        parser.add_argument("--jobs", type=int)
-        parser.add_argument("--netcdf-inc")
-        parser.add_argument("--netcdf-lib")
-        parser.add_argument("--xios-dir")
-        parser.add_argument("--prism-dir")
-        parser.add_argument(
-            "--copy-mode",
-            choices=[mode.value for mode in CopyMode],
-            default=None,
-        )
-        parser.add_argument("--keep-scratch", action="store_true")
-        parser.add_argument("--clean", action="store_true")
-        parser.add_argument("--delete-stale", action="store_true")
-        parser.add_argument("--cc")
-        parser.add_argument("--cflags")
-        parser.add_argument("--make")
-        parser.add_argument("--dry-run", action="store_true")
-        parser.add_argument("-v", "--verbose", action="count", default=0)
-        parser.add_argument("-q", "--quiet", action="store_true")
-        parser.add_argument("--log-file")
+        groups = {}
+        for option in OPTIONS:
+            group = groups.get(option.section)
+            if group is None:
+                group = parser.add_argument_group(option.section)
+                groups[option.section] = group
+            kwargs = {"dest": option.dest, "help": option.help}
+            if option.action is not None:
+                kwargs["action"] = option.action
+            if option.value_type is not None:
+                kwargs["type"] = option.value_type
+            if option.choices is not None:
+                kwargs["choices"] = option.choices
+            if option.default is not _UNSET:
+                kwargs["default"] = option.default
+            group.add_argument(*option.flags, **kwargs)
         return parser
 
     def glue_flag_values(self, argv: Sequence[str]) -> List[str]:
@@ -259,10 +376,10 @@ class Jobcomp:
             token = argv[index]
             nxt = argv[index + 1] if index + 1 < len(argv) else None
             if (
-                token in self.VALUE_OPTIONS
+                token in VALUE_OPTIONS
                 and nxt is not None
-                and nxt not in self.VALUE_OPTIONS
-                and nxt not in self.FLAGS
+                and nxt not in VALUE_OPTIONS
+                and nxt not in FLAGS
             ):
                 out.append(f"{token}={nxt}")
                 index += 2
@@ -307,85 +424,20 @@ class Jobcomp:
         before compiling.
         """
         fc = self.config.pick(args.fc, "CROCO_CFT1")
-        spec = CompilerSpec.find(fc)
-        fflags = spec.fflags if spec is not None else ""
         override = self.config.pick(args.fflags, "CROCO_FFLAGS1", "")
-        return override or fflags
+        return override or Toolchain.default_fflags(fc)
 
     def create_context(self, args: argparse.Namespace) -> BuildContext:
         """Turn the parsed options into everything a build needs."""
         os_name = platform.system()
         LOG.info("OPERATING SYSTEM IS: %s", os_name)
         shell = Shell(dry_run=args.dry_run)
-        tools = self.toolchain(args, shell, os_name)
-        paths = self.paths(args)
-        return BuildContext(
-            paths=paths,
-            tools=tools,
-            detector=FeatureDetector(
-                shell, tools.cpp, paths.scratch, paths.source, paths.run_dir
-            ),
-            shell=shell,
-            copy_mode=CopyMode(
-                self.config.pick(args.copy_mode, "CROCO_COPY_MODE",
-                                 CopyMode.NEWER.value)
-            ),
-            dry_run=args.dry_run,
-            keep_scratch=args.keep_scratch and not args.clean,
-            delete_stale=args.delete_stale,
-            xios_dir=self.config.expand(
-                self.config.pick(args.xios_dir, "CROCO_XIOS_ROOT_DIR")
-            ),
-            prism_dir=self.config.expand(
-                self.config.pick(args.prism_dir, "CROCO_PRISM_ROOT_DIR")
-            ),
-        )
-
-    def toolchain(
-        self, args: argparse.Namespace, shell: Shell, os_name: str
-    ) -> Toolchain:
-        """Resolve the compilers, the flags and the NetCDF paths."""
-        config = self.config
-        detected_lib, detected_inc = Toolchain.detect_netcdf(shell)
-        fc_from_env = args.fc is not None or bool(
-            config.environ.get("CROCO_CFT1")
-        )
-        tools = Toolchain.resolve(
-            shell=shell,
-            os_name=os_name,
-            fc=config.pick(args.fc, "CROCO_CFT1"),
-            fc_from_env=fc_from_env,
-            mpif90=config.pick(args.mpif90, "CROCO_MPIF90"),
-            fflags_override=config.pick(args.fflags, "CROCO_FFLAGS1", "")
-            or None,
-            nprocs=int(config.pick(args.jobs, "NPROCS", "1")),
-            netcdf_lib=config.pick(
-                args.netcdf_lib, "CROCO_NETCDFLIB", detected_lib
-            ),
-            netcdf_inc=config.pick(
-                args.netcdf_inc, "CROCO_NETCDFINC", detected_inc
-            ),
-            netcdf_lib_default=detected_lib,
-            netcdf_inc_default=detected_inc,
-            cc_override=args.cc,
-            cflags_override=args.cflags,
-            make_override=args.make,
-        )
-        if tools.nprocs < 1:
-            raise BuildError(f"invalid number of jobs: {tools.nprocs}")
-        return tools
-
-    def paths(self, args: argparse.Namespace) -> Paths:
-        """Where the sources are, and the ``./Compile`` scratch directory."""
-        paths = Paths.create(
-            self.config.expand(self.config.pick(args.src, "CROCO_SRC")),
-            Path("./Compile"),
-        )
-        if not paths.source.is_dir():
+        settings = BuildSettings.resolve(self.config, args, shell, os_name)
+        if not settings.source.is_dir():
             raise BuildError(
-                f"CROCO source directory not found: {paths.source}"
+                f"CROCO source directory not found: {settings.source}"
             )
-        return paths
+        return BuildContext.from_settings(settings, shell)
 
 
 def main(argv: Optional[Sequence[str]] = None, script_path=None) -> int:

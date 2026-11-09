@@ -14,8 +14,9 @@ paths with ``Jobcomp(...).parameters()`` -- see :mod:`jobcomp.parameters`.
 
 Modules (all pure libraries; ``OCEAN/jobcomp.py`` is the entry point):
 
-    errors, config, shell, copy, toolchain, features, context, makedefs,
-    build, parameters, jobcomp_driver -- the program, one class per module
+    errors, config, settings, shell, copy, toolchain, preprocessor, features,
+    context, makedefs, build, parameters, jobcomp_driver -- the program,
+    one class per module
     components/           -- the build features, one module per feature
 
 Requires Python 3.8+ and the standard library only.

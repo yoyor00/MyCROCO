@@ -19,6 +19,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 HERE = Path(__file__).resolve().parents[1]  # ``OCEAN/python``
 OCEAN = HERE.parent
@@ -193,10 +194,10 @@ class TestCopierTree(TempDirTest):
             shell=make_shell(),
         )
         ctx.copier.apply(
-            copy.CopySpec(
-                src=self.path("src"),
-                dst=self.path("dst"),
-                glob="cppdefs.h",
+            copy.CopySpec.glob(
+                self.path("src"),
+                self.path("dst"),
+                "cppdefs.h",
                 mode=copy.CopyMode.ALWAYS,
             )
         )
@@ -236,15 +237,11 @@ class TestCopySpecs(TempDirTest):
         write(self.path("PISCES", "SED", "sed.F90"), "s\n")
         ctx = self.make_context()
         ctx.copier.apply(
-            copy.CopySpec(
-                src=self.path("PISCES"), dst=ctx.paths.scratch, contents=True
-            )
+            copy.CopySpec.contents(self.path("PISCES"), ctx.paths.scratch)
         )
         ctx.copier.apply(
-            copy.CopySpec(
-                src=self.path("PISCES", "LIB"),
-                dst=ctx.paths.scratch,
-                contents=True,
+            copy.CopySpec.contents(
+                self.path("PISCES", "LIB"), ctx.paths.scratch
             )
         )
         scratch = ctx.paths.scratch
@@ -259,9 +256,7 @@ class TestCopySpecs(TempDirTest):
         write(self.path("AGRIF", "LIB", "fortran.c"), "c\n")
         ctx = self.make_context()
         ctx.copier.apply(
-            copy.CopySpec(
-                src=self.path("AGRIF"), dst=ctx.paths.scratch, tree=True
-            )
+            copy.CopySpec.tree(self.path("AGRIF"), ctx.paths.scratch)
         )
         self.assertTrue(
             (ctx.paths.scratch / "AGRIF" / "LIB" / "fortran.c").exists()
@@ -272,11 +267,8 @@ class TestCopySpecs(TempDirTest):
         write(self.path("XIOS", "iodef.xml"), "x\n")
         ctx = self.make_context()
         ctx.copier.apply(
-            copy.CopySpec(
-                src=self.path("XIOS"),
-                dst=ctx.paths.scratch,
-                glob="*.F",
-                optional=True,
+            copy.CopySpec.glob(
+                self.path("XIOS"), ctx.paths.scratch, "*.F"
             )
         )
         self.assertTrue((ctx.paths.scratch / "oxide.F").exists())
@@ -285,17 +277,15 @@ class TestCopySpecs(TempDirTest):
     def test_optional_missing_source_is_ignored(self) -> None:
         ctx = self.make_context()
         ctx.copier.apply(
-            copy.CopySpec(src=self.path("nope"), dst=ctx.paths.scratch)
+            copy.CopySpec.file(self.path("nope"), ctx.paths.scratch)
         )
 
     def test_required_missing_source_raises(self) -> None:
         ctx = self.make_context()
         with self.assertRaises(errors.BuildError):
             ctx.copier.apply(
-                copy.CopySpec(
-                    src=self.path("nope"),
-                    dst=ctx.paths.scratch,
-                    optional=False,
+                copy.CopySpec.file(
+                    self.path("nope"), ctx.paths.scratch, optional=False
                 )
             )
 
@@ -538,6 +528,26 @@ class TestCli(TempDirTest):
         args = make_driver(["--fc", "gfortran", "--jobs", "3"]).parse_args()
         self.assertEqual((args.fc, args.jobs), ("gfortran", 3))
 
+    def test_the_option_table_builds_the_parser_and_the_help(self) -> None:
+        driver = make_driver()
+        parser = driver.build_parser()
+        destinations = {action.dest for action in parser._actions}
+        self.assertEqual(
+            destinations, {option.dest for option in jobcomp_driver.OPTIONS}
+        )
+        self.assertTrue(set(driver.VALUE_OPTIONS).isdisjoint(driver.FLAGS))
+        help_text = parser.format_help()
+        for option in jobcomp_driver.OPTIONS:
+            for flag in option.flags:
+                self.assertIn(flag, help_text)
+
+    def test_invalid_job_count_is_a_build_error(self) -> None:
+        source = self.path("src")
+        source.mkdir()
+        args = make_driver(["--src", str(source), "--jobs", "0"]).parse_args()
+        with self.assertRaises(errors.BuildError):
+            make_driver().create_context(args)
+
 
 class TestLayout(unittest.TestCase):
     """``jobcomp`` links to the python driver, ``jobcomp.sh`` is the bash."""
@@ -701,6 +711,15 @@ class TestConfFile(TempDirTest):
         self.assertEqual(config.Config.CONF_KEYS["CROCO_CFT1"], "FC")
         self.assertEqual(config.Config.CONF_KEYS["CROCO_PRISM_ROOT_DIR"],
                          "PRISM_ROOT_DIR")
+
+    def test_the_default_conf_is_parsed_once(self) -> None:
+        cfg = self.config_for("SOURCE1=/from/conf\nFC=ifort\n")
+        with mock.patch.object(
+            cfg, "_parse_conf", wraps=cfg._parse_conf
+        ) as parse:
+            self.assertEqual(cfg.pick(None, "CROCO_SRC"), "/from/conf")
+            self.assertEqual(cfg.pick(None, "CROCO_CFT1"), "ifort")
+        self.assertEqual(parse.call_count, 1)
 
 
 class TestPrintFflags(unittest.TestCase):
@@ -1066,7 +1085,7 @@ class TestMainExitCodes(TempDirTest):
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             self.assertEqual(jobcomp_driver.main(["-h"]), 0)
-        self.assertIn("Usage: jobcomp", out.getvalue())
+        self.assertIn("jobcomp [OPTIONS]", out.getvalue())
 
     def test_missing_sources_returns_one(self) -> None:
         args = make_driver(["--src", str(self.path("nope"))]).parse_args()
