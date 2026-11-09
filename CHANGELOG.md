@@ -54,6 +54,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
+- BENCH : Fix AGRIF handling with a per-test-case AGRIF_FixedGrids.in,
+  detected from the resolved cppdefs.h instead of sharing OCEAN's file
+  across all cases (#489 and #576)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
