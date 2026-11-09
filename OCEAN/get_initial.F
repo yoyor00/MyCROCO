@@ -542,8 +542,11 @@
       endif
 #ifdef WET_DRY
 !
-!  Only sanitize zeta against Dcrit when there is no prior run to
+!  Cap how far below Dcrit the analytical zeta can be, so a dry
+!  cell never gets an arbitrarily negative total depth (h+zeta)
+!  Note : Only when there is no prior run to
 !  trust: ntstart==1 means this record has no "time_step" history
+
 !
       if (ntstart.eq.1) then
         where (zeta(:,:,1) .lt. Dcrit(:,:)-h(:,:))
