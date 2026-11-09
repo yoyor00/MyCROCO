@@ -195,9 +195,6 @@ pages:
 
 scons_smoke:
   <<: *gfortran
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-    - when: manual
   script:
     - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
     - python -m pip install -r $CI_PROJECT_DIR/OCEAN/python/scons/requirements.txt
