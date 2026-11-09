@@ -96,7 +96,11 @@ XIOS/OpenMPI combination.
 - XIOS runtime helper: currently hits a segmentation fault inside the XIOS
   data-write path (`CField::sendUpdateData`) for the experimental BASIN
   configuration; this is unresolved.  The same failure was observed with
-  both XIOS 2.5.x and XIOS 3.0.x, including a reduced single-field XML.
+  XIOS 2.5.x, XIOS 3.0.x, serial NetCDF and the local parallel NetCDF stack,
+  including a reduced single-field XML.
+- The XIOS `generic_testcase.exe` runs successfully on its own, so the XIOS
+  installation itself is functional; the remaining failure is specific to the
+  CROCO/XIOS configuration or interface.
 - OASIS runtime: not implemented; build/link check only
 
 This builds a BASIN configuration with:
