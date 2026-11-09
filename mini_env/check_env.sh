@@ -29,5 +29,10 @@ for dir in psmile.MPI1 mct; do
     [[ -d "$CROCO_PRISM_ROOT_DIR/build/lib/$dir" ]] && echo "  OK: build/lib/$dir" || echo "  MISSING: build/lib/$dir"
 done
 echo
+echo "TOY models:"
+for exe in toy_atm toy_oce toy_wav; do
+    [[ -x "$HERE/install/toy/$exe" ]] && echo "  OK: $exe" || echo "  MISSING: $exe"
+done
+echo
 echo "Python/BENCH:"
 "$HERE/.venv/bin/python" -c 'import json5, matplotlib, netCDF4, xarray, SCons; print("  OK: only local .venv")' 2>/dev/null || echo "  missing; run ./setup_python.sh"

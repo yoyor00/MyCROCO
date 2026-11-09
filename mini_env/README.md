@@ -71,6 +71,19 @@ The current local XIOS runtime still fails inside the XIOS write path even
 with the parallel NetCDF stack; the investigation is documented as
 experimental.
 
+## OASIS toy model
+
+The OASIS toy models can be built with:
+
+```bash
+source env.sh
+./install_toy.sh
+```
+
+They are installed under `mini_env/install/toy` as `toy_atm`, `toy_oce` and
+`toy_wav`.  This only builds the executables; a full coupled run still needs
+the matching `namcouple`, grid/forcing files and a launch configuration.
+
 ## Build checks
 
 ```bash
