@@ -125,10 +125,12 @@ XIOS/OpenMPI combination.
   was compatible with the BASIN model timestep (`9600s` instead of `3h`).
   The earlier `CScattererConnector::transfer` crash was triggered by the
   incompatible frequency.
-- The active instant output frequency is controlled by
-  `CROCO_XIOS_OUTPUT_FREQ`.  The BASIN cppdefs set it to `9600s` so it is an
-  integer multiple of `dt`.  `XIOS_OUTPUT_FREQ` can still override the
-  generated XML for experiments.
+- The runtime helper applies a local patched copy of
+  `XIOS/file_def_croco.xml_full_withcpp` from `patches/XIOS/`.  It sets the
+  active instant output groups to `9600s`, which is an integer multiple of
+  the BASIN `dt`.  The original `XIOS/` and `TEST_CASES/` files are left
+  untouched.  `XIOS_OUTPUT_FREQ` can still override the generated XML for
+  experiments.
 - The runtime helper defaults to `using_server=false` for the local checks.
 - OASIS runtime: not implemented; build/link check only
 

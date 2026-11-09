@@ -24,13 +24,20 @@ chmod +x "$RUN_DIR/process_xios_xml.sh"
   OCE_XIOS=TRUE ATM_XIOS=FALSE USE_OASIS=FALSE ./process_xios_xml.sh
 ) > "$HERE/logs/xios-xml.log" 2>&1
 
+# Use the local BASIN workaround without modifying XIOS/ or TEST_CASES/.
+PATCHED_FILE_DEF="$HERE/patches/XIOS/file_def_croco.xml_full_withcpp"
+if [[ -f "$PATCHED_FILE_DEF" ]]; then
+    echo "Using patched XIOS file definition: $PATCHED_FILE_DEF"
+    cpp -P -traditional -imacros "$RUN_DIR/cppdefs.h" \
+        "$PATCHED_FILE_DEF" > "$RUN_DIR/file_def_croco.xml"
+fi
+
 USING_SERVER="${XIOS_USING_SERVER:-false}"
 OUTPUT_FREQ="${XIOS_OUTPUT_FREQ:-}"
 sed -i "s|<variable id=\"using_server\" type=\"bool\">[^<]*</variable>|<variable id=\"using_server\" type=\"bool\">${USING_SERVER}</variable>|" \
     "$RUN_DIR/iodef.xml"
 
-# BASIN already selects a timestep-compatible frequency through
-# CROCO_XIOS_OUTPUT_FREQ.  Keep this override for experiments only.
+# The patched file uses 9600s for BASIN.  Keep this override for experiments.
 if [[ -n "$OUTPUT_FREQ" ]]; then
     sed -i "s/output_freq=\"9600s\"/output_freq=\"${OUTPUT_FREQ}\"/g" \
         "$RUN_DIR/file_def_croco.xml"

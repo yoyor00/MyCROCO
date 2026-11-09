@@ -1,13 +1,3 @@
-<!--
-  XIOS requires every output frequency to be an integer multiple of the model
-  timestep.  The active instant output frequency is therefore configurable:
-  define CROCO_XIOS_OUTPUT_FREQ in cppdefs.h to override the default.
-  Example for BASIN (dt = 9600 s): set CROCO_XIOS_OUTPUT_FREQ to "9600s".
--->
-#ifndef CROCO_XIOS_OUTPUT_FREQ
-# define CROCO_XIOS_OUTPUT_FREQ "3h"
-#endif
-
 <file_definition type="one_file" name="@expname@_@freq@" sync_freq="2d" min_digits="4">
 
   <!-- <!-\- !! GC to use @expname@_@freq@
@@ -19,12 +9,12 @@
   <file_group id="1ts" output_freq="1ts"  output_level="10" enabled=".false."/> <!-- 1 time step files -->
   <file_group id="6s"  output_freq="6s"   output_level="10" enabled=".false."/> <!-- 6 seconds files -->
   <file_group id="2mi" output_freq="2mi"  output_level="10" enabled=".false."/> <!-- 2 minutes files -->
-  <file_group id="3h"  output_freq=CROCO_XIOS_OUTPUT_FREQ output_level="10" enabled=".false."/> <!-- configurable files -->
+  <file_group id="3h"  output_freq="3h"   output_level="10" enabled=".false."/> <!-- 3 hours files -->
   <file_group id="4d"  output_freq="4d"   output_level="10" enabled=".false."/> <!-- 4 days files -->
   <file_group id="1mo" output_freq="1mo"  output_level="10" enabled=".false."/> <!-- real montly files -->
   <file_group id="1y"  output_freq="1y"   output_level="10" enabled=".false."/> <!-- real yearly files -->
 
-  <file_group id="3h" output_freq=CROCO_XIOS_OUTPUT_FREQ output_level="10" enabled=".true.">
+  <file_group id="3h" output_freq="3h" output_level="10" enabled=".true.">
     <file id="file1" name_suffix="_inst" split_freq="5d" split_freq_format="%y-%mo-%d">
 
       <field_group id="inst_grid" operation="once">
