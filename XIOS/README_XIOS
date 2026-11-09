@@ -48,6 +48,12 @@ in iodef.xml:
 in xios_launch.file: 
 	set number of processors desired for running CROCO and XIOS
 
+Output frequency:
+	Every XIOS output_freq must be an integer multiple of the model timestep.
+	The active instant output frequency in file_def_croco.xml is controlled by
+	the CROCO_XIOS_OUTPUT_FREQ cpp macro (default "3h").  For example, BASIN
+	uses dt = 9600 s and sets CROCO_XIOS_OUTPUT_FREQ to "9600s" in its cppdefs.
+
 Run CROCO and XIOS:
 	mpirun --app xios_launch.file
 

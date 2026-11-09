@@ -15,5 +15,8 @@
 # undef  STOGEN
 # define PGF_FLAT_BOTTOM
 
+/* XIOS output frequency must be an integer multiple of dt (9600 s). */
+# define CROCO_XIOS_OUTPUT_FREQ "9600s"
+
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"

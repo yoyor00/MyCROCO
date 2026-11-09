@@ -25,11 +25,16 @@ chmod +x "$RUN_DIR/process_xios_xml.sh"
 ) > "$HERE/logs/xios-xml.log" 2>&1
 
 USING_SERVER="${XIOS_USING_SERVER:-false}"
-OUTPUT_FREQ="${XIOS_OUTPUT_FREQ:-9600s}"
+OUTPUT_FREQ="${XIOS_OUTPUT_FREQ:-}"
 sed -i "s|<variable id=\"using_server\" type=\"bool\">[^<]*</variable>|<variable id=\"using_server\" type=\"bool\">${USING_SERVER}</variable>|" \
     "$RUN_DIR/iodef.xml"
-sed -i "s/output_freq=\"3h\"/output_freq=\"${OUTPUT_FREQ}\"/g" \
-    "$RUN_DIR/file_def_croco.xml"
+
+# BASIN already selects a timestep-compatible frequency through
+# CROCO_XIOS_OUTPUT_FREQ.  Keep this override for experiments only.
+if [[ -n "$OUTPUT_FREQ" ]]; then
+    sed -i "s/output_freq=\"9600s\"/output_freq=\"${OUTPUT_FREQ}\"/g" \
+        "$RUN_DIR/file_def_croco.xml"
+fi
 
 if [[ "$USING_SERVER" == "false" ]]; then
     printf -- '-np 4 ./croco\n' > "$RUN_DIR/xios_launch_mini.file"
