@@ -11,6 +11,30 @@ JOBS="${JOBS:-$(nproc)}"
 BACKENDS="${MINI_ENV_BACKENDS:-make scons}"
 mkdir -p "$WORK" "$LOGS"
 
+prepare_patched_source() {
+    local root="$WORK/patched_source"
+    local component patch_file rel dest
+    rm -rf "$root"
+    mkdir -p "$root"
+    for component in OCEAN STOGEN PISCES MUSTANG OBSTRUCTION XIOS; do
+        [[ -d "$REPO_ROOT/$component" ]] || continue
+        mkdir -p "$root/$component"
+        cp -as "$REPO_ROOT/$component/." "$root/$component/"
+    done
+    if [[ -d "$HERE/patches/OCEAN" ]]; then
+        while IFS= read -r -d '' patch_file; do
+            rel="${patch_file#$HERE/patches/OCEAN/}"
+            dest="$root/OCEAN/$rel"
+            mkdir -p "$(dirname "$dest")"
+            rm -f "$dest"
+            cp -a "$patch_file" "$dest"
+        done < <(find "$HERE/patches/OCEAN" -type f -print0)
+    fi
+    echo "$root/OCEAN"
+}
+
+OCEAN_SRC="$(prepare_patched_source)"
+
 prepare_case() {
     local name="$1" key="$2"
     local run="$WORK/$name"
@@ -21,7 +45,7 @@ prepare_case() {
     cp "$REPO_ROOT/TEST_CASES/BASIN/croco_BASIN.nml" "$run/croco.nml"
     sed -i 's/^# undef  MPI$/# define MPI/' "$run/cppdefs_BASIN.h"
     if [[ "$key" == "XIOS" ]]; then
-        sed -i 's|^#include "cppdefs_dev.h"|# define XIOS\n# define XIOS2\n# define SPONGE\n# define NO_SPONGE_GRID\n# define SALINITY\n# define ANA_BSFLUX\n# define CURVGRID\n# define SPHERICAL\n# define MASKING\n# define PSOURCE\n#include "cppdefs_dev.h"|' "$run/cppdefs_BASIN.h"
+        sed -i 's|^#include "cppdefs_dev.h"|# define XIOS\n# define XIOS2\n# define SPONGE\n# define NO_SPONGE_GRID\n# define SALINITY\n# define ANA_BSFLUX\n# define ANA_SSFLUX\n# define CURVGRID\n# define SPHERICAL\n# define MASKING\n# define PSOURCE\n#include "cppdefs_dev.h"|' "$run/cppdefs_BASIN.h"
     elif [[ "$key" == "OASIS" ]]; then
         sed -i 's|^#include "cppdefs_dev.h"|# define OA_COUPLING\n# define CURVGRID\n# define SPHERICAL\n# define MASKING\n# define PSOURCE\n#include "cppdefs_dev.h"|' "$run/cppdefs_BASIN.h"
     fi
@@ -33,7 +57,7 @@ run_backend() {
     local label="$1" run="$2" backend="$3"
     shift 3
     local log="$LOGS/${label}-${backend}.log"
-    local cmd=("$REPO_ROOT/OCEAN/jobcomp" --src "$REPO_ROOT/OCEAN" --jobs "$JOBS" "$@")
+    local cmd=("$REPO_ROOT/OCEAN/jobcomp" --src "$OCEAN_SRC" --jobs "$JOBS" "$@")
     if [[ "$backend" == "scons" ]]; then
         cmd+=(--scons)
     fi

@@ -112,19 +112,21 @@ XIOS/OpenMPI combination.
 
 - XIOS build/link: PASS with make and SCons
 - OASIS build/link: PASS with make and SCons
-- XIOS runtime helper: currently hits a segmentation fault inside the XIOS
-  data-write path (`CField::sendUpdateData`) for the experimental BASIN
-  configuration; this is unresolved.  The same failure was observed with
-  XIOS 2.5.x, XIOS 3.0.x, serial NetCDF and the local parallel NetCDF stack,
-  including a reduced single-field XML.
-- The XIOS `generic_testcase.exe` runs successfully on its own, so the XIOS
-  installation itself is functional; the remaining failure is specific to the
-  CROCO/XIOS configuration or interface.
-- A static 2D field (`h`) was written successfully.
-- The dynamic `zeta` field also wrote successfully once the output frequency
-  was compatible with the BASIN model timestep (`9600s` instead of `3h`).
-  The earlier `CScattererConnector::transfer` crash was triggered by the
-  incompatible frequency.
+- XIOS runtime helper: BASIN now gets through namelist reading, `ana_grid`,
+  XIOS initialization and file creation with the local OCEAN patches.  It
+  writes `Basin_Example_9600s_inst_*` and `Basin_Example_5d_aver_*` files.
+- The remaining runtime failure is in the XIOS write path:
+  `CONetCDF4::writeData` reports `input array size = 7930` versus an internal
+  size of `1586` or `2379` elements.  The generated files show that the
+  vertical `s_rho` axis is split across the four rank files (three levels per
+  file) while CROCO sends ten levels per rank.  This is a separate
+  CROCO/XIOS axis-distribution issue and is still unresolved.
+- The earlier `CScattererConnector::transfer` segfault is gone once the output
+  frequency is compatible with the BASIN timestep (`9600s` instead of `3h`).
+- `run_checks.sh` builds from a symlink source overlay in
+  `work/patched_source` with the experimental `patches/OCEAN/` files.  The
+  XIOS BASIN build also enables `ANA_SSFLUX`, avoiding a missing
+  `CROCO_FILES/croco_frc.nc`.
 - The runtime helper applies a local patched copy of
   `XIOS/file_def_croco.xml_full_withcpp` from `patches/XIOS/`.  It sets the
   active instant output groups to `9600s`, which is an integer multiple of
