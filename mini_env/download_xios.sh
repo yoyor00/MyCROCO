@@ -6,7 +6,7 @@ source "$HERE/versions.env"
 
 FORCE=0
 [[ "${1:-}" == "--force" ]] && FORCE=1
-SRC="$HERE/src/xios"
+SRC="${XIOS_SRC_DIR:-$HERE/src/xios}"
 
 if [[ -d "$SRC/.git" && "$FORCE" == "0" ]]; then
     echo "XIOS source already present: $SRC"

@@ -4,12 +4,13 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=versions.env
 source "$HERE/versions.env"
 
-SRC="$HERE/src/xios"
-BUILD_ROOT="$HERE/build"
-BUILD="$BUILD_ROOT/xios"
-PREFIX="$HERE/install/xios"
+SRC="${XIOS_SRC_DIR:-$HERE/src/xios}"
+BUILD_ROOT="${XIOS_BUILD_ROOT:-$HERE/build}"
+BUILD="${XIOS_BUILD_DIR:-$BUILD_ROOT/xios}"
+PREFIX="${XIOS_PREFIX:-$HERE/install/xios}"
 JOBS="${JOBS:-$(nproc)}"
 ARCH=mini_env
+NETCDF_MODE="${XIOS_NETCDF_LIB:-netcdf4_seq}"
 
 for tool in mpicc mpif90 make nf-config nc-config; do
     command -v "$tool" >/dev/null || { echo "Missing tool: $tool" >&2; exit 1; }
@@ -77,8 +78,8 @@ rm -rf "$BUILD"
 echo "Building XIOS in $BUILD"
 (
   cd "$SRC"
-  ./make_xios --full --prod --arch "$ARCH" --netcdf_lib netcdf4_seq \
-      --build_path "$BUILD_ROOT" --build_dir xios --job "$JOBS"
+  ./make_xios --full --prod --arch "$ARCH" --netcdf_lib "$NETCDF_MODE" \
+      --build_path "$BUILD_ROOT" --build_dir "$(basename "$BUILD")" --job "$JOBS"
 ) > "$HERE/logs/xios-build.log" 2>&1
 
 for item in bin lib inc; do

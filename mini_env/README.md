@@ -41,6 +41,36 @@ XIOS_REPO=https://gitlab.ipsl.fr/xios/xios.git XIOS_REF=... ./download_xios.sh
 
 The OASIS default is OASIS3-MCT 4.0 from `gitlab.com`.
 
+## Parallel NetCDF experiment
+
+For the XIOS runtime investigation, a local parallel HDF5/NetCDF stack can be
+built under `mini_env/install/parallel-netcdf`:
+
+```bash
+./install_parallel_netcdf.sh
+source env_parallel_netcdf.sh
+```
+
+It downloads HDF5, NetCDF-C and NetCDF-Fortran archives into the ignored
+`mini_env/downloads/` directory and builds everything locally.
+
+An XIOS 3 parallel build can then be produced without replacing the default
+XIOS installation:
+
+```bash
+git clone --depth 1 --branch xios-3.0.x \
+    https://github.com/barriern/xios2-nico.git src/xios3
+source env_parallel_netcdf.sh
+XIOS_SRC_DIR="$PWD/src/xios3" \
+XIOS_BUILD_DIR="$PWD/build/xios3-par" \
+XIOS_PREFIX="$PWD/install/xios3-par" \
+XIOS_NETCDF_LIB=netcdf4_par ./install_xios.sh
+```
+
+The current local XIOS runtime still fails inside the XIOS write path even
+with the parallel NetCDF stack; the investigation is documented as
+experimental.
+
 ## Build checks
 
 ```bash
