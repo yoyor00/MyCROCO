@@ -35,7 +35,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- no empty-named Tcrit\_mld variables written for passive tracers
 	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
 
-- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record
+- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record (#320 and #591)
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
@@ -73,6 +73,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
   surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
 - Fix grid variables writing in average and diagnostic file (#522)
+- Fix bvf fields units in history and average files (#567)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
@@ -86,6 +87,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            - Enables use of high-frequency qsr (<24 hrs) with PISCES 
              in the case of offline reading (#563) - online calculation of 
              daily mean of qsr needed by PISCES must be implemented
+           - Fix no update of POC/GOC prod by diazotropy - minor effect (#583)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
@@ -97,6 +99,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - KPP : bug fix for the non-local term in surface KPP parameterisation
         wrong sign and + correction to recover the empirical free convection scaling of 0.2 
 
+- MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
+
 ### Changed
 
 - Input file croco.in replace by a standard namelist (#497)
@@ -107,7 +111,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
-  (#568, #570, #573)
+  (#568, #570, #572, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -252,7 +256,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, M. Le Corre
+  J. Gula, C. Mazoyer, M. Le Corre, P. Penven
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,

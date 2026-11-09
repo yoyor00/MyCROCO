@@ -954,7 +954,7 @@
       lvar=lenstr(vname(1,indxHbl))
       ierr=nf_inq_varid (ncid, vname(1,indxHbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (hbls(START_2D_ARRAY,1), ncid, varid,
+        ierr=nf_fread (hbls(START_2D_ARRAY,3-tindx), ncid, varid,
 !#   else
 !        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
 !#   endif

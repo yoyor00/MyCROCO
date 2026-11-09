@@ -26,7 +26,7 @@
 ! indxMUD         gravel,sand & mud sediment tracers
 ! indxO,indeW     omega vertical mass flux and true vertical velocity
 ! indxR           density anomaly
-! indxbvf         Brunt Vaisala Frequency
+! indxbvf         Square of Brunt Vaisala Frequency (N^2)
 ! indxZ_r,indxZ_w depth of rho- and w-points (z_r, z_w)
 ! indxAOU  	  Apparent Oxygen Utilization
 ! indxWIND10      surface wind speed 10 m
