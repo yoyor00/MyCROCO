@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Dict, Iterable, Optional
 
 from .copy import Copier, CopyMode, CopySpec
 from .features import FeatureDetector
+from .settings import BuildBackend
 from .shell import Shell
 from .toolchain import Paths, Toolchain
 
@@ -23,6 +24,7 @@ class BuildContext:
     tools: Toolchain
     detector: FeatureDetector
     shell: Shell
+    backend: BuildBackend = BuildBackend.MAKE
     copy_mode: CopyMode = CopyMode.NEWER
     dry_run: bool = False
     keep_scratch: bool = False
@@ -46,6 +48,7 @@ class BuildContext:
                 shell, tools.cpp, paths.scratch, paths.source, paths.run_dir
             ),
             shell=shell,
+            backend=settings.backend,
             copy_mode=settings.copy_mode,
             dry_run=settings.dry_run,
             keep_scratch=settings.keep_scratch,

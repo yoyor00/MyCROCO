@@ -22,7 +22,7 @@ from .context import BuildContext
 from .copy import CopyMode
 from .errors import LOG, BuildError
 from .parameters import BuildParameters
-from .settings import BuildSettings
+from .settings import BuildBackend, BuildSettings
 from .shell import Shell
 from .toolchain import Toolchain
 
@@ -42,7 +42,9 @@ Configuration file:
   A jobcomp.conf file next to this script is read before the environment
   variables are looked at, using the historical names: SOURCE1, FC, MPIF90,
   MPILIB, MPIINC, PRISM_ROOT_DIR, XIOS_ROOT_DIR (one KEY=VALUE per line).
-  Precedence: command line > CROCO_* environment > jobcomp.conf > defaults."""
+  Precedence: command line > CROCO_* environment > jobcomp.conf > defaults.
+  ``CROCO_BUILDER`` (or ``BUILDER`` in jobcomp.conf) selects the compilation
+  backend: ``make`` (default) or ``scons``."""
 
 _UNSET = object()
 
@@ -187,6 +189,22 @@ OPTIONS: Tuple[Option, ...] = (
         "Make command (default: gmake if available).",
         section="Advanced options",
         takes_value=True,
+    ),
+    Option(
+        ("--backend",),
+        "backend",
+        "Compilation backend: make (default) or scons.",
+        section="Advanced options",
+        takes_value=True,
+        choices=tuple(backend.value for backend in BuildBackend),
+        default=None,
+    ),
+    Option(
+        ("--scons",),
+        "scons",
+        "Shortcut for --backend scons.",
+        section="Advanced options",
+        action="store_true",
     ),
     Option(
         ("--print-fflags",),

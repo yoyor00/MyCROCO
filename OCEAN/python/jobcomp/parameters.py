@@ -18,10 +18,9 @@ stay the business of ``jobcomp`` itself (``Build``).
 
 from __future__ import annotations
 
-import shlex
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Mapping, Tuple
+from typing import Mapping, Tuple
 
 from components import (
     AGRIF,
@@ -32,6 +31,7 @@ from components import (
 
 from .build import EXECUTABLES
 from .context import BuildContext
+from .flags import classify_flags as _classify
 from .makedefs import Makedefs
 
 
@@ -97,36 +97,3 @@ class BuildParameters:
             executables=EXECUTABLES,
             makedefs=Makedefs(tools).variables(),
         )
-
-
-def _classify(*flag_groups: str) -> Tuple[Tuple[str, ...], ...]:
-    """Split flags into ``(defines, includes, -L, libraries)``, in order."""
-    defines: List[str] = []
-    includes: List[str] = []
-    library_dirs: List[str] = []
-    libraries: List[str] = []
-    for group in flag_groups:
-        tokens = shlex.split(group)
-        index = 0
-        while index < len(tokens):
-            token = tokens[index]
-            following = tokens[index + 1] if index + 1 < len(tokens) else None
-            index += 1
-            if token in ("-I", "-L", "-l", "-D") and following is not None:
-                token, index = token + following, index + 1
-            if token.startswith("-I"):
-                includes.append(token[2:])
-            elif token.startswith("-L"):
-                library_dirs.append(token[2:])
-            elif token.startswith("-l"):
-                libraries.append(token[2:])
-            elif token.startswith("-D"):
-                defines.append(token[2:])
-            elif token.endswith(".a"):
-                libraries.append(token)
-    return (
-        tuple(dict.fromkeys(defines)),
-        tuple(dict.fromkeys(includes)),
-        tuple(dict.fromkeys(library_dirs)),
-        tuple(dict.fromkeys(libraries)),
-    )

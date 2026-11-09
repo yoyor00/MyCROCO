@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import platform
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Optional
 
@@ -20,6 +21,13 @@ from .shell import Shell
 from .toolchain import Toolchain, ToolchainSettings
 
 
+class BuildBackend(str, Enum):
+    """Which program performs the final compilation step."""
+
+    MAKE = "make"
+    SCONS = "scons"
+
+
 @dataclass(frozen=True)
 class BuildSettings:
     """Everything that is resolved before a build context is created."""
@@ -28,6 +36,7 @@ class BuildSettings:
     source: Path
     scratch: Path
     tools: ToolchainSettings
+    backend: BuildBackend
     copy_mode: CopyMode
     keep_scratch: bool
     delete_stale: bool
@@ -63,6 +72,18 @@ class BuildSettings:
         except ValueError:
             raise BuildError(f"invalid copy mode: {mode_value}")
 
+        backend_value = (
+            BuildBackend.SCONS.value
+            if getattr(args, "scons", False)
+            else config.pick(
+                getattr(args, "backend", None), "CROCO_BUILDER", "make"
+            )
+        )
+        try:
+            backend = BuildBackend(backend_value)
+        except ValueError:
+            raise BuildError(f"invalid build backend: {backend_value}")
+
         tools = ToolchainSettings(
             fc=config.pick(args.fc, "CROCO_CFT1"),
             fc_from_env=args.fc is not None
@@ -90,6 +111,7 @@ class BuildSettings:
             source=config.expand(config.pick(args.src, "CROCO_SRC")),
             scratch=Path("./Compile"),
             tools=tools,
+            backend=backend,
             copy_mode=copy_mode,
             keep_scratch=args.keep_scratch and not args.clean,
             delete_stale=args.delete_stale,

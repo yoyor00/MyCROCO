@@ -6,7 +6,7 @@ import logging
 import shlex
 import subprocess
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Mapping, Optional, Sequence
 
 from .errors import LOG, BuildError
 
@@ -32,6 +32,7 @@ class Shell:
         text_input: Optional[str] = None,
         capture: bool = False,
         check: bool = True,
+        env: Optional[Mapping[str, str]] = None,
     ) -> subprocess.CompletedProcess:
         """Run a command, logging it.  Raises :class:`BuildError` on failure.
 
@@ -47,7 +48,11 @@ class Shell:
             self.log.info("would run: %s", pretty)
             return subprocess.CompletedProcess(argv, 0, "", "")
         proc = self._call(
-            argv, cwd=cwd, text_input=text_input, capture=capture
+            argv,
+            cwd=cwd,
+            text_input=text_input,
+            capture=capture,
+            env=env,
         )
         if check and proc.returncode != 0:
             raise BuildError(
@@ -71,7 +76,11 @@ class Shell:
         self.log.debug("probe: %s", self._pretty(argv))
         try:
             return self._call(
-                argv, cwd=cwd, text_input=text_input, capture=True
+                argv,
+                cwd=cwd,
+                text_input=text_input,
+                capture=True,
+                env=None,
             )
         except OSError:  # command not installed: empty answer, never fatal
             return subprocess.CompletedProcess(argv, 127, "", "")
@@ -98,6 +107,7 @@ class Shell:
         cwd: Optional[Path],
         text_input: Optional[str],
         capture: bool,
+        env: Optional[Mapping[str, str]],
     ) -> subprocess.CompletedProcess:
         return subprocess.run(
             list(argv),
@@ -105,4 +115,5 @@ class Shell:
             input=text_input,
             text=True,
             capture_output=capture,
+            env=None if env is None else dict(env),
         )

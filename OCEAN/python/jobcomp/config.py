@@ -40,6 +40,7 @@ class Config:
         "CROCO_MPIINC": "MPIINC",
         "CROCO_PRISM_ROOT_DIR": "PRISM_ROOT_DIR",
         "CROCO_XIOS_ROOT_DIR": "XIOS_ROOT_DIR",
+        "CROCO_BUILDER": "BUILDER",
     }
 
     # -----------------------------------------------------------------------

@@ -22,3 +22,6 @@ scipy
 pandas
 # to treat nml
 f90nml
+
+# optional SCons compilation backend (jobcomp --scons)
+scons>=4.5,<5

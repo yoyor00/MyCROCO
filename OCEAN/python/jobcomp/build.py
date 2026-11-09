@@ -1,4 +1,4 @@
-"""The build itself: clean, copy, configure, write ``Makedefs``, compile.
+"""The build itself: clean, copy, configure, write build metadata, compile.
 
 ``Build`` holds the phase order in one place and takes the components from
 :mod:`components`, so the sequence can be read without following a 500-line
@@ -24,7 +24,10 @@ from components import (
 from .context import BuildContext
 from .copy import CopyMode, CopySpec
 from .errors import LOG
+from .makefile import read_source_lists
 from .makedefs import Makedefs
+from .manifest import MANIFEST_NAME, BuildManifest
+from .settings import BuildBackend
 
 #: Files the makefile leaves in the scratch directory for the run directory.
 EXECUTABLES = ("croco", "partit", "ncjoin")
@@ -48,6 +51,8 @@ class Build:
         self.configure()
         self.prepare()
         self.write_makedefs()
+        if self.ctx.backend is BuildBackend.SCONS:
+            self.write_manifest()
         self.compile()
         self.finish()
 
@@ -101,15 +106,46 @@ class Build:
             self.ctx.paths.scratch, dry_run=self.ctx.dry_run
         )
 
+    def write_manifest(self) -> None:
+        """Write the JSON configuration consumed by the SCons backend."""
+        ctx = self.ctx
+        path = ctx.paths.scratch / MANIFEST_NAME
+        if ctx.dry_run:
+            LOG.info("would write %s", path)
+            return
+        sources = read_source_lists(ctx.paths.scratch / "Makefile")
+        manifest = BuildManifest.from_context(
+            ctx, targets=list(EXECUTABLES), sources=sources
+        )
+        manifest.write(path)
+        LOG.debug("wrote %s", path)
+
     def compile(self) -> None:
-        """``make depend``, ``make -j``, then move the results out."""
+        """Run the selected compilation backend, then move the results out."""
+        if self.ctx.backend is BuildBackend.SCONS:
+            self.compile_scons()
+        else:
+            self.compile_make()
+        for executable in EXECUTABLES:
+            self.move_result(executable)
+
+    def compile_make(self) -> None:
+        """``make depend`` followed by ``make -j``."""
         ctx = self.ctx
         scratch = ctx.paths.scratch
         make = ctx.tools.make
         ctx.shell.run([make, "depend"], cwd=scratch)
         ctx.shell.run([make, "-j", str(ctx.tools.nprocs)], cwd=scratch)
-        for executable in EXECUTABLES:
-            self.move_result(executable)
+
+    def compile_scons(self) -> None:
+        """Run the packaged SCons build from the scratch directory."""
+        from scons.backend import command, environment
+
+        ctx = self.ctx
+        argv = command(ctx, require=not ctx.dry_run)
+        ctx.shell.run(
+            argv, cwd=ctx.paths.scratch, env=environment(ctx)
+        )
 
     def finish(self) -> None:
         self._print_banner()

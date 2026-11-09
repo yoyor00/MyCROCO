@@ -2,6 +2,7 @@
 """CROCO compilation driver (``jobcomp.py``, symlinked as ``jobcomp``).
 
     ./jobcomp [OPTIONS]              build CROCO in ./Compile
+    ./jobcomp --scons [OPTIONS]      use the optional SCons backend
     ./jobcomp --sh [OPTIONS]         run the historical bash script jobcomp.sh
     ./jobcomp --help                 all the options
 

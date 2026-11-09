@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""SConstruct used by ``jobcomp --backend scons``.
+
+``jobcomp`` runs this file from the ``Compile/`` directory and has already
+written ``croco_build.json`` there.  The package itself lives next to this
+file; jobcomp passes its parent directory in ``CROCO_SCONS_PACKAGE`` so the
+local ``scons`` package can be imported.
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+# SCons executes SConstruct files without defining ``__file__``.  jobcomp
+# therefore passes the directory of the local package in CROCO_SCONS_PACKAGE.
+package_dir = os.environ.get("CROCO_SCONS_PACKAGE")
+if package_dir:
+    sys.path.insert(0, package_dir)
+
+from SCons.Script import Default  # noqa: E402
+
+from scons import CrocoBin, CrocoBuild, CrocoEnv, CrocoTools  # noqa: E402
+from scons.config import DEFAULT_MANIFEST, CrocoBuildConfig  # noqa: E402
+
+config_path = Path(os.environ.get("CROCO_BUILD_CONFIG", DEFAULT_MANIFEST))
+croco_config = CrocoBuildConfig.load(config_path)
+
+croco_env = CrocoEnv(croco_config)
+croco_build = CrocoBuild(croco_env)
+croco_tools = CrocoTools(croco_build)
+croco_bin = CrocoBin(croco_build)
+
+Default(croco_bin.program, croco_tools.dep_partit, croco_tools.dep_ncjoin)
