@@ -321,8 +321,8 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
 !    ubar / full depth if l_tauskin_ubar
 !    u(k=1) / bottom cell height otherwise
     IF (l_tauskin_ubar) THEN
-        ux = ubar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, nnew)
-        vx = vbar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, nnew)
+        ux = ubar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, knew)
+        vx = vbar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, knew)
         Zref = z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, N) &
                 - z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 0) ! full water column
         z0_factor = 2.718_rsh ! Euler number — log-layer correction
@@ -374,13 +374,14 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
 !--- Wave + current combination (Soulsby 1995) ----------------------------
 ! Note : tauskin direction is current direction (needed if bedload)
 # if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+
     CALL combine_wave_current( &
         tauskin_c(ifirst:ilast, jfirst:jlast), &
         wave_orbital_velocity(ifirst, ilast, jfirst, jlast), &
         wave_direction(ifirst, ilast, jfirst, jlast), &
         wave_period(ifirst, ilast, jfirst, jlast), &
-        ubar(ifirst:ilast, jfirst:jlast, nnew), &
-        vbar(ifirst:ilast, jfirst:jlast, nnew), &
+        ubar(ifirst:ilast, jfirst:jlast, knew), &
+        vbar(ifirst:ilast, jfirst:jlast, knew), &
         z0sed(ifirst:ilast, jfirst:jlast), &
         rho(ifirst:ilast, jfirst:jlast, 1), &
         rho0, l_fricwave, fws2, tauskin(ifirst:ilast, jfirst:jlast), &

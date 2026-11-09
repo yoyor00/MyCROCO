@@ -748,7 +748,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
 # if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
-!     Brunt vaisala frequency.
+!     Square of Brunt vaisala frequency (N^2).
 !
       if (wrthis(indxbvf)) then
 !$acc update if(compute_on_device) host(bvf(:,:,:))
@@ -810,6 +810,23 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 # endif
 
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
+      endif
+!
+!     Write out depth of rho- and w-points (m).
+!
+      if (wrthis(indxZ_r)) then
+!$acc update if(compute_on_device) host(z_r(:,:,:))
+        workr=z_r
+        call fillvalue3d(workr,ncidhis,hisZ_r,vname(1,indxZ_r),
+     &        record,r3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_r' MYID
+      endif
+      if (wrthis(indxZ_w)) then
+!$acc update if(compute_on_device) host(z_w(:,:,:))
+        work=z_w
+        call fillvalue3d_w(work,ncidhis,hisZ_w,vname(1,indxZ_w),
+     &        record,w3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_w' MYID
       endif
 !
 # ifdef VIS_COEF_3D

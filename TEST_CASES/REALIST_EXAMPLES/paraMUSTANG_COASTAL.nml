@@ -26,43 +26,60 @@
 :                            (active only if l_flocmod)
 : namdredging              : parameters to activate dredging effect
 
-
 &namsedim_init
-   l_unised = .true. 
-   hseduni = 0.0000001   
-   cseduni= 1508.0 
-   csed_mud_ini = 300.0 
-   ksmiuni = 1 
-   ksmauni = 1
-/
+   date_start_dyninsed='2000/01/30 00:00:00'  
+   date_start_morpho='1990/01/08 00:00:00' 
+   l_unised = .false.   
+   filrepsed='sed_init.nc'
+/ 
 &namsedim_layer
-   dzsmin=1.0e-5 
-   dzsmax_bottom=10. 
+   dzsmin=1.0e-5       
+   dzsmax_bottom=0.1   
    l_dzsmaxuni=.TRUE.  
-   dzsmaxuni=10.
-   nlayer_surf_sed=1 
-/  
-&namsedim_bottomstress
-   l_z0seduni=.true. 
-   z0seduni = 0.0001
+   dzsmaxuni=10.     
+   nlayer_surf_sed=5 
 /
+&namsedim_bottomstress
+   l_z0seduni=.false.
+   z0seduni = 0.0001
+   z0sedmin = 0.0001
+   z0sedbedrock = 0.005
+   l_fricwave=.false.
+/  
 &namsedim_deposition
    cfreshmud=400.0
-   csedmin=30. 
+   csedmin=30.
+   cmudcr=600.
+   cvolmaxsort=0.58
+   cvolmaxmel=0.67
 /
 &namsedim_erosion
-   x1toce_mud=0.3
+   activlayer=0.02  
+   frmudcr2=0.7 
+   coef_frmudcr1=1000.
+   x1toce_mud=0.3   
    x2toce_mud=0.
-   E0_sand_option=0 
-   E0_sand_Cst=0.     
-   E0_mud=0.000  
-/
+   E0_sand_option=0
+   E0_sand_Cst=0.0002  
+   E0_sand_para=1. 
+   n_eros_sand=1.6
+   E0_mud=0.0002  
+   n_eros_mud=1.  
+   ero_option = 1   
+   xexp_ero = 2.0     
+ /  
 &namsedim_lateral_erosion
 /
 &namsedim_consolidation
 /
 &namsedim_diffusion
-/
+   l_diffused=.true.  
+   dt_diffused=500.0 
+   choice_flxdiss_diffsed=3 
+   xdifs1 = 1.e-8  
+   xdifsi1 = 1.e-6 
+   epdifi = 0.01 
+   fexcs=0.5 /  
 &namsedim_bioturb
 /
 &namsedim_morpho
@@ -72,27 +89,12 @@
 &namsedoutput
 /
 &namflocmod
-   l_flocmod = .TRUE.
-   l_ADS = .FALSE.
-   l_ASH = .TRUE.
-   l_COLLFRAG = .FALSE. 
-   f_dp0 = 4.e-6  
-   f_nf = 1.9 
-   f_nb_frag = 2.0  
-   f_alpha = 0.43   
-   f_beta = 0.1   
-   f_ater =  0.0 
-   f_ero_frac = 0.0   
-   f_ero_nbfrag = 2.0    
-   f_ero_iv = 1    
-   f_mneg_param = 0.001 
-   f_dmin_frag = 0.00001  
-   f_cfcst = 0.1875   
-   f_fp = 0.1     
-   f_fy = 1.0e-10   
-   f_collfragparam = 0.01   
-/
+/   
 &namdredging
 /
 &namsedim_poro
 /
+
+
+
+

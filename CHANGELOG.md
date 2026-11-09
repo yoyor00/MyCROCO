@@ -19,7 +19,23 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   potential, in addition to elevation; works now with both
   ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
+- OUTPUTS : add z\_r and z\_w to history and averages files, activated with
+  out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
+  auxiliary fields namelist blocks (Issue #543)
+
 ### Fixed
+
+- DIAGNOSTICS : tracer budget fixes (Issue #320)
+	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
+	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
+	- DIAGNOSTICS\_PV right-hand side (Trhs) kept in (unit of tracers) s-1
+	- MLD budget closure: same MLD index at both time levels with GLS\_MIXING, THmix from split upstream advection, TVmix with implicit sponge
+	- sediment settling/erosion diagnostics are now cell-volume integrals like the other terms
+	- TForc nudging diagnostic uses the actual nudging increment (and tclmzon with ZONAL\_NUDGING)
+	- no empty-named Tcrit\_mld variables written for passive tracers
+	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
+
+- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record (#320 and #591)
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
@@ -28,6 +44,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
   restart inconsistencies with MORPHODYN, update testcase plot script 
   accordingly (#470)
+- MUSTANG : Fix MUSTANG restart bit-exactness (#562)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
@@ -53,7 +70,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - COUPLING : Fix missing restart file update for OASIS (#501). 
 
 - Fix time in surf average output file (#388)
+- Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
+  surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
 - Fix grid variables writing in average and diagnostic file (#522)
+- Fix bvf fields units in history and average files (#567)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
@@ -67,6 +87,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            - Enables use of high-frequency qsr (<24 hrs) with PISCES 
              in the case of offline reading (#563) - online calculation of 
              daily mean of qsr needed by PISCES must be implemented
+           - Fix no update of POC/GOC prod by diazotropy - minor effect (#583)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
@@ -77,6 +98,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - KPP : bug fix for the non-local term in surface KPP parameterisation
         wrong sign and + correction to recover the empirical free convection scaling of 0.2 
+
+- MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
 
 ### Changed
 - Vertical coordinate : only the new s-coordinate (Vtransform = 2,
@@ -101,7 +124,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
-  (#568, #570, #573)
+  (#568, #570, #572, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -118,12 +141,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
-
 - MUSTANG : review lateral erosion feature (Issue #349)
-
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
-
 - MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
+- MUSTANG : change init and roughness length computation (#562)
+- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
@@ -131,7 +153,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - DIAGNOSTICS : 
 	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
 	- kinetic energy budget is now 3d
-	- momentum and energy diagnostics are saved as cell-volume integrals
+	- momentum, energy and tracer diagnostics (DIAGNOSTICS\_TS and DIAGNOSTICS\_TS\_MLD) terms are now volume-integrated (Issue #320)
+	- DIAGNOSTICS\_TS\_MLD\_DENS : MLD depths (density and temperature criteria) are both computed at w-levels, and the density criterion is used whatever the vertical mixing scheme (Issue #320)
+	- MLD depths (density and temperature criteria) are both computed starting from a reference depth (10 m by default) instead of the surface. The reference depth can be set with the namelist parameter mld_depth_ref (Issue #545)
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
@@ -248,9 +272,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre
+  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten, L. Maillard
+  S. Theetten, L. Maillard, N. Herry
