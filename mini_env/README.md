@@ -65,7 +65,8 @@ XIOS/OpenMPI combination.
 - OASIS build/link: PASS with make and SCons
 - XIOS runtime helper: currently hits a segmentation fault inside the XIOS
   data-write path (`CField::sendUpdateData`) for the experimental BASIN
-  configuration; this is unresolved
+  configuration; this is unresolved.  The same failure was observed with
+  both XIOS 2.5.x and XIOS 3.0.x, including a reduced single-field XML.
 - OASIS runtime: not implemented; build/link check only
 
 This builds a BASIN configuration with:

@@ -30,6 +30,7 @@ cat > "$RUN_DIR/xios_launch_mini.file" <<'LAUNCH'
 LAUNCH
 
 echo "Starting XIOS runtime smoke test in $RUN_DIR"
+ulimit -s unlimited 2>/dev/null || true
 (
   cd "$RUN_DIR"
   timeout "${XIOS_RUN_TIMEOUT:-120}" \
