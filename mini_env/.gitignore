@@ -1,0 +1,11 @@
+# local experimental environment; never commit downloaded sources/builds
+src/
+build/
+install/
+downloads/
+work/
+logs/
+.venv/
+*.tar.gz
+*.tgz
+*.tar

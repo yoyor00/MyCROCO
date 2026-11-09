@@ -1,0 +1,81 @@
+# Experimental mini environment for XIOS / OASIS
+
+This directory is only for local experimentation with the optional XIOS and
+OASIS3-MCT parts of the CROCO build.  It is not a production environment and
+its results are not scientifically validated.
+
+Downloaded sources, build trees, installed libraries and Python virtualenvs
+live under this directory but are ignored by git.  No source tarballs are
+committed to the repository.
+
+## Quick start
+
+```bash
+cd mini_env
+./install_all.sh --all
+source env.sh
+./check_env.sh
+```
+
+The default Python/BENCH environment can be created separately:
+
+```bash
+./setup_python.sh
+source env.sh
+```
+
+## What is installed
+
+- XIOS under `mini_env/install/xios`
+- OASIS3-MCT under `mini_env/install/oasis`
+- downloaded sources under `mini_env/src` (ignored)
+- build trees under `mini_env/build` (ignored)
+- logs under `mini_env/logs` (ignored)
+
+The default XIOS source is a GitHub mirror because the official
+`gitlab.ipsl.fr` host is not always reachable.  Override it if needed:
+
+```bash
+XIOS_REPO=https://gitlab.ipsl.fr/xios/xios.git XIOS_REF=... ./download_xios.sh
+```
+
+The OASIS default is OASIS3-MCT 4.0 from `gitlab.com`.
+
+## Build checks
+
+```bash
+source env.sh
+./run_checks.sh
+```
+
+This builds a BASIN configuration with:
+
+- XIOS enabled, linking against `install/xios`
+- MPI + OASIS coupling enabled, linking against `install/oasis`
+
+and records logs in `mini_env/logs`.  It is a build/link smoke test, not a
+full coupled simulation.  A full XIOS/OASIS run needs external XML,
+`namcouple`, restart/forcing files and a multi-executable launch setup.
+
+## Environment
+
+`env.sh` sets:
+
+```text
+XIOS_ROOT_DIR
+CROCO_PRISM_ROOT_DIR
+XIOS / CPL
+PATH
+LD_LIBRARY_PATH
+CPL_NAM_DIR / CPL_FILES_DIR
+```
+
+It optionally prepends `mini_env/.venv/bin` if `setup_python.sh` has been run.
+
+## Removal
+
+The experimental environment can be removed without touching the repository:
+
+```bash
+rm -rf src build install work logs .venv
+```
