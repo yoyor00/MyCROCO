@@ -32,11 +32,17 @@ source env.sh
 - build trees under `mini_env/build` (ignored)
 - logs under `mini_env/logs` (ignored)
 
-The default XIOS source is a GitHub mirror because the official
-`gitlab.ipsl.fr` host is not always reachable.  Override it if needed:
+The default XIOS source is the official IPSL repository:
+
+```text
+https://gitlab.in2p3.fr/ipsl/projets/xios-projects/xios.git
+```
+
+Override `XIOS_REPO` / `XIOS_REF` to test another checkout or mirror:
 
 ```bash
-XIOS_REPO=https://gitlab.ipsl.fr/xios/xios.git XIOS_REF=... ./download_xios.sh
+XIOS_REPO=https://github.com/barriern/xios2-nico.git XIOS_REF=xios-2.5.x \
+    ./download_xios.sh
 ```
 
 The OASIS default is OASIS3-MCT 4.0 from `gitlab.com`.
@@ -59,7 +65,7 @@ XIOS installation:
 
 ```bash
 git clone --depth 1 --branch xios-3.0.x \
-    https://github.com/barriern/xios2-nico.git src/xios3
+    https://gitlab.in2p3.fr/ipsl/projets/xios-projects/xios.git src/xios3
 source env_parallel_netcdf.sh
 XIOS_SRC_DIR="$PWD/src/xios3" \
 XIOS_BUILD_DIR="$PWD/build/xios3-par" \
