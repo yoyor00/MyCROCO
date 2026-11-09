@@ -245,7 +245,8 @@
 
 # ifdef WET_DRY
 !
-!  Ensure the analytical free surface above respects Dcrit
+!  Cap how far below Dcrit the analytical zeta can be, so a dry
+!  cell never gets an arbitrarily negative total depth (h+zeta)
 !
         do j=JR_RANGE
           do i=IR_RANGE
