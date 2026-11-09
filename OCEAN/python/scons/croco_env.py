@@ -85,10 +85,17 @@ class CrocoEnv:
 
         self.env["CPPPATH"] += list(flags.include_dirs)
         self.env["LIBPATH"] = list(flags.library_dirs)
-        self.env["LIBS"] = list(flags.libraries)
+        libs = []
+        static_libs = []
+        for library in flags.libraries:
+            if library.endswith(".a") or os.path.sep in library:
+                static_libs.append(library)
+            else:
+                libs.append(library)
+        self.env["LIBS"] = libs
         self.env["LDFLAGS"] = _without(
             list(flags.ldflags), ("-L", "-l"), suffixes=(".a",)
-        )
+        ) + static_libs
 
     def setup_workarounds(self) -> None:
         """Compiler-specific workarounds kept from the original example."""

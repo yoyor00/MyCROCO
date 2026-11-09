@@ -123,7 +123,7 @@ class CrocoBuild:
         # $FFLAGS is needed at link time too for options such as -acc=gpu.
         action = (
             "$LDR $FFLAGS $SOURCES -o $TARGET "
-            "$_LIBDIRFLAGS $_LIBFLAGS $LDFLAGS"
+            "$LDFLAGS $_LIBDIRFLAGS $_LIBFLAGS"
         )
         out_deps = self.env.Command(
             target=output_file, source=inputs, action=action, **kwargs
