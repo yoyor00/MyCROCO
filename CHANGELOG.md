@@ -35,7 +35,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- no empty-named Tcrit\_mld variables written for passive tracers
 	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
 
-- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record
+- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record (#320 and #591)
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
@@ -73,6 +73,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
   surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
 - Fix grid variables writing in average and diagnostic file (#522)
+- Fix bvf fields units in history and average files (#567)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
