@@ -106,6 +106,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
 
+- NH : Fix rhs typo (#538)
+
 ### Changed
 - Vertical coordinate : only the new s-coordinate (Vtransform = 2,
   Shchepetkin & McWilliams 2009) is kept (#396).
