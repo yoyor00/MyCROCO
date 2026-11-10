@@ -100,8 +100,8 @@ o01   = 100*squeeze(nc{'omega'}(1:tindex,kk,yindex,L-1));
 zr0=zeros(tend,N,L);
 for i=1:tend
  zeta0 = squeeze(nc{'zeta'}(i,yindex,:));
- zr0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'r',2));
- zw0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'w',2));
+ zr0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'r'));
+ zw0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'w'));
 end
 close(nc)
 zru0=0.5*(zr0(:,:,1:end-1)+zr0(:,:,2:end));
@@ -194,9 +194,9 @@ for tindex=tstr:tend % ---------------------------------- time loop
 
  % vertical grid
  zeta=squeeze(nc{'zeta'}(tindex,yindex,:));
- zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r',2));
+ zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r'));
  zru=0.5*(zr(:,1:end-1)+zr(:,2:end));
- zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w',2));
+ zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w'));
  zwu=0.5*(zw(:,1:end-1)+zw(:,2:end));
 
  xr2d=repmat(xr,[N 1]);

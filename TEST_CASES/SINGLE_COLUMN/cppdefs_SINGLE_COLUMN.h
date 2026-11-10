@@ -9,7 +9,6 @@
 # undef  OPENMP
 # undef  MPI
 # define UV_ADV
-# define NEW_S_COORD
 # define UV_COR
 # define SOLVE3D
 # undef  LMD_MIXING

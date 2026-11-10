@@ -49,10 +49,7 @@ N = len(nc.dimensions["s_rho"])
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-if "Vtransform" in nc.variables:
-    vtransform = int(np.squeeze(nc.variables["Vtransform"][:]))
-else:
-    vtransform = 1
+
 ssh = np.squeeze(nc.variables["zeta"][:, 1, :])
 zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
 u = np.squeeze(nc.variables["ubar"][:, 1, :])
@@ -69,8 +66,8 @@ nc.close()
 # Compute depths
 zeta_u = cr.rho2u_2d(zeta)
 h_u = cr.rho2u_2d(h)
-z = cr.zlevs(h_u, zeta_u, theta_s, theta_b, hc, N, "r", vtransform)
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtransform)
+z = cr.zlevs(h_u, zeta_u, theta_s, theta_b, hc, N, "r")
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zsec = np.squeeze(z[:, 1, :])
 xsec = np.tile(lonu, (N, 1))
 zrsec = np.squeeze(zr[:, 1, :])

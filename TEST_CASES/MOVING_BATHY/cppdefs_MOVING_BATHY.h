@@ -3,7 +3,6 @@
 # define NBQ
 # define NBQ_PRECISE
 # define SOLVE3D
-# define NEW_S_COORD
 # undef  PASSIVE_TRACER
 # define UV_ADV
 # define TS_HADV_WENO5
