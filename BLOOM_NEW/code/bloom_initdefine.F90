@@ -138,6 +138,8 @@
 #endif
    NAMELIST/namgrazing/ p_mesz_captdiat,p_mesz_captdino,p_mesz_captmicz,p_micz_captdiat,      &
                         p_micz_captnano,p_micz_captdet,p_micz_captdino,p_txfiltbenthmax
+   NAMELIST/namatmdepo/ l_atmdepo, nb_dust_vars, dust_vname, mod_vars, conv_fac, path_dust, &
+                        dust_filename_prefix
 
 
 
@@ -190,6 +192,7 @@ IF(rw == 'r')THEN
 #endif
 
    READ(50,namgrazing)
+   READ(50,namatmdepo)
 
 
   CLOSE(50)                                  ! end reading of namelists
@@ -225,6 +228,7 @@ ELSE   !IF(rw == 'w')
 #endif
 
      MPI_master_only WRITE(iscreenlog,namgrazing)
+     MPI_master_only WRITE(iscreenlog,namatmdepo)
 
   ! ENDIF_MPI
 

@@ -13,7 +13,16 @@ MODULE COMBLOOM
    IMPLICIT NONE
    
    LOGICAL, PUBLIC     :: l_filtbenthsinus,l_SNeffect_settle, &
-                        l_physadaptation, l_filtbenthmes,l_phyzoodeteffect_settle,l_ChlNratio_var
+                        l_physadaptation, l_filtbenthmes,l_phyzoodeteffect_settle,l_ChlNratio_var, &
+                        l_atmdepo
+
+
+   CHARACTER(len=100), PUBLIC  :: path_dust
+   CHARACTER(len=20) , PUBLIC  :: dust_filename_prefix
+   INTEGER, PARAMETER :: max_vars = 10
+   CHARACTER(LEN=50), PUBLIC   :: dust_vname(max_vars)
+   CHARACTER(LEN=25) , PUBLIC   :: mod_vars(max_vars)
+   REAL(KIND=rsh),DIMENSION(max_vars) ,PUBLIC      :: conv_fac
 
 
    !!!!  ---------------------------------------
@@ -208,7 +217,8 @@ MODULE COMBLOOM
                    p_Kzsed_aeration,     &
 !                   p_kiO2_precSi
                    p_Si_Eq,              &
-                   p_Si_EqPrec
+                   p_Si_EqPrec         
+
 
 
 #if defined key_BLOOM_opt2
@@ -329,7 +339,8 @@ REAL(KIND=rsh), PUBLIC       ::     &
                       id_columnprodtotal,   &
                       id_diatsettling,      &
                       id_detsettling,       &
-                      id_spm_total
+                      id_spm_total,         &
+                      nb_dust_vars          
    INTEGER, PUBLIC :: id_oxy_sat                  
 #ifdef key_BLOOM_insed
    INTEGER, PUBLIC :: id_remin_aerN ,      &

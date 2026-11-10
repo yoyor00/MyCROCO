@@ -26,13 +26,6 @@
    USE comsubstance
 
    USE shared
-   USE phytoplankton, only: phytoplankton_dynamics, storage_diag_phytoplankton, get_Tchl
-   USE zooplankton, only: zooplankton_dynamics
-   USE chemistry, only: chemistry_processes
-   USE oxygen, only: oxygen_dynamics
-   USE bio_sediment, only: sediment_bio_dynamics
-   USE sinking_velocity, only: estimate_sinking_velocity, storage_diag_sinking_velocity
-   USE mes , only : get_total_MES
 
  
    IMPLICIT NONE
@@ -45,6 +38,8 @@
 
 
  CONTAINS
+
+
 
    !!======================================================================
   SUBROUTINE bloom_SPMtot_Chla(ifirst,ilast,jfirst,jlast)
@@ -69,6 +64,9 @@
    !&E
    !&E---------------------------------------------------------------------
    !! * Modules used
+   USE phytoplankton, only: get_Tchl
+   USE mes , only : get_total_MES
+
 
    !! * Declaration Subroutine
 
@@ -248,6 +246,18 @@
    !&E       !  2026-06  (M. BELHARET) : Modularization
    !&E---------------------------------------------------------------------
    !! * Modules used
+
+   USE phytoplankton, ONLY: phytoplankton_dynamics, storage_diag_phytoplankton
+   USE zooplankton, ONLY: zooplankton_dynamics
+   USE chemistry, ONLY: chemistry_processes
+   USE oxygen, ONLY: oxygen_dynamics
+   USE sinking_velocity, ONLY: estimate_sinking_velocity, storage_diag_sinking_velocity
+
+   USE atm_deposition, ONLY : include_atm_deposition  
+#if defined XIOS
+   use iom
+#endif
+
    
    !! * Arguments
    INTEGER, INTENT(IN)                                        :: ifirst,ilast,jfirst,jlast   !,kmax
@@ -256,6 +266,8 @@
    !! * Local declarations
    INTEGER                :: i,j,k,iv,kkmax,ivp
    REAL(KIND=rsh),DIMENSION(nv_state)  :: c,dc
+   REAL(KIND=rsh),DIMENSION(ARRAY_WINDSPEED) :: NO3_dep = 0._rsh, NH4_dep = 0._rsh
+   REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE :: N_atm_flx
 
    INTEGER :: ibsurf
    
@@ -264,13 +276,19 @@
    REAL(KIND=rsh)  :: tocdpe,depo
 #endif
 
+   ALLOCATE(N_atm_flx(nb_dust_vars))
+
 
 !$OMP DO SCHEDULE(RUNTIME)
    DO j=jfirst,jlast
     DO i=ifirst,ilast
+        
+        N_atm_flx(:) = 0._rsh
+
       IF (htot(i,j) > RESIDUAL_THICKNESS_WAT)  THEN
             
        kkmax=NB_LAYER_WAT
+
        !!!!!!!!!!!!!!!!!!!!!!
        !!    loop on k     !!
        !!!!!!!!!!!!!!!!!!!!!!
@@ -306,6 +324,17 @@
 
              CALL shared_parameters(i,j,k)
 
+             ! Addition of the dissolved substances fluxes going from the sediment to the water column
+             !IF(k==1) THEN
+             !        DO iv=nvp+1,nv_adv
+             !           dc(iv) = dc(iv) + flx_s2w(iv,i,j)/epn_BOTTOM_MUSTANG(i,j)
+             !           if(iv == nvp+3 .AND. i== 15 .AND. j==10) then
+             !                   WRITE(*,*) 'iv = ', iv, 'dc(iv) = ', dc(iv), 'flx_s2w = ', flx_s2w(iv,i,j), 'epn = ', epn_BOTTOM_MUSTANG(i,j)
+             !           endif
+             !        ENDDO
+             !ENDIF
+
+
              ! DYNAMICS
              ! ............................................................
 
@@ -318,6 +347,12 @@
              CALL estimate_sinking_velocity(i,j,k,c)
              CALL storage_diag_sinking_velocity(i,j,k)
 #endif
+            ! including of atmospheric deposition
+             IF((l_atmdepo) .AND. (k==kkmax)) THEN
+                     CALL include_atm_deposition(i,j,epn,dc,N_atm_flx)
+                     NO3_dep(i,j) = N_atm_flx(1) *  rmask(i,j)
+                     NH4_dep(i,j) = N_atm_flx(2) *  rmask(i,j)
+             END IF
 
 
 
@@ -377,6 +412,14 @@
      END IF  ! H>RESIDUAL_THICKNESS_WAT
    END DO
    END DO
+
+#if defined XIOS
+     CALL iom_put("atm_dep_NOY", NO3_dep)
+     CALL iom_put("atm_dep_NHX", NH4_dep)
+#endif
+
+     DEALLOCATE(N_atm_flx)
+
 !$OMP END DO
 
   END SUBROUTINE bloom_sksc_wat
@@ -724,6 +767,7 @@
    !&E
    !&E---------------------------------------------------------------------
    !! * Modules used
+   USE bio_sediment, only: sediment_bio_dynamics
    
 !
 !!========

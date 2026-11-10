@@ -7,6 +7,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!  number of Bio advected variables without additional modules
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      INTEGER :: ntrc_subs, ntrc_substot, ntfix
+
 #ifdef key_BLOOM_opt2
       INTEGER,PARAMETER :: ntrc_biol=17
       PARAMETER ( ntfix=4 )
@@ -27,5 +30,12 @@
         INTEGER,PARAMETER :: NumBLMdiag1d=0
 #endif
 
+
+#   if defined MUSTANG
+        INTEGER, PARAMETER :: ntrc_sedim=3 !(nv_mud + nv_sand + nv_grav)
+#   else
+	INTEGER, PARAMETER :: ntrc_sedim=0
+#   endif
+	parameter (ntrc_subs=ntrc_biol+ntrc_sedim , ntrc_substot=ntrc_subs+ntfix )
 
 
