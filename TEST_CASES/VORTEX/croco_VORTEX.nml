@@ -49,7 +49,7 @@
 &croco_restart
   nrst = 600
   nrpfrst = -1
-  rstname = "TEST_CASES/VORTEX/vortex_rst.nc"
+  rstname = "vortex_rst.nc"
 /
 
 &croco_rho0

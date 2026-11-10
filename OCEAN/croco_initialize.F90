@@ -89,6 +89,8 @@
 !
       integer, intent(out) :: ierr
       integer :: tile
+      logical :: lroot   ! .true. on the root grid (always without AGRIF)
+                         ! should be used everywhere in the code 
 #ifdef WKB_WWAVE
       integer :: winterp
 #endif
@@ -118,6 +120,12 @@
 #endif
 !
       ierr = 0
+#ifdef AGRIF
+      lroot = Agrif_Root()
+#else
+      lroot = .true.
+#endif
+      if (lroot) then 
 !
 #ifdef JEANZAY
 ! Initialise OpenACC...
@@ -161,6 +169,8 @@
       call ens_comm_set ( )
 # endif
 #endif /* MPI */
+      endif !lroot
+
 !
 !  Initialize AGRIF nesting (Agrif_Init_Grids() itself stays in
 !  croco.F90: it is the one call conv is only known to handle
@@ -181,7 +191,7 @@
 !
 #if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED || \
     defined CVTK_DEBUG_PERFRST
-      call debug_ini
+      if (lroot) call debug_ini
 #endif
 !
       call init_buffer
@@ -217,7 +227,7 @@
 !
 # ifdef SEDIMENT
 #  ifdef AGRIF
-      if (Agrif_lev_sedim == 0) call init_sediment
+      if (Agrif_Fixed() >= Agrif_lev_sedim) call init_sediment
 #  else
       call init_sediment
 #  endif
@@ -228,12 +238,13 @@
 !
 !  Substance var need for MUSTANG and BIOLink
 !
-      call substance_read_alloc()
+      if (lroot) call substance_read_alloc() ! done for root only for compatibility TBC
 #endif
 !
 ! Online spectral analysis module
 !
 #ifdef ONLINE_ANALYSIS
+      if (lroot) then
 # ifdef MPI
       call init_parameter_oa( io_unit_oa=stdout,                       &
                                if_print_node_oa=(mynode==0),           &
@@ -252,6 +263,7 @@
                                ntf_max_oa=ndtfast,                     &
                                ntiles=NSUB_X*NSUB_E)
 # endif
+      endif
 #endif
 !
 !----------------------------------------------------------------------
@@ -268,10 +280,12 @@
 ! Copy to device(s)
 !
 #if defined OPENACC
+      if (lroot) then
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call copy_to_devices (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call copy_to_devices (tile)
+        enddo
+      endif  
 #endif
 !
 !----------------------------------------------------------------------
@@ -286,12 +300,19 @@
       do tile=0,NSUB_X*NSUB_E-1
         call ana_grid (tile)
       enddo
+
+# ifdef AGRIF
+      if (.not.lroot) call Agrif_initvalues_grid()
+# endif
+
 # if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
+       if( lroot) then
 !$OMP BARRIER
 !$OMP MASTER
        call check_tab2d(h(:,:),'h initialisation #1','r',              &
             ondevice=.TRUE.)
 !$OMP END MASTER
+       endif
 # endif
 #else
 !
@@ -347,17 +368,17 @@
 #endif
 
 #if defined OPENACC
+      if (lroot) then 
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call copy_from_devices (tile)
-      enddo
-#endif
+        do tile=0,NSUB_X*NSUB_E-1
+          call copy_from_devices (tile)
+        enddo
 
-#if defined OPENACC
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call copy_to_devices_2 (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call copy_to_devices_2 (tile)
+        enddo
+      endif
 #endif
 !
 !----------------------------------------------------------------------
@@ -368,6 +389,11 @@
 !
 #ifdef ANA_INITIAL
       if (nrrec /= 0) then            ! read from NetCDF file
+#endif
+#ifdef AGRIF_ADAPTIVE
+      if (.not.lroot) then
+        call Agrif_initvalues_adaptive_state()
+      else
 #endif
 #ifdef EXACT_RESTART
         call get_initial (nrrec-1, 2) ! Set initial conditions
@@ -381,26 +407,42 @@
 # endif
 #endif
         call get_initial (nrrec, 1)   ! Set initial conditions
+#ifdef AGRIF_ADAPTIVE
+      endif
+#endif
 #ifdef ANA_INITIAL
       else  ! nrrec.eq.0
 # if defined OA_COUPLING || defined OW_COUPLING
-        call cpl_prism_define
-        oasis_time = 0
-        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
+        if (lroot) then               
+          call cpl_prism_define
+          oasis_time = 0
+          MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
+        endif  
 # endif
       endif
 #endif
-                                ! Set initial model clock: at this
-      time=start_time          ! moment "start_time" (global scalar)
-      tdays=time*sec2day       ! is set by get_initial or analytically
-                                ! --> copy it into threadprivate "time"
+! Set initial model clock: at this
+! moment "start_time" (global scalar)
+! is set by get_initial or analytically
+! --> copy it into threadprivate "time"
+
+#ifdef AGRIF_ADAPTIVE
+      if (lroot) then
+#endif
+      time=start_time
+      tdays=time*sec2day
+#ifdef AGRIF_ADAPTIVE
+      endif ! lroot
+#endif
 
 #ifdef USE_CALENDAR
-      time_end=tool_datosec(end_date)
-      ntimes=int((time_end-time)/dt)
-      MPI_master_only write(stdout,*)                                  &
+      if (lroot) then
+        time_end=tool_datosec(end_date)
+        ntimes=int((time_end-time)/dt)
+        MPI_master_only write(stdout,*)                                  &
            'Ntimes from date_start and date_end:',ntimes
-      ntimes=ntimes+ntstart
+        ntimes=ntimes+ntstart
+      endif  
 #endif
 !
 !  Set initial conditions analytically for ideal cases
@@ -436,7 +478,7 @@
 
 # if defined BBL && defined ANA_BSEDIM
 #  ifdef AGRIF
-        if (Agrif_lev_sedim == 0) call ana_bsedim (tile)
+        if (Agrif_Fixed() >= Agrif_lev_sedim) call ana_bsedim (tile)
 #  else
         call ana_bsedim (tile)
 #  endif
@@ -444,7 +486,7 @@
 !
 # ifdef SEDIMENT
 #  ifdef AGRIF
-        if (Agrif_lev_sedim == 0) call ana_sediment (tile)
+        if (Agrif_Fixed() >= Agrif_lev_sedim) call ana_sediment (tile)
 #  else
         call ana_sediment (tile)
 #  endif
@@ -456,7 +498,7 @@
 !
 #if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
 # ifdef AGRIF
-      if (Agrif_lev_sedim == 0) call get_bsedim
+      if (Agrif_Fixed() >= Agrif_lev_sedim) call get_bsedim
 # else
       call get_bsedim
 # endif
@@ -464,7 +506,7 @@
 !
 #if defined SEDIMENT && !defined ANA_SEDIMENT
 # ifdef AGRIF
-      if (Agrif_lev_sedim == 0) call get_sediment
+      if (Agrif_Fixed() >= Agrif_lev_sedim) call get_sediment
 # else
       call get_sediment
 # endif
@@ -474,7 +516,7 @@
 !  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
 #ifdef SUBSTANCE
-      call substance_surfcell
+      if (lroot) call substance_surfcell ! done for root only for compatibility TBC
 #endif
 !
 !----------------------------------------------------------------------
@@ -482,10 +524,13 @@
 !----------------------------------------------------------------------
 !
 #ifdef STOGEN
-      do tile=0,NSUB_X*NSUB_E-1
-        call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
-        call sto_mod_init             ! initialize STOGEN module
-      enddo
+      if (lroot) then ! compatibility TBC
+!! $OMP PARALLEL DO PRIVATE(tile) ! compatibility bur should bethere TBC
+        do tile=0,NSUB_X*NSUB_E-1
+          call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
+          call sto_mod_init             ! initialize STOGEN module
+        enddo
+      endif  
 #endif
 !
 !----------------------------------------------------------------------
@@ -493,10 +538,12 @@
 !----------------------------------------------------------------------
 !
 #ifdef MUSTANG
+      if (lroot) then ! compatibility TBC
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call MUSTANG_init_main (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call MUSTANG_init_main (tile)
+        enddo
+      endif
 #endif
 !
 !----------------------------------------------------------------------
@@ -504,11 +551,13 @@
 !----------------------------------------------------------------------
 !
 #ifdef OBSTRUCTION
+      if (lroot) then ! compatibility TBC
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call obst_init_main ()
-        call obst_update_main (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call obst_init_main ()
+          call obst_update_main (tile)
+        enddo
+      endif  
 #endif
 !
 !----------------------------------------------------------------------
@@ -526,6 +575,13 @@
       enddo
 #endif
 !
+!  Adaptive zoom: correct baroclinic velocities so that their
+!  vertical integral matches the barotropic transport of the parent
+!
+#if defined AGRIF_ADAPTIVE && defined SOLVE3D
+      if (.not.lroot) call Agrif_initvalues_adaptive_bt()
+#endif
+!
 !----------------------------------------------------------------------
 !  Initialize diagnostic fields: mass flux, rho, omega
 !----------------------------------------------------------------------
@@ -535,7 +591,7 @@
       do tile=0,NSUB_X*NSUB_E-1
         call set_HUV (tile)
 # ifdef RESET_RHO0
-        call reset_rho0 (tile)
+        if (lroot) call reset_rho0 (tile) ! compatibility TBC
 # endif
       enddo
 
@@ -551,10 +607,12 @@
 !----------------------------------------------------------------------
 !
 #ifdef MRL_WCI
+      if (lroot) then ! compatibility TBC
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call mrl_wci (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call mrl_wci (tile)
+        enddo
+      endif
 #endif
 !
 !----------------------------------------------------------------------
@@ -567,9 +625,19 @@
                        || defined SPONGE
 !$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
+ # ifdef AGRIF
+        if (lroot) then
+          call set_nudgcof (tile)
+#  if defined TNUDGING || defined ZNUDGING || defined SPONGE
+        else
+          call set_nudgcof_fine (tile)
+#  endif
+        endif
+# else
         call set_nudgcof (tile)
+# endif
       enddo
-#endif
+#endif#endif
 !
 !----------------------------------------------------------------------
 !  Read initial climatology fields from NetCDF file
@@ -577,6 +645,8 @@
 !  in 3D interior or 2D boundary arrays
 !----------------------------------------------------------------------
 !
+      if (lroot) then 
+
 #if defined TCLIMATOLOGY && !defined ANA_TCLIMA
       call get_tclima
 #endif
@@ -621,6 +691,7 @@
 # endif
       enddo
 #endif
+      endif ! lroot      
 !
 !----------------------------------------------------------------------
 !  Read surface forcing from NetCDF file
@@ -633,7 +704,7 @@
 !----------------------------------------------------------------------
 !
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
-      call get_tides
+      if (lroot) call get_tides
 #endif
 !
 !----------------------------------------------------------------------
@@ -641,7 +712,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef ONLINE_ANALYSIS
-      if ( if_oa.eqv..true. ) then
+      if ( lroot .and. if_oa.eqv..true. ) then
 !$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
            call online_spectral_diags(tile,-1)
@@ -663,10 +734,12 @@
       if (may_day_flag /= 0) return
 !
 #ifdef ABL1D
+      if (lroot) then ! compatibility TBC
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call abl_ini (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call abl_ini (tile)
+        enddo
+      endif
 #endif
 !
 !----------------------------------------------------------------------
@@ -677,6 +750,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef STATIONS
+      if (lroot) then
       nrecsta=0
       ncidsta=-1
       staspval=1.E15  ! nodata flag for float variables.
@@ -696,6 +770,7 @@
                         ! and ifld (either izgrd or ifld is meaningful)
 # endif
       if (ldefsta) call wrt_sta
+      endif ! lroot
 #endif /* STATIONS */
 !
 !----------------------------------------------------------------------
@@ -705,6 +780,12 @@
 !----------------------------------------------------------------------
 !
 #ifdef WKB_WWAVE
+# ifdef AGRIF
+!
+!  Zoom: wave fields interpolated from the parent grid
+!
+      if (.not.lroot) call Agrif_initvalues_wkb()
+# endif
 !$OMP BARRIER
 !$OMP MASTER
         MPI_master_only write(stdout,'(/1x,A/)')                       &
@@ -715,10 +796,12 @@
       iwave=1
       thwave=1.D+10
 # ifndef ANA_BRY_WKB
+      if (lroot) then                 ! [root: inherited]
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_bry_wkb (tile)   ! set boundary forcing
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call set_bry_wkb (tile)   ! set boundary forcing
+        enddo
+      endif  
 # endif
 # ifdef MRL_CEW
 !$OMP PARALLEL DO PRIVATE(tile)
@@ -752,7 +835,7 @@
 !$OMP PARALLEL DO PRIVATE(tile)
         do tile=0,NSUB_X*NSUB_E-1
 # ifdef WAVE_OFFLINE
-          if (iwave == 1) call set_wwave(tile)
+          if (lroot .and. iwave == 1) call set_wwave(tile)
 # endif
           call wkb_wwave (tile)
         enddo
@@ -815,7 +898,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef ONLINE_ANALYSIS
-      if_online_analysis : if ( if_oa.eqv..true. ) then
+      if_online_analysis : if ( lroot .and. if_oa.eqv..true. ) then
 !$OMP PARALLEL DO PRIVATE(tile)
          do tile=0,NSUB_X*NSUB_E-1
 ! BLXD online_spectral_diags/output_oa 1st argument his the model mode 0/1 = Slow/Fast mode
@@ -841,7 +924,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef XIOS
-      if (nrrec == 0) then
+      if (lroot .and. nrrec == 0) then
 !$OMP PARALLEL DO PRIVATE(tile)
         do tile=0,NSUB_X*NSUB_E-1
           call send_xios_diags(tile)
@@ -852,13 +935,15 @@
 #endif
 
 #ifdef ABL1D
+      if (lroot) then ! compatibility TBC
 !$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call abl_ini (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call abl_ini (tile)
+        enddo
 # ifndef XIOS
       if (ldefablhis .and. wrtabl(indxTime)) call wrt_abl_his
 # endif
+      endif ! lroot
 #endif
 !
       if (may_day_flag /= 0) return

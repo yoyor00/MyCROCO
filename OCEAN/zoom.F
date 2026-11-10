@@ -98,25 +98,26 @@
 
       return
       end
-!
 !====================================================================
 !                   subroutine Agrif_initvalues
 !====================================================================
 !
+!  Called by AGRIF when a child grid is created. Same structure as
+!  NEMO (nemo_init + Agrif_InitValues_cont):
+!
+!   1) croco_initialize_run : the common initialization sequence,
+!      shared with the root grid (croco_initialize.F90); the zoom
+!      specific steps inside it are the Agrif_initvalues_* hooks;
+!   2) Agrif_initvalues_cont: AGRIF specific setup of the zoom
+!      (time indices, boundary arrays, sponge, 2-way updates).
+!
       subroutine Agrif_initvalues()
-      use croco_namelist, only: dt, ldefhis, nrrec
-      use croco_namelist_read, only: read_nml_fname, read_nml
+      use croco_initialize, only : croco_initialize_run
       use AGRIF_UTIL
-# ifdef PISCES
-      USE pisces_ini     ! PISCES modules
-      USE trcnam_pisces
-# endif
-      use buffer, only: init_buffer
       implicit none
-      integer tile, ierr, trd, subs
-# ifdef WKB_WWAVE
-      integer winterp
-# endif
+      integer ierr
+!  same headers as the former Agrif_initvalues: dynderivparam.h
+!  below sets derived sizes declared in several of them
 # include "param.h"
 # include "private_scratch.h"
 # include "ncscrum.h"
@@ -128,907 +129,31 @@
 #  include "coupling.h"
 #  include "ocean3d.h"
 # endif
-# ifdef WKB_WWAVE
-#  include "wkb_wwave.h"
-# endif
-# ifdef M3FAST
-#  include "nbq.h"
-# endif
-
-      integer size_XI,size_ETA,se,sse, sz,ssz
-      real res1,res2,res3,res4,res5,res6,cff1,cff2
-      integer i,j
-      integer ipr,jpr,itrc
-      real,dimension(:,:),pointer :: hparent,umaskparent,rmaskparent
-      real htest(GLOBAL_2D_ARRAY)
-      real tind(5)
-      integer ipu,jpu,ipv,jpv,k
-      real gradh(GLOBAL_2D_ARRAY)
-      real hbis(GLOBAL_2D_ARRAY)
-      real hcur(GLOBAL_2D_ARRAY)
-      real hmean(GLOBAL_2D_ARRAY)
-      real hbis2(GLOBAL_2D_ARRAY)
-      real hbis3(GLOBAL_2D_ARRAY)
-      real CF(GLOBAL_2D_ARRAY,0:N)
-      real DC(GLOBAL_2D_ARRAY,0:N)
-      integer nbloop
-      integer nbconstraint
-      integer n1,n2
-      real valconstraints(100000,2)
-      integer iprmin,iprmax,jprmin,jprmax
-      real,dimension(:,:),allocatable :: hconstraint,constraints,
-     &gradconstraints
-      integer :: irhot
-      external hinterp, updateh, updatermask
-      external initzeta,initubar,initvbar,inith
-      external initu,initv,initt
-# ifdef M3FAST
-       external initunbq, initvnbq
-#  ifdef NBQ
-       external initwz, initwnbq, initrhonbq
-#  endif
-# endif
-# ifdef WKB_WWAVE
-      external initwac,initwkx,initwke
-      external inithrm,initfrq,initwcg,initwsb,initwvn
-#  ifdef WAVE_ROLLER
-      external initwar, initwsr, initwcr
-#  endif
-# endif
-!$AGRIF_DO_NOT_TREAT
-       integer isens
-       common/interph/isens
-!$AGRIF_END_DO_NOT_TREAT
-
 # ifdef MPI
-#  define LOCALLM Lmmpi
-#  define LOCALMM Mmmpi
-# else
-#  define LOCALLM Lm
-#  define LOCALMM Mm
+#  include "mpi_cpl.h"
+      include 'mpif.h'
 # endif
+      integer size_XI,size_ETA,se,sse, sz,ssz
 
 # include "dynderivparam.h"
 
-      call declare_zoom_variables()
-
+      call croco_initialize_run (ierr)
+      if (ierr.ne.0) then
+        MPI_master_only write(stdout,'(/1x,A,I3,A,I5/)')
+     &     'AGRIF: initialization of zoom ', Agrif_Fixed(),
+     &     ' failed, ierr = ', ierr
 # ifdef MPI
-      call MPI_Setup (ierr)
-      if (ierr.ne.0) goto 100         !--> ERROR
-# endif
-
-      call init_buffer
-!
-!----------------------------------------------------------------------
-!  Read in tunable model parameters in roms.in file
-!----------------------------------------------------------------------
-!
-      call read_nml_fname ()
-      call read_nml (ierr)
-      if (ierr.ne.0) goto 100
-      call read_inp (ierr)
-      if (ierr.ne.0) goto 100
-!
-!----------------------------------------------------------------------
-!  Initialize global model parameters
-!----------------------------------------------------------------------
-!
-!  Gobal scalar variables
-!
-      call init_scalars (ierr)
-      if (ierr.ne.0) goto 100
-# ifdef SOLVE3D
-!
-!  PISCES biogeochemeical model parameters
-!
-#  ifdef PISCES
-!      call get_dust
-#  endif
-#  if defined BIOLOGY && defined PISCES
-!      call get_dust
-      CALL trc_nam_pisces
-#  endif
-!
-!  Read sediment initial values and parameters from sediment.in file
-!
-#  ifdef SEDIMENT
-      if (Agrif_Fixed().GE.Agrif_lev_sedim) then
-        call init_sediment
-      endif
-#  endif
-# endif
-!
-!----------------------------------------------------------------------
-!  Create parallel threads
-!  initialize (FIRST-TOUCH) model global arrays (most of them
-!  are just set to to zero).
-!----------------------------------------------------------------------
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call init_arrays (tile)
-      enddo
-CR      write(*,*) '-11' MYID
-!
-!----------------------------------------------------------------------
-!  Set horizontal grid, model bathymetry and Land/Sea mask
-!----------------------------------------------------------------------
-!
-# ifdef ANA_GRID
-!
-!  Set grid analytically
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call ana_grid (tile)
-      enddo
-      call Agrif_Init_Variable(ha_id,procname=inith)
+        call mpi_abort (MPI_COMM_WORLD, ierr)
 # else
-!
-!  Read grid from GRID NetCDF file
-!
-      call get_grid
-      if (may_day_flag.ne.0) goto 99  !-->  EXIT
+        stop
 # endif
-!
-!  Compute various metric term combinations.
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call setup_grid1 (tile)
-      enddo
-CR      write(*,*) '-10' MYID
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call setup_grid2 (tile)
-      enddo
-CR      write(*,*) ' -9' MYID
-!
-!----------------------------------------------------------------------
-!  Setup vertical grid variables setup vertical S-coordinates
-!  and fast-time averaging for coupling of
-!  split-explicit baroropic mode.
-!----------------------------------------------------------------------
-!
-# ifdef SOLVE3D
-!
-!  Set vertical S-coordinate functions
-!
-      call set_scoord
-!
-!  Set fast-time averaging for coupling of split-explicit baroropic mode.
-!
-      call set_weights
-# endif
-CR      write(*,*) ' -8' MYID
-!
-!  Create three-dimensional S-coordinate system,
-!  which may be needed by ana_initial
-!  (here it is assumed that free surface zeta=0).
-!
-# ifdef SOLVE3D
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile)
-      enddo
-CR      write(*,*) ' -7' MYID
-!
-!  Make grid diagnostics
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call grid_stiffness (tile)
-      enddo
-# endif
-!
-!----------------------------------------------------------------------
-!  Set initial conditions for momentum and tracer variables
-!----------------------------------------------------------------------
-!
-# ifdef ANA_INITIAL
-      if (nrrec.ne.0) then
-# endif
-# ifndef AGRIF_ADAPTIVE
-!
-!  Read from NetCDF file
-!
-!! GC change for EXACT_RESTART
-!!        call get_initial
-!==================== FOR EXACT_RESTART as in main.F ====================
-#  ifdef EXACT_RESTART
-        call get_initial (nrrec-1, 2) ! Set initial conditions
-                                    ! in the case of restart run.
-C$OMP BARRIER
-#   ifdef SOLVE3D
-        do tile=0,NSUB_X*NSUB_E-1
-          call set_depth (tile) !<-- needed to initialize Hz_bak
-        enddo
-C$OMP BARRIER
-#   endif
-#  endif
-      call get_initial (nrrec, 1)   ! Set initial conditions
-      time=start_time
-      tdays=time*sec2day
-!==================================================================
-# else
-        call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/)
-     &   ,lbound(Zt_avg1),ubound(Zt_avg1),zetaid,torestore=.true.)
-        call Agrif_Declare_Variable((/1,2/),(/1,1/),(/'x','y'/)
-     &   ,lbound(DU_avg2),ubound(DU_avg2),ubarid,torestore=.true.)
-        call Agrif_Declare_Variable((/2,1/),(/1,1/),(/'x','y'/)
-     &   ,lbound(DV_avg2),ubound(DV_avg2),vbarid,torestore=.true.)
-
-        allocate(text(GLOBAL_2D_ARRAY,N,NT))
-
-        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
-     &    (/'x','y','N','N'/),lbound(text),ubound(text),tid,
-     &    torestore=.true.)
-        call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
-     &   (/'x','y','N'/),lbound(Huon),ubound(Huon),uid,
-     &   torestore=.true.)
-        call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
-     &   (/'x','y','N'/),lbound(Hvom),ubound(Hvom),vid,
-     &   torestore=.true.)
-
-        call Agrif_Set_bc(zetaid,(/-1,0/))
-        call Agrif_Set_bc(ubarid,(/0,0/))
-        call Agrif_Set_bc(vbarid,(/0,0/))
-        call Agrif_Set_bc(tid,(/-1,0/))
-        call Agrif_Set_bc(uid,(/0,0/))
-        call Agrif_Set_bc(vid,(/0,0/))
-
-        call Agrif_Set_bcinterp(zetaid,interp=Agrif_ppm)
-        call Agrif_Set_bcinterp(ubarid,interp1=Agrif_linear,
-     &                                 interp2=Agrif_ppm)
-        call Agrif_Set_bcinterp(vbarid,interp1=Agrif_ppm,
-     &                                 interp2=Agrif_linear)
-        call Agrif_Set_bcinterp(tid,interp=Agrif_ppm)
-        call Agrif_Set_bcinterp(uid,interp1=Agrif_linear,
-     &                              interp2=Agrif_ppm)
-        call Agrif_Set_bcinterp(vid,interp1=Agrif_ppm,
-     &                              interp2=Agrif_linear)
-
-        call Agrif_Set_interp(zetaid,interp=Agrif_ppm)
-        call Agrif_Set_interp(ubarid,interp1=Agrif_linear,
-     &                               interp2=Agrif_ppm)
-        call Agrif_Set_interp(vbarid,interp1=Agrif_ppm,
-     &                               interp2=Agrif_linear)
-        call Agrif_Set_interp(tid,interp=Agrif_ppm)
-        call Agrif_Set_interp(uid,interp1=Agrif_linear,
-     &                            interp2=Agrif_ppm)
-        call Agrif_Set_interp(vid,interp1=Agrif_ppm,
-     &                            interp2=Agrif_linear)
-
-        call Agrif_Init_Variable(zetaid,procname=initzeta)
-        call Agrif_Init_Variable(ubarid,procname=initubar)
-        call Agrif_Init_Variable(vbarid,procname=initvbar)
-        call Agrif_Init_Variable(tid,procname=initt)
-
-        do itrc=1,NT
-          got_tini(itrc) = .true.
-        enddo
-
-        call Agrif_Init_Variable(uid,procname=initu)
-        call Agrif_Init_Variable(vid,procname=initv)
-
-#  ifdef M3FAST
-        call Agrif_Set_bc(qdmunbqid,(/0,0/))
-        call Agrif_Set_bc(qdmvnbqid,(/0,0/))
-        call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_linear,
-     &                                    interp2=Agrif_ppm)
-        call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
-     &                                    interp2=Agrif_linear)
-        call Agrif_Set_interp(qdmunbqid,interp1=Agrif_linear,
-     &                                  interp2=Agrif_ppm)
-        call Agrif_Set_interp(qdmvnbqid,interp1=Agrif_ppm,
-     &                                  interp2=Agrif_linear)
-        call Agrif_Init_Variable(qdmunbqid,procname=initunbq)
-        call Agrif_Init_Variable(qdmvnbqid,procname=initvnbq)
-#   ifdef NBQ
-        call Agrif_Set_bc(wzid,(/0,0/))
-        call Agrif_Set_bc(qdmwnbqid,(/0,0/))
-        call Agrif_Set_bc(rhonbqid,(/0,0/))
-        call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
-        call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
-        call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
-        call Agrif_Set_interp(wzid,interp=Agrif_constant)
-        call Agrif_Set_interp(qdmwnbqid,interp=Agrif_constant)
-        call Agrif_Set_interp(rhonbqid,interp=Agrif_constant)
-        call Agrif_Init_Variable(wzid,procname=initwz)
-        call Agrif_Init_Variable(qdmwnbqid,procname=initwnbq)
-        call Agrif_Init_Variable(rhonbqid,procname=initwnbq)
-#   endif
-#  endif
-
-        if (Agrif_Parent_Nb_Step() == 0) then
-!!     call get_initial
-!==================== FOR EXACT_RESTART as in main.F ====================
-#  ifdef EXACT_RESTART
-          call get_initial (nrrec-1, 2) ! Set initial conditions
-                                        ! in the case of restart run.
-C$OMP BARRIER
-#   ifdef SOLVE3D
-        do tile=0,NSUB_X*NSUB_E-1
-          call set_depth (tile) !<-- needed to initialize Hz_bak
-        enddo
-C$OMP BARRIER
-#   endif
-#  endif
-      call get_initial (nrrec, 1)   ! Set initial conditions
-!==================================================================
-        endif
-# endif /* AGRIF_ADAPTIVE */
-# ifdef ANA_INITIAL
-      endif  ! (nrrec.ne.0)
-# endif
-!
-!  Set initial conditions analytically for ideal cases
-!  or for tracer variables not present in NetCDF file
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call ana_initial (tile)
-      enddo
-!
-!----------------------------------------------------------------------
-!  Initialize specific PISCES variables
-!----------------------------------------------------------------------
-!
-# if defined BIOLOGY && defined PISCES
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call  pisces_ini_tile (tile)
-      enddo
-# endif
-CR      write(*,*) ' -6' MYID
-      if (may_day_flag.ne.0) goto 99 !-->  EXIT
-!
-!----------------------------------------------------------------------
-!  Finalize grid setup
-!----------------------------------------------------------------------
-!
-!  Finalize vertical grid now that zeta is knowned
-!  zeta is also corrected here fr Wetting/Drying
-!  in both 2D and 3D cases
-!
-# if defined  SOLVE3D || defined WET_DRY
-C$OMP PARALLEL DO PRIVATE(tile)      ! Create three-dimensional
-      do tile=0,NSUB_X*NSUB_E-1      ! S-coordinate system: at this
-        call set_depth (tile)        ! time free surface is set to
-                                     ! a non-zero field, either
-                                     ! analytically or from restart.
-      enddo
-CR      write(*,*)  ' -5' MYID
-# endif
-
-# ifdef SOLVE3D
-#  ifdef AGRIF_ADAPTIVE
-      if (Agrif_Parent_Nb_Step() /= 0) then
-        do j=0,Mm+1
-          do i=1,Lm+1
-            DC(i,j,0)=0.
-            CF(i,j,0)=0.
-          enddo
-        enddo
-
-        do k=1,N
-          do j=0,Mm+1
-            do i=1,Lm+1
-              DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
-              DC(i,j,0)=DC(i,j,0)+DC(i,j,k)
-              CF(i,j,0)=CF(i,j,0)+DC(i,j,k)*u(i,j,k,1)
-            enddo
-          enddo
-        enddo
-
-        do j=0,Mm+1
-          do i=1,Lm+1
-            DC(i,j,0)=1./DC(i,j,0)
-            CF(i,j,0)=DC(i,j,0)*(CF(i,j,0)-DU_avg1(i,j,1))
-            ubar(i,j,1) = DC(i,j,0)*DU_avg1(i,j,1)
-          enddo
-        enddo
-
-        do k=N,1,-1
-          do j=0,Mm+1
-            do i=0,Lm+1
-              u(i,j,k,1) = (u(i,j,k,1)-CF(i,j,0))
-            enddo
-          enddo
-        enddo
-
-        do j=1,Mm+1
-          do i=0,Lm+1
-            DC(i,j,0)=0.
-            CF(i,j,0)=0.
-          enddo
-        enddo
-
-        do k=1,N
-          do j=1,Mm+1
-            do i=0,Lm+1
-              DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
-              DC(i,j,0)=DC(i,j,0)+DC(i,j,k)
-              CF(i,j,0)=CF(i,j,0)+DC(i,j,k)*v(i,j,k,1)
-            enddo
-          enddo
-        enddo
-
-        do j=1,Mm+1
-          do i=0,Lm+1
-            DC(i,j,0)=1./DC(i,j,0)
-            CF(i,j,0)=DC(i,j,0)*(CF(i,j,0)-DV_avg1(i,j,1))
-            vbar(i,j,1) = DC(i,j,0)*DV_avg1(i,j,1)
-          enddo
-        enddo
-
-        do k=N,1,-1
-          do j=1,Mm+1
-            do i=0,Lm+1
-              v(i,j,k,1) = (v(i,j,k,1)-CF(i,j,0))
-            enddo
-          enddo
-        enddo
-
       endif
-#  endif /* AGRIF_ADAPTIVE */
-!
-!----------------------------------------------------------------------
-!  Set initial Non-boussinesq variables - Part I
-!----------------------------------------------------------------------
-!
-#  ifdef M3FAST
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call initial_nbq(tile,1)
-      enddo
-#  endif
-!
-!----------------------------------------------------------------------
-!  Initialize diagnostic fields: mass flux, rho, omega
-!----------------------------------------------------------------------
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_HUV (tile)
-      enddo
-CR      write(*,*)  ' -4' MYID
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call omega (tile)
-        call rho_eos (tile)
-      enddo
-CR      write(*,*)  ' -3' MYID
-# endif /* SOLVE3D */
-!
-!----------------------------------------------------------------------
-!  Set initial Non-boussinesq density field: rhobar_nbq - Part II
-!----------------------------------------------------------------------
-!
-# ifdef M3FAST
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call initial_nbq(tile,2)
-      enddo
 
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile)
-      enddo
-
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_HUV (tile)
-      enddo
-# endif
-!
-!----------------------------------------------------------------------
-! Create environment for lateral forcing:
-!----------------------------------------------------------------------
-! Set nudging coefficient for sea surface hight and tracer climatology;
-! Set ANALYTICAL:
-!   bottom sediment grain size [m] and density [kg/m^3]
-!     used in bottom boundary layer formulation;
-!   surface forcing from NetCDF file
-!----------------------------------------------------------------------
-!
-# if defined TNUDGING || defined ZNUDGING || defined SPONGE \
-                      || (defined BBL && defined ANA_BSEDIM)
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-#  if defined TNUDGING || defined ZNUDGING || defined SPONGE
-        call set_nudgcof_fine (tile)
-#  endif
-#  if defined BBL && defined ANA_BSEDIM
-        if (Agrif_Fixed().GE.Agrif_lev_sedim) then
-          call ana_bsedim (tile)
-        endif
-#  endif
-#  if defined SEDIMENT && defined ANA_SEDIMENT
-        if (Agrif_Fixed().GE.Agrif_lev_sedim) then
-          call ana_sediment (tile)
-        endif
-#  endif
-      enddo !<-- tile
-# endif
-CR      write(*,*) ' -2' MYID
-!
-!  Read bottom sediment grain size [m] and density [kg/m^3]
-!  from input NetCDF file;
-!
-# if defined BBL && !defined ANA_BSEDIM && !defined SEDIMENT
-      if (Agrif_Fixed().GE.Agrif_lev_sedim) then
-          call get_bsedim
-      endif
-# endif
-# if defined SEDIMENT && !defined ANA_SEDIMENT
-      if (Agrif_Fixed().GE.Agrif_lev_sedim) then
-          call get_sediment
-      endif
-# endif
-!
-!  Read surface forcing from NetCDF file
-!
-      call get_vbc
-!
-!----------------------------------------------------------------------
-!  Initialize XIOS I/O server
-!----------------------------------------------------------------------
-!
-# ifdef XIOS
-      do tile=0,NSUB_X*NSUB_E-1
-        call  init_xios(tile)
-      enddo
-# endif
-!
-!----------------------------------------------------------------------
-!  WKB surface wave model:
-!
-!  initialization and initial run to equilibrium
-!----------------------------------------------------------------------
-!
-# ifdef WKB_WWAVE
-      call Agrif_Init_Variable(wacid,procname=initwac)
-      call Agrif_Init_Variable(wkxid,procname=initwkx)
-      call Agrif_Init_Variable(wkeid,procname=initwke)
-      call Agrif_Init_Variable(hrmid,procname=inithrm)
-      call Agrif_Init_Variable(frqid,procname=initfrq)
-      call Agrif_Init_Variable(wsbid,procname=initwsb)
-      call Agrif_Init_Variable(wvnid,procname=initwvn)
-      call Agrif_Init_Variable(wcgid,procname=initwcg)
-#  ifdef WAVE_ROLLER
-      call Agrif_Init_Variable(warid,procname=initwar)
-      call Agrif_Init_Variable(wcrid,procname=initwcr)
-      call Agrif_Init_Variable(wsrid,procname=initwsr)
-#  endif
-C$OMP BARRIER
-C$OMP MASTER
-      MPI_master_only write(stdout,'(/1x,A/)')
-     &     'WKB: started child wave computation.'
-C$OMP END MASTER
-      wkb_agrif_done=.false.
-      iic=0
-      winfo=1
-      iwave=1
-      thwave=1.D+10
-#  ifndef ANA_BRY_WKB
-!C$OMP PARALLEL DO PRIVATE(tile)
-!      do tile=0,NSUB_X*NSUB_E-1
-!        call set_bry_wkb (tile)
-!      enddo
-#  endif
-#  ifdef MRL_CEW
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call wkb_cew_prep (tile)
-      enddo
-C$OMP BARRIER
-      wint=0
-      do winterp=1,interp_max
-        wint=wint+1
-        if (wint.gt.2) wint=1
-C$OMP PARALLEL DO PRIVATE(tile)
-        do tile=0,NSUB_X*NSUB_E-1
-          call wkb_uvfield (tile, winterp)
-        enddo
-      enddo
-C$OMP BARRIER
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call wkb_cew_finalize (tile)
-      enddo
-C$OMP BARRIER
-#  endif
-      do while (iwave.le.50000.and.thwave.ge.1.D-10)
-        wstp=wnew
-        wnew=wstp+1
-        if (wnew.ge.3) wnew=1
-C$OMP PARALLEL DO PRIVATE(tile)
-        do tile=0,NSUB_X*NSUB_E-1
-          call wkb_wwave (tile)
-        enddo
-        call wkb_diag (0)
-        iwave=iwave+1
-        thwave=max(av_wac,av_wkn)
-      enddo
-
-#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
-C$OMP BARRIER
-C$OMP MASTER
-      call check_tab2d(wac(:,:,wnew),'wac initialisation #1','r')
-C$OMP END MASTER
-#  endif
-
-      first_time=0
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call mrl_wci (tile)
-      enddo
-
-C$OMP BARRIER
-C$OMP MASTER
-        MPI_master_only write(stdout,'(/1x,A/)')
-     &     'WKB: completed child wave computation.'
-C$OMP END MASTER
-# endif /* WKB_WWAVE */
-!
-CR      write(*,*) ' -1' MYID
-      if (may_day_flag.ne.0) goto 99     !-->  EXIT
-
-!
-!----------------------------------------------------------------------
-!  Set initial Non-boussinesq variables PART III
-!----------------------------------------------------------------------
-!
-# ifdef M3FAST
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call initial_nbq(tile,3)
-      enddo
-# endif
-!
-!----------------------------------------------------------------------
-!  Write initial fields into history NetCDF files
-!----------------------------------------------------------------------
-!
-# ifdef XIOS
-!RB to be checked
-!      if (nrrec.eq.0) then
-!        do tile=0,NSUB_X*NSUB_E-1
-!          call send_xios_diags(tile)
-!        enddo
-!      endif
-# else
-      if (ldefhis .and. wrthis(indxTime)) call wrt_his
-# endif
-
-CR      write(*,*) '  0' MYID
-      if (may_day_flag.ne.0) goto 99     !-->  EXIT
-
- 99   continue
- 100  continue
-      next_kstp=kstp
-      time_start=time
-
-!
-!----------------------------------------------------------------------
-!   AGRIF initialization
-!----------------------------------------------------------------------
-!
-      U2DTimeindex = -1
-      V2DTimeindex = -1
-      ZetaTimeindex = -1
-# ifdef SOLVE3D
-      Ttimeindex = -1
-      Utimeindex = -1
-      Vtimeindex = -1
-#  ifdef NBQ
-      Wtimeindex = -1
-#  endif
-#  ifdef AGRIF_OBC_SOUTH
-#   ifdef MPI
-            if (.not.SOUTH_INTER) then
-#   endif
-                U_south(0:LOCALLM+1,0:0,1:N,4)=
-     &                u(0:LOCALLM+1,0:0,1:N,1)
-
-                V_south(0:LOCALLM+1,1:1,1:N,4)=
-     &                v(0:LOCALLM+1,1:1,1:N,1)
-
-                T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
-     &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)
-#   ifdef M3FAST
-                Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
-     &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
-
-                Vnbq_south(0:LOCALLM+1,1:1,1:N,2)=
-     &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
-#    ifdef NBQ
-                W_south(0:LOCALLM+1,0:0,0:N,4)=
-     &               wz(0:LOCALLM+1,0:0,0:N,1)
-
-                Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
-     &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
-#    endif
-#   endif
-#   ifdef MPI
-            endif
-#   endif
-#  endif
-
-#  ifdef AGRIF_OBC_NORTH
-#   ifdef MPI
-            if (.not.NORTH_INTER) then
-#   endif
-                U_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
-     &                u(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
-
-                V_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
-     &                v(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
-
-                T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,4,1:NT)=
-     &                t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)
-
-#   ifdef M3FAST
-                Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
-     &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
-
-                Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
-     &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
-#    ifdef NBQ
-                W_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,4)=
-     &               wz(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)
-
-                Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,2)=
-     &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
-#    endif
-#   endif
-#   ifdef MPI
-            endif
-#   endif
-#  endif
-
-#  ifdef AGRIF_OBC_WEST
-#   ifdef MPI
-            if (.not.WEST_INTER) then
-#   endif
-                U_west(1:1,0:LOCALMM+1,1:N,4)=
-     &               u(1:1,0:LOCALMM+1,1:N,1)
-
-                V_west(0:0,0:LOCALMM+1,1:N,4)=
-     &               v(0:0,0:LOCALMM+1,1:N,1)
-
-                T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
-     &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)
-#   ifdef M3FAST
-                Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
-     &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
-
-                Vnbq_west(0:0,0:LOCALMM+1,1:N,2)=
-     &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
-#    ifdef NBQ
-                W_west(0:0,0:LOCALMM+1,0:N,4)=
-     &              wz(0:0,0:LOCALMM+1,0:N,1)
-
-                Wnbq_west(0:0,0:LOCALMM+1,0:N,2)=
-     &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
-#    endif
-#   endif
-#   ifdef MPI
-            endif
-#   endif
-#  endif
-
-#  ifdef AGRIF_OBC_EAST
-#   ifdef MPI
-            if (.not.EAST_INTER) then
-#   endif
-                U_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
-     &               u(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
-
-                V_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
-     &               v(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
-
-                T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
-     &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)
-#   ifdef M3FAST
-                Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
-     &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
-
-                Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
-     &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
-#    ifdef NBQ
-                W_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,4)=
-     &              wz(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)
-
-                Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,2)=
-     &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
-#    endif
-#   endif
-#   ifdef MPI
-            endif
-#   endif
-#  endif
-# endif /* SOLVE3D */
-
-      TspongeTimeindex = -1
-      UVspongeTimeindex = -1
-
-      iif = -1
-# if defined OA_COUPLING || defined OW_COUPLING
-      it_inside_root = 1
-# endif
-# ifdef AGRIF_ADAPTIVE
-      ntstart = 1 + Agrif_irhot()*(Agrif_Parent(iic)-1)
-      time_start=Agrif_Parent(time_start)
-     &           +dt*Agrif_irhot()
-     &           *float(Agrif_Parent(iic)
-     &           -Agrif_Parent(ntstart))
-# endif
-      iic = ntstart
-
-      nbcoarse = 1
-      nbstep3d = 0
-
-      TTimesponge = 1
-      UVTimesponge = 1
-
-      usponge = 0.
-      vsponge = 0.
-      wsponge = 0.
-
-      myfx = 0.
-      myfy = 0.
-      DU_avg1(:,:,4:5) = 0.
-      DV_avg1(:,:,4:5) = 0.
-
-# ifdef AGRIF_2WAY
-#  ifdef MASKING
-      Agrif_UseSpecialValueInUpdate = .TRUE.
-      Agrif_SpecialValueFineGrid = 0.
-
-      call Agrif_Update_Variable(rmaskid,procname=updatermask)
-
-      Agrif_UseSpecialValueInUpdate = .FALSE.
-
-      call Agrif_ChildGrid_To_ParentGrid()
-      call ResetMask()
-      call Agrif_ParentGrid_To_ChildGrid()
-#  endif
-
-      Agrif_UseSpecialValueInUpdate = .TRUE.
-      Agrif_SpecialValueFineGrid = 0.
-      call Agrif_Update_Variable(hid,locupdate=(/1,0/),
-     &     procname=updateh)
-      Agrif_UseSpecialValueInUpdate = .FALSE.
-
-      isens = 1
-      call Agrif_Bc_Variable(ubarid,calledweight=1.,procname=hinterp)
-      isens = 2
-      call Agrif_Bc_Variable(vbarid,calledweight=1.,procname=hinterp)
-
-      Agrif_UseSpecialValueInUpdate = .TRUE.
-      Agrif_SpecialValueFineGrid = 0.
-      call Agrif_Update_Variable(hid,locupdate=(/1,0/),
-     &     procname=updateh)
-      Agrif_UseSpecialValueInUpdate = .FALSE.
-
-      call Agrif_ChildGrid_To_ParentGrid()
-      call UpdateGridhis()
-      call Agrif_ParentGrid_To_ChildGrid()
-# endif /* AGRIF_2WAY */
-
-# ifdef AGRIF_ADAPTIVE
-      call Agrif_Set_Regridding(300*(nfast+2))
-      call Agrif_Set_Minwidth(18)
-      call Agrif_Set_Rafmax(2)
-# endif
+      call Agrif_initvalues_cont()
 
       return
       end
-!
+
 !====================================================================
 !                   subroutine declare_zoom_variables
 !====================================================================
@@ -3124,6 +2249,572 @@ CR      write(*,*) '  0' MYID
 
       return
       end
+
+
+!====================================================================
+!                   subroutine Agrif_initvalues_cont
+!====================================================================
+!
+!  AGRIF specific setup of a zoom, once its fields are initialized
+!  (formerly the end of Agrif_initvalues)
+!
+      subroutine Agrif_initvalues_cont()
+      use croco_namelist, only: dt
+      use AGRIF_UTIL
+      implicit none
+# include "param.h"
+# include "private_scratch.h"
+# include "ncscrum.h"
+# include "scalars.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "zoom.h"
+# ifdef SOLVE3D
+#  include "coupling.h"
+#  include "ocean3d.h"
+# endif
+# ifdef WKB_WWAVE
+#  include "wkb_wwave.h"
+# endif
+# ifdef M3FAST
+#  include "nbq.h"
+# endif
+      external hinterp, updateh, updatermask
+!$AGRIF_DO_NOT_TREAT
+       integer isens
+       common/interph/isens
+!$AGRIF_END_DO_NOT_TREAT
+ 
+# ifdef MPI
+#  define LOCALLM Lmmpi
+#  define LOCALMM Mmmpi
+# else
+#  define LOCALLM Lm
+#  define LOCALMM Mm
+# endif
+ 
+      next_kstp=kstp
+      time_start=time
+ 
+!
+!----------------------------------------------------------------------
+!   AGRIF initialization
+!----------------------------------------------------------------------
+!
+      U2DTimeindex = -1
+      V2DTimeindex = -1
+      ZetaTimeindex = -1
+# ifdef SOLVE3D
+      Ttimeindex = -1
+      Utimeindex = -1
+      Vtimeindex = -1
+#  ifdef NBQ
+      Wtimeindex = -1
+#  endif
+#  ifdef AGRIF_OBC_SOUTH
+#   ifdef MPI
+            if (.not.SOUTH_INTER) then
+#   endif
+                U_south(0:LOCALLM+1,0:0,1:N,4)=
+     &                u(0:LOCALLM+1,0:0,1:N,1)
+ 
+                V_south(0:LOCALLM+1,1:1,1:N,4)=
+     &                v(0:LOCALLM+1,1:1,1:N,1)
+ 
+                T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
+     &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)
+#   ifdef M3FAST
+                Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
+     &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
+ 
+                Vnbq_south(0:LOCALLM+1,1:1,1:N,2)=
+     &            qdmv_nbq(0:LOCALLM+1,1:1,1:N)
+#    ifdef NBQ
+                W_south(0:LOCALLM+1,0:0,0:N,4)=
+     &               wz(0:LOCALLM+1,0:0,0:N,1)
+ 
+                Wnbq_south(0:LOCALLM+1,0:0,0:N,2)=
+     &            qdmw_nbq(0:LOCALLM+1,0:0,0:N)
+#    endif
+#   endif
+#   ifdef MPI
+            endif
+#   endif
+#  endif
+ 
+#  ifdef AGRIF_OBC_NORTH
+#   ifdef MPI
+            if (.not.NORTH_INTER) then
+#   endif
+                U_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
+     &                u(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
+ 
+                V_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,4)=
+     &                v(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,1)
+ 
+                T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,4,1:NT)=
+     &                t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)
+ 
+#   ifdef M3FAST
+                Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
+     &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
+ 
+                Vnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
+     &            qdmv_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
+#    ifdef NBQ
+                W_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,4)=
+     &               wz(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,1)
+ 
+                Wnbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N,2)=
+     &            qdmw_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,0:N)
+#    endif
+#   endif
+#   ifdef MPI
+            endif
+#   endif
+#  endif
+ 
+#  ifdef AGRIF_OBC_WEST
+#   ifdef MPI
+            if (.not.WEST_INTER) then
+#   endif
+                U_west(1:1,0:LOCALMM+1,1:N,4)=
+     &               u(1:1,0:LOCALMM+1,1:N,1)
+ 
+                V_west(0:0,0:LOCALMM+1,1:N,4)=
+     &               v(0:0,0:LOCALMM+1,1:N,1)
+ 
+                T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
+     &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)
+#   ifdef M3FAST
+                Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
+     &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
+ 
+                Vnbq_west(0:0,0:LOCALMM+1,1:N,2)=
+     &           qdmv_nbq(0:0,0:LOCALMM+1,1:N)
+#    ifdef NBQ
+                W_west(0:0,0:LOCALMM+1,0:N,4)=
+     &              wz(0:0,0:LOCALMM+1,0:N,1)
+ 
+                Wnbq_west(0:0,0:LOCALMM+1,0:N,2)=
+     &           qdmw_nbq(0:0,0:LOCALMM+1,0:N)
+#    endif
+#   endif
+#   ifdef MPI
+            endif
+#   endif
+#  endif
+ 
+#  ifdef AGRIF_OBC_EAST
+#   ifdef MPI
+            if (.not.EAST_INTER) then
+#   endif
+                U_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
+     &               u(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
+ 
+                V_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,4)=
+     &               v(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,1)
+ 
+                T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
+     &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)
+#   ifdef M3FAST
+                Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
+     &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
+ 
+                Vnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
+     &           qdmv_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
+#    ifdef NBQ
+                W_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,4)=
+     &              wz(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,1)
+ 
+                Wnbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N,2)=
+     &           qdmw_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,0:N)
+#    endif
+#   endif
+#   ifdef MPI
+            endif
+#   endif
+#  endif
+# endif /* SOLVE3D */
+ 
+      TspongeTimeindex = -1
+      UVspongeTimeindex = -1
+ 
+      iif = -1
+# if defined OA_COUPLING || defined OW_COUPLING
+      it_inside_root = 1
+# endif
+# ifdef AGRIF_ADAPTIVE
+      ntstart = 1 + Agrif_irhot()*(Agrif_Parent(iic)-1)
+      time_start=Agrif_Parent(time_start)
+     &           +dt*Agrif_irhot()
+     &           *float(Agrif_Parent(iic)
+     &           -Agrif_Parent(ntstart))
+# endif
+      iic = ntstart
+ 
+      nbcoarse = 1
+      nbstep3d = 0
+ 
+      TTimesponge = 1
+      UVTimesponge = 1
+ 
+      usponge = 0.
+      vsponge = 0.
+      wsponge = 0.
+ 
+      myfx = 0.
+      myfy = 0.
+      DU_avg1(:,:,4:5) = 0.
+      DV_avg1(:,:,4:5) = 0.
+ 
+# ifdef AGRIF_2WAY
+#  ifdef MASKING
+      Agrif_UseSpecialValueInUpdate = .TRUE.
+      Agrif_SpecialValueFineGrid = 0.
+ 
+      call Agrif_Update_Variable(rmaskid,procname=updatermask)
+ 
+      Agrif_UseSpecialValueInUpdate = .FALSE.
+ 
+      call Agrif_ChildGrid_To_ParentGrid()
+      call ResetMask()
+      call Agrif_ParentGrid_To_ChildGrid()
+#  endif
+ 
+      Agrif_UseSpecialValueInUpdate = .TRUE.
+      Agrif_SpecialValueFineGrid = 0.
+      call Agrif_Update_Variable(hid,locupdate=(/1,0/),
+     &     procname=updateh)
+      Agrif_UseSpecialValueInUpdate = .FALSE.
+ 
+      isens = 1
+      call Agrif_Bc_Variable(ubarid,calledweight=1.,procname=hinterp)
+      isens = 2
+      call Agrif_Bc_Variable(vbarid,calledweight=1.,procname=hinterp)
+ 
+      Agrif_UseSpecialValueInUpdate = .TRUE.
+      Agrif_SpecialValueFineGrid = 0.
+      call Agrif_Update_Variable(hid,locupdate=(/1,0/),
+     &     procname=updateh)
+      Agrif_UseSpecialValueInUpdate = .FALSE.
+ 
+      call Agrif_ChildGrid_To_ParentGrid()
+      call UpdateGridhis()
+      call Agrif_ParentGrid_To_ChildGrid()
+# endif /* AGRIF_2WAY */
+ 
+# ifdef AGRIF_ADAPTIVE
+      call Agrif_Set_Regridding(300*(nfast+2))
+      call Agrif_Set_Minwidth(18)
+      call Agrif_Set_Rafmax(2)
+# endif
+ 
+      return
+      end
+# undef LOCALLM
+# undef LOCALMM
+
+# ifdef ANA_GRID
+!
+!--------------------------------------------------------------------
+!  Agrif_initvalues_grid: analytical zoom grid, bathymetry
+!  interpolated from the parent (called right after ana_grid)
+!--------------------------------------------------------------------
+!
+      subroutine Agrif_initvalues_grid()
+      use AGRIF_UTIL
+      implicit none
+# include "param.h"
+# include "grid.h"
+# include "zoom.h"
+      external inith
+
+      call Agrif_Init_Variable(ha_id,procname=inith)
+
+      return
+      end
+# endif /* ANA_GRID */
+
+# ifdef WKB_WWAVE
+!
+!--------------------------------------------------------------------
+!  Agrif_initvalues_wkb: wave fields of the zoom interpolated from
+!  the parent (called before the WKB spinup)
+!--------------------------------------------------------------------
+!
+      subroutine Agrif_initvalues_wkb()
+      use AGRIF_UTIL
+      implicit none
+# include "param.h"
+# include "scalars.h"
+# include "zoom.h"
+# include "wkb_wwave.h"
+      external initwac,initwkx,initwke
+      external inithrm,initfrq,initwcg,initwsb,initwvn
+#  ifdef WAVE_ROLLER
+      external initwar, initwsr, initwcr
+#  endif
+
+      call Agrif_Init_Variable(wacid,procname=initwac)
+      call Agrif_Init_Variable(wkxid,procname=initwkx)
+      call Agrif_Init_Variable(wkeid,procname=initwke)
+      call Agrif_Init_Variable(hrmid,procname=inithrm)
+      call Agrif_Init_Variable(frqid,procname=initfrq)
+      call Agrif_Init_Variable(wsbid,procname=initwsb)
+      call Agrif_Init_Variable(wvnid,procname=initwvn)
+      call Agrif_Init_Variable(wcgid,procname=initwcg)
+#  ifdef WAVE_ROLLER
+      call Agrif_Init_Variable(warid,procname=initwar)
+      call Agrif_Init_Variable(wcrid,procname=initwcr)
+      call Agrif_Init_Variable(wsrid,procname=initwsr)
+#  endif
+      wkb_agrif_done=.false.
+
+      return
+      end
+# endif /* WKB_WWAVE */
+
+# ifdef AGRIF_ADAPTIVE
+!
+!--------------------------------------------------------------------
+!  Agrif_initvalues_adaptive_state: initial state of an adaptive
+!  zoom, interpolated from the parent; read from the initial file
+!  only at the very first parent step (replaces get_initial)
+!--------------------------------------------------------------------
+!
+      subroutine Agrif_initvalues_adaptive_state()
+      use croco_namelist, only: nrrec
+      use AGRIF_UTIL
+      implicit none
+      integer tile, itrc
+# include "param.h"
+# include "private_scratch.h"
+# include "ncscrum.h"
+# include "scalars.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "zoom.h"
+#  ifdef SOLVE3D
+#   include "coupling.h"
+#   include "ocean3d.h"
+#  endif
+#  ifdef M3FAST
+#   include "nbq.h"
+#  endif
+      external initzeta,initubar,initvbar
+      external initu,initv,initt
+#  ifdef M3FAST
+       external initunbq, initvnbq
+#   ifdef NBQ
+       external initwz, initwnbq, initrhonbq
+#   endif
+#  endif
+
+        call Agrif_Declare_Variable((/2,2/),(/1,1/),(/'x','y'/)
+     &   ,lbound(Zt_avg1),ubound(Zt_avg1),zetaid,torestore=.true.)
+        call Agrif_Declare_Variable((/1,2/),(/1,1/),(/'x','y'/)
+     &   ,lbound(DU_avg2),ubound(DU_avg2),ubarid,torestore=.true.)
+        call Agrif_Declare_Variable((/2,1/),(/1,1/),(/'x','y'/)
+     &   ,lbound(DV_avg2),ubound(DV_avg2),vbarid,torestore=.true.)
+
+        allocate(text(GLOBAL_2D_ARRAY,N,NT))
+
+        call Agrif_Declare_Variable((/2,2,0,0/),(/1,1,0,0/),
+     &    (/'x','y','N','N'/),lbound(text),ubound(text),tid,
+     &    torestore=.true.)
+        call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
+     &   (/'x','y','N'/),lbound(Huon),ubound(Huon),uid,
+     &   torestore=.true.)
+        call Agrif_Declare_Variable((/2,1,0/),(/1,1,0/),
+     &   (/'x','y','N'/),lbound(Hvom),ubound(Hvom),vid,
+     &   torestore=.true.)
+
+        call Agrif_Set_bc(zetaid,(/-1,0/))
+        call Agrif_Set_bc(ubarid,(/0,0/))
+        call Agrif_Set_bc(vbarid,(/0,0/))
+        call Agrif_Set_bc(tid,(/-1,0/))
+        call Agrif_Set_bc(uid,(/0,0/))
+        call Agrif_Set_bc(vid,(/0,0/))
+
+        call Agrif_Set_bcinterp(zetaid,interp=Agrif_ppm)
+        call Agrif_Set_bcinterp(ubarid,interp1=Agrif_linear,
+     &                                 interp2=Agrif_ppm)
+        call Agrif_Set_bcinterp(vbarid,interp1=Agrif_ppm,
+     &                                 interp2=Agrif_linear)
+        call Agrif_Set_bcinterp(tid,interp=Agrif_ppm)
+        call Agrif_Set_bcinterp(uid,interp1=Agrif_linear,
+     &                              interp2=Agrif_ppm)
+        call Agrif_Set_bcinterp(vid,interp1=Agrif_ppm,
+     &                              interp2=Agrif_linear)
+
+        call Agrif_Set_interp(zetaid,interp=Agrif_ppm)
+        call Agrif_Set_interp(ubarid,interp1=Agrif_linear,
+     &                               interp2=Agrif_ppm)
+        call Agrif_Set_interp(vbarid,interp1=Agrif_ppm,
+     &                               interp2=Agrif_linear)
+        call Agrif_Set_interp(tid,interp=Agrif_ppm)
+        call Agrif_Set_interp(uid,interp1=Agrif_linear,
+     &                            interp2=Agrif_ppm)
+        call Agrif_Set_interp(vid,interp1=Agrif_ppm,
+     &                            interp2=Agrif_linear)
+
+        call Agrif_Init_Variable(zetaid,procname=initzeta)
+        call Agrif_Init_Variable(ubarid,procname=initubar)
+        call Agrif_Init_Variable(vbarid,procname=initvbar)
+        call Agrif_Init_Variable(tid,procname=initt)
+
+        do itrc=1,NT
+          got_tini(itrc) = .true.
+        enddo
+
+        call Agrif_Init_Variable(uid,procname=initu)
+        call Agrif_Init_Variable(vid,procname=initv)
+
+#  ifdef M3FAST
+        call Agrif_Set_bc(qdmunbqid,(/0,0/))
+        call Agrif_Set_bc(qdmvnbqid,(/0,0/))
+        call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_linear,
+     &                                    interp2=Agrif_ppm)
+        call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
+     &                                    interp2=Agrif_linear)
+        call Agrif_Set_interp(qdmunbqid,interp1=Agrif_linear,
+     &                                  interp2=Agrif_ppm)
+        call Agrif_Set_interp(qdmvnbqid,interp1=Agrif_ppm,
+     &                                  interp2=Agrif_linear)
+        call Agrif_Init_Variable(qdmunbqid,procname=initunbq)
+        call Agrif_Init_Variable(qdmvnbqid,procname=initvnbq)
+#   ifdef NBQ
+        call Agrif_Set_bc(wzid,(/0,0/))
+        call Agrif_Set_bc(qdmwnbqid,(/0,0/))
+        call Agrif_Set_bc(rhonbqid,(/0,0/))
+        call Agrif_Set_bcinterp(wzid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(qdmwnbqid,interp=Agrif_constant)
+        call Agrif_Set_bcinterp(rhonbqid,interp=Agrif_constant)
+        call Agrif_Set_interp(wzid,interp=Agrif_constant)
+        call Agrif_Set_interp(qdmwnbqid,interp=Agrif_constant)
+        call Agrif_Set_interp(rhonbqid,interp=Agrif_constant)
+        call Agrif_Init_Variable(wzid,procname=initwz)
+        call Agrif_Init_Variable(qdmwnbqid,procname=initwnbq)
+        call Agrif_Init_Variable(rhonbqid,procname=initwnbq)
+#   endif
+#  endif
+
+        if (Agrif_Parent_Nb_Step() == 0) then
+!!     call get_initial
+!==================== FOR EXACT_RESTART as in main.F ====================
+#  ifdef EXACT_RESTART
+          call get_initial (nrrec-1, 2) ! Set initial conditions
+                                        ! in the case of restart run.
+C$OMP BARRIER
+#   ifdef SOLVE3D
+        do tile=0,NSUB_X*NSUB_E-1
+          call set_depth (tile) !<-- needed to initialize Hz_bak
+        enddo
+C$OMP BARRIER
+#   endif
+#  endif
+      call get_initial (nrrec, 1)   ! Set initial conditions
+!==================================================================
+        endif
+
+      return
+      end
+# endif /* AGRIF_ADAPTIVE */
+
+# if defined AGRIF_ADAPTIVE && defined SOLVE3D
+!
+!--------------------------------------------------------------------
+!  Agrif_initvalues_adaptive_bt: correct the baroclinic velocities of
+!  an adaptive zoom so that their vertical integral matches the
+!  barotropic transport (called right after the final set_depth)
+!--------------------------------------------------------------------
+!
+      subroutine Agrif_initvalues_adaptive_bt()
+      use AGRIF_UTIL
+      implicit none
+      integer i,j,k
+# include "param.h"
+# include "scalars.h"
+# include "grid.h"
+# include "ocean2d.h"
+# include "coupling.h"
+# include "ocean3d.h"
+      real CF(GLOBAL_2D_ARRAY,0:N)
+      real DC(GLOBAL_2D_ARRAY,0:N)
+
+      if (Agrif_Parent_Nb_Step() /= 0) then
+        do j=0,Mm+1
+          do i=1,Lm+1
+            DC(i,j,0)=0.
+            CF(i,j,0)=0.
+          enddo
+        enddo
+
+        do k=1,N
+          do j=0,Mm+1
+            do i=1,Lm+1
+              DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+              DC(i,j,0)=DC(i,j,0)+DC(i,j,k)
+              CF(i,j,0)=CF(i,j,0)+DC(i,j,k)*u(i,j,k,1)
+            enddo
+          enddo
+        enddo
+
+        do j=0,Mm+1
+          do i=1,Lm+1
+            DC(i,j,0)=1./DC(i,j,0)
+            CF(i,j,0)=DC(i,j,0)*(CF(i,j,0)-DU_avg1(i,j,1))
+            ubar(i,j,1) = DC(i,j,0)*DU_avg1(i,j,1)
+          enddo
+        enddo
+
+        do k=N,1,-1
+          do j=0,Mm+1
+            do i=0,Lm+1
+              u(i,j,k,1) = (u(i,j,k,1)-CF(i,j,0))
+            enddo
+          enddo
+        enddo
+
+        do j=1,Mm+1
+          do i=0,Lm+1
+            DC(i,j,0)=0.
+            CF(i,j,0)=0.
+          enddo
+        enddo
+
+        do k=1,N
+          do j=1,Mm+1
+            do i=0,Lm+1
+              DC(i,j,k) = 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+              DC(i,j,0)=DC(i,j,0)+DC(i,j,k)
+              CF(i,j,0)=CF(i,j,0)+DC(i,j,k)*v(i,j,k,1)
+            enddo
+          enddo
+        enddo
+
+        do j=1,Mm+1
+          do i=0,Lm+1
+            DC(i,j,0)=1./DC(i,j,0)
+            CF(i,j,0)=DC(i,j,0)*(CF(i,j,0)-DV_avg1(i,j,1))
+            vbar(i,j,1) = DC(i,j,0)*DV_avg1(i,j,1)
+          enddo
+        enddo
+
+        do k=N,1,-1
+          do j=1,Mm+1
+            do i=0,Lm+1
+              v(i,j,k,1) = (v(i,j,k,1)-CF(i,j,0))
+            enddo
+          enddo
+        enddo
+
+      endif
+
+      return
+      end
+# endif /* AGRIF_ADAPTIVE && SOLVE3D */
 
 #else  /* AGRIF */
 !
