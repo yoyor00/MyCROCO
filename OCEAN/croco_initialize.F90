@@ -637,7 +637,7 @@
         call set_nudgcof (tile)
 # endif
       enddo
-#endif#endif
+#endif
 !
 !----------------------------------------------------------------------
 !  Read initial climatology fields from NetCDF file
