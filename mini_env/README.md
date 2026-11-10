@@ -101,7 +101,7 @@ Optional XIOS runtime attempt:
 
 ```bash
 ./run_checks.sh
-./run_xios_runtime.sh mini_env/work/xios
+./run_xios_runtime.sh work/xios
 ```
 
 The XIOS runtime helper generates `iodef.xml` and tries to launch CROCO plus
@@ -112,20 +112,16 @@ XIOS/OpenMPI combination.
 
 - XIOS build/link: PASS with make and SCons
 - OASIS build/link: PASS with make and SCons
-- XIOS runtime helper: BASIN now gets through namelist reading, `ana_grid`,
-  XIOS initialization and file creation with the local OCEAN patches.  It
-  writes `Basin_Example_9600s_inst_*` and `Basin_Example_5d_aver_*` files.
-- XIOS 2.5 with serial NetCDF still fails in the write path:
-  `CONetCDF4::writeData` reports `input array size = 7930` versus an internal
-  size of `1586` or `2379` elements.  In `multiple_file` mode the vertical
-  `s_rho` axis is split across the four rank files (3/3/2/2 levels) while
-  CROCO sends ten levels per rank.
-- XIOS 3.0.x with parallel NetCDF avoids that axis split and writes a single
-  file with the correct `s_rho=10`, `s_w=11` and global horizontal dimensions.
-  However the model then stops at timestep 1 with `MPI_ERR_TRUNCATE`, even
-  with all output files disabled.  A non-XIOS build runs the same 10-step
-  BASIN case normally, so the remaining failure is in the CROCO/XIOS
-  integration rather than the model itself.
+- XIOS runtime: PASS with a parallel-NetCDF XIOS build.  BASIN completes
+  10 model steps and writes `Basin_Example_9600s_inst_*.nc` and
+  `Basin_Example_5d_aver_*.nc` with data.
+- The previous NaN/`MPI_ERR_TRUNCATE` failure was caused by the combination
+  `SPONGE + NO_SPONGE_GRID`.  The XIOS interface requires `x_sponge`, so the
+  build now uses `SPONGE` without `NO_SPONGE_GRID`; the local
+  `croco_namelist.F90` overlay declares `x_sponge` for that case.
+- The XML overlay uses the non-spherical BASIN coordinates `x_rho`/`y_rho`.
+- XIOS 2.5 with serial NetCDF still has the `multiple_file` vertical-axis
+  split.  Use a parallel-NetCDF XIOS build for runtime.
 - XIOS server mode (`using_server=true`) still crashes in the local OpenMPI
   launch setup, so client-only mode is the only usable configuration here.
 - The earlier `CScattererConnector::transfer` segfault is gone once the output
@@ -142,6 +138,32 @@ XIOS/OpenMPI combination.
   experiments.
 - The runtime helper defaults to `using_server=false` for the local checks.
 - OASIS runtime: not implemented; build/link check only
+
+### Working XIOS runtime
+
+Build a parallel-NetCDF XIOS, then build CROCO against it:
+
+```bash
+source env_parallel_netcdf.sh
+XIOS_SRC_DIR="$PWD/src/xios" \
+XIOS_BUILD_DIR="$PWD/build/xios-par" \
+XIOS_PREFIX="$PWD/install/xios-par" \
+XIOS_NETCDF_LIB=netcdf4_par ./install_xios.sh
+
+XIOS_ROOT_DIR="$PWD/install/xios-par" \
+MINI_ENV_BACKENDS=make ./run_checks.sh
+```
+
+Run a short smoke test:
+
+```bash
+source env_parallel_netcdf.sh
+XIOS_ROOT_DIR="$PWD/install/xios-par" XIOS_NTIMES=10 \
+    ./run_xios_runtime.sh work/xios
+```
+
+`XIOS_NTIMES` limits the run to the requested number of steps; omit it for
+the full BASIN configuration.
 
 This builds a BASIN configuration with:
 

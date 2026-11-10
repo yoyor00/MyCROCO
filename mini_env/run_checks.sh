@@ -45,7 +45,7 @@ prepare_case() {
     cp "$REPO_ROOT/TEST_CASES/BASIN/croco_BASIN.nml" "$run/croco.nml"
     sed -i 's/^# undef  MPI$/# define MPI/' "$run/cppdefs_BASIN.h"
     if [[ "$key" == "XIOS" ]]; then
-        sed -i 's|^#include "cppdefs_dev.h"|# define XIOS\n# define XIOS2\n# define SPONGE\n# define NO_SPONGE_GRID\n# define SALINITY\n# define ANA_BSFLUX\n# define ANA_SSFLUX\n# define CURVGRID\n# define SPHERICAL\n# define MASKING\n# define PSOURCE\n#include "cppdefs_dev.h"|' "$run/cppdefs_BASIN.h"
+        sed -i 's|^#include "cppdefs_dev.h"|# define XIOS\n# define XIOS2\n# define SPONGE\n# define SALINITY\n# define ANA_BSFLUX\n# define ANA_SSFLUX\n# define CURVGRID\n# define MASKING\n# define PSOURCE\n#include "cppdefs_dev.h"|' "$run/cppdefs_BASIN.h"
     elif [[ "$key" == "OASIS" ]]; then
         sed -i 's|^#include "cppdefs_dev.h"|# define OA_COUPLING\n# define CURVGRID\n# define SPHERICAL\n# define MASKING\n# define PSOURCE\n#include "cppdefs_dev.h"|' "$run/cppdefs_BASIN.h"
     fi

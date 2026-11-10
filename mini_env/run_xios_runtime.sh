@@ -12,6 +12,10 @@ RUN_DIR="$(cd "$RUN_DIR" && pwd)"
 [[ -x "$RUN_DIR/croco" ]] || { echo "missing $RUN_DIR/croco; run ./run_checks.sh first" >&2; exit 1; }
 [[ -f "$RUN_DIR/croco.nml" ]] || { echo "missing $RUN_DIR/croco.nml" >&2; exit 1; }
 
+if [[ -n "${XIOS_NTIMES:-}" ]]; then
+    sed -i "s/^  ntimes = .*/  ntimes = ${XIOS_NTIMES}/" "$RUN_DIR/croco.nml"
+fi
+
 # Build a run-local copy of process_xios_xml.sh with absolute paths.
 sed \
     -e "s|^XIOS_NAM_DIR=.*|XIOS_NAM_DIR=$RUN_DIR|" \

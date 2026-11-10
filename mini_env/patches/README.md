@@ -12,9 +12,11 @@ BASIN uses `dt = 9600 s`.  The upstream XML activates output groups with
 Unpatched XIOS can segfault in that configuration.
 
 The patched copy sets both `file_group id="3h"` definitions to
-`output_freq="9600s"`.  `mini_env/run_xios_runtime.sh` preprocesses this copy
-with the run's `cppdefs.h` and writes the result to the run directory,
-overwriting the XML generated from the upstream template.
+`output_freq="9600s"`.  It also uses the non-spherical coordinates
+`x_rho`/`y_rho` instead of `lon_rho`/`lat_rho`, matching the BASIN build.
+`mini_env/run_xios_runtime.sh` preprocesses this copy with the run's
+`cppdefs.h` and writes the result to the run directory, overwriting the XML
+generated from the upstream template.
 
 Keep this file in sync with `XIOS/file_def_croco.xml_full_withcpp` when the
 upstream template changes.
@@ -42,3 +44,14 @@ gfortran versions.  The patched copy skips those writes when
 `run_checks.sh` also enables `ANA_SSFLUX` for the XIOS BASIN build so the
 analytic surface salinity flux is used instead of a missing
 `CROCO_FILES/croco_frc.nc`.
+
+### `OCEAN/croco_namelist.F90`
+
+The XIOS interface references `x_sponge` unconditionally.  Upstream only
+declares it when `SPONGE` is defined and `SPONGE_GRID` is not.  The patched
+copy declares `x_sponge` whenever `SPONGE` is defined.
+
+This lets the XIOS build use `SPONGE` without `NO_SPONGE_GRID`.  The
+combination `SPONGE + NO_SPONGE_GRID` was found to make the BASIN model
+produce NaN and abort with `MPI_ERR_TRUNCATE`; using `SPONGE` alone is
+stable.
