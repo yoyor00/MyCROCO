@@ -129,21 +129,29 @@
 !  Tidal elevation amplitude and phase.
 !
         status=nf_inq_varid(ncidfrc,'tide_Eamp',varid)
+        if (status.ne.NF_NOERR) then
+          write(stdout,3) 'tide_Eamp',frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
         status=nf_fread(SSH_Tamp(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+        if (status.ne.NF_NOERR) then
+          write(stdout,6) 'tide_Eamp',itide,frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
 #ifdef OPENACC
           call update_device(SSH_Tamp(:,:,itide))
 #endif
-        if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Eamp',itide,frcname(1:lstr)
-          stop                           !-->  EXIT
-        endif
 
         status=nf_inq_varid(ncidfrc,'tide_Ephase',varid)
+        if (status.ne.NF_NOERR) then
+          write(stdout,3) 'tide_Ephase',frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
         status=nf_fread(SSH_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Ephase',itide,frcname(1:lstr)
+          write(stdout,6) 'tide_Ephase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 #  ifndef TIDES_MAS
@@ -170,42 +178,59 @@
 !  Tidal currents angle, phase, major and minor ellipse axis.
 !
         status=nf_inq_varid(ncidfrc,'tide_Cangle',varid)
+        if (status.ne.NF_NOERR) then
+          write(stdout,3) 'tide_Cangle',frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
         status=nf_fread(UV_Tangle(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cangle',itide,frcname(1:lstr)
+          write(stdout,6) 'tide_Cangle',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 
         status=nf_inq_varid(ncidfrc,'tide_Cphase',varid)
+        if (status.ne.NF_NOERR) then
+          write(stdout,3) 'tide_Cphase',frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
         status=nf_fread(UV_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cphase',itide,frcname(1:lstr)
+          write(stdout,6) 'tide_Cphase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 
         status=nf_inq_varid(ncidfrc,'tide_Cmax',varid)
+        if (status.ne.NF_NOERR) then
+          write(stdout,3) 'tide_Cmax',frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
         status=nf_fread(UV_Tmajor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+        if (status.ne.NF_NOERR) then
+          write(stdout,6) 'tide_Cmax',itide,frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
 #ifdef OPENACC
           call update_device(UV_Tmajor(:,:,itide))
 #endif
-        if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cmax',itide,frcname(1:lstr)
-          stop                           !-->  EXIT
-        endif
 
         status=nf_inq_varid(ncidfrc,'tide_Cmin',varid)
+        if (status.ne.NF_NOERR) then
+          write(stdout,3) 'tide_Cmin',frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
         status=nf_fread(UV_Tminor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
+        if (status.ne.NF_NOERR) then
+          write(stdout,6) 'tide_Cmin',itide,frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
 #ifdef OPENACC
           call update_device(UV_Tminor(:,:,itide))
 #endif
-        if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cmin',itide,frcname(1:lstr)
-          stop                           !-->  EXIT
-        endif
+
 #  ifndef TIDES_MAS
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
@@ -233,20 +258,29 @@
 !  Tidal potential amplitude and phase.
 !
         status=nf_inq_varid(ncidfrc,'tide_Pamp',varid)
+        if (status.ne.NF_NOERR) then
+          write(stdout,3) 'tide_Pamp',frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
         status=nf_fread(POT_Tamp(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
+        if (status.ne.NF_NOERR) then
+          write(stdout,6) 'tide_Pamp',itide,frcname(1:lstr)
+          stop                           !-->  EXIT
+        endif
+
 #ifdef OPENACC
           call update_device(POT_Tamp(:,:,itide))
 #endif
+        status=nf_inq_varid(ncidfrc,'tide_Pphase',varid)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Pamp',itide,frcname(1:lstr)
+          write(6,3) 'tide_Pphase',frcname(1:lstr)
           stop                           !-->  EXIT
         endif
-        status=nf_inq_varid(ncidfrc,'tide_Pphase',varid)
         status=nf_fread(POT_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Pphase',itide,frcname(1:lstr)
+          write(stdout,6) 'tide_Pphase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 #  ifndef TIDES_MAS
@@ -288,8 +322,9 @@
   4   write(stdout,5) frcname(1:lstr)
   5   format(/,' GET_TIDES - unable to open forcing netCDF file:',
      &                                                        1x,A)
-  6   format(/,' GET_TIDES - error while reading variable: ',A,2x,
-     &                                      ' at TIME index = ',i4)
+  6   format(/,' GET_TIDES - error while reading variable: ',A,
+     &                          ' for tide component = ',i4,2x,
+     &                        /14x,' in forcing netCDF file: ',A)
 
  99   may_day_flag=2
 

@@ -54,6 +54,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
+- BENCH : Fix AGRIF handling with a per-test-case AGRIF_FixedGrids.in,
+  detected from the resolved cppdefs.h instead of sharing OCEAN's file
+  across all cases (#489 and #576)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
@@ -97,7 +100,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Restart : Fix restart with OBC_PATM (#496)
 
 - KPP : bug fix for the non-local term in surface KPP parameterisation
-        wrong sign and + correction to recover the empirical free convection scaling of 0.2 
+        wrong sign and + correction to recover the empirical free convection scaling of 0.2
+
+- TIDES : Adds an error message if POT_TIDES is defined but no potentials are present in the frc file (#431)
 
 - MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
 
