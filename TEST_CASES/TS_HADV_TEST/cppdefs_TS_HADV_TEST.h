@@ -11,7 +11,6 @@
 # undef  OPENMP
 # undef  MPI
 # undef  UV_ADV
-# define NEW_S_COORD
 # undef  UV_COR
 # define SOLVE3D
 # define M2FILTER_NONE

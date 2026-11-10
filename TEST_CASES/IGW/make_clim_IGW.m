@@ -53,7 +53,7 @@ close all
 %
 % Common parameters
 %
-romstools_param
+crocotools_param
 %
 %
 %%%%%%%%%%%%%%%%%%% END USERS DEFINED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%
@@ -84,14 +84,12 @@ close(nc);
 if (makeclim)
   disp(' ')
   disp(' Create the climatology file...')
-  if  ~exist('vtransform')
-      vtransform=1; %Old Vtransform
-      disp([' NO VTRANSFORM parameter found'])
-      disp([' USE VTRANSFORM default value vtransform = 1'])
-  end
+
+  disp(['Default S-coordinate system use : Vtransform=2'])
+
   create_climfile(clmname,grdname,ROMS_title,...
                   theta_s,theta_b,hc,N,...
-                  woa_time,woa_cycle,'clobber',vtransform);
+                  woa_time,woa_cycle,'clobber');
 end
 
 if (makeclim)
@@ -111,9 +109,10 @@ end
 % Initial file
 %----------------------------------------------------------------------------
 if (makeini)
+  disp(['Default S-coordinate system use : Vtransform=2'])
   create_inifile(ininame,grdname,ROMS_title,...
                  theta_s,theta_b,hc,N,...
-                 tini,'clobber',vtransform);
+                 tini,'clobber');
   nc=netcdf(ininame,'write');
   nc{'temp'}(:)=zeros(N,Mp,Lp);
   nc{'salt'}(:)=zeros(N,Mp,Lp);

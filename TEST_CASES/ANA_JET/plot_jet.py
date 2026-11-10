@@ -86,7 +86,7 @@ t0 = (-rho0 + R0) / TCOEF
 sst = np.squeeze(t[N - 1, :, :])  # Surface temperature (Python: N-1)
 
 # Vertical grid
-zr = cr.zlevs(h, zeta, 5, 0, 100, N, "r", 2)
+zr = cr.zlevs(h, zeta, 5, 0, 100, N, "r")
 
 # Surface velocities
 us = np.squeeze(u[N - 1, :, :])  # Python: N-1

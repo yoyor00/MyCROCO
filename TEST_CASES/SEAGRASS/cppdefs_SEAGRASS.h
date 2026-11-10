@@ -23,7 +23,6 @@
 # define NS_PERIODIC
 # define NO_FRCFILE
 # define USE_CALENDAR
-# define NEW_S_COORD
 # define OBC_EAST
 # define FRC_BRY
 # ifdef FRC_BRY
