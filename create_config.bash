@@ -354,7 +354,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     # AGRIF
     if [[ ${options[@]} =~ "agrif" ]] ; then
 	cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml.1 $MY_CROCO_DIR/croco.nml.1
-	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/AGRIF_FixedGrids_REGIONAL.in $MY_CROCO_DIR/AGRIF_FixedGrids.in
     fi
     # INTER
     if [[ ${options[@]} =~ "inter" ]] ; then
