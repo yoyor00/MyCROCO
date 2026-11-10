@@ -33,7 +33,7 @@
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
-#if defined NBQ || defined MORPHODYN
+#if defined NBQ || defined MORPHODYN || defined WET_DRY
 # include "grid.h"
 #endif
 #include "mixing.h"
@@ -582,6 +582,20 @@
 
         goto 99                                           !--> ERROR
       endif
+#ifdef WET_DRY
+!
+!  Cap how far below Dcrit the analytical zeta can be, so a dry
+!  cell never gets an arbitrarily negative total depth (h+zeta)
+!  Note : Only when there is no prior run to
+!  trust: ntstart==1 means this record has no "time_step" history
+
+!
+      if (ntstart.eq.1) then
+        where (zeta(:,:,1) .lt. Dcrit(:,:)-h(:,:))
+          zeta(:,:,1) = Dcrit(:,:)-h(:,:)-1.e-14
+        endwhere
+      endif
+#endif
 !
 ! 2D momentum component in the XI-direction.
 !
@@ -1377,6 +1391,46 @@
      &                                 ,ininame(1:lstr)
       endif
 #  endif /* TS_MIX_ISO_FILT */
+
+#  ifdef WET_DRY
+!
+!  umask_wet
+!
+      lvar=lenstr(vname(1,indxumaskwet))
+      ierr=nf_inq_varid (ncid, vname(1,indxumaskwet)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+      ierr=nf_fread (umask_wet(START_2D_ARRAY), ncid,
+     &                                     varid, record, u2dvar)
+        if (ierr .ne. nf_noerr) then
+         MPI_master_only write(stdout,2) vname(1,indxumaskwet)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+        got_wetdry_rst=.true.
+      else
+        MPI_master_only write(stdout,5) vname(1,indxumaskwet)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+!  vmask_wet
+!
+       lvar=lenstr(vname(1,indxvmaskwet))
+       ierr=nf_inq_varid (ncid, vname(1,indxvmaskwet)(1:lvar), varid)
+       if (ierr .eq. nf_noerr) then
+       ierr=nf_fread (vmask_wet(START_2D_ARRAY), ncid,
+     &                                     varid, record, v2dvar)
+         if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                                  vname(1,indxvmaskwet)(1:lvar)
+     &                                 , record, ininame(1:lstr)
+           goto 99                                        !--> ERROR
+         endif
+       else
+         MPI_master_only write(stdout,5)
+     &                                 vname(1,indxvmaskwet)(1:lvar)
+     &                                 , ininame(1:lstr)
+        endif
+#  endif /* WET_DRY */
 
 # endif  /* EXACT_RESTART */
 

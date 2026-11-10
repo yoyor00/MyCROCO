@@ -33,6 +33,7 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
       use croco_namelist, only: hc
+
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp,htmp
@@ -80,22 +81,9 @@ C$    integer omp_get_thread_num
         do j=J_RANGE
           do i=I_RANGE
 # ifdef WET_DRY
-            wetdry(i,j)=1.
-#  ifdef AGRIF
-            rmask_childs(i,j)=1.
-#  endif
             IF (h(i,j).eq.0.) THEN
               h(i,j)=eps
             END IF
-
-            IF (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) THEN
-              zeta(i,j,1)=Dcrit(i,j)-h(i,j)
-              zeta(i,j,2)=zeta(i,j,1)
-              zeta(i,j,3)=zeta(i,j,1)
-              zeta(i,j,4)=zeta(i,j,1)
-              wetdry(i,j)=0.
-            ENDIF
-            rmask_wet(i,j)=wetdry(i,j)
 # endif
 # ifdef SOLVE3D
             hinv(i,j)=1./(abs(h(i,j))+hc)
@@ -119,8 +107,6 @@ C$    integer omp_get_thread_num
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
 #  ifdef WET_DRY
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
-        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, wetdry)
-        call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_wet)
 #   ifdef AGRIF
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, rmask_childs)
 #   endif
