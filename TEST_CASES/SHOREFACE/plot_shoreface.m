@@ -52,7 +52,7 @@ end
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname,'r');
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'time'}(:)); % reads last record
 
 %
 % horizontal grid
@@ -70,11 +70,11 @@ theta_s=nc.theta_s(:);
 theta_b=nc.theta_b(:); 
 hc=nc.hc(:); 
 zeta=squeeze(nc{'zeta'}(tindex,yindex,xindex:end));
-zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r',2));
+zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r'));
 dzr=zr(2:end,:)-zr(1:end-1,:);               % ---> zw(2:N,:)
 zru=0.5*(zr(:,1:end-1)+zr(:,2:end));
 dzru=zru(2:end,:)-zru(1:end-1,:);            % ---> zwu(2:N,:)
-zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w',2));
+zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w'));
 dzw=zw(2:end,:)-zw(1:end-1,:);               % ---> zr
 zwu=0.5*(zw(:,1:end-1)+zw(:,2:end));
 dzwu=zwu(2:end,:)-zwu(1:end-1,:);            % ---> zru
@@ -87,7 +87,7 @@ D2d=repmat(D,[N 1]);
 % ---------------------------------------------------------------------
 % --- read/compute numerical model fields (index 1) ---
 % --------------------------------------------------------------------
-time=nc{'scrum_time'}(tindex)/86400;
+time=nc{'time'}(tindex)/86400;
 
 zeta1=zeta;
 

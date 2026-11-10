@@ -55,7 +55,7 @@ except FileNotFoundError:
     print(f"Error: File '{args.file}' not found.")
     exit(1)
 
-time = nc.variables["scrum_time"][tndx] / 86400
+time = nc.variables["time"][tndx] / 86400
 h = nc.variables["h"][:]
 x1 = nc.variables["x_rho"][:]
 y1 = nc.variables["y_rho"][:]
@@ -67,11 +67,10 @@ rho = R0 - TCOEF * t
 N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
-vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 hc = nc.hc
 nc.close()
 
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = zr[:, j, :]
 xr = np.tile(x / 1000, (N, 1))  # Convert to km
 

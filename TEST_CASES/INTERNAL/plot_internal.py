@@ -40,7 +40,7 @@ except FileNotFoundError:
     exit(1)
 
 # Read data
-time = nc.variables["scrum_time"][:] / 86400  # Convert time to days
+time = nc.variables["time"][:] / 86400  # Convert time to days
 tndx = len(time)  # Number of time steps
 print(f"tndx = {tndx} - Time = {time[-1] * 24 / 12.4:.2f} M2 cycles")
 h = np.squeeze(nc.variables["h"][j, :])
@@ -51,14 +51,13 @@ t0 = np.squeeze(nc.variables["rho"][0, :, j, :])
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtransform = np.squeeze(nc.variables.get("Vtransform", 1))  # Default to 1 if not found
 nc.close()
 
 # Dimensions
 N, L = t.shape
 
 # Compute vertical levels
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtransform)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 xr = np.tile(x / 1000, (N, 1))  # Convert x to km
 
 # Create a custom colormap

@@ -48,7 +48,7 @@ tndx=tindex(it);
 %  --- Read model data ---
 % -------------------------------------
 nc=netcdf(fname,'r');
-tndx=min(tndx,length(nc{'scrum_time'}(:)));
+tndx=min(tndx,length(nc{'time'}(:)));
 disp(['tndx = ',num2str(tndx)'']);
 h=nc{'h'}(:);
 x=squeeze(nc{'x_rho'}(2,:));
@@ -61,7 +61,7 @@ theta_b=nc.theta_b(:);
 hc=nc.hc(:);
 close(nc);
 
-zr = zlevs(h,zeta,theta_s,theta_b,hc,N,'r',2);
+zr = zlevs(h,zeta,theta_s,theta_b,hc,N,'r');
 zr=squeeze(zr(:,2,:));
 xr=reshape(x,1,M);
 xr=repmat(xr,[N 1]);

@@ -67,10 +67,10 @@ except FileNotFoundError:
     print(f"Error: File '{hisname}' not found.")
     exit(1)
 
-time_len = len(nc.variables["scrum_time"][:])
+time_len = len(nc.variables["time"][:])
 tindex = (time_len - 1) if args.tindex is None else min(args.tindex, time_len - 1)
 
-time = nc.variables["scrum_time"][tindex] / 60.0  # minutes
+time = nc.variables["time"][tindex] / 60.0  # minutes
 
 h = nc.variables["h"][:]
 xl = nc.variables["xl"][:]

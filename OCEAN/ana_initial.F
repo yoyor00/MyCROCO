@@ -2249,20 +2249,30 @@ C$OMP BARRIER
 !
 ! Fill climatological arrays. MPI exchanges are done in analytical
 !
+# if defined SOLVE3D 
         do k=1,N
           do j=Jstr,Jend
             do i=Istr,Iend
+#  if (defined M3CLIMATOLOGY || \
+                        (defined AGRIF && !defined M3_FRC_BRY))
               uclm(i,j,k) = u(i,j,k,tndx)
               vclm(i,j,k) = v(i,j,k,tndx)
+#  endif
+#  if defined TRACERS && (defined TCLIMATOLOGY || (defined AGRIF && !defined T_FRC_BRY))
               tclm(i,j,k,1) = t(i,j,k,tndx,1)
+#  endif
             enddo
           enddo
         enddo
+# endif
+# if defined ZCLIMATOLOGY || defined AGRIF
         do j=Jstr,Jend
           do i=Istr,Iend
             ssh(i,j) = zeta(i,j,tndx)
           enddo
         enddo
+# endif
+# if defined M2CLIMATOLOGY || (defined AGRIF && !defined M2_FRC_BRY)
         do j=Jstr,Jend
           do i=Istr,Iend
             ubclm(i,j) = ubar(i,j,tndx)
@@ -2273,6 +2283,7 @@ C$OMP BARRIER
             vbclm(i,j) = vbar(i,j,tndx)
           enddo
         enddo
+# endif
       endif
 # endif
 !$acc end kernels

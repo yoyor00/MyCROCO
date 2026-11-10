@@ -75,6 +75,14 @@
   sedname = "TEST_CASES/SED_TOY/sediment_sed_toy_rouse.in"
 /
 
+&croco_sediments_mustang
+  sedname_must = "TEST_CASES/SED_TOY/paraMUSTANG_SED_TOY_ROUSE.nml"
+/
+
+&croco_substance
+  subsfilename = "TEST_CASES/SED_TOY/parasubstance_SED_TOY_ROUSE.nml"
+/
+
 &croco_primary_history_fields
   out_his_zeta = .true.
   out_his_ubar = .true.

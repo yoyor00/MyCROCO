@@ -57,7 +57,6 @@
 #  define wrtGasExc wrtdiabioGasExc
 #  define wrtVSink wrtdiabioVSink
 #  define vidTime diaTimebio
-#  define vidTime2 diaTime2bio
 #  define vidTstep diaTstepbio
 #  define vidFlux diabioFlux
 #  define vidGasExc diabioGasExc
@@ -70,7 +69,6 @@
 #  define wrtGasExc wrtdiabioGasExc_avg
 #  define wrtVSink wrtdiabioVSink_avg
 #  define vidTime diaTimebio_avg
-#  define vidTime2 diaTime2bio_avg
 #  define vidTstep diaTstepbio_avg
 #  define vidFlux diabioFlux_avg
 #  define vidGasExc diabioGasExc_avg
@@ -248,38 +246,6 @@
      &                                vname(4,indxTime)(1:lvar))
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
-     &       NF_FOUT, ierr)
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime2)
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
-# endif
-# ifndef AVRH
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, vname(2,indxTime2)(1:lvar))
-# else
-        text='avg'/ /vname(2,indxTime2)
-        lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, text(1:lvar))
-# endif
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
-     &                                vname(2,indxTime2)(1:lvar))
-
-        lvar=lenstr(vname(3,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'units',  lvar,
-     &                                vname(3,indxTime2)(1:lvar))
-        lvar=lenstr(vname(4,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
-     &                                vname(4,indxTime2)(1:lvar))
-
-        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &       NF_FOUT, ierr)
 !
 ! Tracer diagnostics variables.
@@ -505,18 +471,6 @@
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
 !
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
-# endif
-!
 ! Tracer flux diagnostics variables.
 !
 !
@@ -624,7 +578,6 @@
 # undef wrtVSink
 # undef wrtGasExc
 # undef vidTime
-# undef vidTime2
 # undef vidTstep
 # undef vidFlux
 # undef vidGasExc

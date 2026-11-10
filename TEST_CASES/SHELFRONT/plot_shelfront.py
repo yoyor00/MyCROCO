@@ -40,7 +40,7 @@ except FileNotFoundError:
 
 # Parameters
 tndx = 10  # Adjusted for Python's 0-based indexing (MATLAB's tndx = 11)
-time = nc.variables["scrum_time"][tndx] / (24 * 3600)  # Convert time to days
+time = nc.variables["time"][tndx] / (24 * 3600)  # Convert time to days
 h = nc.variables["h"][:]
 y = np.squeeze(
     nc.variables["y_rho"][:, 1]
@@ -54,11 +54,11 @@ N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtransform = np.squeeze(nc.variables.get("Vtransform", 1))  # Default to 1 if not found
 nc.close()
 
+
 # Compute depths using zlevs
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtransform)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = zr[:, :, 0]  # First column (MATLAB: `(:,:,1)` -> Python: `[:,:,0]`)
 yr = np.reshape(y, (1, M))
 yr = np.tile(yr, (N, 1)) / 1000  # Convert to kilometers

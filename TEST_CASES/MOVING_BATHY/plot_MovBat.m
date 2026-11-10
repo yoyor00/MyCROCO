@@ -50,7 +50,7 @@ makepdf= 0;
 j=2;
 g=9.8;
 nc=netcdf(fname);
-time=nc{'scrum_time'}(:);
+time=nc{'time'}(:);
 tndx=min(tndx,length(time));
 disp([ 'tndx = ',num2str(tndx) ])
 h=squeeze(nc{'hmorph'}(tndx,j,:));
@@ -67,12 +67,11 @@ theta_s=nc.theta_s(:);  % z grid
 theta_b=nc.theta_b(:);
 rho0=nc.rho0(:);
 hc=nc.hc(:);
-Vtrans=nc{'Vtransform'}(:);
 N=length(nc('s_rho'));
 close(nc);
 %
-zr=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'r',Vtrans));
-zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w',Vtrans));
+zr=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'r'));
+zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w'));
 zu(:,1:L-1)=0.5*(zr(:,1:L-1)+zr(:,2:L));
 %
 xr=repmat(x,[N 1]);

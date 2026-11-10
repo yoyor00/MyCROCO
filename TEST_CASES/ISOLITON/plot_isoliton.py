@@ -56,7 +56,7 @@ N = len(nc.dimensions["s_rho"])
 
 # Loop on time
 for i, tndx in enumerate(args.tindex):
-    tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
+    tndx = min(tndx, len(nc.variables["time"][:]) - 1)
     print(f"Processing time index: {tndx}")
 
     # Read data
@@ -66,7 +66,7 @@ for i, tndx in enumerate(args.tindex):
     temp[temp == 0] = np.nan
 
     # Compute depth
-    zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
+    zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
     zr = np.squeeze(zr[:, 1, :])
     xr = np.tile(x, (N, 1))
 
@@ -90,11 +90,11 @@ if args.makepdf:
 # Save in PNG (one file per time index, full figure)
 if args.makepng:
     for tndx in args.tindex:
-        tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
+        tndx = min(tndx, len(nc.variables["time"][:]) - 1)
         zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
         temp = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
         temp[temp == 0] = np.nan
-        zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
+        zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
         zr = np.squeeze(zr[:, 1, :])
         xr_loop = np.tile(x, (N, 1))
 

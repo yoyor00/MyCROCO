@@ -40,7 +40,7 @@ except FileNotFoundError:
     exit(1)
 
 # Read data
-tndx = len(nc.variables["scrum_time"][:]) - 1
+tndx = len(nc.variables["time"][:]) - 1
 h = nc.variables["h"][:]
 hsec = np.squeeze(nc.variables["h"][1, :])
 lonu = np.squeeze(nc.variables["lon_u"][1, :])
@@ -49,10 +49,7 @@ N = len(nc.dimensions["s_rho"])
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-if "Vtransform" in nc.variables:
-    vtransform = int(np.squeeze(nc.variables["Vtransform"][:]))
-else:
-    vtransform = 1
+
 ssh = np.squeeze(nc.variables["zeta"][:, 1, :])
 zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
 u = np.squeeze(nc.variables["ubar"][:, 1, :])
@@ -63,14 +60,14 @@ wsec = np.squeeze(nc.variables["w"][tndx, :N, 1, :])
 tsec = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
 rsec = np.squeeze(nc.variables["rho"][tndx, :, 1, :])
 drsec = rsec - np.squeeze(nc.variables["rho"][0, :, 1, :])
-time = nc.variables["scrum_time"][tndx] / 86400
+time = nc.variables["time"][tndx] / 86400
 nc.close()
 
 # Compute depths
 zeta_u = cr.rho2u_2d(zeta)
 h_u = cr.rho2u_2d(h)
-z = cr.zlevs(h_u, zeta_u, theta_s, theta_b, hc, N, "r", vtransform)
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtransform)
+z = cr.zlevs(h_u, zeta_u, theta_s, theta_b, hc, N, "r")
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zsec = np.squeeze(z[:, 1, :])
 xsec = np.tile(lonu, (N, 1))
 zrsec = np.squeeze(zr[:, 1, :])

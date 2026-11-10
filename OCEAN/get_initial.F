@@ -37,6 +37,9 @@
 # include "grid.h"
 #endif
 #include "mixing.h"
+#ifdef DIAGNOSTICS_TS_MLD
+# include "diagnostics.h"
+#endif
 
 #if defined EXACT_RESTART
 # include "coupling.h"
@@ -49,6 +52,9 @@
 !======================================================
 
       real time_scale
+#ifdef DIAGNOSTICS_TS_MLD
+      real workkbl(GLOBAL_2D_ARRAY)
+#endif
       integer itrc
 #ifdef EXACT_RESTART
       real time_bak
@@ -58,8 +64,10 @@
 #endif
       integer ncid, req_rec, tindx, record, max_rec,
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
-     &        start(2), count(2), ibuff(6),   nf_fread, checkdims
-      character units*180
+     &        start(2), count(2), ibuff(6),   nf_fread, checkdims,
+     &        vtransform_value, vt_rec, ierr_vt
+      logical old_vt
+      character*180  units, transf
       CHARACTER(len=19)          :: tool_sectodat
       REAL(kind=8)               :: tool_datosec
 #include "netcdf.inc"
@@ -116,6 +124,46 @@
         goto 99                                           !--> ERROR
       endif
 !
+! Check the vertical s-coordinate transformation used to create
+! the inifile: stop if VertCoordType=OLD/SH94 or Vtransform/=2.
+! If neither VertCoordType nor Vtransform is present, the file is
+! assumed to be valid (tools write Vtransform=2 by default).
+!
+      old_vt=.false.
+      transf=' '
+      ierr_vt=nf_get_att_text(ncid, nf_global, 'VertCoordType', transf)
+      if (ierr_vt.eq.nf_noerr) then
+        if (trim(transf).eq.'OLD' .or.
+     &      trim(transf).eq.'SH94') old_vt=.true.
+      endif
+      vtransform_value=0
+      ierr_vt=nf_inq_varid(ncid, 'Vtransform', varid)
+      if (ierr_vt.eq.nf_noerr) then
+        vt_rec=1
+        ierr_vt=nf_get_var1_int(ncid, varid, vt_rec, vtransform_value)
+      else
+        ierr_vt=nf_get_att_int(ncid, nf_global, 'Vtransform',
+     &                                          vtransform_value)
+      endif
+      if (ierr_vt.eq.nf_noerr .and. vtransform_value.ne.2)
+     &                                             old_vt=.true.
+
+      if (old_vt) then
+        MPI_master_only write(stdout,'(/1x,A/(20x,A))')
+     &  'GET_INITIAL ERROR: Old Vtransform is obsolete.',
+     &  'From now on, CROCO uses only one vertical',
+     &  's-coordinate transformation (Vtransform=2).',
+     &  'Two possibilities:',
+     &  '1) keep these input files and use croco <= v2.1.3',
+     &  '   (with the NEW_S_COORD cppkey deactivated)',
+     &  '2) regenerate the input files with croco_tools',
+     &  '   or croco_pytools (Vtransform=2).',
+     &  'Newer versions of the tools no longer support',
+     &  'the old Vtransform.',
+     &  'For details, see the documentation.'
+        goto 99                                          !--> ERROR
+      endif
+!
 ! Read in evolving model variables:
 !----- -- -------- ----- ----------
 ! Time: find netCDF id, read value, read attribute 'units' and set
@@ -126,7 +174,7 @@
 ! is done only when file of initial conditions contains sufficient
 ! data, i.e. two consecutive time records of evolving fields one time
 ! step apart from each other.  Thus, in order to accept the file for
-! exact restart, it must pass two consecutive checks: (i) ocean_time
+! exact restart, it must pass two consecutive checks: (i) time
 ! values in two consecutive values must differ by "dt" of current
 ! run, and (ii) "ntstart" from two consecutive records of netCDF
 ! structure "time_step" must differ by one.  If either check
@@ -175,19 +223,13 @@
 !
       lvar=lenstr(vname(1,indxTime))
       ierr=nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), varid)
-
-!! GC
-!! The following is done for backward compatibility: normally time
-!! variable is named "ocean_time", but legacy startup files may name
-!! it either "roms_time" or "scrum_time".
-!!
-!      if (ierr .ne. nf_noerr) then
-!        ierr=nf_inq_varid (ncid, 'roms_time', varid)
-!      endif
-!      if (ierr .ne. nf_noerr) then
-!        ierr=nf_inq_varid (ncid, 'scrum_time', varid)
-!      endif
-! GC
+!
+! Backward compatibility: initial/restart files written before the
+! netCDF time variable was renamed to "time" still use "scrum_time".
+!
+      if (ierr .ne. nf_noerr) then
+        ierr=nf_inq_varid (ncid, 'scrum_time', varid)
+      endif
 
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
@@ -243,9 +285,6 @@
       READ(origin_date(18:19),fmt='(i2)') origin_second
       ! Modify units when using USE_CALENDAR
       vname(3,indxTime)='seconds since '
-     &                     //tool_sectodat(origin_date_in_sec)
-              ! Modify units when using USE_CALENDAR
-      vname(3,indxTime2)='seconds since '
      &                     //tool_sectodat(origin_date_in_sec)
 # if defined XIOS
       MPI_master_only write(stdout,'(/3x,A,/)')
@@ -943,11 +982,11 @@
       lvar=lenstr(vname(1,indxHbl))
       ierr=nf_inq_varid (ncid, vname(1,indxHbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (hbls(START_2D_ARRAY,1), ncid, varid,
+        ierr=nf_fread (hbls(START_2D_ARRAY,3-tindx), ncid, varid,
 !#   else
 !        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
 !#   endif
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbl)(1:lvar)
      &                                   , record, ininame(1:lstr)
@@ -969,7 +1008,7 @@
       ierr=nf_inq_varid (ncid, vname(1,indxHbbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (hbbl(START_2D_ARRAY), ncid, varid,
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbbl)(1:lvar)
      &                                    , record, ininame(1:lstr)
@@ -983,6 +1022,32 @@
 #   endif /* LMD_BKPP2005 */
 #  endif /* LMD_BKPP */
 # endif /* LMD_MIXING */
+
+# ifdef DIAGNOSTICS_TS_MLD
+!
+!  MLD vertical index at previous time step (stored as real).
+!  If absent, kbl_nstp stays at zero and the MLD index of the
+!  first time step is used.
+!
+      if (tindx.eq.1) then
+        lvar=lenstr(vname(1,indxKbl_nstp))
+        ierr=nf_inq_varid (ncid, vname(1,indxKbl_nstp)(1:lvar), varid)
+        if (ierr .eq. nf_noerr) then
+          workkbl=0.
+          ierr=nf_fread (workkbl(START_2D_ARRAY), ncid, varid,
+     &                                         record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2)
+     &        vname(1,indxKbl_nstp)(1:lvar), record, ininame(1:lstr)
+            goto 99                                      !--> ERROR
+          endif
+          kbl_nstp=nint(workkbl)
+        else
+          MPI_master_only write(stdout,4)
+     &        vname(1,indxKbl_nstp)(1:lvar), ininame(1:lstr)
+        endif
+      endif
+# endif /* DIAGNOSTICS_TS_MLD */
 
 # ifdef GLS_MIXING
 !
