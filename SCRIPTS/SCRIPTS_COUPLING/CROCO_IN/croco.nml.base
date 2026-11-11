@@ -335,16 +335,19 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .false.
-  out_his_omega = .false.
-  out_his_w = .true.
-  out_his_akv = .false.
   out_his_bostr = .true.
   out_his_bustr = .false.
   out_his_bvstr = .false.
   out_his_wstr = .true.
   out_his_ustr = .true.
   out_his_vstr = .true.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
 /
 
 &croco_temperature_history_fields
@@ -394,16 +397,19 @@
 /
 
 &croco_auxiliary_averages_fields
-  out_avg_rho = .false.
-  out_avg_omega = .true.
-  out_avg_w = .true.
-  out_avg_akv = .false.
   out_avg_bostr = .true.
   out_avg_bustr = .false.
   out_avg_bvstr = .false.
   out_avg_wstr = .true.
   out_avg_ustr = .true.
   out_avg_vstr = .true.
+/
+
+&croco_auxiliary_averages_3d_fields
+  out_avg_rho = .false.
+  out_avg_omega = .true.
+  out_avg_w = .true.
+  out_avg_akv = .false.
 /
 
 &croco_temperature_averages_fields
