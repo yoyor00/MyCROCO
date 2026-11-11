@@ -46,7 +46,7 @@ valid = 0;        % 1: valid against forcing data
 %
 
 nc=netcdf(hname,'r');
-tndx=length(nc{'scrum_time'}(:));
+tndx=length(nc{'time'}(:));
 h=nc{'h'}(:);
 hsec=squeeze(nc{'h'}(2,:));
 lonu=squeeze(nc{'lon_u'}(2,:));
@@ -55,7 +55,6 @@ N=length(nc('s_rho'));
 theta_s=nc.theta_s(:); 
 theta_b=nc.theta_b(:); 
 hc=nc.hc(:); 
-Vtransform=nc{'Vtransform'}(:);
 ssh=squeeze(nc{'zeta'}(:,2,:));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
 u=squeeze(nc{'ubar'}(:,2,:));
@@ -66,13 +65,13 @@ wsec=squeeze(nc{'w'}(tndx,:,2,:));
 tsec=squeeze(nc{'temp'}(tndx,:,2,:));
 rsec=squeeze(nc{'rho'}(tndx,:,2,:));
 drsec=rsec-squeeze(nc{'rho'}(1,:,2,:));
-time=nc{'scrum_time'}(tndx)/86400;
+time=nc{'time'}(tndx)/86400;
 close(nc)
 
 zeta_u=rho2u_2d(zeta);
 h_u=rho2u_2d(h);
-z=zlevs(h_u,zeta_u,theta_s,theta_b,hc,N,'r',Vtransform);
-zr=zlevs(h,zeta,theta_s,theta_b,hc,N,'r',Vtransform);
+z=zlevs(h_u,zeta_u,theta_s,theta_b,hc,N,'r');
+zr=zlevs(h,zeta,theta_s,theta_b,hc,N,'r');
 zsec=squeeze(z(:,2,:));
 xsec=repmat(lonu,N,1);
 zrsec=squeeze(zr(:,2,:));

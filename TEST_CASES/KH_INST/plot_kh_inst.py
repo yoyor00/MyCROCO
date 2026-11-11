@@ -55,11 +55,11 @@ except FileNotFoundError:
 
 # Get dimensions and time info
 print("Reading grid and time information...")
-scrum_time = nc.variables["scrum_time"][:]
+time = nc.variables["time"][:]
 if args.tindex is None:
-    tindex = len(scrum_time) - 1  # Last record
+    tindex = len(time) - 1  # Last record
 else:
-    tindex = min(args.tindex, len(scrum_time) - 1)
+    tindex = min(args.tindex, len(time) - 1)
 
 # Set time range for movie or single plot
 if args.makemovie:
@@ -91,7 +91,7 @@ zeta2d = np.squeeze(nc.variables["zeta"][tstr, :, :])
 rho_init = np.squeeze(nc.variables["rho"][tstr, :, 1, :])  # y-index 1
 
 # Compute vertical grid (do this once since grid doesn't change much)
-z = cr.zlevs(h2d, zeta2d, theta_s, theta_b, hc, N, "r", 2)
+z = cr.zlevs(h2d, zeta2d, theta_s, theta_b, hc, N, "r")
 z = np.squeeze(z[:, 1, :])  # Extract y-index 1
 
 # Create 2D coordinate grid
@@ -106,7 +106,7 @@ for t in range(tstr, tend + 1):
     print(f"Processing time index: {t}")
 
     # Read data for current time
-    time_minutes = scrum_time[t] / 60.0  # Convert to minutes
+    time_minutes = time[t] / 60.0  # Convert to minutes
     rho = np.squeeze(nc.variables["rho"][t, :, 1, :])  # y-index 1 (middle slice)
 
     # Create figure

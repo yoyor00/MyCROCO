@@ -44,7 +44,7 @@ makepdf=0;
 %
 j=3;
 nc=netcdf(fname);
-time=nc{'scrum_time'}(:)./86400;
+time=nc{'time'}(:)./86400;
 tndx=length(time);
 disp([ 'tndx = ',num2str(tndx), ...
        ' - Time = ',num2str(time(end)*24/12.4),' M2 cycles' ])
@@ -63,7 +63,7 @@ theta_b=nc.theta_b(:);
 hc=nc.hc(:);
 close(nc);
 %
-zr = zlevs(h,zeta,theta_s,theta_b,hc,N,'r',1);
+zr = zlevs(h,zeta,theta_s,theta_b,hc,N,'r');
 zr=squeeze(zr);
 xr=reshape(x,1,L);
 xr=repmat(xr,[N 1])/1000;

@@ -60,9 +60,9 @@ morph_cpl = True
 # Read grid from numerical model
 # =====================================================================
 yindex = 1  # Python indexing (MATLAB yindex = 2)
-tindex = len(nc.variables["scrum_time"][:]) - 1  # Last time record
+tindex = len(nc.variables["time"][:]) - 1  # Last time record
 
-time = morph_fac * nc.variables["scrum_time"][:] / 3600  # Time in hours
+time = morph_fac * nc.variables["time"][:] / 3600  # Time in hours
 tindex0 = np.argmin(np.abs(time - (4 if mycase == "1B" else 3)))
 
 # Horizontal grid
@@ -98,8 +98,8 @@ Dcrit = 1.1 * nc.variables["Dcrit"][:]
 zeta[h < Dcrit] = zeta[h < Dcrit] - h[h < Dcrit]
 
 # Compute vertical levels
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
-zw = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "w", 2)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
+zw = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "w")
 zru = 0.5 * (zr[:, :-1] + zr[:, 1:])
 zwu = 0.5 * (zw[:, :-1] + zw[:, 1:])
 
@@ -116,7 +116,7 @@ Du2d = np.tile(Du, (N, 1))
 time_days = (
     morph_fac
     / 86400
-    * (nc.variables["scrum_time"][tindex] - nc.variables["scrum_time"][0])
+    * (nc.variables["time"][tindex] - nc.variables["time"][0])
 )
 thour = int(np.floor(time_days * 24))
 
@@ -140,7 +140,7 @@ Lu = len(hu_0)
 hu2d = np.tile(hu_0, (N, 1))
 z0 = np.squeeze(nc.variables["zeta"][tindex0, yindex, :])
 z0[h0 < Dcrit] = z0[h0 < Dcrit] - h0[h0 < Dcrit]  # Add land topography
-zr0 = cr.zlevs(h0, z0, theta_s, theta_b, hc, N, "r", 2)
+zr0 = cr.zlevs(h0, z0, theta_s, theta_b, hc, N, "r")
 zru0 = 0.5 * (zr0[:, :-1] + zr0[:, 1:])
 zzu = hu2d + zru0
 

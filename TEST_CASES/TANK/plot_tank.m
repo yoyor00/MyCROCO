@@ -54,7 +54,7 @@ rho0      = 1024.4;
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname);
-tindex=length(nc{'scrum_time'}(:));
+tindex=length(nc{'time'}(:));
 
 if makemovie,
  movObj = QTWriter('tank.mov');
@@ -90,7 +90,7 @@ hc=nc.hc(:);
 %
 kk=round(N/2); % for w
 nc=netcdf(fname);
-t0    = nc{'scrum_time'}(1:tindex);
+t0    = nc{'time'}(1:tindex);
 zeta01= 100*squeeze(nc{'zeta'}(1:tindex,yindex,L-1));
 u01   = 100*squeeze(nc{'u'}(1:tindex,end,yindex,L/2));
 w01   = 100*squeeze(nc{'w'}(1:tindex,kk,yindex,L-1));
@@ -100,8 +100,8 @@ o01   = 100*squeeze(nc{'omega'}(1:tindex,kk,yindex,L-1));
 zr0=zeros(tend,N,L);
 for i=1:tend
  zeta0 = squeeze(nc{'zeta'}(i,yindex,:));
- zr0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'r',2));
- zw0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'w',2));
+ zr0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'r'));
+ zw0(i,:,:)= squeeze(zlevs(hr,zeta0,theta_s,theta_b,hc,N,'w'));
 end
 close(nc)
 zru0=0.5*(zr0(:,:,1:end-1)+zr0(:,:,2:end));
@@ -194,9 +194,9 @@ for tindex=tstr:tend % ---------------------------------- time loop
 
  % vertical grid
  zeta=squeeze(nc{'zeta'}(tindex,yindex,:));
- zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r',2));
+ zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r'));
  zru=0.5*(zr(:,1:end-1)+zr(:,2:end));
- zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w',2));
+ zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w'));
  zwu=0.5*(zw(:,1:end-1)+zw(:,2:end));
 
  xr2d=repmat(xr,[N 1]);
@@ -206,7 +206,7 @@ for tindex=tstr:tend % ---------------------------------- time loop
  % --------------------------------------------------------
  % --- read/compute numerical model fields (index 1) ---
  % --------------------------------------------------------
- time=nc{'scrum_time'}(tindex);
+ time=nc{'time'}(tindex);
 
  zeta1=zeta;
  zeta1(zeta1==0)=NaN;

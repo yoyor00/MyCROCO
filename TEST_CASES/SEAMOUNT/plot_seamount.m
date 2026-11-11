@@ -33,7 +33,7 @@ tndx=6;
 N=1;
 
 nc=netcdf('seamount_his.nc','r');
-time=(nc{'scrum_time'}(tndx))/(24*3600);
+time=(nc{'time'}(tndx))/(24*3600);
 h=nc{'h'}(:);
 x=nc{'x_rho'}(:)/1000;
 y=nc{'y_rho'}(:)/1000;

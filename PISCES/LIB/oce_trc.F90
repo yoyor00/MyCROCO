@@ -44,7 +44,6 @@ MODULE oce_trc
    LOGICAL , PUBLIC ::   l_co2cpl  = .false.   !: atmospheric pco2 recieved from oasis
    LOGICAL , PUBLIC ::   l_offline = .false.   !: offline passive tracers flag
    REAL(wp), PUBLIC ::   r_si2                 !: largest depth of extinction (blue & 0.01 mg.m-3)  (RGB)
-   LOGICAL , PUBLIC ::   ln_trcdc2dm           !: Diurnal cycle for TOP
    INTEGER, PUBLIC  ::   nksr    !: =nkV, i.e. maximum level of light extinction
    !
    REAL(wp), PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) ::   tra   !: traceur concentration for next time step

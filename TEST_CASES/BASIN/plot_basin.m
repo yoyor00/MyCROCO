@@ -41,7 +41,7 @@ j=25;
 % Read data
 %
 nc=netcdf('basin_his.nc');
-time=nc{'scrum_time'}(tndx)/86400;
+time=nc{'time'}(tndx)/86400;
 h=nc{'h'}(:);
 x1=nc{'x_rho'}(:);
 y1=nc{'y_rho'}(:);

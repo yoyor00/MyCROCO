@@ -4,7 +4,6 @@
 # define UV_ADV
 # undef  MASKING
 # define WET_DRY
-# define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX

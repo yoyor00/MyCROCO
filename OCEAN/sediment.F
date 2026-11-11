@@ -1672,7 +1672,8 @@ C$OMP BARRIER
 #  ifdef DIAGNOSTICS_TS
           do k=1,N
             do i=Istr,Iend
-              TForc(i,j,k,indx)=(FC(i,k)-FC(i,k-1))/dt
+              TForc(i,j,k,indx)=(FC(i,k)-FC(i,k-1))
+     &                                    /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                    * rmask(i,j)
 #   endif
@@ -1694,7 +1695,7 @@ C$OMP BARRIER
             do i=Istr,Iend
               Trate(i,j,k,indx)=(Hz(i,j,k)*t(i,j,k,nnew,indx)
      &                          -Hz_bak(i,j,k)*t(i,j,k,nstp,indx))
-     &                                                         /dt
+     &                                     /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                                 *rmask(i,j)
 #   endif
@@ -1834,7 +1835,8 @@ C$OMP BARRIER
 #  ifdef DIAGNOSTICS_TS
           do i=Istr,Iend
             TForc(i,j,1,indx) = TForc(i,j,1,indx) +
-     &                          ero_flux(i,j,ised)/dt
+     &                          ero_flux(i,j,ised)
+     &                                   /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                   * rmask(i,j)
 #   endif
@@ -1854,7 +1856,7 @@ C$OMP BARRIER
           do i=Istr,Iend
             Trate(i,j,1,indx)=(Hz(i,j,1)*t(i,j,1,nnew,indx)
      &                        -Hz_bak(i,j,1)*t(i,j,1,nstp,indx))
-     &                                                       /dt
+     &                                   /(dt*pm(i,j)*pn(i,j))
 #   ifdef MASKING
      &                                               *rmask(i,j)
 #   endif

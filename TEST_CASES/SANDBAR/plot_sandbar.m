@@ -63,9 +63,9 @@ makepdf    = 0;       % make pdf file
 yindex = 2; % Mm=1 with NS no-slip conditions
 
 nc=netcdf(fname,'r');
-tindex  =length(nc{'scrum_time'}(:)); % reads last record
+tindex  =length(nc{'time'}(:)); % reads last record
 
-time=morph_fac*nc{'scrum_time'}(:)/3600; % time in hours
+time=morph_fac*nc{'time'}(:)/3600; % time in hours
 if mycase == '1B',
  [d,tindex0]=min(abs(time-4));     %  0-8h (1B)
 else
@@ -103,8 +103,8 @@ hc=nc.hc(:);
 zeta=squeeze(nc{'zeta'}(tindex,yindex,:));
 Dcrit=1.1*nc{'Dcrit'}(:);
 zeta(h<Dcrit)=zeta(h<Dcrit)-h(h<Dcrit); % add land topo
-zr=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'r',2));
-zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w',2));
+zr=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'r'));
+zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w'));
 zru=0.5*(zr(:,1:end-1)+zr(:,2:end));
 zwu=0.5*(zw(:,1:end-1)+zw(:,2:end));
 dz1=zr(1,:)-zw(1,:);
@@ -122,8 +122,8 @@ Du2d=repmat(Du,[N 1]);
 % ---------------------------------------------------------------------
 % --- read/compute model fields (tindex) ---
 % --------------------------------------------------------------------
-time=morph_fac/86400*(nc{'scrum_time'}(tindex)- ...
-                      nc{'scrum_time'}(1));
+time=morph_fac/86400*(nc{'time'}(tindex)- ...
+                      nc{'time'}(1));
 
 % ... zonal velocity ...                         ---> xu,zu
 u=squeeze(nc{'u'}(tindex,:,yindex,:));
@@ -156,7 +156,7 @@ L=length(hu);
 hu2d=repmat(hu,[N 1]);
 z0=squeeze(nc{'zeta'}(tindex0,yindex,:));
 z0(h0<Dcrit)=z0(h0<Dcrit)-h0(h0<Dcrit); % add land topo
-zr0=squeeze(zlevs(h0,z0,theta_s,theta_b,hc,N,'r',2));
+zr0=squeeze(zlevs(h0,z0,theta_s,theta_b,hc,N,'r'));
 zru0=0.5*(zr0(:,1:end-1)+zr0(:,2:end));
 zzu=hu2d+zru0;
 for ix=1:L

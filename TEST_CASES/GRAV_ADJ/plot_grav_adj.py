@@ -63,7 +63,7 @@ hc = nc.hc
 
 # Loop on time
 for i, tndx in enumerate(args.tindex):
-    tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
+    tndx = min(tndx, len(nc.variables["time"][:]) - 1)
     print(f"Processing time index: {tndx}")
 
     # Read data
@@ -73,7 +73,7 @@ for i, tndx in enumerate(args.tindex):
     w = 1000 * np.squeeze(nc.variables["w"][tndx, :N, 1, :])
 
     # Compute depth
-    zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
+    zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
     zr = np.squeeze(zr[:, 1, :])
     xr = x if args.nbq else x / 1000 - 32
     xr_2d = np.tile(xr, (N, 1))
@@ -109,11 +109,11 @@ if args.makepdf:
 # Save in PNG (one file per time index, full figure)
 if args.makepng:
     for tndx in args.tindex:
-        tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
+        tndx = min(tndx, len(nc.variables["time"][:]) - 1)
         zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
         temp = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
         N, M = temp.shape
-        zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
+        zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
         zr = np.squeeze(zr[:, 1, :])
         xr_loop = x if args.nbq else x / 1000 - 32
         xr_2d = np.tile(xr_loop, (N, 1))

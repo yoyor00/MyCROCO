@@ -54,7 +54,7 @@ tndx=16;
 nc=netcdf('soliton_his.nc');
 makepdf=0;
 
-time=(nc{'scrum_time'}(tndx));
+time=(nc{'time'}(tndx));
 x=nc{'x_rho'}(:);
 y=nc{'y_rho'}(:);
 z1=squeeze(nc{'zeta'}(tndx,:,:));

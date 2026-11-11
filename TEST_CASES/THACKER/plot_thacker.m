@@ -48,7 +48,7 @@ makepdf   = 0;                     % make pdf file
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname);
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'time'}(:)); % reads last record
 
 if makemovie,
  movObj = QTWriter('thacker.mov');
@@ -82,11 +82,11 @@ for tindex=tstr:tend % ---------------------------------------------
  theta_b=nc.theta_b(:); 
  hc=nc.hc(:); 
  zeta=squeeze(nc{'zeta'}(tindex,y0,xindex:end));
- zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r',2));
+ zr=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'r'));
  dzr=zr(2:end,:)-zr(1:end-1,:);               % ---> zw(2:N,:)
  zru=0.5*(zr(:,1:end-1)+zr(:,2:end));
  dzru=zru(2:end,:)-zru(1:end-1,:);            % ---> zwu(2:N,:)
- zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w',2));
+ zw=squeeze(zlevs(hr,zeta,theta_s,theta_b,hc,N,'w'));
  dzw=zw(2:end,:)-zw(1:end-1,:);               % ---> zr
  zwu=0.5*(zw(:,1:end-1)+zw(:,2:end));
  dzwu=zwu(2:end,:)-zwu(1:end-1,:);            % ---> zru
@@ -102,7 +102,7 @@ for tindex=tstr:tend % ---------------------------------------------
  % ---------------------------------------------------------------------
  % --- read/compute numerical model fields (index 1) ---
  % ---------------------------------------------------------------------
- time=nc{'scrum_time'}(tindex);
+ time=nc{'time'}(tindex);
 
  zeta1=zeta;
 
@@ -203,7 +203,7 @@ xr=xr*1.e3;
 tstr=1;
 
 tindex=tstr+60*2; 
-time=nc{'scrum_time'}(tindex);
+time=nc{'time'}(tindex);
 zm=squeeze(nc{'zeta'}(tindex,y0,xindex:end));
 za=2*eta*D0/Lt*(xr.*cos(omega*time)-0.5*eta) ...
                                  .*ones(size(zeta1));
@@ -216,7 +216,7 @@ za(za<-hr)=NaN;
 zm_60h=zm; za_60h=za;
 
 tindex=tstr+62*2;
-time=nc{'scrum_time'}(tindex);
+time=nc{'time'}(tindex);
 zm=squeeze(nc{'zeta'}(tindex,y0,xindex:end));
 za=2*eta*D0/Lt*(xr.*cos(omega*time)-0.5*eta) ...
                                  .*ones(size(zeta1));
@@ -229,7 +229,7 @@ za(za<-hr)=NaN;
 zm_62h=zm; za_62h=za;
 
 tindex=tstr+64*2;
-time=nc{'scrum_time'}(tindex);
+time=nc{'time'}(tindex);
 zm=squeeze(nc{'zeta'}(tindex,y0,xindex:end));
 za=2*eta*D0/Lt*(xr.*cos(omega*time)-0.5*eta) ...
                                  .*ones(size(zeta1));
@@ -271,7 +271,7 @@ return
 % --- plot u time series at center point ---
 %=============================================================
 nc=netcdf(fname);
-t0=nc{'scrum_time'}(1:tindex);
+t0=nc{'time'}(1:tindex);
 u10=squeeze(nc{'u'}(1:tindex,2,y0,x0));
 u20=-eta*omega*Lt*sin(omega*t0);
 

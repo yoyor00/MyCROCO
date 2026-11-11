@@ -51,7 +51,7 @@ except FileNotFoundError:
     exit(1)
 
 # Variables from the NetCDF file
-time = nc.variables["scrum_time"][tndx] / (24 * 3600)  # Convert seconds to days
+time = nc.variables["time"][tndx] / (24 * 3600)  # Convert seconds to days
 h = nc.variables["h"][:]
 y = np.squeeze(nc.variables["y_rho"][:, 1])  # MATLAB's 2nd index -> Python's 1st
 zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
@@ -63,11 +63,10 @@ N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 nc.close()
 
 # Compute vertical levels
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = np.squeeze(zr[:, :, 0])  # MATLAB's zr(:,:,1) -> Python's zr[:, :, 0]
 
 # Create yr
