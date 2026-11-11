@@ -1867,10 +1867,10 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
-      vname(2,indxbvf)='Brunt Vaisala Frequency                   '
-      vname(3,indxbvf)='second-1                                  '
+      vname(2,indxbvf)='Square of Brunt Vaisala Frequency         '
+      vname(3,indxbvf)='second-2                                  '
       vname(4,indxbvf)='bvf, scalar, series                       '
-      vname(5,indxbvf)='brunt_vaisala_frequency                   '
+      vname(5,indxbvf)='square_of_brunt_vaisala_frequency_in_sea_water'
       vname(7,indxbvf)='                                          '
 # endif
 
@@ -2160,6 +2160,24 @@ CR      write(stdout,'(1x,A,I3)') 'indxdRde =',indxdRde
       vname(7,indxdRde)='                                     '
 
 
+# endif
+
+# ifdef WET_DRY
+      vname(1,indxumaskwet)='umask_wet                              '
+      vname(2,indxumaskwet)='wetting/drying mask at u-points        '
+      vname(3,indxumaskwet)='nondimensional                         '
+      vname(4,indxumaskwet)='umask_wet, scalar, series              '
+      vname(5,indxumaskwet)='wetdry_mask_at_u_points                '
+      vname(6,indxumaskwet)='lat_u lon_u                            '
+      vname(7,indxumaskwet)='                                       '
+
+      vname(1,indxvmaskwet)='vmask_wet                              '
+      vname(2,indxvmaskwet)='wetting/drying mask at v-points        '
+      vname(3,indxvmaskwet)='nondimensional                         '
+      vname(4,indxvmaskwet)='vmask_wet, scalar, series              '
+      vname(5,indxvmaskwet)='wetdry_mask_at_v_points                '
+      vname(6,indxvmaskwet)='lat_v lon_v                            '
+      vname(7,indxvmaskwet)='                                       '
 # endif
 
 CR      write(stdout,'(1x,A,I3)') 'indxSSH =',indxSSH

@@ -14,7 +14,6 @@
       "plotphy_script_input": "croco_his.nc",
     },
     "check_outputs": ["croco_his.nc"],
-    "unsupported": ["openmp","restart"],
-    // no restartability due to WET_DRY key
+    "unsupported": ["openmp"],
   },
 }
