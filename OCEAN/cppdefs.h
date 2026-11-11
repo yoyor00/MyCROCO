@@ -78,7 +78,6 @@
 # define SPHERICAL
 # define MASKING
 # undef  WET_DRY
-# define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR

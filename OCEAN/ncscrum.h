@@ -720,6 +720,11 @@
       parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
 #  endif
 # endif
+# ifdef WET_DRY
+      integer indxumaskwet,indxvmaskwet
+      parameter (indxumaskwet=indxSVSTR+1,
+     &           indxvmaskwet=indxumaskwet+1)
+# endif
 #else
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
@@ -1098,6 +1103,9 @@
 # endif  /* M3FAST */
 # ifdef TS_MIX_ISO_FILT
       integer rstdRdx,rstdRde
+# endif
+# ifdef WET_DRY
+      integer rstumaskwet,rstvmaskwet
 # endif
 #endif
 #ifdef MORPHODYN
@@ -1649,6 +1657,9 @@
 #  endif  /* M3FAST */
 #  ifdef TS_MIX_ISO_FILT
      &      , rstdRdx,rstdRde
+#  endif
+#  ifdef WET_DRY
+     &      , rstumaskwet,rstvmaskwet
 #  endif
 # endif
 

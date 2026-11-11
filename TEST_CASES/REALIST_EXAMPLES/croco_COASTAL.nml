@@ -30,7 +30,7 @@
 /
 
 &croco_forcing
-  frcname = "croco_frc_vilaine.nc"
+  frcname = "croco_frc_tpxo7_croco.nc"
 /
 
 &croco_boundary

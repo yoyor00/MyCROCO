@@ -54,11 +54,11 @@ N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtransform = np.squeeze(nc.variables.get("Vtransform", 1))  # Default to 1 if not found
 nc.close()
 
+
 # Compute depths using zlevs
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtransform)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = zr[:, :, 0]  # First column (MATLAB: `(:,:,1)` -> Python: `[:,:,0]`)
 yr = np.reshape(y, (1, M))
 yr = np.tile(yr, (N, 1)) / 1000  # Convert to kilometers
