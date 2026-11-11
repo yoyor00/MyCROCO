@@ -625,7 +625,7 @@
                        || defined SPONGE
 !$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
- # ifdef AGRIF
+# ifdef AGRIF
         if (lroot) then
           call set_nudgcof (tile)
 #  if defined TNUDGING || defined ZNUDGING || defined SPONGE
