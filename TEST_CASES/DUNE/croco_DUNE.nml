@@ -116,14 +116,17 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .true.
-  out_his_omega = .false.
-  out_his_w = .true.
-  out_his_akv = .false.
   out_his_bostr = .true.
   out_his_wstr = .true.
   out_his_ustr = .true.
   out_his_vstr = .true.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .true.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
 /
 
 &croco_bvf_history_fields

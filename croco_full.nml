@@ -849,17 +849,21 @@
 ! --- Auxiliary 3-D fields ---
 
 &croco_auxiliary_history_fields
-  ! CPP: SOLVE3D || RIP
-  out_his_rho   = .false.   ! Density anomaly
-  out_his_omega = .false.   ! S-coordinate vertical velocity
-  out_his_w     = .false.   ! True vertical velocity
-  out_his_akv   = .false.   ! Vertical viscosity Akv
+  ! surface/bottom stress, always available
   out_his_bostr = .false.   ! Bottom stress magnitude
   out_his_bustr = .false.   ! Bottom xi-stress
   out_his_bvstr = .false.   ! Bottom eta-stress
   out_his_wstr  = .false.   ! Wind stress magnitude
   out_his_ustr  = .false.   ! Surface xi-stress
   out_his_vstr  = .false.   ! Surface eta-stress
+/
+
+&croco_auxiliary_history_3d_fields
+  ! CPP: SOLVE3D
+  out_his_rho   = .false.   ! Density anomaly
+  out_his_omega = .false.   ! S-coordinate vertical velocity
+  out_his_w     = .false.   ! True vertical velocity
+  out_his_akv   = .false.   ! Vertical viscosity Akv
   out_his_z_r   = .false.   ! Depth of rho-points z_r
   out_his_z_w   = .false.   ! Depth of w-points z_w
 /
@@ -1153,17 +1157,21 @@
 ! --- Auxiliary 3-D fields ---
 
 &croco_auxiliary_averages_fields
-  ! CPP: AVERAGES && SOLVE3D
-  out_avg_rho   = .false.
-  out_avg_omega = .false.
-  out_avg_w     = .false.
-  out_avg_akv   = .false.
+  ! CPP: AVERAGES -- surface/bottom stress, always available when AVERAGES
   out_avg_bostr = .false.
   out_avg_bustr = .false.
   out_avg_bvstr = .false.
   out_avg_wstr  = .false.
   out_avg_ustr  = .false.
   out_avg_vstr  = .false.
+/
+
+&croco_auxiliary_averages_3d_fields
+  ! CPP: AVERAGES && SOLVE3D
+  out_avg_rho   = .false.
+  out_avg_omega = .false.
+  out_avg_w     = .false.
+  out_avg_akv   = .false.
   out_avg_z_r   = .false.
   out_avg_z_w   = .false.
 /

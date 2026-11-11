@@ -98,14 +98,17 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .false.
-  out_his_omega = .false.
-  out_his_w = .false.
-  out_his_akv = .true.
   out_his_bostr = .false.
   out_his_wstr = .false.
   out_his_ustr = .true.
   out_his_vstr = .true.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .false.
+  out_his_akv = .true.
 /
 
 &croco_temperature_history_fields

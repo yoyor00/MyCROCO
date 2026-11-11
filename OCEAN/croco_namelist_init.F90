@@ -233,7 +233,7 @@ contains
 #if defined SOLVE3D && defined MORPHODYN
       call init_morphodyn_history_fields()
 #endif
-#if defined AVERAGES && defined SOLVE3D
+#ifdef AVERAGES
       call init_auxiliary_averages_fields()
 #endif
 #if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
@@ -1656,30 +1656,26 @@ contains
    end subroutine init_morphodyn_history_fields
 # endif
 
-#if defined AVERAGES && defined SOLVE3D
+#ifdef AVERAGES
    !---------------------------------------------------------------------
    !  init_auxiliary_averages_fields
-   !  SOLVE3D basics (rho, omega, w, akv) + surface stress.
+   !  Surface/bottom stress (always) + SOLVE3D basics (rho, omega, w, akv).
    !---------------------------------------------------------------------
    subroutine init_auxiliary_averages_fields()
       use croco_namelist, ONLY: &
-         out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
-         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr, &
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
+#ifdef SOLVE3D
+      use croco_namelist, ONLY: out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
          out_avg_z_r, out_avg_z_w
+#endif
       use ncscrum, ONLY: wrtavg, indxTime, &
-                         indxR, indxO, indxW, indxAkv, indxZ_r, indxZ_w, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
+#ifdef SOLVE3D
+      use ncscrum, ONLY: indxR, indxO, indxW, indxAkv, indxZ_r, indxZ_w
+#endif
       implicit none
 
-      wrtavg(indxR) = out_avg_rho
-      wrtavg(indxO) = out_avg_omega
-      wrtavg(indxW) = out_avg_w
-      wrtavg(indxAkv) = out_avg_akv
-      if (out_avg_rho .or. out_avg_omega .or. out_avg_w .or. out_avg_akv) wrtavg(indxTime) = .true.
-      wrtavg(indxZ_r) = out_avg_z_r
-      wrtavg(indxZ_w) = out_avg_z_w
-      if (out_avg_z_r .or. out_avg_z_w) wrtavg(indxTime) = .true.
       wrtavg(indxBostr) = out_avg_bostr
       wrtavg(indxBustr) = out_avg_bustr
       wrtavg(indxBvstr) = out_avg_bvstr
@@ -1688,6 +1684,16 @@ contains
       wrtavg(indxVWstr) = out_avg_vstr
       if (out_avg_bostr .or. out_avg_bustr .or. out_avg_bvstr .or. &
           out_avg_wstr .or. out_avg_ustr .or. out_avg_vstr) wrtavg(indxTime) = .true.
+#ifdef SOLVE3D
+      wrtavg(indxR) = out_avg_rho
+      wrtavg(indxO) = out_avg_omega
+      wrtavg(indxW) = out_avg_w
+      wrtavg(indxAkv) = out_avg_akv
+      if (out_avg_rho .or. out_avg_omega .or. out_avg_w .or. out_avg_akv) wrtavg(indxTime) = .true.
+      wrtavg(indxZ_r) = out_avg_z_r
+      wrtavg(indxZ_w) = out_avg_z_w
+      if (out_avg_z_r .or. out_avg_z_w) wrtavg(indxTime) = .true.
+#endif
    end subroutine init_auxiliary_averages_fields
 #endif
 

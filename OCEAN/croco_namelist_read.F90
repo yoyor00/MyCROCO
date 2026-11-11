@@ -348,7 +348,7 @@ contains
       namelist /croco_auxiliary_history_fields/ &
          out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
 # ifdef SOLVE3D
-      namelist /croco_auxiliary_history_fields/ &
+      namelist /croco_auxiliary_history_3d_fields/ &
          out_his_rho, out_his_omega, out_his_w, out_his_akv, &
          out_his_z_r, out_his_z_w
 # endif
@@ -397,10 +397,13 @@ contains
 # if defined SOLVE3D && defined MORPHODYN
       namelist /croco_morphodyn_history_fields/ out_his_hm
 # endif
-# if defined AVERAGES && defined SOLVE3D
+# ifdef AVERAGES
       namelist /croco_auxiliary_averages_fields/ &
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
+# endif
+# if defined AVERAGES && defined SOLVE3D
+      namelist /croco_auxiliary_averages_3d_fields/ &
          out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
-         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr, &
          out_avg_z_r, out_avg_z_w
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
@@ -1345,6 +1348,18 @@ contains
             ierr = ierr + 1
          end if
       end if
+# ifdef SOLVE3D
+      ! --- croco_auxiliary_history_3d_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_auxiliary_history_3d_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_auxiliary_history_3d_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_auxiliary_history_3d_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_3d_fields)
+            ierr = ierr + 1
+         end if
+      end if
+# endif
       ! --- history: per-physics optional blocks (14 blocks) ---
 # if defined SOLVE3D && defined TEMPERATURE
       call check_nml_presence(nmlunit, "croco_temperature_history_fields", .false., found, ierr)
@@ -1476,12 +1491,21 @@ contains
       end if
 # endif
       ! --- averages: per-physics optional blocks (15 blocks) ---
-# if defined AVERAGES && defined SOLVE3D
+# ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_auxiliary_averages_fields", .false., found, ierr)
       if (found) then
          read (nmlunit, nml=croco_auxiliary_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_fields", nmlunit, ios, iomsg)
             MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
+            ierr = ierr + 1; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D
+      call check_nml_presence(nmlunit, "croco_auxiliary_averages_3d_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_auxiliary_averages_3d_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_3d_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_3d_fields)
             ierr = ierr + 1; end if
       end if
 # endif
@@ -2584,6 +2608,9 @@ contains
 # endif
 #endif
       MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_fields)
+#ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_3d_fields)
+#endif
 #if defined SOLVE3D && defined TEMPERATURE
       MPI_master_only WRITE (stdout, nml=croco_temperature_history_fields)
 #endif
@@ -2701,8 +2728,11 @@ contains
 #  endif
 # endif
 #endif
-#if defined AVERAGES && defined SOLVE3D
+#ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_3d_fields)
 #endif
 #if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
       MPI_master_only WRITE (stdout, nml=croco_temperature_averages_fields)
