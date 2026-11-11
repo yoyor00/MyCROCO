@@ -5,7 +5,6 @@
 # undef  NBQ
 # undef  XIOS
 # define SOLVE3D
-# define NEW_S_COORD
 # define UV_ADV
 # define TS_HADV_WENO5
 # define TS_VADV_WENO5

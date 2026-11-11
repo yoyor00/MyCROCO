@@ -1465,13 +1465,14 @@ contains
       use croco_namelist, ONLY: &
          out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
 #ifdef SOLVE3D
-      use croco_namelist, ONLY: out_his_rho, out_his_omega, out_his_w, out_his_akv
+      use croco_namelist, ONLY: out_his_rho, out_his_omega, out_his_w, out_his_akv, &
+         out_his_z_r, out_his_z_w
 #endif
       use ncscrum, ONLY: wrthis, indxTime, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
 #ifdef SOLVE3D
-      use ncscrum, ONLY: indxR, indxO, indxW, indxAkv
+      use ncscrum, ONLY: indxR, indxO, indxW, indxAkv, indxZ_r, indxZ_w
 #endif
       implicit none
 
@@ -1489,6 +1490,9 @@ contains
       wrthis(indxW) = out_his_w
       wrthis(indxAkv) = out_his_akv
       if (out_his_rho .or. out_his_omega .or. out_his_w .or. out_his_akv) wrthis(indxTime) = .true.
+      wrthis(indxZ_r) = out_his_z_r
+      wrthis(indxZ_w) = out_his_z_w
+      if (out_his_z_r .or. out_his_z_w) wrthis(indxTime) = .true.
 #endif
    end subroutine init_auxiliary_history_fields
 
@@ -1660,9 +1664,10 @@ contains
    subroutine init_auxiliary_averages_fields()
       use croco_namelist, ONLY: &
          out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
-         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr, &
+         out_avg_z_r, out_avg_z_w
       use ncscrum, ONLY: wrtavg, indxTime, &
-                         indxR, indxO, indxW, indxAkv, &
+                         indxR, indxO, indxW, indxAkv, indxZ_r, indxZ_w, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
       implicit none
@@ -1672,6 +1677,9 @@ contains
       wrtavg(indxW) = out_avg_w
       wrtavg(indxAkv) = out_avg_akv
       if (out_avg_rho .or. out_avg_omega .or. out_avg_w .or. out_avg_akv) wrtavg(indxTime) = .true.
+      wrtavg(indxZ_r) = out_avg_z_r
+      wrtavg(indxZ_w) = out_avg_z_w
+      if (out_avg_z_r .or. out_avg_z_w) wrtavg(indxTime) = .true.
       wrtavg(indxBostr) = out_avg_bostr
       wrtavg(indxBustr) = out_avg_bustr
       wrtavg(indxBvstr) = out_avg_bvstr

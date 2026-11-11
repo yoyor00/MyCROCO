@@ -544,6 +544,8 @@ MODULE croco_namelist
    !! Density criterion to define the mixed layer depth [kg/m3]
    real :: mld_crit_T = 0.2
    !! Temperature criterion to define the mixed layer depth [Celsius]
+   real :: mld_depth_ref = 10
+   !! Reference depth to define the mixed layer depth [m]
 #  endif
 #endif
 
@@ -1046,6 +1048,8 @@ MODULE croco_namelist
    logical :: out_his_omega = .false.
    logical :: out_his_w = .false.
    logical :: out_his_akv = .false.
+   logical :: out_his_z_r = .false.
+   logical :: out_his_z_w = .false.
 # endif
    logical :: out_his_bostr = .false.
    logical :: out_his_bustr = .false.
@@ -1053,6 +1057,7 @@ MODULE croco_namelist
    logical :: out_his_wstr = .false.
    logical :: out_his_ustr = .false.
    logical :: out_his_vstr = .false.
+# endif
 # if defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_history_fields
    logical :: out_his_akt = .false.
@@ -1133,6 +1138,8 @@ MODULE croco_namelist
    logical :: out_avg_wstr = .false.
    logical :: out_avg_ustr = .false.
    logical :: out_avg_vstr = .false.
+   logical :: out_avg_z_r = .false.
+   logical :: out_avg_z_w = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_averages_fields

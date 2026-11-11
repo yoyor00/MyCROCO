@@ -36,7 +36,7 @@ MODULE p4zbio
    USE p4zrem          !  Remineralisation of organic matter
    USE p4zpoc          !  Remineralization of organic particles
    USE p4zagg          !  Aggregation of particles
-   USE p4zfechem
+   USE p4zfechem       !  Iron chemistry
    USE p4zligand       !  Prognostic ligand model
    USE p4zdiaz         !  Diazotrophy
    USE prtctl          !  print control for debugging
@@ -96,7 +96,7 @@ CONTAINS
       IF( ln_sink )   CALL p4z_sink   ( kt, knt, Kbb, Kmm, Krhs )     ! vertical flux of particulate organic matter
       IF( ln_fechem ) CALL p4z_fechem ( kt, knt, Kbb, Kmm, Krhs )     ! Iron chemistry/scavenging
       !
-      IF( ln_p2z ) THEN  ! PISCES reduced
+      IF( ln_p2z ) THEN  ! PISCES npzd
                         CALL p2z_lim  ( kt, knt, Kbb, Kmm       )     ! co-limitations by the various nutrients
          IF( ln_prod  ) CALL p2z_prod ( kt, knt, Kbb, Kmm, Krhs )     ! phytoplankton growth rate over the global ocean. 
          IF( ln_mort  ) CALL p2z_mort ( kt,      Kbb,      Krhs )     ! phytoplankton mortality
@@ -105,34 +105,33 @@ CONTAINS
          ! Phytoplankton only sources/sinks terms
                         CALL p4z_lim  ( kt, knt, Kbb, Kmm       )     ! co-limitations by the various nutrients
          IF( ln_prod )  CALL p4z_prod ( kt, knt, Kbb, Kmm, Krhs )     ! phytoplankton growth rate over the global ocean. 
-         !                                          ! (for each element : C, Si, Fe, Chl )
+         !                                                            ! (for each element : C, Si, Fe, Chl )
          IF( ln_mort )  CALL p4z_mort ( kt,      Kbb,      Krhs )     ! phytoplankton mortality
          ! zooplankton sources/sinks routines 
          IF( ln_micro ) CALL p4z_micro( kt, knt, Kbb,      Krhs )     ! microzooplankton
-         IF( ln_meso ) CALL p4z_meso ( kt, knt, Kbb, Kmm, Krhs )     ! mesozooplankton
+         IF( ln_meso )  CALL p4z_meso ( kt, knt, Kbb, Kmm, Krhs )     ! mesozooplankton
       ELSE  ! PISCES-QUOTA
          ! Phytoplankton only sources/sinks terms
                         CALL p5z_lim  ( kt, knt, Kbb, Kmm       )     ! co-limitations by the various nutrients
          IF( ln_prod )  CALL p5z_prod ( kt, knt, Kbb, Kmm, Krhs )     ! phytoplankton growth rate over the global ocean. 
-         !                                          ! (for each element : C, Si, Fe, Chl )
-         IF( ln_mort )  CALL p5z_mort ( kt,      Kbb,      Krhs      )     ! phytoplankton mortality
+         !                                                            ! (for each element : C, Si, Fe, Chl )
+         IF( ln_mort )  CALL p5z_mort ( kt,      Kbb,      Krhs )     ! phytoplankton mortality
          !  zooplankton sources/sinks routines 
-         IF( ln_micro ) CALL p5z_micro( kt, knt, Kbb,      Krhs )           ! microzooplankton
-         IF( ln_meso  ) CALL p5z_meso ( kt, knt, Kbb, Kmm, Krhs )           ! mesozooplankton
+         IF( ln_micro ) CALL p5z_micro( kt, knt, Kbb,      Krhs )     ! microzooplankton
+         IF( ln_meso  ) CALL p5z_meso ( kt, knt, Kbb, Kmm, Krhs )     ! mesozooplankton
       ENDIF
       !
       IF( ln_p2z ) THEN
-        IF( ln_rem  ) CALL p2z_rem     ( kt, knt, Kbb, Kmm, Krhs )     ! remineralization terms of organic matter+scavenging of Fe
+        IF( ln_rem  ) CALL p2z_rem     ( kt, knt, Kbb, Kmm, Krhs )    ! remineralization terms of organic matter+scavenging of Fe
       ELSE
-         IF( ln_agg ) CALL p4z_agg     ( kt, knt, Kbb,      Krhs )     ! Aggregation of particles
-         IF( ln_rem ) CALL p4z_rem     ( kt, knt, Kbb, Kmm, Krhs )     ! remineralization terms of organic matter+scavenging of Fe
+         IF( ln_agg ) CALL p4z_agg     ( kt, knt, Kbb,      Krhs )    ! Aggregation of particles
+         IF( ln_rem ) CALL p4z_rem     ( kt, knt, Kbb, Kmm, Krhs )    ! remineralization terms of organic matter+scavenging of Fe
       ENDIF
-      IF( ln_poc )    CALL p4z_poc     ( kt, knt, Kbb, Kmm, Krhs )     ! Remineralization of organic particles
+      IF( ln_diaz )   CALL p4z_diaz    ( kt, knt, Kbb, Kmm, Krhs )    ! Diazotrophy
+      IF( ln_poc )    CALL p4z_poc     ( kt, knt, Kbb, Kmm, Krhs )    ! Remineralization of organic particles
       !
       ! Ligand production. ln_ligand should be set .true. to activate
-      IF( ln_ligand ) CALL p4z_ligand( kt, knt, Kbb,      Krhs )
-
-      IF( ln_diaz )   CALL p4z_diaz( kt, knt, Kbb, Kmm, Krhs )     ! Diazotrophy
+      IF( ln_ligand ) CALL p4z_ligand  ( kt, knt, Kbb,      Krhs )
 
       ! Update of the size of the different phytoplankton groups
       sizen(:,:,:) = MAX(1.0, sizena(:,:,:) )
@@ -142,7 +141,7 @@ CONTAINS
             sizep(:,:,:) = MAX(1.0, sizepa(:,:,:) )
          ENDIF
       ENDIF
-      !                                                             !
+      !                                                             
       IF(sn_cfctl%l_prttrc)   THEN  ! print mean trends (used for debugging)
          WRITE(charout, FMT="('bio ')")
          CALL prt_ctl_info( charout, cdcomp = 'top' )

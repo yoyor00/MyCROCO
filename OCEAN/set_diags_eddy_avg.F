@@ -89,7 +89,8 @@
 
 !###############################################
 
-        if (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).eq.1) then
+        if (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).eq.1
+     &                    .OR. nwrtdiags_eddy_avg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then

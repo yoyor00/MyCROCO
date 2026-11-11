@@ -10,9 +10,10 @@
 !======================================================================
 !
 ! This block is inside  itrc,k,j,i loops
-
-              cff1= Hz(i,j,k) / (pm(i,j)*pn(i,j))
-     &              * 0.5*(t(i,j,k,nstp,itrc)+t(i,j,k,nnew,itrc))
+! Diagnostic terms are already integrated over the cell volume:
+! multiply by the tracer to get the tracer variance budget
+!
+              cff1= 0.5*(t(i,j,k,nstp,itrc)+t(i,j,k,nnew,itrc))
 
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff1
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff1

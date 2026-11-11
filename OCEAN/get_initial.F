@@ -33,10 +33,13 @@
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
-#if defined NBQ || defined MORPHODYN
+#if defined NBQ || defined MORPHODYN || defined WET_DRY
 # include "grid.h"
 #endif
 #include "mixing.h"
+#ifdef DIAGNOSTICS_TS_MLD
+# include "diagnostics.h"
+#endif
 
 #if defined EXACT_RESTART
 # include "coupling.h"
@@ -49,6 +52,9 @@
 !======================================================
 
       real time_scale
+#ifdef DIAGNOSTICS_TS_MLD
+      real workkbl(GLOBAL_2D_ARRAY)
+#endif
       integer itrc
 #ifdef EXACT_RESTART
       real time_bak
@@ -58,8 +64,10 @@
 #endif
       integer ncid, req_rec, tindx, record, max_rec,
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
-     &        start(2), count(2), ibuff(6),   nf_fread, checkdims
-      character units*180
+     &        start(2), count(2), ibuff(6),   nf_fread, checkdims,
+     &        vtransform_value, vt_rec, ierr_vt
+      logical old_vt
+      character*180  units, transf
       CHARACTER(len=19)          :: tool_sectodat
       REAL(kind=8)               :: tool_datosec
 #include "netcdf.inc"
@@ -114,6 +122,46 @@
      &               'Cannot open netCDF file ''',   ininame(1:lstr),
      &                                  '''.',     nf_strerror(ierr)
         goto 99                                           !--> ERROR
+      endif
+!
+! Check the vertical s-coordinate transformation used to create
+! the inifile: stop if VertCoordType=OLD/SH94 or Vtransform/=2.
+! If neither VertCoordType nor Vtransform is present, the file is
+! assumed to be valid (tools write Vtransform=2 by default).
+!
+      old_vt=.false.
+      transf=' '
+      ierr_vt=nf_get_att_text(ncid, nf_global, 'VertCoordType', transf)
+      if (ierr_vt.eq.nf_noerr) then
+        if (trim(transf).eq.'OLD' .or.
+     &      trim(transf).eq.'SH94') old_vt=.true.
+      endif
+      vtransform_value=0
+      ierr_vt=nf_inq_varid(ncid, 'Vtransform', varid)
+      if (ierr_vt.eq.nf_noerr) then
+        vt_rec=1
+        ierr_vt=nf_get_var1_int(ncid, varid, vt_rec, vtransform_value)
+      else
+        ierr_vt=nf_get_att_int(ncid, nf_global, 'Vtransform',
+     &                                          vtransform_value)
+      endif
+      if (ierr_vt.eq.nf_noerr .and. vtransform_value.ne.2)
+     &                                             old_vt=.true.
+
+      if (old_vt) then
+        MPI_master_only write(stdout,'(/1x,A/(20x,A))')
+     &  'GET_INITIAL ERROR: Old Vtransform is obsolete.',
+     &  'From now on, CROCO uses only one vertical',
+     &  's-coordinate transformation (Vtransform=2).',
+     &  'Two possibilities:',
+     &  '1) keep these input files and use croco <= v2.1.3',
+     &  '   (with the NEW_S_COORD cppkey deactivated)',
+     &  '2) regenerate the input files with croco_tools',
+     &  '   or croco_pytools (Vtransform=2).',
+     &  'Newer versions of the tools no longer support',
+     &  'the old Vtransform.',
+     &  'For details, see the documentation.'
+        goto 99                                          !--> ERROR
       endif
 !
 ! Read in evolving model variables:
@@ -534,6 +582,20 @@
 
         goto 99                                           !--> ERROR
       endif
+#ifdef WET_DRY
+!
+!  Cap how far below Dcrit the analytical zeta can be, so a dry
+!  cell never gets an arbitrarily negative total depth (h+zeta)
+!  Note : Only when there is no prior run to
+!  trust: ntstart==1 means this record has no "time_step" history
+
+!
+      if (ntstart.eq.1) then
+        where (zeta(:,:,1) .lt. Dcrit(:,:)-h(:,:))
+          zeta(:,:,1) = Dcrit(:,:)-h(:,:)-1.e-14
+        endwhere
+      endif
+#endif
 !
 ! 2D momentum component in the XI-direction.
 !
@@ -934,11 +996,11 @@
       lvar=lenstr(vname(1,indxHbl))
       ierr=nf_inq_varid (ncid, vname(1,indxHbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (hbls(START_2D_ARRAY,1), ncid, varid,
+        ierr=nf_fread (hbls(START_2D_ARRAY,3-tindx), ncid, varid,
 !#   else
 !        ierr=nf_fread (hbl(START_2D_ARRAY), ncid, varid,
 !#   endif
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbl)(1:lvar)
      &                                   , record, ininame(1:lstr)
@@ -960,7 +1022,7 @@
       ierr=nf_inq_varid (ncid, vname(1,indxHbbl)(1:lvar), varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (hbbl(START_2D_ARRAY), ncid, varid,
-     &                                         1, r2dvar)
+     &                                    record, r2dvar)
         if (ierr .ne. nf_noerr) then
           MPI_master_only write(stdout,2) vname(1,indxHbbl)(1:lvar)
      &                                    , record, ininame(1:lstr)
@@ -974,6 +1036,32 @@
 #   endif /* LMD_BKPP2005 */
 #  endif /* LMD_BKPP */
 # endif /* LMD_MIXING */
+
+# ifdef DIAGNOSTICS_TS_MLD
+!
+!  MLD vertical index at previous time step (stored as real).
+!  If absent, kbl_nstp stays at zero and the MLD index of the
+!  first time step is used.
+!
+      if (tindx.eq.1) then
+        lvar=lenstr(vname(1,indxKbl_nstp))
+        ierr=nf_inq_varid (ncid, vname(1,indxKbl_nstp)(1:lvar), varid)
+        if (ierr .eq. nf_noerr) then
+          workkbl=0.
+          ierr=nf_fread (workkbl(START_2D_ARRAY), ncid, varid,
+     &                                         record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2)
+     &        vname(1,indxKbl_nstp)(1:lvar), record, ininame(1:lstr)
+            goto 99                                      !--> ERROR
+          endif
+          kbl_nstp=nint(workkbl)
+        else
+          MPI_master_only write(stdout,4)
+     &        vname(1,indxKbl_nstp)(1:lvar), ininame(1:lstr)
+        endif
+      endif
+# endif /* DIAGNOSTICS_TS_MLD */
 
 # ifdef GLS_MIXING
 !
@@ -1303,6 +1391,46 @@
      &                                 ,ininame(1:lstr)
       endif
 #  endif /* TS_MIX_ISO_FILT */
+
+#  ifdef WET_DRY
+!
+!  umask_wet
+!
+      lvar=lenstr(vname(1,indxumaskwet))
+      ierr=nf_inq_varid (ncid, vname(1,indxumaskwet)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+      ierr=nf_fread (umask_wet(START_2D_ARRAY), ncid,
+     &                                     varid, record, u2dvar)
+        if (ierr .ne. nf_noerr) then
+         MPI_master_only write(stdout,2) vname(1,indxumaskwet)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+        got_wetdry_rst=.true.
+      else
+        MPI_master_only write(stdout,5) vname(1,indxumaskwet)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+!  vmask_wet
+!
+       lvar=lenstr(vname(1,indxvmaskwet))
+       ierr=nf_inq_varid (ncid, vname(1,indxvmaskwet)(1:lvar), varid)
+       if (ierr .eq. nf_noerr) then
+       ierr=nf_fread (vmask_wet(START_2D_ARRAY), ncid,
+     &                                     varid, record, v2dvar)
+         if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2)
+     &                                  vname(1,indxvmaskwet)(1:lvar)
+     &                                 , record, ininame(1:lstr)
+           goto 99                                        !--> ERROR
+         endif
+       else
+         MPI_master_only write(stdout,5)
+     &                                 vname(1,indxvmaskwet)(1:lvar)
+     &                                 , ininame(1:lstr)
+        endif
+#  endif /* WET_DRY */
 
 # endif  /* EXACT_RESTART */
 
