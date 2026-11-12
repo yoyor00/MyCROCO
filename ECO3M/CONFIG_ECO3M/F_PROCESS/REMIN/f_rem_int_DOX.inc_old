@@ -1,0 +1,128 @@
+!***************************************************************************
+!***************************************************************************
+!Copyright or © or Copr. CNRS/IRD/Université de la Méditerranée
+!contributor(s) : Melika BAKLOUTI & Vincent FAURE (10/10/2006)
+!
+!m.baklouti@univmed.fr; vincent.faure@univmed.fr
+!
+!This software (Eco3M) is a computer program whose purpose is to perform 
+!biogeochemical or coupled physical-biogeochemical modelling.
+!
+!This software is governed by the CeCILL license under French law and
+!abiding by the rules of distribution of free software. You can  use, 
+!modify and/ or redistribute the software under the terms of the CeCILL
+!license as circulated by CEA, CNRS and INRIA at the following URL
+!"http://www.cecill.info". 
+!
+!As a counterpart to the access to the source code and  rights to copy,
+!modify and redistribute granted by the license, users are provided only
+!with a limited warranty  and the software''s author,  the holder of the
+!economic rights,  and the successive licensors  have only  limited
+!liability. 
+!
+!In this respect, the user''s attention is drawn to the risks associated
+!with loading,  using,  modifying and/or developing or reproducing the
+!software by the user in light of its specific status of free software,
+!that may mean  that it is complicated to manipulate,  and  that  also
+!therefore means  that it is reserved for developers  and  experienced
+!professionals having in-depth computer knowledge. Users are therefore
+!encouraged to load and test the software''s suitability as regards their
+!requirements in conditions enabling the security of their systems and/or 
+!data to be ensured and,  more generally, to use and operate it in the 
+!same conditions as regards security. 
+!
+!The fact that you are presently reading this means that you have had
+!knowledge of the CeCILL license and that you accept its terms.
+!***************************************************************************
+!***************************************************************************
+!--------------------------------------------------------------------
+!
+  function f_rem_int_DOX.inc(ili,jcol,indBX,QminX,QmaxX,QminC,QmaxC,iDOX,iDOC,VDOC,KDOC,COST_INT)
+!
+!--------------------------------------------------------------------
+! A function for calculating the rate of remineralisation 
+! either inside  bacterial cells as a function of carbon quota
+!
+!
+! Melika Baklouti Avril 2026
+!-------------------------------------------------------------------------
+
+    Implicit None
+
+    !-- fonction:
+    Real(8):: f_rem_int_DOX.inc(nx_min:nx_max,ny_min:ny_max,nz_max)
+
+    !-- arguments
+    Real(8) :: indBX,Qmin,Qmax, QminC,QmaxC
+    Real(8) :: VDOX,KDOX,DOX
+    Integer :: ili,jcol
+
+    !--variables locales:
+    Integer :: identite
+    Integer :: iiC,i,j,k,iiCell,iiX,iiN,iiP
+    Real(8) :: QC,QX,hQX,fQX,QXC,hQXC,nn_exsud,nn_remin,NC_moy,PC_moy,XC_max,XC_min,XC_moy
+    Real:: fQC, FRAC_RETOUR
+    Real:: TAB_fQC(nx_min:nx_max,ny_min:ny_max,nz_max),TAB_FRAC_RETOUR(nx_min:nx_max,ny_min:ny_max,nz_max)
+    Character(L_VAR)::chain
+
+    ! Index of bacterial concentration of element X 
+    iiBX = nint(indBX)
+   
+    iiDOX  = nint(iDOX)
+
+    ! Organism number for bacteria 
+    identite = var(iiBX)%idorg
+
+    ! Indices of bacterial concentrations expressed in terms of biomass and abundance
+    chain = 'C'
+    iiC = f_idorg2id(identite,chain)
+    chain = 'N'
+    iiN =  f_idorg2id(identite,chain)
+    chain = 'P'
+    iiP =  f_idorg2id(identite,chain)
+    chain = 'cell'
+    iiCell = f_idorg2id(identite,chain)
+       
+
+    nn_X = 4.0
+    nn_C = 0.6
+
+ 
+    !-- Calcul de la fonction de limitation :
+   
+    do k=1,nz_max
+        do j=ny_min,ny_max
+            do i=nx_min,nx_max  
+
+             ! bacterial carbon cell quota :
+                QC =  var(iiC)%conc(i,j,k) / (var(iiCell)%conc(i,j,k)+1.d-80)
+                fQC = (QmaxC - QC) / (QmaxC -QminC)
+
+                fQC = max(0.d0,fQC)
+                fQC = min(1.d0,fQC)
+	        fQC = fQC**nn_C
+                hQC = 1 - fQC
+                  
+             ! bacterial X cell quota:
+                QX = var(iiX)%conc(i,j,k) /  (var(iiCell)%conc(i,j,k)+1.d-80)
+
+                fQX = ((Qmax - QX) / (Qmax - Qmin))
+                fQX = max(0.0d0,fQX)
+                fQX = min(1.0d0,fQX)
+                fQX = fQX**nn_X   
+                 
+		flux =  VDOC * var(iiDOC)%conc(i,j,k)/(var(iiDOC)%conc(i,j,k)+KDOC) * &
+		             var(iiDOX)%conc(i,j,k)/(var(iiDOC)%conc(i,j,k)+1d-50)  * fQC * fQX
+
+                 if ((DOX > flux * dt_bio) .and.  (var(iiC)%conc(i,j,k) > COST_REM * flux *dt_bio))
+                     f_rem_int_DOX.inc(i,j,k) =  flux
+		 else
+                     f_rem_int_DOX.inc(i,j,k) =0.0d0
+	         endif
+            enddo
+        enddo
+    enddo
+                
+
+end function f_rem_int_DOX.inc
+!--------------------------------------------------------------------
