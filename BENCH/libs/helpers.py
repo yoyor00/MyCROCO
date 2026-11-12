@@ -51,6 +51,24 @@ def print_exception(exception: Exception) -> None:
 
 
 ##########################################################
+def replace_symlink(target: str, link_name: str) -> None:
+    """
+    Point `link_name` to `target`, replacing whatever is already there.
+
+    `os.path.exists` cannot be used to test that: it follows the link, so a
+    dangling symlink reports False while still occupying the name, and
+    `os.symlink` then fails with FileExistsError.  That is what happened to the
+    `results/last` link once the previous run directory was removed.
+    """
+    if os.path.lexists(link_name):
+        if os.path.isdir(link_name) and not os.path.islink(link_name):
+            shutil.rmtree(link_name)
+        else:
+            os.unlink(link_name)
+    os.symlink(target, link_name)
+
+
+##########################################################
 def run_shell_command(command, logfilename=None, capture=True, show_on_error=True):
     """Print the command and run it. On failure it prints the output."""
 
