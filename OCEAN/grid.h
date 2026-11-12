@@ -117,10 +117,14 @@
       common /grid_latu/latu /grid_lonu/lonu
       common /grid_latv/latv /grid_lonv/lonv
 
-      ! always declare xr, yr, xp, yp because they are use in 
-      ! ana_initial for all non spherical case, they are 
-      ! allocatable but never allocated in this context
-      real, allocatable :: xr(:,:), yr(:,:), xp(:,:), yp(:,:)
+      ! ana_grid and ana_initial write xr/yr/xp/yp for SPHERICAL builds too
+      ! (`xr(i,j) = ...` in the analytic topography), so they must be static
+      ! arrays here as in the branch below: as allocatable they were never
+      ! allocated and the first write corrupted memory.
+      real xr(GLOBAL_2D_ARRAY)
+      real yr(GLOBAL_2D_ARRAY)
+      real xp(GLOBAL_2D_ARRAY)
+      real yp(GLOBAL_2D_ARRAY)
 #else
 # ifdef STOGEN
       real, TARGET :: xr(GLOBAL_2D_ARRAY)
