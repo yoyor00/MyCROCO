@@ -292,7 +292,9 @@ fi
 if [ "$MY_CONFIG_WORK" != "$MY_CONFIG_HOME" ]; then
     if [ ! -d $MY_CONFIG_WORK ]; then
         mkdir -p $MY_CONFIG_WORK
-    else
+    elif [ $x_f -eq 0 ]; then
+        # -f is the non-interactive mode: like for the home directory above,
+        # an existing work directory must not turn into a blocking question
         echo 'Already a configuration exists ...'
         echo 'You chould check the configuration directory ' $MY_CONFIG_WORK
         echo -n " Do you want to proceed anyway (risk of overwriting) ? [N/y] "
