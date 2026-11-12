@@ -328,6 +328,7 @@
       "RESTART_DIAGS": true,
       "DO_NOT_OVERWRITE":true,
       "DIAGNOSTICS_TS": true,
+      "DIAGNOSTICS_TS_MLD": true,
       "DIAGNOSTICS_UV": true,
       "DIAGNOSTICS_KE": true,
       "DIAGNOSTICS_VRT": true,
