@@ -1527,15 +1527,11 @@
 #ifdef DIAGNOSTICS_TS
      &      , wrtdia3D(NT+1)
      &      , wrtdia2D(NT+1)
-# ifdef DIAGNOSTICS_TS_MLD
      &      , wrtdia_mld(4)
-# endif
 # ifdef AVERAGES
      &      , wrtdia3D_avg(NT+1)
      &      , wrtdia2D_avg(NT+1)
-#  ifdef DIAGNOSTICS_TS_MLD
      &      , wrtdia_mld_avg(4)
-#  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
@@ -2005,15 +2001,11 @@
 #ifdef DIAGNOSTICS_TS
      &      , wrtdia3D
      &      , wrtdia2D
-# ifdef DIAGNOSTICS_TS_MLD
      &      , wrtdia_mld
-# endif
 # ifdef AVERAGES
      &      , wrtdia3D_avg
      &      , wrtdia2D_avg
-#  ifdef DIAGNOSTICS_TS_MLD
      &      , wrtdia_mld_avg
-#  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
