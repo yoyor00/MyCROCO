@@ -15,7 +15,7 @@ from .croco import Croco
 from .messaging import Messaging
 from .system import gen_system_info
 from .perf import Performance
-from .helpers import run_shell_command
+from .helpers import run_shell_command, replace_symlink
 from .htmlreport.htmlreport import generate_html
 
 
@@ -63,9 +63,7 @@ class Benchmarking:
         dirname = os.path.dirname(results)
         basename = os.path.basename(results)
         link_name = f"{dirname}/last"
-        if os.path.exists(link_name):
-            os.remove(link_name)
-        os.symlink(basename, link_name)
+        replace_symlink(basename, link_name)
 
     def make_ref_variant_first(self):
         """
