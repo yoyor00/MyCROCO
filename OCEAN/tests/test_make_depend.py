@@ -568,8 +568,8 @@ class TestMainEndToEnd(unittest.TestCase):
 
     def test_output_option_writes_elsewhere(self):
         # -o keeps the tool out of the source tree: the Makefile names
-        # the file explicitly, and check_differential.py can run both
-        # tools without clobbering a real Make.depend
+        # the file explicitly, and a side-by-side comparison run never
+        # clobbers a real Make.depend
         tmp = Path(self.id())
         tmp.mkdir(exist_ok=True)
         self.addCleanup(lambda: [p.unlink() for p in tmp.glob("*")] and tmp.rmdir())

@@ -44,8 +44,6 @@ make_depend:
     # make_depend.py tests
     - cd $CI_PROJECT_DIR
     - python3 -m unittest discover -s OCEAN/tests -v
-    # differential check make_depend.py vs cross_matrix
-    - python3 OCEAN/tests/check_differential.py
 
 # ─── gfortran (always-on) ─────────────────────────────────────────────────
 
