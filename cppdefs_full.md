@@ -516,7 +516,6 @@ Use these keys when running test cases without external NetCDF files. Each `ANA_
 ## Input / Output
 
 - `AVERAGES` — Time-averaged output fields
-- `AVERAGES_K` — Time-averaged vertical mixing fields
 - `OUTPUTS_SURFACE` — Surface-only output snapshot fields
 - `HOURLY_VELOCITIES` — Additional hourly velocity output
 

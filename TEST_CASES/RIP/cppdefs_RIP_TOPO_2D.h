@@ -36,7 +36,6 @@
 #  define M3_FRC_BRY
 #  define T_FRC_BRY
 #  define AVERAGES
-#  define AVERAGES_K
 # else
 #  define UV_VIS2
 #  define UV_VIS_SMAGO

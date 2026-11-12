@@ -255,7 +255,6 @@
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
 # undef  AVERAGES
-# undef  AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
                      /* Exact restart */

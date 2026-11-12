@@ -1043,7 +1043,6 @@
 ======================================================================
 */
 #ifndef SOLVE3D
-# undef AVERAGES_K
 # undef TRACERS
 # undef TEMPERATURE
 # undef SALINITY

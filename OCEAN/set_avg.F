@@ -545,7 +545,6 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #  endif
-#  ifdef AVERAGES_K
         if (wrtavg(indxAkv)) then
           do k=0,N
             do j=JstrR,JendR
@@ -579,7 +578,6 @@ C$    integer omp_get_thread_num
           enddo
         endif
 #   endif
-#  endif
 #  if defined BIOLOGY && !defined PISCES
         if (wrtavg(indxHel)) then
           do j=JstrR,JendR

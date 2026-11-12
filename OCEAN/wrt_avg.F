@@ -380,7 +380,6 @@ CR      write(*,*) 'wrt_avg:  wrtVisc' MYID
 CR      write(*,*) 'wrt_avg:  wrtDiff' MYID
       endif
 #  endif
-#  ifdef AVERAGES_K
 !
 !     Write out vertical viscosity coefficient.
 !
@@ -394,7 +393,7 @@ CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
 !
 !     Write out vertical diffusion coefficient for potential temperature.
 !
-#   ifdef TEMPERATURE
+#  ifdef TEMPERATURE
       if (wrtavg(indxAkt)) then
 !$acc update if(compute_on_device) host(Akt_avg(:,:,:,itemp))
          work=Akt_avg(:,:,:,itemp)
@@ -402,8 +401,8 @@ CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
      &        vname(1,indxAkt), record,w3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
       endif
-#   endif /* TEMPERATURE */
-#   ifdef SALINITY
+#  endif /* TEMPERATURE */
+#  ifdef SALINITY
 !
 !     Write out vertical diffusion coefficient for salinity.
 !
@@ -414,8 +413,7 @@ CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
      &        vname(1,indxAks), record,w3dvar,type)
 CR       write(*,*) 'wrt_avg:  wrtAks' MYID
       endif
-#   endif /* SALINITY */
-#  endif  /* AVERAGES_K */
+#  endif /* SALINITY */
 
 #  if defined LMD_SKPP || defined GLS_MIXING
 !

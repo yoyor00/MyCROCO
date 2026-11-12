@@ -1321,10 +1321,8 @@
 #  ifdef DIF_COEF_3D
 !$acc&, diff3d_avg
 #  endif
-#  ifdef AVERAGES_K
 !$acc&, Akv_avg
 !$acc&, Akt_avg
-#  endif
 # endif
 # ifdef WAVE_IO
 !$acc&, whrm_avg

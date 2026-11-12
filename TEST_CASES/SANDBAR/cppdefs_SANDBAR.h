@@ -68,7 +68,6 @@
 #  define M3_FRC_BRY
 #  define T_FRC_BRY
 #  define AVERAGES
-#  define AVERAGES_K
 #  define DIAGNOSTICS_EDDY
 /* NBQ */
 # endif 

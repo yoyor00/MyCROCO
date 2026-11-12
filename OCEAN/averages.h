@@ -127,10 +127,11 @@
       real diff3d_avg(GLOBAL_2D_ARRAY,N)
       common /avg_diff3d/diff3d_avg
 #  endif
-#  ifdef AVERAGES_K
       real Akv_avg(GLOBAL_2D_ARRAY,0:N)
+      common /avg_Akv/Akv_avg
+#  ifdef TEMPERATURE
       real Akt_avg(GLOBAL_2D_ARRAY,0:N,2)
-      common /avg_Akv/Akv_avg /avg_Akt/Akt_avg
+      common /avg_Akt/Akt_avg
 #  endif
 # endif
 # ifdef WAVE_IO
