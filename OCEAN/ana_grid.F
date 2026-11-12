@@ -815,7 +815,8 @@ C$    integer omp_get_thread_num
             h(i,j)=-4.5
      &           -1.7*exp(-6*(((xx-xs-db)/db)**2))
      &           +3.1*(1+tanh(0.025*(xx-xs)))
-     &           +0.014*(xx+log(cosh(alpha*(xx-xs))/cosh(alpha*xs))/alpha)
+     &           +0.014*(xx+log(cosh(alpha*(xx-xs))
+     &                         /cosh(alpha*xs))/alpha)
           enddo
         enddo
       case ('RIP_TOPO_2D')
@@ -835,7 +836,8 @@ C$    integer omp_get_thread_num
             yy=yr(i,j);
             h0=-1.5*exp(-5*(((xx-xs-db)/db)**2))
      &           +1.35*(1+tanh(0.0253*(xx-xs)))
-     &           +0.0032*(xx+log(cosh(alpha*(xx-xs))/cosh(alpha*xs))/alpha)
+     &           +0.0032*(xx+log(cosh(alpha*(xx-xs))
+     &                          /cosh(alpha*xs))/alpha)
             per=eps*cos(2*pi*yy/lambda)*exp(-5*(((xx-xs-db)/db)**2))
             h(i,j)=(1+per)*h0
           enddo
@@ -857,7 +859,8 @@ C$    integer omp_get_thread_num
             yy=yr(i,j);
             h0=-1.5*exp(-5*(((xx-xs-db)/db)**2))
      &           +1.35*(1+tanh(0.0253*(xx-xs)))
-     &           +0.0032*(xx+log(cosh(alpha*(xx-xs))/cosh(alpha*xs))/alpha)
+     &           +0.0032*(xx+log(cosh(alpha*(xx-xs))
+     &                          /cosh(alpha*xs))/alpha)
             per=eps*cos(2*pi*yy/lambda)*exp(-5*(((xx-xs-db)/db)**2))
             h(i,j)=(1+per)*h0
           enddo
@@ -944,8 +947,10 @@ C$    integer omp_get_thread_num
         estMS = 10000.0 ! estuary Mouth Section width (m)
         estMS_para = 1.0/24000.0 ! estuary Mouth Section width exponentiel parameter
         estMS_para2 = 1.0/3000.0 ! estuary Off Section width exponentiel parameter
-        estCS = (estHupstream - estHmouth) / (dx * float(LLm - imouth)) ! estuary channel slope in estuary
-        estCS2 = (estHmouth - estHoff) / (dx * float(imouth)) ! estuary channel slope offshore
+        estCS = (estHupstream - estHmouth)
+     &        / (dx * float(LLm - imouth)) ! estuary channel slope in estuary
+        estCS2 = (estHmouth - estHoff)
+     &        / (dx * float(imouth)) ! estuary channel slope offshore
         estGamma2 = 1.1**2
         do i = IstrR, IendR
 # ifdef MPI
