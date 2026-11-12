@@ -2541,14 +2541,20 @@ contains
 #if defined ANA_PSOURCE
 # if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       MPI_master_only WRITE (stdout, nml=croco_psource)
+      ! The per-source arrays are zero-sized when psource_Nsrc = 0.  Writing
+      ! such a namelist group aborts on some gfortran versions (the runtime
+      ! trips over the zero-size descriptor), so only echo it when there is at
+      ! least one source.
+      if (psource_Nsrc > 0) then
 #  ifdef PSOURCE_NCFILE
-      MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
+         MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
 #  else
-      MPI_master_only WRITE (stdout, nml=croco_psource_data)
+         MPI_master_only WRITE (stdout, nml=croco_psource_data)
 #  endif
 #  ifdef TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
+         MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
 #  endif
+      end if
 # endif
 #endif
 #ifdef SEDIMENT
