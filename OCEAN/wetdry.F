@@ -35,17 +35,13 @@
 # include "grid.h"
 C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
-# ifdef EXACT_RESTART
       if (got_wetdry_rst) then
 !  keep the restored umask_wet/vmask_wet, only redo wetdry/rmask_wet
         call wetdry_tile (Istr,Iend,Jstr,Jend, .true.)
       else
-# endif
         call wetdry_tile (Istr,Iend,Jstr,Jend, .false.)
         call init_wetdry_corners_tile (Istr,Iend,Jstr,Jend)
-# ifdef EXACT_RESTART
       endif
-# endif
       return
       end
 !***********************************************************************

@@ -1399,7 +1399,7 @@
         endif
         got_wetdry_rst=.true.
       else
-        MPI_master_only write(stdout,5) vname(1,indxumaskwet)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxumaskwet)(1:lvar)
      &                                , ininame(1:lstr)
       endif
 !
@@ -1417,7 +1417,7 @@
            goto 99                                        !--> ERROR
          endif
        else
-         MPI_master_only write(stdout,5)
+         MPI_master_only write(stdout,4)
      &                                 vname(1,indxvmaskwet)(1:lvar)
      &                                 , ininame(1:lstr)
         endif
