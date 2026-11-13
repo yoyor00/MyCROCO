@@ -23,13 +23,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
-- UBSTANCE : substance boundary conditions (`obc_cv_name`) now support
+- SUBSTANCE : substance boundary conditions (`obc_cv_name`) now support
   `'nullGradient'` and `'none'`; `'none'` falls back to the uniform
   `cobc_wat` concentration. Left empty, `obc_cv_name` now defaults to the
   substance's own name (`name_var`), reading it from the bry file if
   present, same as `init_cv_name` for initial conditions below (#590)
 
-- UBSTANCE : substance initial conditions (`init_cv_name`) now support
+- SUBSTANCE : substance initial conditions (`init_cv_name`) now support
   `'none'`, which skips reading the initial file for that substance and
   falls back on the uniform `cini_wat` concentration, mirroring the
   `obc_cv_name`/`cobc_wat` mechanism above. Left empty, `init_cv_name`
@@ -47,6 +47,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (or a named variable missing from the init file) falls back on the
   uniform `cini_wat_fix` concentration; left empty, `init_cv_name_fix`
   defaults to the substance's own name (#590)
+
+- SUBSTANCE : `cv_rain` (substance concentration in rainwater) is now
+  applied in `bulk_flux.F`, adding `prate * cv_rain` to each substance's
+  surface flux, the same way rain already contributes to the temperature
+  flux there; only active if CPP keys SALINITY and RAIN_FLUX are both
+  defined. `flx_atm`/`cini_air` remain unimplemented (#590)
 
 ### Fixed
 

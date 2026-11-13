@@ -37,6 +37,9 @@
       USE stoalloc        ! Stochastic working arrays
 # endif
       use croco_namelist, only: rho0
+# ifdef SUBSTANCE
+      USE comsubstance, ONLY: cv_rain
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -50,6 +53,9 @@
 !++ Local integers
       INTEGER              :: i, j, m, iter
       INTEGER              :: Istr, Iend, Jstr, Jend
+# ifdef SUBSTANCE
+      INTEGER              :: itrc
+# endif
       INTEGER              :: imin, imax, jmin, jmax
       INTEGER, PARAMETER   :: IterFl = 3
 # ifdef CFB_WIND_TRA
@@ -673,6 +679,13 @@
           EmP(i,j)=evap-prate(i,j) 
           ! add temperature flux from rain
           stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
+#   ifdef SUBSTANCE
+          ! add substance flux from rain (cv_rain_n(): substance
+          ! concentration in rainwater, kg/m3)
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=prate(i,j)*cv_rain(itrc)
+          enddo
+#   endif
 #   else
           !++  Total surface salt flux
           stflx(i,j,isalt)=(evap-prate(i,j))*t(i,j,N,nrhs,isalt)
