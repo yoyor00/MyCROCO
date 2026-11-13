@@ -14,6 +14,9 @@
       subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
                                                 ! initialization file.
       use croco_namelist
+# ifdef SUBSTANCE
+      use comsubstance, ONLY : init_cv_name
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -66,6 +69,8 @@
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180
+      character*200 vname1
+      logical l_skip_subs_read
       CHARACTER(len=19)          :: tool_sectodat
       REAL(kind=8)               :: tool_datosec
 #include "netcdf.inc"
@@ -851,20 +856,37 @@
 # ifdef TRACERS
       do itrc=1,NT
         got_tini(itrc)=.true.
-        lvar=lenstr(vname(1,indxV+itrc))
-        ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),varid)
-        if (ierr .eq. nf_noerr) then
-          ierr=nf_fread (t(START_2D_ARRAY,1,tindx,itrc), ncid, varid,
-     &                                                record, r3dvar)
-          if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxV+itrc)(1:lvar)
-     &                                        , record, ininame(1:lstr)
-            goto 99                                       !--> ERROR
+        vname1=vname(1,indxV+itrc)
+        l_skip_subs_read=.false.
+#  ifdef SUBSTANCE
+!       for a substance, init_cv_name(itrc) drives which (if any)
+!       variable is read for the initial condition, instead of the
+!       substance's own name_var (==vname(1,indxV+itrc))
+        if (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
+          if (init_cv_name(itrc).eq.'none') then
+            got_tini(itrc)=.false.
+            l_skip_subs_read=.true.
+          else
+            vname1=init_cv_name(itrc)
           endif
-        else
-          MPI_master_only write(stdout,3) vname(1,indxV+itrc)(1:lvar),
-     &                                    ininame(1:lstr)
-          got_tini(itrc)=.false.
+        endif
+#  endif
+        if (.not.l_skip_subs_read) then
+          lvar=lenstr(vname1)
+          ierr=nf_inq_varid (ncid, vname1(1:lvar),varid)
+          if (ierr .eq. nf_noerr) then
+            ierr=nf_fread (t(START_2D_ARRAY,1,tindx,itrc), ncid, varid,
+     &                                                  record, r3dvar)
+            if (ierr .ne. nf_noerr) then
+              MPI_master_only write(stdout,2) vname1(1:lvar)
+     &                                          , record, ininame(1:lstr)
+              goto 99                                       !--> ERROR
+            endif
+          else
+            MPI_master_only write(stdout,3) vname1(1:lvar),
+     &                                      ininame(1:lstr)
+            got_tini(itrc)=.false.
+          endif
         endif
       enddo
 # endif /* TRACERS */

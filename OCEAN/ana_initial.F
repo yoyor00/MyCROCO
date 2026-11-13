@@ -1256,39 +1256,7 @@
           do i=IR_RANGE
             do iv=itsubs1,itsubs2
               if (.not.got_tini(iv)) then
-                select case (trim(testcase_name))
-                case ('')
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                case ('TIDAL_FLAT', 'ESTUARY', 'ESTUARY_SQUARE')
-                  if (h(i,j).gt.0) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                case ('DUNE', 'DUNE3D', 'ANA_DUNE')
-# ifdef MUSTANG
-                  t(i,j,k,1,iv)=cini_wat(iv)
-# else
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-# endif
-                case ('SED_TOY', 'SED_TOY_ROUSE', 'SED_TOY_FLOC_0D',
-     &                'SED_TOY_FLOC_1D', 'SED_TOY_RESUSP', 'SED_TOY_CONSOLID')
-                  t(i,j,k,1,iv)=cini_wat(iv)
-                case default
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                end select
+                t(i,j,k,1,iv)=cini_wat(iv)
               endif
             enddo
           enddo

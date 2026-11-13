@@ -24,8 +24,20 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   auxiliary fields namelist blocks (Issue #543)
 
 - MUSTANG : substance boundary conditions (`obc_cv_name`) now support
-  `'nullGradient'` and `'none'`;
-  `'none'` falls back to the uniform `cobc_wat` concentration (#590)
+  `'nullGradient'` and `'none'`; `'none'` falls back to the uniform
+  `cobc_wat` concentration. Left empty, `obc_cv_name` now defaults to the
+  substance's own name (`name_var`), reading it from the bry file if
+  present, same as `init_cv_name` for initial conditions below (#590)
+
+- MUSTANG : substance initial conditions (`init_cv_name`) now support
+  `'none'`, which skips reading the initial file for that substance and
+  falls back on the uniform `cini_wat` concentration, mirroring the
+  `obc_cv_name`/`cobc_wat` mechanism above. Left empty, `init_cv_name`
+  keeps defaulting to the substance's own name, as before. Whenever a
+  substance's initial condition is not read from file (`'none'`, or a
+  named variable missing from the file), it now always falls back on
+  `cini_wat` directly; the previous test-case/depth-dependent gap-filling
+  for substances is removed (#590)
 
 ### Fixed
 
