@@ -409,11 +409,6 @@ C$OMP BARRIER
       tdays=time*sec2day        ! is set by get_initial or analytically
                                 ! --> copy it into threadprivate "time"
 
-      ! NINT (not int) to absorb float rounding noise on this division.
-      ! ntimes keeps its historical meaning here (the loop below runs
-      ! ntstart..ntimes+1, i.e. ntimes real steps after the initial
-      ! report-only pass), hence the -1: NINT(...) alone would count the
-      ! target iic value, one more than the number of steps needed.
       ntimes=NINT((tool_datosec(end_date)-time)/dt)+ntstart-1
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
