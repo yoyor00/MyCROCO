@@ -28,6 +28,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - WET_DRY : fix restart not bit-exact with WET_DRY; umask_wet/vmask_wet
   are now saved to and restored from the restart file (Issue #262)
 
+- TIDES_MAS : stop with a clear error instead of silently using an
+  uninitialized index when a tide period has no match in the MAS
+  catalogue; POT_TIDES : add missing tides.h include in prsgrd.F
+  (Issue #595)
+
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
 	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
