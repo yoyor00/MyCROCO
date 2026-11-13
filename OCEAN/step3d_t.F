@@ -55,7 +55,6 @@
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
       USE comMUSTANG,  ONLY : l_corflux, corflux, corfluy
-      USE comMUSTANG,  ONLY : l_diss_insed
       USE comsubstance, ONLY : irkm_var_assoc, nvpc, nvp
       USE comsubstance, ONLY : l_subs2D
 #   endif

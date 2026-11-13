@@ -98,11 +98,7 @@
             enddo
 
 #  if defined MUSTANG
-            IF (l_diss_insed) THEN
-              CD(i,0) = flx_s2w_CROCO(i,j,itrc)
-            ELSE
-              CD(i,0) = 0.
-            ENDIF
+            CD(i,0) = flx_s2w_CROCO(i,j,itrc)
 #  else
             CD(i,0) = 0.
 #  endif
@@ -176,9 +172,7 @@
      &                                            *t(i,j,1,nnew,itrc)*
      &                                        dt/(Hz(i,j,1)*nbsubstep)
          else    !dissolved tracers including T and S
-              IF (l_diss_insed) THEN
               CD(i,0) = flx_s2w_CROCO(i,j,itrc)/nbsubstep
-              ENDIF
 # endif
          endif
 # endif
