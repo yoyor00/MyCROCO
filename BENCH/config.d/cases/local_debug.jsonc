@@ -1,0 +1,86 @@
+{
+  // Local (not committed) case used only to locate *where* the MPI results
+  // start to differ from the sequential one, using CROCO's CVTK_DEBUG
+  // instrumentation (see bench --cvtk). The time loop is shortened so that
+  // the dumps stay small; everything else is the standard BASIN case.
+  "BASIN-SHORT": {
+    "title": "BASIN short (8 steps) for CVTK debugging",
+    "case": "BASIN",
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "8": "2x4",
+      "16": "1x16"
+    },
+    "patches": {
+      "TEST_CASES/BASIN/croco_BASIN.nml": [
+        {
+          "mode": "replace",
+          "after": "&croco_time_stepping",
+          "what": "  ntimes = 3240",
+          "by": "  ntimes = 8",
+          "descr": "Shorten run to 8 steps for CVTK debugging"
+        },
+        {
+          "mode": "replace",
+          "after": "&croco_history",
+          "what": "  nwrt = 90",
+          "by": "  nwrt = 8",
+          "descr": "History every 8 steps"
+        }
+      ]
+    },
+    "check_outputs": []
+  },
+  "SOLITON-SHORT": {
+    "title": "SOLITON short (8 steps) for CVTK debugging",
+    "case": "SOLITON",
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "8": "2x4",
+      "16": "1x16"
+    },
+    "patches": {
+      "TEST_CASES/SOLITON/croco_SOLITON.nml": [
+        {
+          "mode": "replace",
+          "after": "&croco_time_stepping",
+          "what": "  ntimes = 1200",
+          "by": "  ntimes = 8",
+          "descr": "Shorten run to 8 steps for CVTK debugging"
+        },
+        {
+          "mode": "replace",
+          "after": "&croco_history",
+          "what": "  nwrt = 80",
+          "by": "  nwrt = 8",
+          "descr": "History every 8 steps"
+        }
+      ]
+    },
+    "check_outputs": []
+  },
+  // Physics bisection: same short BASIN run, but with the lateral diffusion
+  // (TS_DIF2) switched off, to see whether the first-step divergence comes
+  // from the diffusive or the advective operator.
+  "BASIN-SHORT-NODIF": {
+    "title": "BASIN short without TS_DIF2 (CVTK bisection)",
+    "case": "BASIN",
+    "cppkeys": { "TS_DIF2": false },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "patches": {
+      "TEST_CASES/BASIN/croco_BASIN.nml": [
+        { "mode": "replace", "after": "&croco_time_stepping",
+          "what": "  ntimes = 3240", "by": "  ntimes = 8",
+          "descr": "Shorten run to 8 steps" },
+        { "mode": "replace", "after": "&croco_history",
+          "what": "  nwrt = 90", "by": "  nwrt = 8",
+          "descr": "History every 8 steps" }
+      ]
+    },
+    "check_outputs": []
+  }
+}

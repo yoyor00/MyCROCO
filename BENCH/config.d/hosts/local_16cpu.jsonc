@@ -1,0 +1,228 @@
+{
+  // Local host used for the bit-reproducibility investigation.
+  // Same toolchain/tuning as host_ci + @default, only the advertised number
+  // of cores is raised so that mpi-16 / mpi-32 variants are not filtered out
+  // by the ressources check (BENCH skips any variant asking for more cores
+  // than the host advertises).
+  "local-16cpu": {
+    "ressources": {
+      "cpu": 32,
+      "gpu": 0,
+    },
+    "tuning": {
+      "gnu": {
+        "extra": "-march=native",
+        "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
+        "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+        "mpi_options": "",
+      },
+      "intel": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+        "debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+        "mpi_options": "",
+      },
+      "nvfortran": {
+        "extra": "-tp=native",
+        "standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
+        "debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
+        "mpi_options": "",
+      },
+      "environ": {
+        "OMP_PROC_BIND": "spread",
+      },
+      "hwloc_bind": {
+        "openmp": "",
+        "mpirun": "",
+      },
+    },
+  },
+  // Same as local-16cpu but with FMA contraction disabled, to test whether
+  // the 1-ULP differences between decompositions come from the compiler
+  // contracting a*b+c into fma in some loop versions only.
+  "local-nofma": {
+    "ressources": {
+      "cpu": 32,
+      "gpu": 0,
+    },
+    "tuning": {
+      "gnu": {
+        "extra": "-march=native",
+        "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy -ffp-contract=off",
+        "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+        "mpi_options": "",
+      },
+      "intel": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+        "debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+        "mpi_options": "",
+      },
+      "nvfortran": {
+        "extra": "-tp=native",
+        "standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
+        "debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
+        "mpi_options": "",
+      },
+      "environ": {
+        "OMP_PROC_BIND": "spread",
+      },
+      "hwloc_bind": {
+        "openmp": "",
+        "mpirun": "",
+      },
+    },
+  },
+  // Same as local-16cpu but compiled at -O0 (no optimisation / no
+  // vectorisation): used to tell whether the decomposition-dependent 1-ULP
+  // differences are an algorithmic effect or a compiler-optimisation effect.
+  "local-o0": {
+    "ressources": {
+      "cpu": 32,
+      "gpu": 0,
+    },
+    "tuning": {
+      "gnu": {
+        "extra": "",
+        "standard": "-O0 -fdefault-real-8 -fdefault-double-8 -std=legacy",
+        "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy",
+        "mpi_options": "",
+      },
+      "intel": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+        "debug": "-O0 -g -i4 -r8",
+        "mpi_options": "",
+      },
+      "nvfortran": {
+        "extra": "",
+        "standard": "-O2 -g -r8 -i4",
+        "debug": "-O0 -g -r8 -i4",
+        "mpi_options": "",
+      },
+      "environ": {
+        "OMP_PROC_BIND": "spread",
+      },
+      "hwloc_bind": {
+        "openmp": "",
+        "mpirun": "",
+      },
+    },
+  },
+  // Same as local-16cpu but with the GCC vectoriser disabled and FMA
+  // contraction off: used to check whether loop vectorisation is what makes
+  // the results depend on the domain decomposition.
+  "local-novec": {
+    "ressources": {
+      "cpu": 32,
+      "gpu": 0,
+    },
+    "tuning": {
+      "gnu": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy -ffp-contract=off -fno-tree-vectorize",
+        "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy",
+        "mpi_options": "",
+      },
+      "intel": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+        "debug": "-O0 -g -i4 -r8",
+        "mpi_options": "",
+      },
+      "nvfortran": {
+        "extra": "",
+        "standard": "-O2 -g -r8 -i4",
+        "debug": "-O0 -g -r8 -i4",
+        "mpi_options": "",
+      },
+      "environ": {
+        "OMP_PROC_BIND": "spread",
+      },
+      "hwloc_bind": {
+        "openmp": "",
+        "mpirun": "",
+      },
+    },
+  },
+  // Same as local-16cpu but only with the GCC vectoriser disabled (FMA
+  // contraction left at its default), to isolate the vectoriser.
+  "local-novec-fma": {
+    "ressources": {
+      "cpu": 32,
+      "gpu": 0,
+    },
+    "tuning": {
+      "gnu": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy -fno-tree-vectorize",
+        "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy",
+        "mpi_options": "",
+      },
+      "intel": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+        "debug": "-O0 -g -i4 -r8",
+        "mpi_options": "",
+      },
+      "nvfortran": {
+        "extra": "",
+        "standard": "-O2 -g -r8 -i4",
+        "debug": "-O0 -g -r8 -i4",
+        "mpi_options": "",
+      },
+      "environ": {
+        "OMP_PROC_BIND": "spread",
+      },
+      "hwloc_bind": {
+        "openmp": "",
+        "mpirun": "",
+      },
+    },
+  },
+  // ---------------------------------------------------------------
+  // Exactness host: the compiler flags that make the netCDF outputs
+  // bit-reproducible across any MPI decomposition (see
+  // BENCH/BIT_REPRODUCIBILITY_REPORT.md). No modification of the CROCO
+  // sources is involved, only these two extra flags:
+  //   -fno-tree-vectorize : no auto-vectorisation  (the real fix: the
+  //                         vectoriser emits libmvec exp/tanh calls for some
+  //                         loop lengths only, which are 1-2 ULP away from
+  //                         the scalar libm)
+  //   -ffp-contract=off   : no FMA contraction     (kept for safety/explicit
+  //                         IEEE semantics; not strictly required)
+  // Usage: ./bench-croco.py --host bitrepro ...
+  "bitrepro": {
+    "ressources": {
+      "cpu": 32,
+      "gpu": 0,
+    },
+    "tuning": {
+      "gnu": {
+        "extra": "-march=native",
+        "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy -fno-tree-vectorize -ffp-contract=off",
+        "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbounds-check -fbacktrace -fno-tree-vectorize -ffp-contract=off",
+        "mpi_options": "",
+      },
+      "intel": {
+        "extra": "",
+        "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+        "debug": "-O0 -g -i4 -r8 -fp-model precise",
+        "mpi_options": "",
+      },
+      "nvfortran": {
+        "extra": "",
+        "standard": "-O2 -g -r8 -i4",
+        "debug": "-O0 -g -r8 -i4",
+        "mpi_options": "",
+      },
+      "environ": {
+        "OMP_PROC_BIND": "spread",
+      },
+      "hwloc_bind": {
+        "openmp": "",
+        "mpirun": "",
+      },
+    },
+  },
+}

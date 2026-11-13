@@ -1,0 +1,64 @@
+{
+  // Local (not committed) cases used to extend the rank sweep beyond what the
+  // stock case definitions allow (SOLITON only declares 1, 2 and 4 ranks) and
+  // to decorrelate "#ranks" from "splitting direction".
+  // The physics/patches are identical to the stock SOLITON / BASIN cases, only
+  // the decomposition table changes, so the sequential reference of each entry
+  // is directly comparable.
+  "SOLITON-XL": {
+    "title": "SOLITON extended splitting sweep",
+    "case": "SOLITON",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "2x2",
+      "8": "2x4",
+      "16": "4x4"
+    },
+    "patches": {},
+    "check_outputs": ["soliton_his.nc", "soliton_avg.nc"]
+  },
+  "SOLITON-Y2": {
+    "title": "SOLITON split only in ETA (1x2 = 2 ranks)",
+    "case": "SOLITON",
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2"
+    },
+    "patches": {},
+    "check_outputs": ["soliton_his.nc", "soliton_avg.nc"]
+  },
+  "BASIN-XL": {
+    "title": "BASIN extended splitting sweep",
+    "case": "BASIN",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "2x2",
+      "8": "2x4",
+      "16": "4x4"
+    },
+    "patches": {},
+    "check_outputs": ["basin_his.nc"]
+  },
+  "BASIN-X2": {
+    "title": "BASIN split only in XI (2x1 = 2 ranks)",
+    "case": "BASIN",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1"
+    },
+    "patches": {},
+    "check_outputs": ["basin_his.nc"]
+  },
+  "BASIN-Y4": {
+    "title": "BASIN split only in ETA (1x4 = 4 ranks)",
+    "case": "BASIN",
+    "splitting": {
+      "1": "1x1",
+      "4": "1x4"
+    },
+    "patches": {},
+    "check_outputs": ["basin_his.nc"]
+  }
+}
