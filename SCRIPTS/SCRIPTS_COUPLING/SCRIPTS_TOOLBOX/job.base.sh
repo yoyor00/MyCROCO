@@ -90,7 +90,10 @@ if [ ${LOADL_STEP_NAME} == "get_file" ] || [ ${LOADL_STEP_NAME} == "XXX" ]; then
         fi
 
 # ocean/atmosphere input files (configuration, forcing, obc, levitus/restart...)
-        DATE_END_JOBm1=$( makedate $MONTH_BEGIN_JOB $(( $DAY_BEGIN_JOB - 1 )) $YEAR_BEGIN_JOB )
+        # Previous run ends at the hour preceding this run's exact start.
+        # Keep the historical YYYYMMDD naming convention for restart files.
+        read -r _prev_m _prev_d _prev_y _prev_h <<< "$(hour2date "$(( THOUR_BEGIN_JOB - 1 ))")"
+        DATE_END_JOBm1=$(makedate "$_prev_m" "$_prev_d" "$_prev_y" "$_prev_h")
         RESTDIR_IN=${RESTDIR_ROOT}/${DATE_END_JOBm1}
         if [ ${USE_OCE} -eq 1 ]; then
             printf "\n  ***** get OCEAN CONFIGURATION, OBC, BLK... files *****\n\n"
@@ -275,6 +278,7 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
         sed -e "s/YEAR_BEGIN_JOB=.*/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOBp1}/" \
             -e "s/MONTH_BEGIN_JOB=.*/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOBp1}/" \
             -e "s/DAY_BEGIN_JOB=.*/DAY_BEGIN_JOB=${DAY_BEGIN_JOBp1}/" \
+            -e "s/HOUR_BEGIN_JOB=.*/HOUR_BEGIN_JOB=${HOUR_BEGIN_JOBp1}/" \
             -e "s/NBJOB=.*/NBJOB=$(( ${NBJOB} - 1 ))/" \
             -e "s/RESTART_FLAG=.*/RESTART_FLAG=\"TRUE\"/" \
             -e "s/CHAINED_JOB=.*/CHAINED_JOB=\"FALSE\"/" \
@@ -283,12 +287,12 @@ if [ "${MODE_TEST}" == "" ] ; then      #  en production
         mvfile myjobtmp.sh ${JOBDIR_ROOT}/myjob.sh
         chmod 755   ${JOBDIR_ROOT}/myjob.sh
 
-	if [ ${DATE_END_JOB} -ne ${DATE_END_EXP} ] ; then
+	if (( THOUR_END_JOB < THOUR_END_EXP )); then
             cd ${JOBDIR_ROOT}
             chmod 755 submitjob.sh
             ./submitjob.sh
         else
-	    printf "\n ************* run finished at date : ${DATE_END_EXP} \n\n\n\n"
+	    printf "\n ************* run finished at : ${END_DATE_RUN} \n\n\n\n"
 	    exit 0
 	fi
 

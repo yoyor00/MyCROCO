@@ -1623,6 +1623,7 @@ CONTAINS
       !! ** Purpose : Read timeseries files and initialize obst_ts_* variables
       !!
       !!---------------------------------------------------------------------
+      USE tools_calendar, ONLY: tool_origindate
       USE netcdf
       IMPLICIT NONE
 

@@ -19,6 +19,7 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -100,6 +101,8 @@
           ierr=nf_inq_varid (bry_id, 'bry_time',  bry_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'bry_time'
           ierr_all=ierr_all+ierr
+          call tool_origindate(bry_id,bry_time_id,
+     &                         bry_origin_date_in_sec, bry_secinunit)
 
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -277,13 +280,9 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (bry_id, bry_time_id, bry_rec, cff)
           if (ierr.eq.nf_noerr) then
-# ifdef USE_CALENDAR
-            call tool_origindate(bry_id,bry_time_id,
-     &                           bry_origin_date_in_sec)
-              cff=cff+bry_origin_date_in_sec*sec2day
-# endif
+              cff=bry_origin_date_in_sec+cff*bry_secinunit
             itbry=min(3-itbry,ntbry)
-            bry_time(itbry)=cff*day2sec + bry_cycle*bry_ncycle
+            bry_time(itbry)=cff + bry_cycle*bry_ncycle
             ierr_all=0
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -503,12 +502,9 @@
 # endif
             ierr=ierr_all
             if (ierr.eq.0) then
-              MPI_master_only write(stdout,'(6x,A,9x,A,1x,F10.4,1x,I4)')
+              MPI_master_only write(stdout,'(6x,A,9x,A,1x,A19,1x,I4)')
      &       'GET_BRY    -- Read all boundary data',
-     &                                 'for time =', cff
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &                                 'for time =', tool_sectodat(cff)
 # ifdef MPI
      &                                             , mynode
 # endif
@@ -528,9 +524,7 @@
      &    'file ''',   bry_file(1:lstr),  '''',  'tdays = ', tdays,
      &    '  but the last available  bry_time =',
      &                                   bry_time(itbry)*sec2day
-# ifdef USE_CALENDAR
      &  -bry_origin_date_in_sec*sec2day
-# endif
         endif
       enddo
   2   format(' ERROR in get_bry: cannot read variable ''',A,'''')

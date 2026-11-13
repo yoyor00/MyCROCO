@@ -7,18 +7,15 @@
 /
 
 &croco_time_stepping
-  ntimes = 80000
   dt = 0.0025
   ndtfast = 20
   ninfo = 1
 /
 
-&croco_use_calendar
+&croco_calendar
   start_date = "2019-01-01 00:00:00"
   end_date = "2019-01-01 00:03:05"
-  dt_his = 0.00006944444
-  dt_avg = 24
-  dt_rst = 24
+  calendar_type = "gregorian"
 /
 
 &croco_s_coord
@@ -40,13 +37,13 @@
 
 &croco_history
   ldefhis = .true.
-  nwrt = 400
+  nwrt = 100
   nrpfhis = 0
   hisname = "seagrass_his.nc"
 /
 
 &croco_restart
-  nrst = 172800
+  nrst = 34560000
   nrpfrst = 0
   rstname = "seagrass_rst.nc"
 /

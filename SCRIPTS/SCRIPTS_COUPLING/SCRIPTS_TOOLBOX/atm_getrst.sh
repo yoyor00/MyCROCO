@@ -14,9 +14,11 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
     cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
+    hs=$( printf "%02d"  ${HOUR_BEGIN_JOB} )
+
     for file in $filelist ; do
         #echo "ln -sf ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M} ./$file"
-        lnfile ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M}_${cur_D}_00 ./$file
+        lnfile ${ATM_FILES_DIR}/${file}_${cur_Y}_${cur_M}_${cur_D}_${hs} ./$file
     done
   
     if [[ ${onlinecplmask} == "TRUE" ]]; then

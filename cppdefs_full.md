@@ -26,11 +26,6 @@ Output :
 
 - `FILLVAL` — Write fill value in masked land points
 
----
-
-## Calendar
-
-- `USE_CALENDAR` — Absolute date/time mode
 
 ---
 

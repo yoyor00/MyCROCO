@@ -22,10 +22,12 @@ export permission="755"
 export YEAR_BEGIN_JOB=2005
 export MONTH_BEGIN_JOB=1
 export DAY_BEGIN_JOB=1
+export HOUR_BEGIN_JOB=0
 
 # Duration of each Job
 export JOB_DUR_MTH=1
 export JOB_DUR_DAY=0
+export JOB_DUR_HOUR=0
 
 # How many jobs do you want to launch?
 export NBJOB=1

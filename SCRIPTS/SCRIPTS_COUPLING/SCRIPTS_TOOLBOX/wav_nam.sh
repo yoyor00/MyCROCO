@@ -7,6 +7,8 @@ ms=$( printf "%02d"  ${MONTH_BEGIN_JOB} )
 me=$( printf "%02d"  ${MONTH_END_JOB} )
 ds=$( printf "%02d"  ${DAY_BEGIN_JOB} )
 de=$( printf "%02d"  ${DAY_END_JOB} )
+hs=$( printf "%02d"  ${HOUR_BEGIN_JOB} )
+he=$( printf "%02d"  $(( ${HOUR_END_JOB} + 1)) )
 
 echo 'Fill ww3_grid.inp file'
 sed -e "s/<wavdt>/${DT_WAV}/g" \
@@ -27,9 +29,9 @@ if [ ${wav_trck} -ne 0 ]; then
 else
     my_track_flag='$'
 fi
-sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/00/g"  \
-    -e "s/<yr2>/${YEAR_END_JOB}/g"  -e "s/<mo2>/${me}/g"  -e "s/<dy2>/${de}/g"  -e "s/<hr2>/24/g" \
-    -e "s/<wav_int>/${wav_int}/g"  -e "s/<wav_rst>/$(( ${TOTAL_JOB_DUR} * 24 * 3600))/g" \
+sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/${hs}/g"  \
+    -e "s/<yr2>/${YEAR_END_JOB}/g"  -e "s/<mo2>/${me}/g"  -e "s/<dy2>/${de}/g"  -e "s/<hr2>/${he}/g" \
+    -e "s/<wav_int>/${wav_int}/g"  -e "s/<wav_rst>/$(( ${TOTAL_JOB_DUR_SEC} ))/g" \
     -e "s/<wav_pnt>/${wav_pnt}/g"  -e "s/<wav_trck>/${wav_trck}/g" \
     -e "/$     <point_output_list>/r tmp_point_output_list"  \
     -e "s/$    <T>/$my_track_flag/g" \
@@ -38,14 +40,14 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"
 
 echo 'Fill ww3_ounf.inp file'
 sed -e "s/<wav_int>/${wav_int}/g" \
-    -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/00/g" \
+    -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/${hs}/g" \
     ${WAV_NAM_DIR}/ww3_ounf.inp.base > ./ww3_ounf.inp
 
 if [ ${wav_pnt} -ne 0 ]; then
     if [ -f ${point_output_list} ] ; then  
         echo 'Fill ww3_ounp.inp file'
         sed -e "s/<wav_pnt>/${wav_pnt}/g" \
-            -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/00/g" \
+            -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${ms}/g"  -e "s/<dy1>/${ds}/g"  -e "s/<hr1>/${hs}/g" \
             ${WAV_NAM_DIR}/ww3_ounp.inp.base > ./ww3_ounp.inp
     else
          echo "ERROR: wav_pnt is not 0 and point_output_list=${point_output_list} file cannot be found. Exit"

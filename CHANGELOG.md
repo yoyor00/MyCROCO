@@ -19,6 +19,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   potential, in addition to elevation; works now with both
   ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
+- SCRIPTS_COUPLING : deal with hours (in addition to year, month, day). (#593)
+
 - OUTPUTS : add z\_r and z\_w to history and averages files, activated with
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
@@ -140,6 +142,21 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   RIVER, SEAMOUNT, SHELFRONT, SOLITON, UPWELLING, VORTEX) now use the new
   one: their results differ from previous versions. VORTEX input files
   have been regenerated with Vtransform = 2.
+
+- CALENDAR : Remove `USE_CALENDAR` CPP key.
+  Calendar support is now always active and controlled at runtime via `calendar_type` in the namelist (#452).
+  Supported values (case-insensitive): `gregorian` (default) / `standard` /
+  `proleptic_gregorian`, `360_day`, `noleap`/`365_day`/`no_leap`,
+  `all_leap`/`366_day`, `julian`.
+  The five standalone calendar utility files (`toolsectodat.F90`, `tooldatosec.F90`,
+  `tooldecompdat.F90`, `tooldatetosec.F90`, `toolorigindate.F90`) are replaced by a
+  single Fortran module `tools_calendar.F90`, which:
+    - provides explicit interfaces (eliminates scattered `character*19 tool_sectodat`
+      external declarations in all `get_*.F` forcing readers);
+    - extends `tool_datetosec` to support all calendar types (was Gregorian-only);
+    - renames all French variable names to English throughout in this module.
+  All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
+  (was raw floating-point days since origin).
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system

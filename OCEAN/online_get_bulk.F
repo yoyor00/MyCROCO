@@ -46,6 +46,7 @@
       USE croco_namelist, only: dt, rho0,
      &                          yearend, monthend, recordsperday
       USE tools_string, ONLY : to_uppercase
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -186,14 +187,14 @@
           ierr=nf_get_var1_FTYPE(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),
      &                           ntbulkO(blkvar_id),bulkend)
 
-# ifdef USE_CALENDAR
 !
 ! Get origin date
           call tool_origindate(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),
-     &                          blkO_origin_date_in_sec)
-          bulkstart=bulkstart+blkO_origin_date_in_sec*sec2day
-          bulkend=bulkend+blkO_origin_date_in_sec*sec2day
-# endif
+     &                          blkO_origin_date_in_sec, blkO_secinunit)
+          bulkstart=bulkstart*blkO_secinunit*sec2day
+     &                       +blkO_origin_date_in_sec*sec2day
+          bulkend=bulkend*blkO_secinunit*sec2day
+     &                   +blkO_origin_date_in_sec*sec2day
 !
 ! Length of time vector in seconds
 !
@@ -295,13 +296,11 @@
           ierr=nf_get_var1_FTYPE(ncidbulkO(blkvar_id),bulk_tidO(blkvar_id),
      &                           bulk_recO(blkvar_id),daycfsr)
           if (ierr .ne. nf_noerr) goto 99
-# ifdef USE_CALENDAR
 !
 ! Get origin date
           call tool_origindate(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),
-     &                          blkO_origin_date_in_sec)
-          daycfsr=daycfsr+blkO_origin_date_in_sec*sec2day
-# endif
+     &                          blkO_origin_date_in_sec, blkO_secinunit)
+          daycfsr=blkO_origin_date_in_sec*sec2day+daycfsr*blkO_secinunit*sec2day
 !
 ! Computation of the time in seconds for time interpolation
 !
@@ -647,12 +646,10 @@
 ! === ==== ======= === ==== == ======= ========
 !
           if (blkvar_id.eq.nblkvrs) then
-            MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I8)')
+            MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I8)')
      &              'ONLINE_BULK --',
-     &              'Read file for time =', daycfsr
-# ifdef USE_CALENDAR
-     &  -blkO_origin_date_in_sec*sec2day
-# endif
+     &              'Read file for time =', tool_sectodat(daycfsr*day2sec)
+
           endif
 !
 ! Leap incrementation

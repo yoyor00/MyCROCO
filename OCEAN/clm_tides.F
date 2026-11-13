@@ -46,6 +46,7 @@
       USE mod_tides_mas
 # endif
       USE croco_namelist, only:dt
+      use tools_calendar, only: tool_decompdate, tool_sectodat
       implicit none
 # ifndef TIDES_MAS
 #  include "param.h"

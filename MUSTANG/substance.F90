@@ -18,6 +18,7 @@ MODULE substance
    USE comsubstance
    USE submassbalance, ONLY :  submassbalance_readdomain
    USE croco_namelist, ONLY : subsfilename
+   USE tools_calendar, ONLY: tool_datosec
 
 # if defined BIOLink
    USE comBIOLink
@@ -113,8 +114,8 @@ CONTAINS
    LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
 #endif
 
-   REAL(KIND=rlg)        :: tool_datosec
-                                    
+
+
    !! *  define namelists reading in parasubstance.txt
 #ifdef MUSTANG
    NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_grav, nv_sand, nv_mud, nv_sorb

@@ -7,7 +7,6 @@
 /
 
 &croco_time_stepping
-  ntimes = <ocentimes>
   dt = <ocedt>
   ndtfast = <ocendtfast>
   ninfo = 1
@@ -24,12 +23,10 @@
   hc = <hc>
 /
 
-&croco_use_calendar
-  start_date = "<dstart>-<mstart>-<ystart> 00:00:00"
-  end_date = "<dend>-<mend>-<yend> 00:00:00"
-  dt_his = <oce_his_h>
-  dt_avg = <oce_avg_h>
-  dt_rst = <oce_rst_h>
+&croco_calendar
+  start_date = "<dstart>"
+  end_date = "<dend>"
+  calendar_type = "gregorian"
 /
 
 &croco_initial
@@ -247,11 +244,11 @@
 /
 
 &croco_online
-  yearnum = <yr1>
-  monthnum = <mo1>
+  yearnum = <ystart>
+  monthnum = <mstart>
   recordsperday = <rpd>
-  yearend = <yr2>
-  monthend = <mo2>
+  yearend = <yend>
+  monthend = <mend>
   pathbulk = "<online_frc>"
 /
 
@@ -302,10 +299,6 @@
 
 &croco_substance
   subsfilename = "parasubstance.txt"
-/
-
-&croco_xios_origin_date
-  xios_origin_date = "<dorig>-<morig>-<yorig> 00:00:00"
 /
 
 &croco_psource
