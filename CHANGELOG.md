@@ -23,13 +23,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
-- MUSTANG : substance boundary conditions (`obc_cv_name`) now support
+- UBSTANCE : substance boundary conditions (`obc_cv_name`) now support
   `'nullGradient'` and `'none'`; `'none'` falls back to the uniform
   `cobc_wat` concentration. Left empty, `obc_cv_name` now defaults to the
   substance's own name (`name_var`), reading it from the bry file if
   present, same as `init_cv_name` for initial conditions below (#590)
 
-- MUSTANG : substance initial conditions (`init_cv_name`) now support
+- UBSTANCE : substance initial conditions (`init_cv_name`) now support
   `'none'`, which skips reading the initial file for that substance and
   falls back on the uniform `cini_wat` concentration, mirroring the
   `obc_cv_name`/`cobc_wat` mechanism above. Left empty, `init_cv_name`
@@ -38,6 +38,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   named variable missing from the file), it now always falls back on
   `cini_wat` directly; the previous test-case/depth-dependent gap-filling
   for substances is removed (#590)
+
+- SUBSTANCE : fixed (non-advected) substances now have a working initial
+  condition too: `init_cv_name_fix` and `cini_wat_fix` were declared and
+  read from the namelist but never actually used (their array, `cvfix_wat`,
+  was unconditionally hard-set to 0). They now follow the same
+  `init_cv_name`/`cini_wat` mechanism as advected substances: `'none'`
+  (or a named variable missing from the init file) falls back on the
+  uniform `cini_wat_fix` concentration; left empty, `init_cv_name_fix`
+  defaults to the substance's own name (#590)
 
 ### Fixed
 

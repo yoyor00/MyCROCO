@@ -436,11 +436,18 @@
 :    long_name_var_fix() : string, long name of variable
 :    standard_name_var_fix() : string, standard name of variable
 :    unit_var_fix() : string, unit of concentration of variable
-:    cini_wat_fix) : real, initial concentration in water column (unit/m3)
+:    cini_wat_fix() : real, initial concentration in water column (unit/m3)
 :    l_out_subs_fix() : boolean, saving in output file if TRUE
-:    init_cv_name_fix() : string, name of substance read from initial  
-:                         condition file
-:    
+:    init_cv_name_fix() : string, name of substance read from initial
+:                         condition file, falling back to its uniform
+:                         cini_wat_fix() concentration if 'none' or if
+:                         the variable is not found. Special value:
+:                         'none' skips reading an initial-file variable
+:                         for this substance. Left empty (''), it
+:                         defaults to name_var_fix() (i.e. the variable
+:                         is read if present in the init file, same
+:                         name as the substance itself)
+:
  &nmlvarfix
     name_var_fix(1)=''
        long_name_var_fix(1)=''

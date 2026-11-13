@@ -85,9 +85,9 @@ MODULE comsubstance
     ! -------------------------------------------------------------------------
     ! Fixed substances in water column
     ! -------------------------------------------------------------------------
-    REAL(KIND=rsh),DIMENSION(:), ALLOCATABLE        :: cini_wat_fix ! - NOT USED
+    REAL(KIND=rsh),DIMENSION(:), ALLOCATABLE        :: cini_wat_fix
     LOGICAL,DIMENSION(:), ALLOCATABLE               :: l_out_subs_fix
-    CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: init_cv_name_fix ! - NOT USED
+    CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: init_cv_name_fix
     REAL(KIND=rsh),DIMENSION(:,:,:,:), ALLOCATABLE  :: cvfix_wat 
     CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: standard_name_var_fix, name_var_fix
 

@@ -432,6 +432,11 @@ CONTAINS
     ALLOCATE(standard_name_var_fix(nballoc))
     ALLOCATE(name_var_fix(nballoc))
     READ(500,nmlvarfix)
+    DO ivr=1,nballoc
+      IF(init_cv_name_fix(ivr)=='') THEN
+         init_cv_name_fix(ivr)=name_var_fix(ivr)
+      ENDIF
+    ENDDO
    ENDIF
  
 #ifdef key_benthic

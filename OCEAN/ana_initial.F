@@ -332,7 +332,7 @@
       use Agrif_Util
 # endif
 # ifdef SUBSTANCE
-      USE comsubstance, ONLY: cini_wat
+      USE comsubstance, ONLY: cini_wat, cini_wat_fix, cvfix_wat
 # endif
       implicit none
 # include "param.h"
@@ -1257,6 +1257,11 @@
             do iv=itsubs1,itsubs2
               if (.not.got_tini(iv)) then
                 t(i,j,k,1,iv)=cini_wat(iv)
+              endif
+            enddo
+            do iv=1,ntfix
+              if (.not.got_tini_fix(iv)) then
+                cvfix_wat(i,j,k,iv)=cini_wat_fix(iv)
               endif
             enddo
           enddo

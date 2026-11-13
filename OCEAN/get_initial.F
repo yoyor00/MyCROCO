@@ -15,7 +15,7 @@
                                                 ! initialization file.
       use croco_namelist
 # ifdef SUBSTANCE
-      use comsubstance, ONLY : init_cv_name
+      use comsubstance, ONLY : init_cv_name, init_cv_name_fix, cvfix_wat
 # endif
       implicit none
 #include "param.h"
@@ -889,6 +889,38 @@
           endif
         endif
       enddo
+#  ifdef SUBSTANCE
+!       fixed (non-advected) substances live in their own array,
+!       cvfix_wat, outside the generic tracer loop above; 
+      do itrc=1,ntfix
+        got_tini_fix(itrc)=.true.
+        vname1=vname(1,indxV+1+ntrc_salt+ntrc_subs+itrc)
+        l_skip_subs_read=.false.
+        if (init_cv_name_fix(itrc).eq.'none') then
+          got_tini_fix(itrc)=.false.
+          l_skip_subs_read=.true.
+        else
+          vname1=init_cv_name_fix(itrc)
+        endif
+        if (.not.l_skip_subs_read) then
+          lvar=lenstr(vname1)
+          ierr=nf_inq_varid (ncid, vname1(1:lvar),varid)
+          if (ierr .eq. nf_noerr) then
+            ierr=nf_fread (cvfix_wat(START_2D_ARRAY,1,itrc), ncid, varid,
+     &                                                  record, r3dvar)
+            if (ierr .ne. nf_noerr) then
+              MPI_master_only write(stdout,2) vname1(1:lvar)
+     &                                          , record, ininame(1:lstr)
+              goto 99                                       !--> ERROR
+            endif
+          else
+            MPI_master_only write(stdout,3) vname1(1:lvar),
+     &                                      ininame(1:lstr)
+            got_tini_fix(itrc)=.false.
+          endif
+        endif
+      enddo
+#  endif
 # endif /* TRACERS */
 
 # ifdef SEDIMENT
