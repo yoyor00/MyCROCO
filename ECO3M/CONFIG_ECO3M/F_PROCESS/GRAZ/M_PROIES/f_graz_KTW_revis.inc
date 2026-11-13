@@ -262,7 +262,8 @@ function f_graz_KTW_revis(ili,jcol,ipred,iprey,nbprey,Beta,&
            mu_graz(iscp_pred,iscp_prey)%val(i,j,k) =  Imax(pos_iprey) * delta * Q 
 
    !-- Gross grazing rate  in  (nb preys)l-1 s-1
-        if (var(iCell_prey)%conc(i,j,k)  > 1.1 * mu_graz(iscp_pred,iscp_prey)%val(i,j,k) * var(iCell_pred)%conc(i,j,k) * dt_bio) then
+        if (var(iCell_prey)%conc(i,j,k)  > 1.1 * mu_graz(iscp_pred,iscp_prey)%val(i,j,k) * & 
+	    var(iCell_pred)%conc(i,j,k) * dt_bio) then
               f_graz_KTW_revis(i,j,k) = mu_graz(iscp_pred,iscp_prey)%val(i,j,k) * var(iCell_pred)%conc(i,j,k)                  ! mu x Z_Cell
         else
           f_graz_KTW_revis(i,j,k) = 0.d0
