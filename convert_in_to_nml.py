@@ -634,8 +634,18 @@ def cpp_define_active(cppdefs_path, define_name, extra_dirs=()):
     cppdefs_dir = os.path.dirname(cppdefs_abs)
     sentinel = f"__{define_name}_IS_ACTIVE__"
     wrapper = f'#include "{cppdefs_abs}"\n#ifdef {define_name}\n{sentinel}\n#endif\n'
-    out = _run_cpp(wrapper, [cppdefs_dir, *extra_dirs])
-    return sentinel in out
+    include_dirs = [cppdefs_dir, *extra_dirs]
+    cmd = ["cpp", "-P", "-traditional"] + [f"-I{d}" for d in include_dirs] + ["-"]
+    runsub = subprocess.run(cmd, input=wrapper, capture_output=True, text=True)
+    if runsub.returncode != 0:
+        sys.exit(
+            f"Error: cpp failed while checking whether {define_name} is active in "
+            f"'{cppdefs_path}':\n{r.stderr}"
+            "If cppdefs.h lives in a separate run directory, pass --src pointing at "
+            "the matching CROCO OCEAN/ source dir so its own #include's "
+            "(cppdefs_dev.h, set_global_definitions.h, ...) can be resolved."
+        )
+    return sentinel in runsub.stdout
 
 
 def preprocess_param(cppdefs_path, param_path, extra_dirs=()):
@@ -913,7 +923,7 @@ def read_param_text(text):
 
     assignments = []  # ordered (name, expr) pairs from both syntaxes
 
-    for m in re.finditer(r"integer\s*,\s*parameter\s*::\s*(\w+)\s*=\s*(\S+)", text):
+    for m in re.finditer(r"integer\s*,\s*parameter\s*::\s*(\w+)\s*=\s*(\S+)", text, re.IGNORECASE):
         assignments.append((m.group(1), m.group(2).strip()))
 
     for stmt in re.finditer(r"parameter\s*\(([^)]+)\)", text, re.IGNORECASE):
@@ -1531,6 +1541,13 @@ if the script is used elsewhere.
     preprocessed = preprocess_param(args.cppdefs, args.param, extra_dirs=src_dirs)
     params = read_param_text(preprocessed)
     template_path = os.path.join(args.src, "param.h")
+    if not os.path.isfile(template_path):
+        sys.exit(
+            f"Error: --src's param.h template '{template_path}' not found.\n"
+            "Pass --src pointing at the CROCO OCEAN/ source directory matching "
+            "this cppdefs.h/param.h (needed as the structural template, and to "
+            "resolve their own #include's such as cppdefs_dev.h)."
+        )
     with open(out_param, "w") as f:
         f.write(fill_param_template(template_path, args.param, args.cppdefs, extra_dirs=src_dirs))
     print(f"Output param   : {out_param}  (NT={params.get('NT', '?')})")
