@@ -1262,6 +1262,8 @@
 !$acc&, v_avg
 !$acc&, t_avg
 !$acc&, rho_avg
+!$acc&, Akv_avg
+!$acc&, Akt_avg
 #  if defined ANA_VMIX || defined LMD_MIXING \
    || defined LMD_SKPP || defined LMD_BKPP \
    || defined GLS_MIXING
@@ -1321,8 +1323,6 @@
 #  ifdef DIF_COEF_3D
 !$acc&, diff3d_avg
 #  endif
-!$acc&, Akv_avg
-!$acc&, Akt_avg
 # endif
 # ifdef WAVE_IO
 !$acc&, whrm_avg
