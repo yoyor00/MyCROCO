@@ -255,6 +255,7 @@
     "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
     "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
     "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "agrif_fixedgrids_file": "TEST_CASES/REALIST_EXAMPLES/AGRIF_FixedGrids_REGIONAL.in",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -274,6 +275,7 @@
     "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
     "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
     "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "agrif_fixedgrids_file": "TEST_CASES/REALIST_EXAMPLES/AGRIF_FixedGrids_REGIONAL.in",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -294,6 +296,7 @@
     "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
     "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
     "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "agrif_fixedgrids_file": "TEST_CASES/REALIST_EXAMPLES/AGRIF_FixedGrids_REGIONAL.in",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -375,6 +378,7 @@
     "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
     "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
     "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "agrif_fixedgrids_file": "TEST_CASES/REALIST_EXAMPLES/AGRIF_FixedGrids_REGIONAL.in",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {

@@ -548,6 +548,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 CR      write(*,*)  ' -5' MYID
 #endif
+#ifdef WET_DRY
+!  set umask_wet/vmask_wet before bulk_flux's first use, otherwise
+!  they'd still be at their init_arrays.F default ("fully wet")
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call init_wetdry (tile)
+      enddo
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize diagnostic fields: mass flux, rho, omega

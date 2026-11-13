@@ -26,7 +26,8 @@
 ! indxMUD         gravel,sand & mud sediment tracers
 ! indxO,indeW     omega vertical mass flux and true vertical velocity
 ! indxR           density anomaly
-! indxbvf         Brunt Vaisala Frequency
+! indxbvf         Square of Brunt Vaisala Frequency (N^2)
+! indxZ_r,indxZ_w depth of rho- and w-points (z_r, z_w)
 ! indxAOU  	  Apparent Oxygen Utilization
 ! indxWIND10      surface wind speed 10 m
 ! indxpCO2        partial pressure of CO2 in the ocean
@@ -36,6 +37,7 @@
 ! indxAkk,indxAkp vertical diffusion coefficients for TKE and GLS
 ! indxHbl         depth of planetary boundary layer in KPP model
 ! indxHbbl        depth of bottom planetary boundary layer in KPP model
+! indxKbl_nstp    MLD vertical index at previous time step (restart only)
 ! indxHel         depth of euphotic layer
 ! indxChC         Chlorophyll/Carbon ratio
 ! indxTke         Turbulent kinetic energy
@@ -359,7 +361,7 @@
 #  if defined DIAGNOSTICS_TS_MLD
      &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
-     &        indxTentr_mld,indxTaver_mld
+     &        indxTentr_mld,indxTaver_mld,indxKbl_nstp
 #   if defined DIAGNOSTICS_TS_MLD_DENS
      &      , indxTcrit_mld
 #   endif
@@ -390,6 +392,9 @@
      &           indxTaver_mld=indxTentr_mld+NT
 #   if defined DIAGNOSTICS_TS_MLD_DENS
      &          ,indxTcrit_mld=indxTaver_mld+NT
+     &          ,indxKbl_nstp=indxTcrit_mld+NT
+#   else
+     &          ,indxKbl_nstp=indxTaver_mld+NT
 #   endif
 #  endif
      &                                         )
@@ -715,6 +720,11 @@
       parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
 #  endif
 # endif
+# ifdef WET_DRY
+      integer indxumaskwet,indxvmaskwet
+      parameter (indxumaskwet=indxSVSTR+1,
+     &           indxvmaskwet=indxumaskwet+1)
+# endif
 #else
       integer indxSUSTR, indxSVSTR
       parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
@@ -915,6 +925,10 @@
       integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
 #endif
+#ifdef SOLVE3D
+      integer indxZ_r, indxZ_w
+      parameter (indxZ_r=indxSUSTR+141, indxZ_w=indxSUSTR+142)
+#endif
 !
 !===================================================================
 !
@@ -1065,6 +1079,9 @@
 # ifdef LMD_BKPP
       integer rstHbbl
 # endif
+# ifdef DIAGNOSTICS_TS_MLD
+      integer rstKbl_nstp
+# endif
 # if defined GLS_MIXING
       integer rstAkv,rstAkt
 #  if defined SALINITY
@@ -1090,6 +1107,9 @@
 # endif  /* M3FAST */
 # ifdef TS_MIX_ISO_FILT
       integer rstdRdx,rstdRde
+# endif
+# ifdef WET_DRY
+      integer rstumaskwet,rstvmaskwet
 # endif
 #endif
 #ifdef MORPHODYN
@@ -1143,6 +1163,7 @@
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
+     &      , hisZ_r, hisZ_w
 # ifdef STOGEN
      &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
 # endif
@@ -1331,6 +1352,7 @@
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
+     &      , avgZ_r, avgZ_w
 #  if defined ANA_VMIX || defined GLS_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , avgbvf
@@ -1615,6 +1637,9 @@
 # ifdef LMD_BKPP
      &      , rstHbbl
 # endif
+# ifdef DIAGNOSTICS_TS_MLD
+     &      , rstKbl_nstp
+# endif
 # if defined GLS_MIXING
      &      , rstAkv,rstAkt
 #  if defined SALINITY
@@ -1636,6 +1661,9 @@
 #  endif  /* M3FAST */
 #  ifdef TS_MIX_ISO_FILT
      &      , rstdRdx,rstdRde
+#  endif
+#  ifdef WET_DRY
+     &      , rstumaskwet,rstvmaskwet
 #  endif
 # endif
 
@@ -1677,6 +1705,7 @@
      &      , hisU,    hisV,     hisT,    hisR
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
+     &      , hisZ_r,  hisZ_w
      &      , hisHbl,  hisHbbl
 # ifdef STOGEN
      &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
@@ -1939,6 +1968,7 @@
      &      ,     avgR
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
+     &      , avgZ_r,  avgZ_w
      &      , avgHbl,  avgHbbl
 #  if defined ANA_VMIX || defined GLS_MIXING \
  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP

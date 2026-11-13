@@ -447,6 +447,8 @@
   mld_crit_D = 3.e-2
   ! Temperature criterion for mixed-layer depth [Celsius].
   mld_crit_T = 2.e-1
+  ! Reference depth for mixed-layer criteria [m]
+  mld_depth_ref = 10
 /
 
 ! --- Momentum diagnostics  (CPP: DIAGNOSTICS_UV) ---
@@ -861,6 +863,8 @@
   out_his_wstr  = .false.   ! Wind stress magnitude
   out_his_ustr  = .false.   ! Surface xi-stress
   out_his_vstr  = .false.   ! Surface eta-stress
+  out_his_z_r   = .false.   ! Depth of rho-points z_r
+  out_his_z_w   = .false.   ! Depth of w-points z_w
 /
 
 ! --- Physics-specific optional fields ---
@@ -1163,6 +1167,8 @@
   out_avg_wstr  = .false.
   out_avg_ustr  = .false.
   out_avg_vstr  = .false.
+  out_avg_z_r   = .false.
+  out_avg_z_w   = .false.
 /
 
 ! --- Physics-specific optional fields ---

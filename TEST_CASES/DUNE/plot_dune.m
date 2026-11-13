@@ -75,10 +75,9 @@ N=size(u,1);
 theta_s=nc.theta_s(:);
 theta_b=nc.theta_b(:);
 hc=nc.hc(:);
-Vtrans=nc{'Vtransform'}(:);
 close(nc);
 %
-zr=zlevs(h,zeta,theta_s,theta_b,hc,N,'r',Vtrans);
+zr=zlevs(h,zeta,theta_s,theta_b,hc,N,'r');
 zr=squeeze(zr);
 x =reshape(x,1,L);
 xr=repmat(x,[N 1]);

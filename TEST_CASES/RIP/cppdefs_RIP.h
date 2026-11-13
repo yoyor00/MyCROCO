@@ -14,7 +14,6 @@
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
-# define NEW_S_COORD
 # define UV_ADV
 # undef  NBQ
 # ifdef NBQ
