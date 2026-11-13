@@ -97,6 +97,7 @@
       do itide=1,Ntides
 # ifdef TIDES_MAS
        ! search for the corresponding tide
+       nu(itide)=0
        do l=1 ,nmarmax
         if (abs(Tperiod(itide)-360./frequence(l)) .le. 1e-4  ) then
           nu(itide)=l
@@ -105,6 +106,10 @@
           exit
        endif
       end do
+       if (nu(itide).eq.0) then
+         write(stdout,7) itide,Tperiod(itide),frcname(1:lstr)
+         stop                             !-->  EXIT
+       endif
 # else
       ind=itide
 # endif
@@ -322,6 +327,9 @@
   4   write(stdout,5) frcname(1:lstr)
   5   format(/,' GET_TIDES - unable to open forcing netCDF file:',
      &                                                        1x,A)
+  7   format(/,' GET_TIDES - tide component ',i4,' with period ',
+     &       F12.6,' h has no match in the MAS tide Catalogue',
+     &       /14x,'in forcing netCDF file: ',A)
   6   format(/,' GET_TIDES - error while reading variable: ',A,
      &                          ' for tide component = ',i4,2x,
      &                        /14x,' in forcing netCDF file: ',A)
