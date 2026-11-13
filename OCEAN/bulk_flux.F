@@ -38,7 +38,7 @@
 # endif
       use croco_namelist, only: rho0
 # ifdef SUBSTANCE
-      USE comsubstance, ONLY: cv_rain
+      USE comsubstance, ONLY: cv_rain, sub_flx_atm
 # endif
       implicit none
 # include "param.h"
@@ -671,19 +671,28 @@
           hfsen=-hfsen*rho0i*cpi
 !++  Total surface heat flux
           stflx(i,j,itemp)=srflx(i,j)+hflw+hflat+hfsen
+#  ifdef SUBSTANCE
+          ! uniform atmospheric (dry) deposition flux (flx_atm_n(),
+          ! stored as sub_flx_atm()); the wet-deposition (rain) term
+          ! is added on top of this below if RAIN_FLUX is defined
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=sub_flx_atm(itrc)
+          enddo
+#  endif
 #  ifdef SALINITY
           ! evap from latent heat flux
           evap=-cp*hflat/Hlv
 #   ifdef RAIN_FLUX
           ! E-P bilan in m/s
-          EmP(i,j)=evap-prate(i,j) 
+          EmP(i,j)=evap-prate(i,j)
           ! add temperature flux from rain
           stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
 #   ifdef SUBSTANCE
-          ! add substance flux from rain (cv_rain_n(): substance
-          ! concentration in rainwater, kg/m3)
+          ! add wet-deposition substance flux from rain (cv_rain_n():
+          ! substance concentration in rainwater, kg/m3), on top of
+          ! the dry-deposition flux set above
           do itrc=itsubs1,itsubs2
-            stflx(i,j,itrc)=prate(i,j)*cv_rain(itrc)
+            stflx(i,j,itrc)=stflx(i,j,itrc)+prate(i,j)*cv_rain(itrc)
           enddo
 #   endif
 #   else

@@ -52,7 +52,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   applied in `bulk_flux.F`, adding `prate * cv_rain` to each substance's
   surface flux, the same way rain already contributes to the temperature
   flux there; only active if CPP keys SALINITY and RAIN_FLUX are both
-  defined. `flx_atm`/`cini_air` remain unimplemented (#590)
+  defined (#590)
+
+- SUBSTANCE : `flx_atm` (uniform atmospheric dry deposition) is now
+  applied in `bulk_flux.F` too, as a constant term added to each
+  substance's surface flux (CPP key SUBSTANCE only; combines with the
+  `cv_rain` wet-deposition term above when RAIN_FLUX is also defined).
+  `cini_air` remains unimplemented: unlike `flx_atm`/`cv_rain`, it has
+  no equivalent anywhere in CROCO's MUSTANG/SUBSTANCE port -- in MARS3D
+  it only feeds a separate, optional contaminant-volatilization module
+  (`key_contaminant`) that was never ported (#590)
 
 ### Fixed
 
