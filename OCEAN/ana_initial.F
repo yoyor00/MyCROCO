@@ -29,7 +29,7 @@
 # ifdef SOLVE3D
       call ana_initial_3d_tile (Istr,Iend,Jstr,Jend)
 # endif
-# ifdef ANA_INITIAL
+# if defined ANA_INITIAL && defined SOLVE3D
       if (trim(testcase_name) == 'ANA_JET') then
         call ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
       endif
@@ -1757,6 +1757,11 @@
 #endif /* SOLVE3D */
 
 !======================================================================
+! Note: the ANA_JET initialisation below is baroclinic (it fills u,v,t and
+! uses z_r/Hz), so it is only compiled when SOLVE3D is defined. Without
+! this guard, purely 2D configurations defining ANA_INITIAL (SOLITON,
+! GRAV_ADJ, ...) fail to compile ('z_r has no IMPLICIT type').
+#if defined ANA_INITIAL && defined SOLVE3D
 !
       subroutine ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
 !----------------------------------------------------------------------
@@ -2307,4 +2312,4 @@ C$OMP BARRIER
 !$acc end kernels
       return
       end
-
+#endif /* ANA_INITIAL && SOLVE3D */

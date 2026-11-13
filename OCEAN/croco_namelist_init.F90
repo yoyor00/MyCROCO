@@ -1395,7 +1395,9 @@ contains
       use croco_namelist, ONLY: out_his_tracer
 # endif
 #endif
+# ifdef TRACERS
       use param, ONLY: NT
+# endif
       use ncscrum, ONLY: wrthis, indxTime, indxZ, indxUb, indxVb
 #ifdef SOLVE3D
       use ncscrum, ONLY: indxU, indxV
@@ -1433,7 +1435,9 @@ contains
       use croco_namelist, ONLY: out_avg_tracer
 #  endif
 # endif
+# ifdef TRACERS
       use param, ONLY: NT
+# endif
       use ncscrum, ONLY: wrtavg, indxTime, indxZ, indxUb, indxVb
 #ifdef SOLVE3D
       use ncscrum, ONLY: indxU, indxV
@@ -1869,7 +1873,9 @@ contains
       use croco_namelist, ONLY: out_avg_dia2D_tracer
 #  endif
 # endif
+# ifdef TRACERS
       use param, ONLY: NT
+# endif
       use ncscrum, ONLY: wrtdia3D, wrtdia2D
 # ifdef AVERAGES
       use ncscrum, ONLY: wrtdia3D_avg, wrtdia2D_avg

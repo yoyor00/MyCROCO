@@ -70,7 +70,11 @@ contains
    !    - each phase remains independently readable / testable
    !---------------------------------------------------------------------
    subroutine read_nml(ierr)
-      use param, ONLY: stdout, NT
+      use param, ONLY: stdout
+#if defined TRACERS
+      ! NT (total number of tracers) only exists when tracers are compiled in
+      use param, ONLY: NT
+#endif
 #ifdef DIAGNOSTICS_BIO
       use param, ONLY: NumFluxTerms, NumVSinkTerms
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
@@ -1331,6 +1335,7 @@ contains
 #  endif
 # endif
 #endif
+#if defined SOLVE3D || defined RIP
       ! --- croco_auxiliary_history_fields (optional) ---
       call check_nml_presence(nmlunit, "croco_auxiliary_history_fields", .false., found, ierr)
       if (found) then
@@ -1341,6 +1346,7 @@ contains
             ierr = ierr + 1
          end if
       end if
+#endif /* SOLVE3D || RIP */
       ! --- history: per-physics optional blocks (14 blocks) ---
 # if defined SOLVE3D && defined TEMPERATURE
       call check_nml_presence(nmlunit, "croco_temperature_history_fields", .false., found, ierr)
@@ -2885,7 +2891,10 @@ contains
    !  closing it, which avoids any risk of double-close.
    !---------------------------------------------------------------------
    subroutine fatal_nml_error(nml_name, nmlunit, ios, iomsg)
-      use param, ONLY: stdout, NT
+      use param, ONLY: stdout
+#if defined TRACERS
+      use param, ONLY: NT
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       use croco_namelist, ONLY: psource_Nsrc
 #endif
@@ -2954,10 +2963,12 @@ contains
       if (looks_like_array) then
          MPI_master_only write (stdout, '(a)') &
             '  -> this assigns an array'
+#if defined TRACERS
          MPI_master_only write (stdout, '(a,i0,a)') &
             '  -> if it is sized per-tracer '// &
             '(like tnu2, tnu4, Akt_bak), it must have exactly NT = ', NT, &
             ' values.'
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
          MPI_master_only write (stdout, '(a,i0,a)') &
             '  -> if it is sized per river/point-source '// &
