@@ -318,6 +318,8 @@
                 goto 12
               else
                 write(iout,'(A)') string(1:i)
+! Retry this dependency on the next output line.
+                k=k-1
                 goto 11
               endif
             elseif (k.lt.nmax) then
