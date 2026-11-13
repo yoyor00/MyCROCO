@@ -1,7 +1,6 @@
 /* SED TOY — Flocculation 1D (5 x 5 x 50) */
 # undef  OPENMP
 # undef  MPI
-# define NEW_S_COORD
 # define SOLVE3D
 # undef  NONLIN_EOS
 # define SALINITY

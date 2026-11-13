@@ -63,11 +63,10 @@ N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 nc.close()
 
 # Compute vertical levels
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = np.squeeze(zr[:, :, 0])  # MATLAB's zr(:,:,1) -> Python's zr[:, :, 0]
 
 # Create yr

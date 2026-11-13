@@ -36,7 +36,7 @@
 !----------------------------------------------------------------------
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 ! Number of tides
-      integer, parameter :: Ntides = 8
+      integer, parameter :: Ntides = 10
 #endif
 !
 !----------------------------------------------------------------------

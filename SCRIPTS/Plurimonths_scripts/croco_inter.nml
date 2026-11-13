@@ -281,14 +281,14 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
-  psource_Lsrc(2,1) = T
-  psource_Lsrc(2,2) = T
-  psource_Tsrc0(1,1) = 20.
-  psource_Tsrc0(1,2) = 15.
-  psource_Tsrc0(2,1) = 20.
-  psource_Tsrc0(2,2) = 15.
+  psource_Lsrc(1,1) = T      ! River #1, tracer #1 (temperature)
+  psource_Lsrc(1,2) = T      ! River #1, tracer #2 (salinity)
+  psource_Lsrc(2,1) = T      ! River #2, tracer #1 (temperature)
+  psource_Lsrc(2,2) = T      ! River #2, tracer #2 (salinity)
+  psource_Tsrc0(1,1) = 20.   ! River #1, tracer #1 (temperature)
+  psource_Tsrc0(1,2) = 15.   ! River #1, tracer #2 (salinity)
+  psource_Tsrc0(2,1) = 20.   ! River #2, tracer #1 (temperature)
+  psource_Tsrc0(2,2) = 15.   ! River #2, tracer #2 (salinity)
 /
 
 &croco_sediments

@@ -408,7 +408,7 @@
         DO j=jstr,jend+1
           DO i=istr,iend
 #   if defined W_HADV_C4
-            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
+            WFe(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
      &        -0.333333333*(lap(i,j)-lap(i,j-1)) )*Hvom_w(i,j,k)
 #   elif defined W_HADV_UP3
             IF ( HVom_w(i,j,k).gt. 0. ) THEN

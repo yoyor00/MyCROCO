@@ -55,14 +55,13 @@ v = nc.variables["v"][tndx, -1, :, :]
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 nc.close()
 
 # Adjust u, v to rho-points
 ur = 0.5 * (u[:, :-1] + u[:, 1:])  # Example replacement for MATLAB's u2rho_2d
 vr = 0.5 * (v[:-1, :] + v[1:, :])  # Example replacement for MATLAB's v2rho_2d
 
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = zr[:, :, i]
 yr = np.tile(y / 1000, (N, 1))
 
