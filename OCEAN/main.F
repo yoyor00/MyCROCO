@@ -415,10 +415,9 @@ C$OMP BARRIER
 
 #ifdef USE_CALENDAR
       time_end=tool_datosec(end_date)
-      ntimes=int((time_end-time)/dt)
+      ntimes=NINT((time_end-time)/dt)+ntstart-1
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
-      ntimes=ntimes+ntstart
 #endif
 !
 !  Set initial conditions analytically for ideal cases

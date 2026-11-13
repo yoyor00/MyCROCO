@@ -25,6 +25,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- NC4PAR : fix wrong record index on MPI ranks > 0 when reopening an
+  existing history/restart/diagnostics file to append records (e.g. on
+  restart); non-root ranks computed total_rec one off from rank 0,
+  desyncing collective scalar writes (time, time_step) across ranks
+  (Issue #596)
+
+- USE_CALENDAR : fix off-by-one in ntimes computed from start_date/end_date
+  (missing -1, and int() instead of NINT() truncating float rounding
+  noise) (Issue #596)
+
 - WET_DRY : fix restart not bit-exact with WET_DRY; umask_wet/vmask_wet
   are now saved to and restored from the restart file (Issue #262)
 
