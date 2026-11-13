@@ -30,6 +30,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- WET_DRY : fix restart not bit-exact with WET_DRY; umask_wet/vmask_wet
+  are now saved to and restored from the restart file (Issue #262)
+
+- TIDES_MAS : stop with a clear error instead of silently using an
+  uninitialized index when a tide period has no match in the MAS
+  catalogue; POT_TIDES : add missing tides.h include in prsgrd.F
+  (Issue #595)
+
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
 	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
@@ -40,7 +48,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- no empty-named Tcrit\_mld variables written for passive tracers
 	- MLD index of the previous time step (kbl\_nstp) saved in and read from the restart file, so that the first MLD budget after a restart is consistent
 
-- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record
+- LMD_SKPP2005 / LMD_BKPP2005 : hbl and hbbl were always read from the first record of the restart file instead of the restart record (#320 and #591)
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
@@ -59,6 +67,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
+- BENCH : Fix AGRIF handling with a per-test-case AGRIF_FixedGrids.in,
+  detected from the resolved cppdefs.h instead of sharing OCEAN's file
+  across all cases (#489 and #576)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
@@ -78,6 +89,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
   surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
 - Fix grid variables writing in average and diagnostic file (#522)
+- Fix bvf fields units in history and average files (#567)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
@@ -101,11 +113,28 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Restart : Fix restart with OBC_PATM (#496)
 
 - KPP : bug fix for the non-local term in surface KPP parameterisation
-        wrong sign and + correction to recover the empirical free convection scaling of 0.2 
+        wrong sign and + correction to recover the empirical free convection scaling of 0.2
+
+- TIDES : Adds an error message if POT_TIDES is defined but no potentials are present in the frc file (#431)
 
 - MPI_NOLAND :adding rmask for volume, ke, pe global calculations to avoid tiling dependancy (#476)
 
+- NH : Fix rhs typo (#538)
+
 ### Changed
+- Vertical coordinate : only the new s-coordinate (Vtransform = 2,
+  Shchepetkin & McWilliams 2009) is kept (#396).
+  Input files (initial, boundary, climatology) are checked when opened:
+  CROCO stops with an explicit error if VertCoordType is OLD/SH94 or if
+  Vtransform /= 2. Files without VertCoordType nor Vtransform are assumed
+  to use Vtransform = 2. Old input files must be regenerated with the
+  current croco_tools or croco_pytools, or used with croco <= v2.1.3.
+  See also croco_tools #69 and croco_pytools #118.
+  Test cases that previously ran with the old s-coordinate (ANA_JET,
+  BASIN, CANYON, EQUATOR, INNERSHELF, INTERNAL, KILPATRICK, OVERFLOW,
+  RIVER, SEAMOUNT, SHELFRONT, SOLITON, UPWELLING, VORTEX) now use the new
+  one: their results differ from previous versions. VORTEX input files
+  have been regenerated with Vtransform = 2.
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
@@ -136,7 +165,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
 - MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
 - MUSTANG : change init and roughness length computation (#562)
-- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353)
+- MUSTANG : dispatch per-test-case namelists into TEST_CASES/ and declare defaults in code (#353, #594)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
@@ -174,6 +203,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+- NEW_S_COORD, cpp key has been removed (if deactivated, old s-coordinate (Vtransform = 1, 
+    Song & Haidvogel 1994) was chosen , Now Vtransform=2 is used by default (Shchepetkin & McWilliams 2009))
+    the key has also been removed from all TEST_CASES cppdefs (#396)
 
 - Remove duplicate `scrum_time` netCDF variable from history, restart, 
   averages, diagnostics, surf and station output files; only `time` is 
@@ -260,7 +292,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, M. Le Corre, P. Penven
+  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,

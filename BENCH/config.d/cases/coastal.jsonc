@@ -14,8 +14,7 @@
       "plotphy_script_input": "croco_his.nc",
     },
     "check_outputs": ["croco_his.nc"],
-    "unsupported": ["openmp","restart"],
-    // no restartability due to WET_DRY key
+    "unsupported": ["openmp"],
   },
   // VILAINE case with MUSTANG V2 bedload + Vandera wave skewness/asymmetry
   // effect (Van der A et al., 2013). Same forcing (WAVE_OFFLINE already
