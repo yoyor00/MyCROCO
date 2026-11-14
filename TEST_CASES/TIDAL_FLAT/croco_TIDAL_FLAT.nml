@@ -7,18 +7,15 @@
 /
 
 &croco_time_stepping
-  ntimes = 8640
   dt = 15
   ndtfast = 5
   ninfo = 100
 /
 
-&croco_use_calendar
+&croco_calendar
   start_date = "2019-01-01 00:00:00"
   end_date = "2019-01-03 00:00:00"
-  dt_his = 0.25
-  dt_avg = 24
-  dt_rst = 24
+  calendar_type = "gregorian"
 /
 
 &croco_s_coord
@@ -45,13 +42,13 @@
 
 &croco_history
   ldefhis = .true.
-  nwrt = 100
+  nwrt = 60
   nrpfhis = 0
   hisname = "tidal_flat_his.nc"
 /
 
 &croco_restart
-  nrst = 720000
+  nrst = 5760
   nrpfrst = -1
   rstname = "tidal_flat_rst.nc"
 /
