@@ -1846,6 +1846,7 @@ C$OMP END MASTER
        endif
 #  endif
 # endif /* AGRIF */
+#ifdef CROCO_CHECK_VELOCITY
 !
 !-----------------------------------------------------------------------
 !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
@@ -1863,6 +1864,7 @@ C$OMP END MASTER
           VMAX=max(VMAX,abs(vbar(i,j,knew)))
         enddo
       enddo
+#endif /* CROCO_CHECK_VELOCITY */
 !$acc end kernels
 !
 !-----------------------------------------------------------------------
@@ -1879,6 +1881,7 @@ C$OMP MASTER
 C$OMP END MASTER
 # endif
 
+#ifdef CROCO_CHECK_VELOCITY
       IF (VMAX.GT.VMAXL) THEN
 !$acc update if(compute_on_device) host(ubar(Istr:Iend,Jstr:Jend,knew))
 !$acc update if(compute_on_device) host(vbar(Istr:Iend,Jstr:Jend,knew))
@@ -1933,6 +1936,7 @@ C$OMP END MASTER
         stop                            !-->  EXIT
 # endif
       ENDIF
+#endif /* CROCO_CHECK_VELOCITY */
 
 # ifdef SOLVE3D
       if (LAST_FAST_STEP) then

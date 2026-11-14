@@ -4110,6 +4110,7 @@ C$OMP END MASTER
 
 # endif  /* NBQ_HZCORRECT */
 
+#ifdef CROCO_CHECK_VELOCITY
 !
 !-----------------------------------------------------------------------
 !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
@@ -4201,6 +4202,7 @@ C$OMP END MASTER
         stop                            !-->  EXIT
 # endif
       ENDIF
+#endif /* CROCO_CHECK_VELOCITY */
 
 # undef zwrk 
 # undef rzeta  
