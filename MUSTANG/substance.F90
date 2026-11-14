@@ -17,7 +17,7 @@ MODULE substance
    USE module_substance
    USE comsubstance
    USE submassbalance, ONLY :  submassbalance_readdomain
-   USE croco_namelist, ONLY : subsfilename
+   USE croco_namelist, ONLY : subsfilename, dt
 
 # if defined BIOLink
    USE comBIOLink
@@ -36,12 +36,14 @@ MODULE substance
    CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: name_var_r, long_name_var_r, standard_name_var_r, &
                                                       unit_var_r, init_cv_name_r, obc_cv_name_r
    REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cini_air_r, cobc_wat_r
-   LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r 
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: t90_r
+   LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r
 
    ! local variable to read each namelist with different length (variables by group of substances)
    CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE  :: name_var_n, long_name_var_n, standard_name_var_n, &
                                                       unit_var_n, init_cv_name_n, obc_cv_name_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cini_air_n, cobc_wat_n  
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cini_air_n, cobc_wat_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: t90_n
    LOGICAL, DIMENSION(:),ALLOCATABLE               :: l_out_subs_n    
 #ifdef MUSTANG
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: cini_sed_n
@@ -133,30 +135,30 @@ CONTAINS
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n,tocd_n,ros_n, &
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartsorb/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        name_varpc_assoc_n
    NAMELIST/nmlvardiss/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
                        D0_funcT_opt_n,D0_m0_n,D0_m1_n,                       &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #else     
    NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_sorb                 
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n, &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        ws_free_min_n,ws_free_max_n
    NAMELIST/nmlpartsorb/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n,            &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n,            &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        name_varpc_assoc_n
    NAMELIST/nmlvardiss/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n, &
                        cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #endif                      
    NAMELIST/nmlvarfix/name_var_fix,long_name_var_fix,standard_name_var_fix,unit_var_fix, &
@@ -650,6 +652,8 @@ CONTAINS
     ALLOCATE(init_cv_name(itsubs1:itsubs2))
     ALLOCATE(sub_flx_atm(itsubs1:itsubs2))
     ALLOCATE(cv_rain(itsubs1:itsubs2))
+    ALLOCATE(t90(itsubs1:itsubs2))
+    ALLOCATE(f90(itsubs1:itsubs2))
     ALLOCATE(cini_wat(itsubs1:itsubs2))
     ALLOCATE(cobc_wat(itsubs1:itsubs2))
     ALLOCATE(cini_air(itsubs1:itsubs2))
@@ -717,6 +721,23 @@ CONTAINS
       obc_cv_name(ivr)=obc_cv_name_r(irk_fil(iv))
       cv_rain(ivr)=cv_rain_r(irk_fil(iv))
       sub_flx_atm(ivr)=flx_atm_r(irk_fil(iv))
+      t90(ivr)=t90_r(irk_fil(iv))
+   END DO
+
+   ! T90 mortality/decay: f90 is the fraction of concentration
+   ! surviving one time step dt, derived once here from the user-set
+   ! t90 (decay time in hours, 0. = no decay). Applied as
+   ! t(:,:,:,nnew,itrc)=t(:,:,:,nnew,itrc)*f90(itrc) in step3d_t.F.
+   ! f90 = exp(-dt*ln(10)/(t90*3600)) so that after a time t90 (in
+   ! seconds: t90*3600) the concentration has dropped to 10% of its
+   ! initial value (same formulation as MARS3D's f90/t90, which
+   ! recomputes it every time step to also support a varying dt; CROCO
+   ! runs with a fixed dt, so it is computed once here instead).
+   f90(:)=1.0_rsh
+   DO ivr=itsubs1,itsubs2
+     IF (t90(ivr) /= 0.0_rsh) THEN
+       f90(ivr)=EXP(-REAL(dt,rsh)*2.302585093_rsh/(t90(ivr)*3600.0_rsh))
+     ENDIF
    END DO
 
 
@@ -1022,6 +1043,7 @@ CONTAINS
    ALLOCATE(unit_var_n(nballoc))
    ALLOCATE(flx_atm_n(nballoc))
    ALLOCATE(cv_rain_n(nballoc))
+   ALLOCATE(t90_n(nballoc))
    ALLOCATE(cini_wat_n(nballoc))
    ALLOCATE(cini_air_n(nballoc))
    ALLOCATE(cobc_wat_n(nballoc))
@@ -1031,6 +1053,7 @@ CONTAINS
    !initialization
    flx_atm_n(:)=0.
    cv_rain_n(:)=0.
+   t90_n(:)=0.
    cini_wat_n(:)=0.
    cobc_wat_n(:)=0.
 #ifdef MUSTANG
@@ -1072,6 +1095,7 @@ CONTAINS
      unit_var_r(iv)=unit_var_n(ivr)
      flx_atm_r(iv)=flx_atm_n(ivr)
      cv_rain_r(iv)=cv_rain_n(ivr)
+     t90_r(iv)=t90_n(ivr)
      cini_wat_r(iv)=cini_wat_n(ivr)
      cobc_wat_r(iv)=cobc_wat_n(ivr)
 #ifdef MUSTANG
@@ -1083,7 +1107,7 @@ CONTAINS
      obc_cv_name_r(iv)=obc_cv_name_n(ivr)
    ENDDO
    DEALLOCATE(name_var_n,long_name_var_n,standard_name_var_n,unit_var_n)
-   DEALLOCATE(flx_atm_n,cv_rain_n)
+   DEALLOCATE(flx_atm_n,cv_rain_n,t90_n)
    DEALLOCATE(cini_wat_n,cini_air_n,cobc_wat_n)
    DEALLOCATE(l_out_subs_n)
    DEALLOCATE(init_cv_name_n,obc_cv_name_n)

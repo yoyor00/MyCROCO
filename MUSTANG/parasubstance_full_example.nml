@@ -255,6 +255,10 @@
 :    unit_var_n() : string, unit of concentration of variable
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    t90_n() : real, mortality/decay time (h); the concentration is
+:              multiplied every time step by f90_n() = exp(-dt*ln(10)/
+:              (t90_n()*3600)), so that after a time t90_n() (hours) it
+:              has dropped to 10% of its value. 0. (default) = no decay
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
 :    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
@@ -303,6 +307,7 @@
       unit_var_n(1)='g.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
+      t90_n(1)=0.0
       cini_wat_n(1)=1.0
       cobc_wat_n(1)=1.
       cini_sed_n(1)=0.4
@@ -333,6 +338,10 @@
 :    unit_var_n() : string, unit of concentration of variable
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    t90_n() : real, mortality/decay time (h); the concentration is
+:              multiplied every time step by f90_n() = exp(-dt*ln(10)/
+:              (t90_n()*3600)), so that after a time t90_n() (hours) it
+:              has dropped to 10% of its value. 0. (default) = no decay
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
 :    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
@@ -368,6 +377,7 @@
       unit_var_n(1)='ng.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
+      t90_n(1)=0.0
       cini_wat_n(1)=1.0
       cini_sed_n(1)=10.
       cini_air_n(1)=0.0
@@ -387,6 +397,10 @@
 :    unit_var_n() : string, unit of concentration of variable
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    t90_n() : real, mortality/decay time (h); the concentration is
+:              multiplied every time step by f90_n() = exp(-dt*ln(10)/
+:              (t90_n()*3600)), so that after a time t90_n() (hours) it
+:              has dropped to 10% of its value. 0. (default) = no decay
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
 :    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
@@ -420,6 +434,7 @@
       unit_var_n(1)='ng.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
+      t90_n(1)=0.0
       cini_wat_n(1)=100.0
       cobc_wat_n(1)=100.
       cini_sed_n(1)=0.

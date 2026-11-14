@@ -51,6 +51,7 @@
 #  endif
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
+      USE comsubstance, ONLY : f90
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
@@ -1166,6 +1167,23 @@
 #   undef I_RANGE
 #   undef J_RANGE
 #  endif /* MASKING */
+
+#  ifdef SUBSTANCE
+        if (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
+          if (f90(itrc).ne.1.0_rsh) then
+!           T90 mortality/decay: f90(itrc), precomputed once from the
+!           user-set t90_n() (see substance_read_alloc), is the
+!           fraction of concentration surviving one time step
+            do k=1,N
+              do j=JstrR,JendR
+                do i=IstrR,IendR
+                  t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)*f90(itrc)
+                enddo
+              enddo
+            enddo
+          endif
+        endif
+#  endif /* SUBSTANCE */
 
       enddo   ! <-- itrc
 !$acc end kernels

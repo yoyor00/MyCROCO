@@ -63,6 +63,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   it only feeds a separate, optional contaminant-volatilization module
   (`key_contaminant`) that was never ported (#590)
 
+- SUBSTANCE : new `t90` parameter (mortality/decay time, in hours) for
+  dissolved, non-constitutive particulate and sorbed particulate
+  substances, porting MARS3D's `t90`/`f90` formulation: the
+  concentration is multiplied every time step by a decay factor
+  `f90 = exp(-dt*ln(10)/(t90*3600))`, computed once at initialization
+  (`MUSTANG/substance.F90`) and applied as the last operation on each
+  substance's concentration in `step3d_t.F`. `t90` = 0. (default)
+  disables decay, as before this was added. (#590)
+
 ### Fixed
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)

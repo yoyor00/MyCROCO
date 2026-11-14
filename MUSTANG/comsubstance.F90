@@ -60,6 +60,9 @@ MODULE comsubstance
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_wat, cini_air, cobc_wat
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: typdiss
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: sub_flx_atm, cv_rain
+    ! t90 : user-set mortality/decay time (h, 0. = no decay);
+    ! f90 : per-timestep decay factor derived from t90, see substance_read_alloc
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: t90, f90
     CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: obc_cv_name, long_name_var, name_var, standard_name_var
     CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: init_cv_name, unit_var
     REAL(KIND=rsh), DIMENSION(:,:,:,:),ALLOCATABLE :: ws_part
