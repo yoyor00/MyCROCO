@@ -121,8 +121,8 @@ CONTAINS
 #ifdef MUSTANG
    NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_grav, nv_sand, nv_mud, nv_sorb
    NAMELIST/nmlgravels/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,l_bedload_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n,cini_sed_n,l_bedload_n, &
+                       cini_air_n,l_out_subs_n, &
                        tocd_n,ros_n,diam_n
    NAMELIST/nmlsands/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,l_bedload_n, &
@@ -264,6 +264,10 @@ CONTAINS
     ALLOCATE(ros_n(nv_grav))
     ALLOCATE(l_bedload_n(nv_grav))
     READ(500,nmlgravels)
+    ! gravels are never in suspension (bedload only): always use the
+    ! uniform cini_wat_n()/cobc_wat_n() constants, never read from file
+    init_cv_name_n(:)='none'
+    obc_cv_name_n(:)='none'
     iv0=iv
     CALL DEFVAR_DEALLOC(nv_grav,iv)
     DO ivr=1,nv_grav
