@@ -19,6 +19,8 @@ Run/amr.in
 ######################
 .vscode
 
+**/__pycache__
+
 OCEAN.bak/cpl_prism_getlistvals.F
 
 .venv

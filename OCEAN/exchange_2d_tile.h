@@ -1,9 +1,17 @@
-#if (!defined MP_3PTS) && (!defined MP_1PTS)
+!
+! The subroutine name is created by self-including this file (see end of
+! file) with `MP_1PTS`, `MP_3PTS` or `MP_OLS_PTS` defined; the actual
+! `exchange_*_tile` names are assigned in `exchange.F`.
+!
+#include "overlapping_schwarz_2d.h"
+#if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_OLS_PTS)
       subroutine exchange_2d_tile (Istr,Iend,Jstr,Jend, A)
 #elif defined MP_1PTS
       subroutine exchange_2d_1pts_tile (Istr,Iend,Jstr,Jend, A)
-#else
+#elif defined MP_3PTS
       subroutine exchange_2d_3pts_tile (Istr,Iend,Jstr,Jend, A)
+#elif defined MP_OLS_PTS
+      subroutine exchange_2d_ols_tile (Istr,Iend,Jstr,Jend, A)
 #endif
 !
 ! Set periodic boundary conditions (if any) for a two-dimensional
@@ -18,12 +26,15 @@
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-#if (!defined MP_3PTS) && (!defined MP_1PTS)
+#if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_OLS_PTS)
       parameter (Npts=2)
 #elif defined MP_1PTS
       parameter (Npts=1)
-# else
+# elif defined MP_3PTS
       parameter (Npts=3)
+# elif defined MP_OLS_PTS
+      ! OLS: communicate more layers than needed, at least 2
+      parameter (Npts=2+MPI_OLS_2D_ADD_LAYERS)
 # endif
       real A(GLOBAL_2D_ARRAY)
       integer Istr,Iend,Jstr,Jend, i,j
@@ -131,12 +142,14 @@
 		 
 		 
 #ifdef MPI
-#if (!defined MP_3PTS) && (!defined MP_1PTS)
+#if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_OLS_PTS)
       call MessPass2D_tile (Istr,Iend,Jstr,Jend,  A)
 #elif defined MP_1PTS
       call MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend,  A)
-# else
+# elif defined MP_3PTS
       call MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend,  A)
+# elif defined MP_OLS_PTS
+      call MessPass2D_ols_tile (Istr,Iend,Jstr,Jend,  A)
 # endif
 #   ifdef  BAND_DEBUG          
       chkbandname='none'
@@ -162,13 +175,16 @@ C$OMP BARRIER
       return
       end
 
-#if (!defined MP_3PTS) && (!defined MP_1PTS)
+#if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_OLS_PTS)
 #  define MP_3PTS
 #  include "exchange_2d_tile.h"
 #  undef MP_3PTS
-#ifndef MP_1PTS
-#define MP_1PTS
-#include "exchange_2d_tile.h"
-#undef MP_1PTS
-#endif
+#  define MP_1PTS
+#  include "exchange_2d_tile.h"
+#  undef MP_1PTS
+#  ifdef MPI_OLS_2D
+#    define MP_OLS_PTS
+#    include "exchange_2d_tile.h"
+#    undef MP_OLS_PTS
+#  endif
 # endif

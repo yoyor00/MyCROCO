@@ -1,0 +1,182 @@
+{
+  // Overlapping Schwarz (OLS) latency hiding.
+  //
+  // The OLS parameters are cppkeys with values, which BENCH passes to
+  // `configure` as `--with-keys=+KEY=VALUE` and which end up as
+  // `# define KEY VALUE` in the case scope of `cppdefs.h`:
+  //
+  //   MPI_OLS_2D                     enable the method
+  //   MPI_OLS_2D_COMM_N_TIMES        barotropic steps per exchange block
+  //   MPI_OLS_2D_ADD_LAYERS          extra halo layers to communicate
+  //   MPI_OLS_2D_TS_HALO_REDUCTION   layers removed from the computed range
+  //                                  per barotropic step
+  //
+  // `ADD_LAYERS` must be at least `TS_HALO_REDUCTION*(COMM_N_TIMES-1) + 1`,
+  // otherwise the extended halo shrinks into the tile interior and the run
+  // either diverges or is silently wrong (see the CROCO test cases and
+  // `croco/tests/70_hpc_overlapping_schwarz` in MULE). The `+ 1` is needed
+  // because the outermost interior column uses the outermost halo layer as
+  // stencil input; with `EW_PERIODIC` it is required as well, as the periodic
+  // margins are filled by mirroring. Hence, for the default
+  // `TS_HALO_REDUCTION = 1`:
+  //
+  //   COMM_N_TIMES = 1 -> ADD_LAYERS = 1
+  //   COMM_N_TIMES = 4 -> ADD_LAYERS = 4
+  //   COMM_N_TIMES = 8 -> ADD_LAYERS = 8
+  //
+  // OLS is bit exact: for the same MPI decomposition the results are bit
+  // identical to the plain run (measured on BASIN, all output records,
+  // all variables).
+  // BENCH still reports Check=False for these cases, but that is a limitation
+  // of the check itself: it compares against the `sequential` variant, and the
+  // `sequential` and `mpi-N` builds of *plain* CROCO already differ (up to
+  // 2.4e-07 on `temp`, even with the `host_bitreprod` flags), because the MPI
+  // build takes different code paths and tile dependent loop bounds.
+  // Bit reproducibility is verified by the MULE test cases
+  // (`croco/tests/70_hpc_overlapping_schwarz`), which compare every OLS job
+  // against a CROCO v2.1.0 reference with `--bit-reproducible=1`.
+  //
+  // The OLS cases are not part of `default_selection`; select them explicitly:
+  //
+  //   ./bench-croco.py --case '*-OLS-*' --variants 'sequential,mpi-4' -r --report
+  //
+
+  // BASIN with OLS, one exchange per barotropic step (baseline, must be
+  // bit identical to the non-OLS run)
+  "BASIN-OLS-1": {
+    "title": "BASIN + OLS N=1 (60 x 50 x 10 : 3240)",
+    "case": "BASIN",
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "6": "1x6",
+      "8": "2x4",
+      "12": "2x6",
+      "16": "1x16",
+      "32": "1x32",
+      "64": "1x64",
+    },
+    "cppkeys": {
+      "MPI_OLS_2D": true,
+      "MPI_OLS_2D_COMM_N_TIMES": 1,
+      "MPI_OLS_2D_ADD_LAYERS": 1,
+      "MPI_OLS_2D_TS_HALO_REDUCTION": 1,
+    },
+    "patches": {},
+    "check_outputs": ["basin_his.nc"],
+    "unsupported": ["restart"],
+  },
+
+  // BASIN with OLS, exchange every 4th barotropic step
+  "BASIN-OLS-4": {
+    "title": "BASIN + OLS N=4 (60 x 50 x 10 : 3240)",
+    "case": "BASIN",
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "6": "1x6",
+      "8": "2x4",
+      "12": "2x6",
+      "16": "1x16",
+      "32": "1x32",
+      "64": "1x64",
+    },
+    "cppkeys": {
+      "MPI_OLS_2D": true,
+      "MPI_OLS_2D_COMM_N_TIMES": 4,
+      "MPI_OLS_2D_ADD_LAYERS": 4,
+      "MPI_OLS_2D_TS_HALO_REDUCTION": 1,
+    },
+    "patches": {},
+    "check_outputs": ["basin_his.nc"],
+    "unsupported": ["restart"],
+  },
+
+  // BASIN with OLS, exchange every 8th barotropic step
+  "BASIN-OLS-8": {
+    "title": "BASIN + OLS N=8 (60 x 50 x 10 : 3240)",
+    "case": "BASIN",
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "6": "1x6",
+      "8": "2x4",
+      "12": "2x6",
+      "16": "1x16",
+      "32": "1x32",
+      "64": "1x64",
+    },
+    "cppkeys": {
+      "MPI_OLS_2D": true,
+      "MPI_OLS_2D_COMM_N_TIMES": 8,
+      "MPI_OLS_2D_ADD_LAYERS": 8,
+      "MPI_OLS_2D_TS_HALO_REDUCTION": 1,
+    },
+    "patches": {},
+    "check_outputs": ["basin_his.nc"],
+    "unsupported": ["restart"],
+  },
+
+  // SOLITON with OLS, one exchange per barotropic step (baseline)
+  "SOLITON-OLS-1": {
+    "title": "SOLITON + OLS N=1 (96 x 32 x 10 : 1200)",
+    "case": "SOLITON",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_soliton.py",
+      "plotphy_script_input": "soliton_his.nc",
+    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
+    "cppkeys": {
+      "MPI_OLS_2D": true,
+      "MPI_OLS_2D_COMM_N_TIMES": 1,
+      "MPI_OLS_2D_ADD_LAYERS": 1,
+      "MPI_OLS_2D_TS_HALO_REDUCTION": 1,
+    },
+    "patches": {},
+    "check_outputs": ["soliton_his.nc", "soliton_avg.nc"],
+    "unsupported": ["openacc-native", "openacc-psyclone"],
+  },
+
+  // SOLITON with OLS, exchange every 4th barotropic step
+  "SOLITON-OLS-4": {
+    "title": "SOLITON + OLS N=4 (96 x 32 x 10 : 1200)",
+    "case": "SOLITON",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_soliton.py",
+      "plotphy_script_input": "soliton_his.nc",
+    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
+    "cppkeys": {
+      "MPI_OLS_2D": true,
+      "MPI_OLS_2D_COMM_N_TIMES": 4,
+      "MPI_OLS_2D_ADD_LAYERS": 4,
+      "MPI_OLS_2D_TS_HALO_REDUCTION": 1,
+    },
+    "patches": {},
+    "check_outputs": ["soliton_his.nc", "soliton_avg.nc"],
+    "unsupported": ["openacc-native", "openacc-psyclone"],
+  },
+
+  // SOLITON with OLS, exchange every 8th barotropic step
+  "SOLITON-OLS-8": {
+    "title": "SOLITON + OLS N=8 (96 x 32 x 10 : 1200)",
+    "case": "SOLITON",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_soliton.py",
+      "plotphy_script_input": "soliton_his.nc",
+    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
+    "cppkeys": {
+      "MPI_OLS_2D": true,
+      "MPI_OLS_2D_COMM_N_TIMES": 8,
+      "MPI_OLS_2D_ADD_LAYERS": 8,
+      "MPI_OLS_2D_TS_HALO_REDUCTION": 1,
+    },
+    "patches": {},
+    "check_outputs": ["soliton_his.nc", "soliton_avg.nc"],
+    "unsupported": ["openacc-native", "openacc-psyclone"],
+  },
+}

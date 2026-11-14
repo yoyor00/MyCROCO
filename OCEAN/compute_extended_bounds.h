@@ -21,6 +21,10 @@
  by "compute_auxiliary_bounds.h".
 */
       integer IstrR,IendR,JstrR,JendR
+#ifdef MPI_OLS_2D
+      integer :: IstrO, IendO, JstrO, JendO
+#endif
+
       if (Istr.eq.1) then
 #ifdef EW_PERIODIC
         IstrR=Istr-2
@@ -101,3 +105,48 @@
         JendR=Jend
       endif
 
+
+#ifdef MPI_OLS_2D
+      ! Bounds of the OLS-extended tile; `IstrR`..`JendR` are extended as well,
+      ! while `Istr`..`Jend` keep their original meaning.
+# ifdef EW_PERIODIC
+      IstrO = Istr - MPI_OLS_2D_ADD_LAYERS
+      IendO = Iend + MPI_OLS_2D_ADD_LAYERS
+      IstrR = IstrR - MPI_OLS_2D_ADD_LAYERS
+      IendR = IendR + MPI_OLS_2D_ADD_LAYERS
+# else
+      IstrO = Istr
+      IendO = Iend
+      if (.not. (WESTERN_EDGE)) then
+        IstrO = IstrO - MPI_OLS_2D_ADD_LAYERS
+        IstrR = IstrR - MPI_OLS_2D_ADD_LAYERS
+      endif
+      if (.not. (EASTERN_EDGE)) then
+        IendO = IendO + MPI_OLS_2D_ADD_LAYERS
+        IendR = IendR + MPI_OLS_2D_ADD_LAYERS
+      endif
+# endif
+
+# ifdef NS_PERIODIC
+      JstrO = Jstr - MPI_OLS_2D_ADD_LAYERS
+      JendO = Jend + MPI_OLS_2D_ADD_LAYERS
+      JstrR = JstrR - MPI_OLS_2D_ADD_LAYERS
+      JendR = JendR + MPI_OLS_2D_ADD_LAYERS
+# else
+      JstrO = Jstr
+      JendO = Jend
+      if (.not. (SOUTHERN_EDGE)) then
+        JstrO = JstrO - MPI_OLS_2D_ADD_LAYERS
+        JstrR = JstrR - MPI_OLS_2D_ADD_LAYERS
+      endif
+      if (.not. (NORTHERN_EDGE)) then
+        JendO = JendO + MPI_OLS_2D_ADD_LAYERS
+        JendR = JendR + MPI_OLS_2D_ADD_LAYERS
+      endif
+# endif
+#else
+#  define IstrO Istr
+#  define IendO Iend
+#  define JstrO Jstr
+#  define JendO Jend
+#endif

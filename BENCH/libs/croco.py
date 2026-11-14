@@ -196,10 +196,18 @@ class Croco:
         if "cppkeys" in self.case:
             reshape = []
             for key, value in self.case["cppkeys"].items():
-                if value:
-                    reshape.append(f"+{key}")
+                # bool -> enable/disable, integer -> `#define KEY value`.
+                # Strings are not supported: a C preprocessor key cannot hold
+                # one (see `libs/schema.json`).
+                if isinstance(value, bool):
+                    reshape.append(f"+{key}" if value else f"-{key}")
+                elif isinstance(value, int):
+                    reshape.append(f"+{key}={value}")
                 else:
-                    reshape.append(f"-{key}")
+                    raise ValueError(
+                        f"Cpp key '{key}' of case '{self.case_name}' has the value "
+                        f"{value!r}, but only booleans and integers are supported"
+                    )
             if len(reshape) > 0:
                 reshape_str = ",".join(reshape)
                 configure_cppkeys_options = f"--with-keys={reshape_str}"

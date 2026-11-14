@@ -1,0 +1,53 @@
+{
+  // Host profile with bit reproducible compiler flags.
+  //
+  // BENCH compares the output of every variant against the `sequential` variant
+  // of the same case and requires bit identical values (see `libs/check.py`).
+  // With the default `-O2 -march=native` that is not achievable: the scalar and
+  // the MPI build vectorise/FMA differently, so even the plain cases differ by
+  // ~1e-9 ... 1e-7 (largest on 3D variables).
+  //
+  // The flags below match the `bitreprod` profile used by the MULE test cases
+  // (`croco/python/mule_croco/archs/gcc-bitreprod.jsonc`): `-ffp-contract=off`
+  // disables FMA contraction and `-march=native` is not used, which makes
+  // `sequential` and `mpi-N` bit identical.
+  //
+  // Use it for validation runs, e.g.:
+  //
+  //   ./bench-croco.py --host host_bitreprod --case '*-OLS-*' \
+  //                    --variants 'sequential,mpi-4' -r --report
+  //
+  "host_bitreprod": {
+    "ressources": {
+      "cpu": 8,
+      "gpu": 1,
+    },
+    "tuning": {
+      "gnu": {
+        "extra": "",
+        "standard": "-O2 -ffp-contract=off -fno-tree-vectorize -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
+        "debug": "-O0 -g -ffp-contract=off -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan",
+        "mpi_options": "",
+      },
+      "intel": {
+        "extra": "",
+        "standard": "-O2 -no-fma -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+        "debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+        "mpi_options": "",
+      },
+      "nvfortran": {
+        "extra": "",
+        "standard": "-O2 -g -r8 -i4 -mcmodel=medium",
+        "debug": "-O0 -g -r8 -i4 -mcmodel=medium",
+        "mpi_options": "",
+      },
+      "environ": {
+        "OMP_PROC_BIND": "spread",
+      },
+      "hwloc_bind": {
+        "openmp": "",
+        "mpirun": "",
+      },
+    },
+  },
+}

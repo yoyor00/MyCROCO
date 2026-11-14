@@ -32,62 +32,162 @@
  bounds, it must be included just after the last type declaration
  inside a subroutine, but before the first executable statement.
 */
+
+
       integer IstrR,IendR,JstrR,JendR
+
 #ifdef EW_PERIODIC
-# define IstrU Istr
+! `IstrO` is the OLS-extended tile (and plain `Istr` without OLS)
+# define IstrU IstrO
 #else
       integer IstrU
 #endif
 #ifdef NS_PERIODIC
-# define JstrV Jstr
+# define JstrV JstrO
 #else
       integer JstrV
 #endif
 
+
+#ifdef MPI_OLS_2D
+# include "overlapping_schwarz_2d.h"
+      integer :: IstrO, IendO, JstrO, JendO
+      integer :: ols_barotropic_timestep
+
+      ! Phase within a block of `MPI_OLS_2D_COMM_N_TIMES` barotropic steps.
+      ! With `SOLVE3D`, `step2d` runs `nfast` times per baroclinic step while
+      ! `iic` advances only once, hence use `iif` (1..nfast).
+# ifdef SOLVE3D
+      if (iif.ge.1) then
+        ols_barotropic_timestep = MOD(iif-1,
+     &              MPI_OLS_2D_COMM_N_TIMES)
+      else
+        ols_barotropic_timestep = 0
+      endif
+# else
+      ols_barotropic_timestep = MOD(iic-1,
+     &              MPI_OLS_2D_COMM_N_TIMES)
+# endif
+
+      ! Reduce the extended halo layers within the block by
+      ! `MPI_OLS_2D_TS_HALO_REDUCTION` per barotropic step.
+# ifdef MPI_OLS_2D_TS_HALO_REDUCTION
+#  define MPI_OLS_2D_ADD_AUX_LAYERS (MPI_OLS_2D_ADD_LAYERS-MPI_OLS_2D_TS_HALO_REDUCTION*ols_barotropic_timestep)
+# else
+#  define MPI_OLS_2D_ADD_AUX_LAYERS MPI_OLS_2D_ADD_LAYERS
+# endif
+
+
+# ifdef MPI_OLS_2D_EXTEND_IJ
+      ! Bounds of the OLS-extended tile. `Istr`..`Jend` keep their original
+      ! meaning; the extended bounds are used at the exchange call sites.
+#  ifdef EW_PERIODIC
+      IstrO = Istr - MPI_OLS_2D_ADD_AUX_LAYERS
+      IendO = Iend + MPI_OLS_2D_ADD_AUX_LAYERS
+#  else
+      IstrO = Istr
+      IendO = Iend
+      if (.not. (WESTERN_EDGE)) then
+        IstrO = IstrO - MPI_OLS_2D_ADD_AUX_LAYERS
+      endif
+      if (.not. (EASTERN_EDGE)) then
+        IendO = IendO + MPI_OLS_2D_ADD_AUX_LAYERS
+      endif
+#  endif
+
+#  ifdef NS_PERIODIC
+      JstrO = Jstr - MPI_OLS_2D_ADD_AUX_LAYERS
+      JendO = Jend + MPI_OLS_2D_ADD_AUX_LAYERS
+#  else
+      JstrO = Jstr
+      JendO = Jend
+      if (.not. (SOUTHERN_EDGE)) then
+        JstrO = JstrO - MPI_OLS_2D_ADD_AUX_LAYERS
+      endif
+      if (.not. (NORTHERN_EDGE)) then
+        JendO = JendO + MPI_OLS_2D_ADD_AUX_LAYERS
+      endif
+#  endif
+# else
+      IstrO = Istr
+      IendO = Iend
+      JstrO = Jstr
+      JendO = Jend
+# endif
+
+#else
+
+#  define IstrO Istr
+#  define IendO Iend
+#  define JstrO Jstr
+#  define JendO Jend
+
+#endif
+
+
+      ! With OLS the derived bounds (`IstrR`, `IstrU`, ...) must be based on
+      ! the extended tile, exactly as if `Istr`..`Jend` had been widened.
+#ifdef MPI_OLS_2D
+# define Istr_ IstrO
+# define Iend_ IendO
+# define Jstr_ JstrO
+# define Jend_ JendO
+#else
+# define Istr_ Istr
+# define Iend_ Iend
+# define Jstr_ Jstr
+# define Jend_ Jend
+#endif
+
       if (WESTERN_EDGE) then
 #ifdef EW_PERIODIC
-        IstrR=Istr-2
+        IstrR=Istr_-2
 #else
-        IstrR=Istr-1
-        IstrU=Istr+1
+        IstrR=Istr_-1
+        IstrU=Istr_+1
 #endif
       else
-        IstrR=Istr
+        IstrR=Istr_
 #ifndef EW_PERIODIC
-        IstrU=Istr
+        IstrU=Istr_
 #endif
       endif
 
       if (EASTERN_EDGE) then
 #ifdef EW_PERIODIC
-        IendR=Iend+2
+        IendR=Iend_+2
 #else
-        IendR=Iend+1
+        IendR=Iend_+1
 #endif
       else
-        IendR=Iend
+        IendR=Iend_
       endif
 
       if (SOUTHERN_EDGE) then
 #ifdef NS_PERIODIC
-        JstrR=Jstr-2
+        JstrR=Jstr_-2
 #else
-        JstrR=Jstr-1
-        JstrV=Jstr+1
+        JstrR=Jstr_-1
+        JstrV=Jstr_+1
 #endif
       else
-        JstrR=Jstr
+        JstrR=Jstr_
 #ifndef NS_PERIODIC
-        JstrV=Jstr
+        JstrV=Jstr_
 #endif
       endif
 
       if (NORTHERN_EDGE) then
 #ifdef NS_PERIODIC
-        JendR=Jend+2
+        JendR=Jend_+2
 #else
-        JendR=Jend+1
+        JendR=Jend_+1
 #endif
       else
-        JendR=Jend
+        JendR=Jend_
       endif
+
+#undef Istr_
+#undef Iend_
+#undef Jstr_
+#undef Jend_

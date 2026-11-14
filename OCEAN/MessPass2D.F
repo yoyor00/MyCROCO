@@ -1,12 +1,15 @@
 #include "cppdefs.h"
+#include "overlapping_schwarz_2d.h"
 #ifdef MPI
 
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_OLS_PTS)
       subroutine MessPass2D_tile (Istr,Iend,Jstr,Jend, A)
 # elif defined MP_1PTS
       subroutine MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend, A)
-# else
+# elif defined MP_3PTS
       subroutine MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend, A)
+# elif defined MP_OLS_PTS
+      subroutine MessPass2D_ols_tile (Istr,Iend,Jstr,Jend, A)
 # endif
 # ifdef MPI
       use mpi
@@ -27,12 +30,14 @@
 # include "scalars.h"
 # include "mpi_cpl.h"
       integer Npts
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_OLS_PTS)
       parameter (Npts=2)
 # elif defined MP_1PTS
       parameter (Npts=1)
-# else
+# elif defined MP_3PTS
       parameter (Npts=3)
+# elif defined MP_OLS_PTS
+      parameter (Npts=2+MPI_OLS_2D_ADD_LAYERS)
 # endif
       logical, parameter :: use_host_device = .TRUE.
 # include "mpi_buffers.h"
@@ -512,14 +517,17 @@ c      write(*,*) 'MessPass2D:    ', mynode,' exit'
       return
       end
 
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_OLS_PTS)
 #  define MP_3PTS
 #  include "MessPass2D.F"
 #  undef MP_3PTS
-#  ifndef MP_1PTS
-#   define MP_1PTS
-#   include "MessPass2D.F"
-#   undef MP_1PTS
+#  define MP_1PTS
+#  include "MessPass2D.F"
+#  undef MP_1PTS
+#  ifdef MPI_OLS_2D
+#    define MP_OLS_PTS
+#    include "MessPass2D.F"
+#    undef MP_OLS_PTS
 #  endif
 # endif
 #else

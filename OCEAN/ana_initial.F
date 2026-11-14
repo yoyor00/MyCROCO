@@ -1656,6 +1656,18 @@
 !--------------------------------------------------------------------
 !
 
+#ifdef MPI_OLS_2D
+# define exchange_r2d_tile exchange_r2d_ols_tile
+# define exchange_u2d_tile exchange_u2d_ols_tile
+# define exchange_v2d_tile exchange_v2d_ols_tile
+# define exchange_p2d_tile exchange_p2d_ols_tile
+
+# define exchange_r2d_3pts_tile exchange_r2d_ols_tile
+# define exchange_u2d_3pts_tile exchange_u2d_ols_tile
+# define exchange_v2d_3pts_tile exchange_v2d_ols_tile
+# define exchange_p2d_3pts_tile exchange_p2d_ols_tile
+#endif /* MPI_OLS_2D */
+
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 # ifdef ANA_INITIAL
 #  ifdef THREE_GHOST_POINTS_UV
@@ -1724,6 +1736,21 @@
 #undef IU_RANGE
 #undef JR_RANGE
 #undef JV_RANGE
+
+
+#ifdef MPI_OLS_2D
+
+# undef exchange_r2d_tile
+# undef exchange_u2d_tile
+# undef exchange_v2d_tile
+# undef exchange_p2d_tile
+
+# undef exchange_r2d_3pts_tile
+# undef exchange_u2d_3pts_tile
+# undef exchange_v2d_3pts_tile
+# undef exchange_p2d_3pts_tile
+
+#endif
 
       return
       end

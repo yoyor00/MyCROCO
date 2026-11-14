@@ -11,11 +11,17 @@
 # define exchange_2d_tile exchange_r2d_tile
 # define exchange_2d_3pts_tile exchange_r2d_3pts_tile
 # define exchange_2d_1pts_tile exchange_r2d_1pts_tile
+#if defined MPI_OLS_2D
+# define exchange_2d_ols_tile exchange_r2d_ols_tile
+#endif
 # define JSTART JstrR
 # define ISTART IstrR
 # include "exchange_2d_tile.h"
 # undef ISTART
 # undef JSTART
+#if defined MPI_OLS_2D
+# undef exchange_2d_ols_tile
+#endif
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile
@@ -23,11 +29,17 @@
 # define exchange_2d_tile exchange_u2d_tile
 # define exchange_2d_3pts_tile exchange_u2d_3pts_tile
 # define exchange_2d_1pts_tile exchange_u2d_1pts_tile
+#if defined MPI_OLS_2D
+# define exchange_2d_ols_tile exchange_u2d_ols_tile
+#endif
 # define JSTART JstrR
 # define ISTART Istr
 # include "exchange_2d_tile.h"
 # undef ISTART
 # undef JSTART
+#if defined MPI_OLS_2D
+# undef exchange_2d_ols_tile
+#endif
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile
@@ -35,11 +47,17 @@
 # define exchange_2d_tile exchange_v2d_tile
 # define exchange_2d_3pts_tile exchange_v2d_3pts_tile
 # define exchange_2d_1pts_tile exchange_v2d_1pts_tile
+#if defined MPI_OLS_2D
+# define exchange_2d_ols_tile exchange_v2d_ols_tile
+#endif
 # define JSTART Jstr
 # define ISTART IstrR
 # include "exchange_2d_tile.h"
 # undef ISTART
 # undef JSTART
+#if defined MPI_OLS_2D
+# undef exchange_2d_ols_tile
+#endif
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile
@@ -47,11 +65,17 @@
 # define exchange_2d_tile exchange_p2d_tile
 # define exchange_2d_3pts_tile exchange_p2d_3pts_tile
 # define exchange_2d_1pts_tile exchange_p2d_1pts_tile
+#if defined MPI_OLS_2D
+# define exchange_2d_ols_tile exchange_p2d_ols_tile
+#endif
 # define JSTART Jstr
 # define ISTART Istr
 # include "exchange_2d_tile.h"
 # undef ISTART
 # undef JSTART
+#if defined MPI_OLS_2D
+# undef exchange_2d_ols_tile
+#endif
 # undef exchange_2d_tile
 # undef exchange_2d_3pts_tile
 # undef exchange_2d_1pts_tile

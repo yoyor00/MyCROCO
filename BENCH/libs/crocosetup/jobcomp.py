@@ -29,7 +29,7 @@ class JobcompCrocoConfig:
     def __init__(self, builddir: str):
         self.builddir = builddir
 
-    def cppdef_h_set_key(self, key_name: str, status: bool):
+    def cppdef_h_set_key(self, key_name: str, status: bool, value=None):
         """
         Force enabling or disabling some cppkeys in cppdefs.h.
 
@@ -44,6 +44,19 @@ class JobcompCrocoConfig:
         else:
             status_tochange = "define"
             status_wanted = "undef"
+
+        # A value defines the key as `# define KEY VALUE`, which the
+        # overlapping Schwarz (OLS) parameters need, e.g.
+        # `MPI_OLS_2D_COMM_N_TIMES`. Only integers are supported: the C
+        # preprocessor cannot define a string key.
+        wanted_line = f"# {status_wanted} {key_name}"
+        if value is not None:
+            if not re.fullmatch(r"-?[0-9]+", str(value)):
+                raise ValueError(
+                    f"Cpp key '{key_name}' has the value '{value}', but only integer "
+                    "values can be defined (`# define KEY VALUE`)"
+                )
+            wanted_line += f" {value}"
 
         cppdefs_path = os.path.join(self.builddir, "cppdefs.h")
 
@@ -65,7 +78,7 @@ class JobcompCrocoConfig:
                 {
                     "mode": "replace",
                     "what": f"# {status_tochange} {key_name}",
-                    "by": f"# {status_wanted} {key_name}",
+                    "by": wanted_line,
                     "descr": f"Set {key_name} to {status}",
                 }
             ]
@@ -78,7 +91,7 @@ class JobcompCrocoConfig:
         rules = [
             {
                 "mode": "insert-at-begin",
-                "insert": f"# {status_wanted} {key_name}",
+                "insert": wanted_line,
                 "descr": f"Add missing key {key_name} = {status}",
             }
         ]
@@ -254,11 +267,11 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         """
         self.croco_config.cppdef_h_set_key("OPENACC_PSYCLONE", status)
 
-    def cppdef_h_set_key(self, key: str, status: bool) -> None:
+    def cppdef_h_set_key(self, key: str, status: bool, value=None) -> None:
         """
-        Set any cpp key
+        Set any cpp key, optionally with a value (`# define KEY VALUE`)
         """
-        self.croco_config.cppdef_h_set_key(key, status)
+        self.croco_config.cppdef_h_set_key(key, status, value)
 
     def cppdef_h_is_defined(self, key: str) -> bool:
         """
@@ -464,14 +477,21 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             self.croco_config.param_h_configure_mpi_split(options.with_splitting)
 
     def configure_keys(self, options):
-        """Configure additional keys if provided."""
+        """Configure additional keys if provided.
+
+        A key is `+NAME` (define), `-NAME` (undef) or `+NAME=VALUE` (define
+        with a value). The value has to be an integer: a C preprocessor key
+        cannot hold a string.
+        """
         if options.with_keys is not None:
             # Split the string into individual key-value representations
             keys_list = options.with_keys.split(",")
             for key in keys_list:
+                if not (key.startswith("+") or key.startswith("-")):
+                    continue
                 status = key.startswith("+")
-                if key.startswith("+") or key.startswith("-"):
-                    self.croco_config.cppdef_h_set_key(key[1:], status)
+                name, _, value = key[1:].partition("=")
+                self.croco_config.cppdef_h_set_key(name, status, value or None)
 
     def make(self, jobs: int):
         """

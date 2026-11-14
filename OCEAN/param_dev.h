@@ -92,12 +92,14 @@
 # else
       integer, parameter :: NSA = 35
 # endif
+#include "overlapping_schwarz_2d.h"
+
 # ifdef ALLOW_SINGLE_BLOCK_MODE
-      integer, parameter :: size_XI = 6+Lm
-      integer, parameter :: size_ETA = 6+Mm
+      integer, parameter :: size_XI = 6+2*MPI_OLS_2D_ADD_LAYERS+Lm
+      integer, parameter :: size_ETA = 6+2*MPI_OLS_2D_ADD_LAYERS+Mm
 # else
-      integer, parameter :: size_XI = 7+(Lm+NSUB_X-1)/NSUB_X
-      integer, parameter :: size_ETA = 7+(Mm+NSUB_E-1)/NSUB_E
+      integer, parameter :: size_XI = 7+2*MPI_OLS_2D_ADD_LAYERS+(Lm+NSUB_X-1)/NSUB_X
+      integer, parameter :: size_ETA = 7+2*MPI_OLS_2D_ADD_LAYERS+(Mm+NSUB_E-1)/NSUB_E
 # endif
       integer, parameter :: sse = size_ETA/Np
       integer, parameter :: ssz = Np/size_ETA

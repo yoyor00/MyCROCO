@@ -43,7 +43,6 @@ C$    integer omp_get_thread_num
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-!
 #include "compute_extended_bounds.h"
 !$acc kernels if(compute_on_device) default(present)
 !
@@ -271,6 +270,18 @@ C$    integer omp_get_thread_num
 
 !$acc end kernels
 
+#ifdef MPI_OLS_2D
+# define exchange_r2d_tile exchange_r2d_ols_tile
+# define exchange_u2d_tile exchange_u2d_ols_tile
+# define exchange_v2d_tile exchange_v2d_ols_tile
+# define exchange_p2d_tile exchange_p2d_ols_tile
+
+# define exchange_r2d_3pts_tile exchange_r2d_ols_tile
+# define exchange_u2d_3pts_tile exchange_u2d_ols_tile
+# define exchange_v2d_3pts_tile exchange_v2d_ols_tile
+# define exchange_p2d_3pts_tile exchange_p2d_ols_tile
+#endif /* MPI_OLS_2D */
+
 #ifdef BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
@@ -321,6 +332,20 @@ C$    integer omp_get_thread_num
       call exchange_p2d_tile (Istr,Iend,Jstr,Jend,     pmask2)
 # endif
 #endif
+
+#ifdef MPI_OLS_2D
+
+# undef exchange_r2d_tile
+# undef exchange_u2d_tile
+# undef exchange_v2d_tile
+# undef exchange_p2d_tile
+
+# undef exchange_r2d_3pts_tile
+# undef exchange_u2d_3pts_tile
+# undef exchange_v2d_3pts_tile
+# undef exchange_p2d_3pts_tile
+
+#endif
+
       return
       end
-
