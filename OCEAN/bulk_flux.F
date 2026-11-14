@@ -704,10 +704,20 @@
 #  ifdef MASKING
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask(i,j)
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask(i,j)
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)*rmask(i,j)
+          enddo
+#   endif
 #  endif
 #  ifdef WET_DRY
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)*rmask_wet(i,j)
+          enddo
+#   endif
 #  endif
 !++  Save for the calculation of wind stress
           aer(i,j)  = rhoAir*delW(1)
