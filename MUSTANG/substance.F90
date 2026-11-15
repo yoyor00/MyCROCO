@@ -263,6 +263,11 @@ CONTAINS
     ALLOCATE(diam_n(nv_grav))
     ALLOCATE(ros_n(nv_grav))
     ALLOCATE(l_bedload_n(nv_grav))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    diam_n(:)=0.
+    ros_n(:)=0.
+    l_bedload_n(:)=.FALSE.
     READ(500,nmlgravels)
     ! gravels are never in suspension (bedload only): always use the
     ! uniform cini_wat_n()/cobc_wat_n() constants, never read from file
@@ -291,6 +296,13 @@ CONTAINS
     ALLOCATE(l_sand2D_n(nv_sand))
     ALLOCATE(l_outsandrouse_n(nv_sand))
     ALLOCATE(l_bedload_n(nv_sand))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    diam_n(:)=0.
+    ros_n(:)=0.
+    l_sand2D_n(:)=.FALSE.
+    l_outsandrouse_n(:)=.FALSE.
+    l_bedload_n(:)=.FALSE.
     READ(500,nmlsands)
     iv0=iv
     CALL DEFVAR_DEALLOC(nv_sand,iv)   
@@ -320,6 +332,16 @@ CONTAINS
     ALLOCATE(ws_free_para_n(4,nv_mud))
     ALLOCATE(ws_hind_opt_n(nv_mud))
     ALLOCATE(ws_hind_para_n(2,nv_mud))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    diam_n(:)=0.
+    ros_n(:)=0.
+    ws_free_opt_n(:)=0.
+    ws_free_min_n(:)=0.
+    ws_free_max_n(:)=0.
+    ws_free_para_n(:,:)=0.
+    ws_hind_opt_n(:)=0.
+    ws_hind_para_n(:,:)=0.
     READ(500,nmlmuds)
     iv0=iv   
     CALL DEFVAR_DEALLOC(nv_mud,iv)   
@@ -358,9 +380,18 @@ CONTAINS
     ALLOCATE(ws_free_para_n(4,nv_ncp))
     ALLOCATE(ws_hind_opt_n(nv_ncp))
     ALLOCATE(ws_hind_para_n(2,nv_ncp))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    ros_n(:)=0.
+    ws_free_opt_n(:)=0.
+    ws_free_para_n(:,:)=0.
+    ws_hind_opt_n(:)=0.
+    ws_hind_para_n(:,:)=0.
 #endif
     ALLOCATE(ws_free_min_n(nv_ncp))
     ALLOCATE(ws_free_max_n(nv_ncp))
+    ws_free_min_n(:)=0.
+    ws_free_max_n(:)=0.
 
     READ(500,nmlpartnc)
     iv0=iv   
@@ -392,6 +423,7 @@ CONTAINS
    IF(nv_sorb > 0) THEN
     CALL ALLOC_DEFVAR(nv_sorb)   
     ALLOCATE(name_varpc_assoc_n(nv_sorb))
+    name_varpc_assoc_n(:)=''
     READ(500,nmlpartsorb)
     iv0=iv   
     CALL DEFVAR_DEALLOC(nv_sorb,iv)   
@@ -410,6 +442,14 @@ CONTAINS
       ALLOCATE(D0_funcT_opt_n(nv_dis))
       ALLOCATE(D0_m0_n(nv_dis))
       ALLOCATE(D0_m1_n(nv_dis))
+      ! safe default if left unset in the namelist: D0_funcT_opt_n=1
+      ! with D0_m0_n=D0_m1_n=0. gives D0=0 (no molecular-diffusion
+      ! enhancement in sediment porewater), instead of being left
+      ! uninitialized (see sed_MUSTANG.F90, which has no ELSE branch
+      ! for D0_funcT_opt not in {1,2})
+      D0_funcT_opt_n(:)=1
+      D0_m0_n(:)=0.
+      D0_m1_n(:)=0.
 #endif
 
     READ(500,nmlvardiss)
@@ -437,6 +477,14 @@ CONTAINS
     ALLOCATE(init_cv_name_fix(nballoc))
     ALLOCATE(standard_name_var_fix(nballoc))
     ALLOCATE(name_var_fix(nballoc))
+    ! safe defaults if left unset in the namelist
+    cini_wat_fix(:)=0.
+    init_cv_name_fix(:)=''
+    standard_name_var_fix(:)=''
+    name_var_fix(:)=''
+    long_name_var_fix(:)=''
+    unit_var_fix(:)=''
+    l_out_subs_fix(:)=.TRUE.
     READ(500,nmlvarfix)
     DO ivr=1,nballoc
       IF(init_cv_name_fix(ivr)=='') THEN
@@ -456,6 +504,13 @@ CONTAINS
     ALLOCATE(unit_var_bent(nballoc))
     ALLOCATE(cini_bent(nballoc))
     ALLOCATE(l_out_subs_bent(nballoc))
+    ! safe defaults if left unset in the namelist
+    name_var_bent(:)=''
+    long_name_var_bent(:)=''
+    standard_name_var_bent(:)=''
+    unit_var_bent(:)=''
+    cini_bent(:)=0.
+    l_out_subs_bent(:)=.TRUE.
     READ(500,nmlvarbent)
    ENDIF
 #endif
@@ -689,7 +744,10 @@ CONTAINS
       ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
       ALLOCATE(D0_m0(nvp+1:nv_tot))
       ALLOCATE(D0_m1(nvp+1:nv_tot))
-# endif 
+      D0_funcT_opt(:)=1
+      D0_m0(:)=0.
+      D0_m1(:)=0.
+# endif
 
 #else
       ALLOCATE(ws_free_min(nvp)) 

@@ -229,25 +229,12 @@
 : 3 diagnostic dissolved tracers added to isolate, one at a time, the new
 : boundary/initial-condition fallback logic and the new T90/flx_atm/cv_rain
 : source terms (#590). None of them represents a real compound.
-:    DIAG_T90  : initialised uniformly to 1. everywhere (init_cv_name_n=
-:                'none' skips reading an init-file variable), zero-gradient
-:                OBC (obc_cv_name_n='nullGradient', so advection/diffusion
-:                through the open boundaries cannot replenish it), no
-:                atmospheric/rain source: the only way its concentration can
-:                change is the t90_n=24h decay, so its field after a few
-:                days directly shows the T90 exponential die-off.
-:    DIAG_ATM  : initialised to 0. everywhere, 0. at the open boundaries
-:                (init_cv_name_n/obc_cv_name_n left to 'none', falling back
-:                to cini_wat_n=0./cobc_wat_n=0.), so the only possible
-:                source is the uniform dry atmospheric deposition
-:                flx_atm_n(): any concentration appearing in the water
-:                column over the run comes from that flux alone.
-:    DIAG_RAIN : same zero init/obc as DIAG_ATM, but the source is the
-:                wet-deposition term cv_rain_n() (concentration in
-:                rainwater), active only where/when it is raining
-:                (needs CPP key RAIN_FLUX): any concentration appearing
-:                tracks the precipitation forcing instead of being uniform
-:                like DIAG_ATM.
+: All 3 explicitly set D0_funcT_opt_n=1, D0_m0_n=D0_m1_n=0. 
+:    DIAG_T90  : uniform init=1., nullGradient OBC, no atm/rain source,
+:                cini_sed_n=1. matches cini_wat_n: isolates t90_n=24h decay.
+:    DIAG_ATM  : zero init/OBC: isolates the flx_atm_n() dry-deposition flux.
+:    DIAG_RAIN : zero init/OBC: isolates the cv_rain_n() wet-deposition flux
+:                (needs CPP key RAIN_FLUX).
 :
  &nmlvardiss
     name_var_n(1)='DIAG_T90'
@@ -259,8 +246,11 @@
       t90_n(1)=24.0
       cini_wat_n(1)=1.0
       cobc_wat_n(1)=1.0
-      cini_sed_n(1)=0.0
+      cini_sed_n(1)=1.0
       cini_air_n(1)=0.0
+      D0_funcT_opt_n(1)=1
+      D0_m0_n(1)=0.0
+      D0_m1_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='none'
       obc_cv_name_n(1)='nullGradient'
@@ -275,6 +265,9 @@
       cobc_wat_n(2)=0.0
       cini_sed_n(2)=0.0
       cini_air_n(2)=0.0
+      D0_funcT_opt_n(2)=1
+      D0_m0_n(2)=0.0
+      D0_m1_n(2)=0.0
       l_out_subs_n(2)=.TRUE.
       init_cv_name_n(2)='none'
       obc_cv_name_n(2)='none'
@@ -289,6 +282,9 @@
       cobc_wat_n(3)=0.0
       cini_sed_n(3)=0.0
       cini_air_n(3)=0.0
+      D0_funcT_opt_n(3)=1
+      D0_m0_n(3)=0.0
+      D0_m1_n(3)=0.0
       l_out_subs_n(3)=.TRUE.
       init_cv_name_n(3)='none'
       obc_cv_name_n(3)='none' /

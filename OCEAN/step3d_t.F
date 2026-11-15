@@ -660,6 +660,14 @@
           enddo
 #  endif
 
+#  ifdef SUBSTANCE
+          if (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
+            do i=Istr,Iend
+              t(i,j,N,nnew,itrc)=t(i,j,N,nnew,itrc)+FC(i,N)
+            enddo
+          endif
+#  endif /* SUBSTANCE */
+
 #  ifdef TS_MIX_IMP
 #   if defined TEMPERATURE && defined SALINITY
           if (itrc .le. 2) then                  ! active tracers
@@ -910,6 +918,24 @@
           enddo
         enddo
 #  endif /* TNUDGING && TCLIMATOLOGY */
+!
+!======================================================================
+! Compute the T90 mortality/decay: f90(itrc)
+!======================================================================
+!
+#  ifdef SUBSTANCE
+        if (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
+          if (f90(itrc).ne.1.0) then
+            do k=1,N
+              do j=JstrR,JendR
+                do i=IstrR,IendR
+                  t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)*f90(itrc)
+                enddo
+              enddo
+            enddo
+          endif
+        endif
+#  endif /* SUBSTANCE */
 !
 !======================================================================
 ! Compute the tendency term of tracer diagnostics
@@ -1167,23 +1193,6 @@
 #   undef I_RANGE
 #   undef J_RANGE
 #  endif /* MASKING */
-
-#  ifdef SUBSTANCE
-        if (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
-          if (f90(itrc).ne.1.0_rsh) then
-!           T90 mortality/decay: f90(itrc), precomputed once from the
-!           user-set t90_n() (see substance_read_alloc), is the
-!           fraction of concentration surviving one time step
-            do k=1,N
-              do j=JstrR,JendR
-                do i=IstrR,IendR
-                  t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)*f90(itrc)
-                enddo
-              enddo
-            enddo
-          endif
-        endif
-#  endif /* SUBSTANCE */
 
       enddo   ! <-- itrc
 !$acc end kernels

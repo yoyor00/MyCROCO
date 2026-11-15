@@ -411,10 +411,21 @@
 :                       cobc_wat_n()). Left empty (''), it defaults to
 :                       name_var_n() (i.e. the variable is read if present
 :                       in the bry file, same name as the substance itself)
-:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of
 :                   dry sediment)  (only if cppkey MUSTANG)
-:    cobc_wat_n() : real, boundaries uniform and constant concentration 
+:    cobc_wat_n() : real, boundaries uniform and constant concentration
 :                   (kg/m3)
+:    D0_funcT_opt_n() : integer, choice of formulation for the molecular
+:                       diffusion coefficient D0 of the dissolved substance
+:                       in sediment porewater: 1 for a direct linear fit
+:                       with temperature (D0 = D0_m0_n + D0_m1_n x T), 2
+:                       for a Stokes-Einstein-like temperature/viscosity
+:                       fit. 1 (default) with D0_m0_n=D0_m1_n=0. (also
+:                       default) gives D0=0, i.e. no molecular diffusion
+:                       enhancement in sediment porewater (used only if
+:                       cppkey MUSTANG and not key_noTSdiss_insed)
+:    D0_m0_n(), D0_m1_n() : real, coefficients of the D0_funcT_opt_n()
+:                       formulation above
 :
  &nmlvardiss
     name_var_n(1)='DISS'
@@ -428,6 +439,9 @@
       cobc_wat_n(1)=100.
       cini_sed_n(1)=0.
       cini_air_n(1)=0.0
+      D0_funcT_opt_n(1)=1
+      D0_m0_n(1)=0.0
+      D0_m1_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='testdiss'
       obc_cv_name_n(1)='testdiss' /

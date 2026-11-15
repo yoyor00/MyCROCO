@@ -129,6 +129,8 @@ DO i = ifirst, ilast
             ELSE
             DO iv = imud1, nvp
                 ! Free settling velocity - flocculation
+                ! safe fallback if ws_free_opt(iv) is not in {0,1,2,3}
+                WSfree = ws_free_min(iv)
                 IF(ws_free_opt(iv) == 0) THEN ! constant settling velocity
                     WSfree = ws_free_min(iv)
                 ELSEIF (ws_free_opt(iv) == 1) THEN ! Van Leussen 1994
