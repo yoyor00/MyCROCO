@@ -870,7 +870,6 @@
 # define SUBSTANCE
 # define TEMPERATURE
 # define SALINITY
-# define key_nofluxwat_IWS
 #endif /* MUSTANG */
 
 
