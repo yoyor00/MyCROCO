@@ -97,7 +97,7 @@
      &           )  / ( z_r(i,j,k+1)-z_r(i,j,k) )
             enddo
 
-#  if defined MUSTANG && !defined key_noTSdiss_insed
+#  if defined MUSTANG
             CD(i,0) = flx_s2w_CROCO(i,j,itrc)
 #  else
             CD(i,0) = 0.
@@ -171,10 +171,8 @@
      &                                        flx_w2s_CROCO(i,j,itrc)
      &                                            *t(i,j,1,nnew,itrc)*
      &                                        dt/(Hz(i,j,1)*nbsubstep)
-# ifndef key_noTSdiss_insed
          else    !dissolved tracers including T and S
               CD(i,0) = flx_s2w_CROCO(i,j,itrc)/nbsubstep
-# endif
 # endif
          endif
 # endif

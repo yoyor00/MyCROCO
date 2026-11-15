@@ -553,7 +553,7 @@ C$OMP END MASTER
 !$acc end kernels
 
 # ifdef WET_DRY
-      call wetdry_tile (Istr,Iend,Jstr,Jend)
+      call wetdry_tile (Istr,Iend,Jstr,Jend, .false.)
 !RB this barrier seems to have a benefic effect
 ! in some cases with wetdry but not sure it is
 ! the proper fix

@@ -6,7 +6,6 @@
 # endif
 # undef  UV_VIS2
 # define SOLVE3D
-# define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX

@@ -4,7 +4,6 @@
 # define NBQ_PRECISE
 # define SOLVE3D
 # undef  UV_ADV
-# define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_BTFLUX

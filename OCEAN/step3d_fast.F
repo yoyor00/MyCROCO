@@ -847,7 +847,7 @@ C$OMP END MASTER
 ! Then compute wet/dry masks
 !
 # ifdef WET_DRY
-      call wetdry_tile (Istr,Iend,Jstr,Jend)
+      call wetdry_tile (Istr,Iend,Jstr,Jend, .false.)
 # endif
 !
 !-----------------------------------------------------------------------

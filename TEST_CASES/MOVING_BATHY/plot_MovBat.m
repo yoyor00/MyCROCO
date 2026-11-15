@@ -67,12 +67,11 @@ theta_s=nc.theta_s(:);  % z grid
 theta_b=nc.theta_b(:);
 rho0=nc.rho0(:);
 hc=nc.hc(:);
-Vtrans=nc{'Vtransform'}(:);
 N=length(nc('s_rho'));
 close(nc);
 %
-zr=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'r',Vtrans));
-zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w',Vtrans));
+zr=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'r'));
+zw=squeeze(zlevs(h,zeta,theta_s,theta_b,hc,N,'w'));
 zu(:,1:L-1)=0.5*(zr(:,1:L-1)+zr(:,2:L));
 %
 xr=repmat(x,[N 1]);

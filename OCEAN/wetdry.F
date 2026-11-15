@@ -14,11 +14,146 @@
 #include "cppdefs.h"
 #ifdef WET_DRY
 !***********************************************************************
-      SUBROUTINE wetdry_tile (Istr,Iend,Jstr,Jend)
+      REAL FUNCTION wetdry_mask_clamp (maskval, dirval)
+!$acc routine(wetdry_mask_clamp) seq
+!***********************************************************************
+!  collapse a raw mask sum {0,1,2} to {-1,0,1}; mixed case (+-1)
+!  resolved by sign of dirval, matching u2dbc/v2dbc/step2d's clamp
+      implicit none
+      real maskval, dirval, cff1, cff2
+      cff1=ABS(ABS(maskval)-1.)
+      cff2=0.5+SIGN(0.5,dirval)*maskval
+      wetdry_mask_clamp=0.5*maskval*cff1+cff2*(1.-cff1)
+      return
+      end
+!***********************************************************************
+      SUBROUTINE init_wetdry (tile)
+!***********************************************************************
+      implicit none
+      integer tile, trd
+# include "param.h"
+# include "grid.h"
+C$    integer omp_get_thread_num
+# include "compute_tile_bounds.h"
+# ifdef EXACT_RESTART
+      if (got_wetdry_rst) then
+!  keep the restored umask_wet/vmask_wet, only redo wetdry/rmask_wet
+        call wetdry_tile (Istr,Iend,Jstr,Jend, .true.)
+      else
+# endif
+        call wetdry_tile (Istr,Iend,Jstr,Jend, .false.)
+        call init_wetdry_corners_tile (Istr,Iend,Jstr,Jend)
+# ifdef EXACT_RESTART
+      endif
+# endif
+      return
+      end
+!***********************************************************************
+      SUBROUTINE init_wetdry_corners_tile (Istr,Iend,Jstr,Jend)
+!***********************************************************************
+!
+!  before step2d ever runs, edges/corners are still at the raw,
+!  unclamped wetdry_tile sum: replay u2dbc/v2dbc's own clamp here
+!
+      implicit none
+      integer Istr,Iend,Jstr,Jend, i,j
+      real wetdry_mask_clamp
+# include "param.h"
+# include "grid.h"
+# include "scalars.h"
+# include "ocean2d.h"
+# include "compute_auxiliary_bounds.h"
+# ifndef EW_COM_PERIODIC
+      if (WESTERN_EDGE) then
+        do j=Jstr,Jend
+          umask_wet(Istr,j)=
+     &      wetdry_mask_clamp(umask_wet(Istr,j),ubar(Istr,j,knew))
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do j=Jstr,Jend
+          umask_wet(Iend+1,j)=wetdry_mask_clamp(umask_wet(Iend+1,j),
+     &                                           ubar(Iend+1,j,knew))
+        enddo
+      endif
+# endif
+# ifndef NS_COM_PERIODIC
+      if (SOUTHERN_EDGE) then
+        do i=Istr,Iend
+          vmask_wet(i,Jstr)=
+     &      wetdry_mask_clamp(vmask_wet(i,Jstr),vbar(i,Jstr,knew))
+        enddo
+      endif
+      if (NORTHERN_EDGE) then
+        do i=Istr,Iend
+          vmask_wet(i,Jend+1)=wetdry_mask_clamp(vmask_wet(i,Jend+1),
+     &                                           vbar(i,Jend+1,knew))
+        enddo
+      endif
+# endif
+# ifndef EW_COM_PERIODIC
+      if (SOUTHERN_EDGE) then
+        do i=IstrU,Iend
+          umask_wet(i,Jstr-1)=wetdry_mask_clamp(umask_wet(i,Jstr-1),
+     &                                           ubar(i,Jstr-1,knew))
+        enddo
+      endif
+      if (NORTHERN_EDGE) then
+        do i=IstrU,Iend
+          umask_wet(i,Jend+1)=wetdry_mask_clamp(umask_wet(i,Jend+1),
+     &                                           ubar(i,Jend+1,knew))
+        enddo
+      endif
+# endif
+# ifndef NS_COM_PERIODIC
+      if (WESTERN_EDGE) then
+        do j=JstrV,Jend
+          vmask_wet(Istr-1,j)=wetdry_mask_clamp(vmask_wet(Istr-1,j),
+     &                                           vbar(Istr-1,j,knew))
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do j=JstrV,Jend
+          vmask_wet(Iend+1,j)=wetdry_mask_clamp(vmask_wet(Iend+1,j),
+     &                                           vbar(Iend+1,j,knew))
+        enddo
+      endif
+# endif
+# if !defined EW_COM_PERIODIC && !defined NS_COM_PERIODIC
+      if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
+        umask_wet(Istr,Jstr-1)=wetdry_mask_clamp(umask_wet(Istr,
+     &                                 Jstr-1),ubar(Istr,Jstr-1,knew))
+        vmask_wet(Istr-1,Jstr)=wetdry_mask_clamp(vmask_wet(Istr-1,
+     &                                 Jstr),vbar(Istr-1,Jstr,knew))
+      endif
+      if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
+        umask_wet(Iend+1,Jstr-1)=wetdry_mask_clamp(umask_wet(Iend+1,
+     &                           Jstr-1),ubar(Iend+1,Jstr-1,knew))
+        vmask_wet(Iend+1,Jstr)=wetdry_mask_clamp(vmask_wet(Iend+1,
+     &                                 Jstr),vbar(Iend+1,Jstr,knew))
+      endif
+      if (NORTHERN_EDGE .and. WESTERN_EDGE) then
+        umask_wet(Istr,Jend+1)=wetdry_mask_clamp(umask_wet(Istr,
+     &                                 Jend+1),ubar(Istr,Jend+1,knew))
+        vmask_wet(Istr-1,Jend+1)=wetdry_mask_clamp(vmask_wet(Istr-1,
+     &                           Jend+1),vbar(Istr-1,Jend+1,knew))
+      endif
+      if (NORTHERN_EDGE .and. EASTERN_EDGE) then
+        umask_wet(Iend+1,Jend+1)=wetdry_mask_clamp(umask_wet(Iend+1,
+     &                           Jend+1),ubar(Iend+1,Jend+1,knew))
+        vmask_wet(Iend+1,Jend+1)=wetdry_mask_clamp(vmask_wet(Iend+1,
+     &                           Jend+1),vbar(Iend+1,Jend+1,knew))
+      endif
+# endif
+      return
+      end
+!***********************************************************************
+      SUBROUTINE wetdry_tile (Istr,Iend,Jstr,Jend, skip_uv_mask)
 !***********************************************************************
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
+      logical skip_uv_mask
 # include "param.h"
 # include "grid.h"
 # include "scalars.h"
@@ -99,6 +234,10 @@ C$OMP BARRIER
           END DO
         END DO
 !
+!  Wet/dry mask at U- and V-points (skip if caller already has them)
+!
+      IF (.not. skip_uv_mask) THEN
+!
 !  Wet/dry mask at U-points.
 !
         DO j=JstrR,JendR
@@ -151,6 +290,8 @@ C$OMP END MASTER
 C$OMP BARRIER
         endif
 # endif
+      END IF
+!<-- .not. skip_uv_mask
 
 # ifdef SOLVE3D
       END IF
