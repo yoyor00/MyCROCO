@@ -96,7 +96,7 @@ contains
       namelist /croco_testcase/ testcase_name
       namelist /croco_title/ title
       namelist /croco_logfile/ logname
-      namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo, m2filter_alpha
+      namelist /croco_time_stepping/ dt, ndtfast, ninfo, m2filter_alpha
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
       namelist /croco_initial/ nrrec, ininame
       namelist /croco_restart/ nrst, nrpfrst, rstname
@@ -106,10 +106,7 @@ contains
 #ifdef SOLVE3D
       namelist /croco_s_coord/ theta_s, theta_b, hc
 #endif
-#ifdef USE_CALENDAR
-      namelist /croco_use_calendar/ start_date, end_date, &
-         dt_his, dt_avg, dt_rst
-#endif
+      namelist /croco_calendar/ start_date, end_date, calendar_type
 #ifndef ANA_GRID
       namelist /croco_grid/ grdname
 #endif
@@ -530,9 +527,6 @@ contains
 #ifdef OBSTRUCTION
       namelist /croco_obstruction/ obstname
 #endif
-#ifdef XIOS
-      namelist /croco_xios_origin_date/ xios_origin_date
-#endif
 #ifdef ASSIMILATION
       namelist /croco_assimilation/ aparnam, assname
 #endif
@@ -725,18 +719,16 @@ contains
       end if
 #endif /* NBQ */
 
-#ifdef USE_CALENDAR
-      ! --- croco_use_calendar (mandatory if USE_CALENDAR) ---
-      call check_nml_presence(nmlunit, "croco_use_calendar", .true., found, ierr)
+      ! --- croco_calendar (mandatory) ---
+      call check_nml_presence(nmlunit, "croco_calendar", .true., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_use_calendar, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         read (nmlunit, nml=croco_calendar, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_use_calendar (parse error)", nmlunit, ios, iomsg)
-            MPI_master_only WRITE (stdout, nml=croco_use_calendar)
+            call fatal_nml_error("croco_calendar (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_calendar)
             ierr = ierr + 1
          end if
       end if
-#endif /* USE_CALENDAR */
 
 #ifdef SOLVE3D
       ! --- croco_s_coord (optional if SOLVE3D) ---
@@ -2136,19 +2128,6 @@ contains
       end if
 #endif
 
-#ifdef XIOS
-      ! --- croco_xios_origin_date (optional) ---
-      call check_nml_presence(nmlunit, "croco_xios_origin_date", .false., found, ierr)
-      if (found) then
-         read (nmlunit, nml=croco_xios_origin_date, iostat=ios, iomsg=iomsg); rewind (nmlunit)
-         if (ios /= 0) then
-            call fatal_nml_error("croco_xios_origin_date (parse error)", nmlunit, ios, iomsg)
-            MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
-            ierr = ierr + 1
-         end if
-      end if
-#endif
-
 #ifdef ASSIMILATION
       ! --- croco_assimilation (optional) ---
       call check_nml_presence(nmlunit, "croco_assimilation", .false., found, ierr)
@@ -2362,10 +2341,8 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_time_stepping_nbq)
 #endif
 
-      MPI_master_only WRITE (stdout, *) "3.  CALENDAR  (CPP: USE_CALENDAR) ------------------"
-#ifdef USE_CALENDAR
-      MPI_master_only WRITE (stdout, nml=croco_use_calendar)
-#endif
+      MPI_master_only WRITE (stdout, *) "3.  CALENDAR  ------------------"
+      MPI_master_only WRITE (stdout, nml=croco_calendar)
 
       MPI_master_only WRITE (stdout, *) "4.  VERTICAL GRID  (CPP: SOLVE3D) ------------------"
 #ifdef SOLVE3D
@@ -2562,9 +2539,6 @@ contains
 #endif
 #ifdef OBSTRUCTION
       MPI_master_only WRITE (stdout, nml=croco_obstruction)
-#endif
-#ifdef XIOS
-      MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
 #endif
 #ifdef ASSIMILATION
       MPI_master_only WRITE (stdout, nml=croco_assimilation)
