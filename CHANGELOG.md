@@ -225,6 +225,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+- AVERAGES_K cpp key has been removed (Issue #374). 
+   If deactivated, averaged vertical mixing coefficients AKv, AKt and AKs were not saved.
+   Removed because redundant with booleans out_avg_akv, out_avg_akt and out_avg_aks in namelist. 
+
 - NEW_S_COORD, cpp key has been removed (if deactivated, old s-coordinate (Vtransform = 1, 
     Song & Haidvogel 1994) was chosen , Now Vtransform=2 is used by default (Shchepetkin & McWilliams 2009))
     the key has also been removed from all TEST_CASES cppdefs (#396)
