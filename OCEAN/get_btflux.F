@@ -19,6 +19,7 @@
 !
       use croco_namelist, only: dt, rho0, btfname
 # define BTFLUX_DATA
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -61,6 +62,9 @@ c**        call opencdf (btfname,N)
           endif
 # endif
         endif
+        call tool_origindate(ncidbtf,btf_tid(itrc),
+     &                       btf_origin_date_in_sec(itrc),
+     &                       btf_secinunit(itrc))
         lvar=lenstr(vname(1,indxBhflx+itrc-1))
         ierr=nf_inq_varid (ncidbtf, vname(1,indxBhflx+itrc-1),
      &                                          btf_id(itrc))
@@ -123,16 +127,12 @@ c**        call opencdf (btfname,N)
 
         ierr=nf_get_var1_FTYPE(ncidbtf, btf_tid(itrc),
      &                             btf_rec(itrc), cff)
-# ifdef USE_CALENDAR
-        call tool_origindate(ncidbtf,btf_tid,
-     &                       btf_origin_date_in_sec)
-        cff=cff+btf_origin_date_in_sec*sec2day
-# endif
+        cff=btf_origin_date_in_sec(itrc)+cff*btf_secinunit(itrc)
         if (ierr .ne. nf_noerr) then
           write(stdout,6) 'btf_time', btf_rec(i)
           goto 99                                         !--> ERROR
         endif
-        btf_time(i,itrc)=cff*day2sec+btf_cycle(itrc)*btf_ncycle(itrc)
+        btf_time(i,itrc)=cff+btf_cycle(itrc)*btf_ncycle(itrc)
         if (btf_time(itbtf(itrc),itrc).eq.-1.E+20)
      &      btf_time(itbtf(itrc),itrc)=btf_time(i,itrc)
 
@@ -148,12 +148,10 @@ c**        call opencdf (btfname,N)
           goto 99                                         !--> ERROR
         endif
        itbtf(itrc)=i
-       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,A19,1x,I4)')
      &            'GET_BTFLUX -- Read surface flux of tracer', itrc,
-     &                                             'for time =', cff
-# ifdef USE_CALENDAR
-     &  -btf_origin_date_in_sec*sec2day
-# endif
+     &                                             'for time =',
+     &            tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -174,9 +172,7 @@ c**        call opencdf (btfname,N)
      &                                a,' at TIME index = ',i4)
   7   write(stdout,8) btf_rec(itrc),ntbtf(itrc),btfname(1:lstr),
      &                tdays, btf_time(itbtf(itrc),itrc)*sec2day
-# ifdef USE_CALENDAR
-     &  -btf_origin_date_in_sec*sec2day
-# endif
+     &  -btf_origin_date_in_sec(itrc)*sec2day
   8   format(/,' GET_BTFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing file: ', a,/,14x,'TDAYS = ',
@@ -272,9 +268,7 @@ c**        call opencdf (btfname,N)
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'btf_time',tdays,btf_time(it2,itrc)*sec2day
-# ifdef USE_CALENDAR
-     &  -btf_origin_date_in_sec*sec2day
-# endif
+     &  -btf_origin_date_in_sec(itrc)*sec2day
   1       format(/,' SET_BTFLUX_TILE - current model time exceeds',
      &          1x,'ending value for variable: ',A8,/,14x,'TDAYS = ',
      &                                    g12.4, 2x, 'TBTF = ',g12.4)

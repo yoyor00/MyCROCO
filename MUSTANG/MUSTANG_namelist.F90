@@ -42,6 +42,8 @@ MODULE MUSTANG_namelist
                              sini_sed, tini_sed,                              &
                              l_initsed_vardiss
 
+    namelist /namsedim_diss/ l_diss_insed, l_fluxwat_IWS
+
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
                               l_dzsmaxuni, dzsmaxuni,                         &
                               dzsmax_bottom, dzsmin,                          &
@@ -138,11 +140,9 @@ MODULE MUSTANG_namelist
                           f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
                           f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
                           f_clim
-#if !defined key_noTSdiss_insed
     namelist /namtempsed/ mu_tempsed1, mu_tempsed2, mu_tempsed3,              &
                           epsedmin_tempsed,                                   &
                           epsedmax_tempsed
-#endif
 
 CONTAINS
 
@@ -170,6 +170,7 @@ CONTAINS
     MPI_master_only write(*,*) '*****************************************************'
 
     READ(50, namsedim_init); rewind(50)
+    READ(50, namsedim_diss); rewind(50)
     READ(50, namsedim_layer); rewind(50)
     READ(50, namsedim_bottomstress); rewind(50)
     READ(50, namsedim_deposition); rewind(50)
@@ -183,9 +184,7 @@ CONTAINS
     READ(50, namsedim_diffusion); rewind(50)
     READ(50, namsedim_bioturb); rewind(50)
     READ(50, namsedim_morpho); rewind(50)
-#if !defined key_noTSdiss_insed
     READ(50, namtempsed); rewind(50)
-#endif
     READ(50, namsedoutput); rewind(50)
     ! module FLOCULATION
     READ(50, namflocmod); rewind(50)
@@ -214,6 +213,7 @@ CONTAINS
     INTEGER   :: iv
 
     MPI_master_only WRITE(iscreenlog, namsedim_init)
+    MPI_master_only WRITE(iscreenlog, namsedim_diss)
     MPI_master_only WRITE(iscreenlog, namsedim_layer)
     MPI_master_only WRITE(iscreenlog, namsedim_bottomstress)
     MPI_master_only WRITE(iscreenlog, namsedim_deposition)
@@ -229,9 +229,7 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_diffusion)
     MPI_master_only WRITE(iscreenlog, namsedim_bioturb)
     MPI_master_only WRITE(iscreenlog, namsedim_morpho)
-#if !defined key_noTSdiss_insed
     MPI_master_only WRITE(iscreenlog, namtempsed)
-#endif
 
     IF (l_flocmod) THEN
     !! module floculation
