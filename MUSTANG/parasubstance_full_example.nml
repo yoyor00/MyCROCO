@@ -423,7 +423,7 @@
 :                       fit. 1 (default) with D0_m0_n=D0_m1_n=0. (also
 :                       default) gives D0=0, i.e. no molecular diffusion
 :                       enhancement in sediment porewater (used only if
-:                       cppkey MUSTANG and not key_noTSdiss_insed)
+:                       cppkey MUSTANG and l_diss_insed=.true.)
 :    D0_m0_n(), D0_m1_n() : real, coefficients of the D0_funcT_opt_n()
 :                       formulation above
 :

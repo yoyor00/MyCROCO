@@ -456,13 +456,11 @@ CONTAINS
     CALL DEFVAR_DEALLOC(nv_dis,iv)   
     itypv_r(iv0+1:iv)=6
 #if defined MUSTANG
-   IF (l_diss_insed) THEN
-      DO ivr=1,nv_dis
-         D0_funcT_opt_r(iv0+ivr)=D0_funcT_opt_n(ivr)
-         D0_m0_r(iv0+ivr)=D0_m0_n(ivr)
-         D0_m1_r(iv0+ivr)=D0_m1_n(ivr)
-      ENDDO
-   ENDIF
+   DO ivr=1,nv_dis
+      D0_funcT_opt_r(iv0+ivr)=D0_funcT_opt_n(ivr)
+      D0_m0_r(iv0+ivr)=D0_m0_n(ivr)
+      D0_m1_r(iv0+ivr)=D0_m1_n(ivr)
+   ENDDO
    DEALLOCATE(D0_funcT_opt_n,D0_m0_n,D0_m1_n)
 #endif
 
@@ -739,14 +737,12 @@ CONTAINS
       tocd(:)=0.0
       ros(:)=0.0
       diam_sed(:)=0.0
-      IF (l_diss_insed) THEN
-         ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
-         ALLOCATE(D0_m0(nvp+1:nv_tot))
-         ALLOCATE(D0_m1(nvp+1:nv_tot))
-         D0_funcT_opt(:)=1
-         D0_m0(:)=0.
-         D0_m1(:)=0.
-      ENDIF
+      ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
+      ALLOCATE(D0_m0(nvp+1:nv_tot))
+      ALLOCATE(D0_m1(nvp+1:nv_tot))
+      D0_funcT_opt(:)=1
+      D0_m0(:)=0.
+      D0_m1(:)=0.
 
 #else
       ALLOCATE(ws_free_min(nvp)) 
@@ -1042,13 +1038,11 @@ CONTAINS
      ros(iv)=ros_r(irk_fil(iv))
      diam_sed(iv)=diam_r(irk_fil(iv))
    END DO
-   IF (l_diss_insed) THEN
-      DO iv=nvp+1,nvp+nv_dis
-       D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
-       D0_m0(iv)=D0_m0_r(iv)
-       D0_m1(iv)=D0_m1_r(iv)
-      ENDDO
-   ENDIF
+   DO iv=nvp+1,nvp+nv_dis
+      D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
+      D0_m0(iv)=D0_m0_r(iv)
+      D0_m1(iv)=D0_m1_r(iv)
+   ENDDO
 
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.

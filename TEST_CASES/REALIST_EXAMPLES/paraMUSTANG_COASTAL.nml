@@ -38,6 +38,7 @@
    filrepsed='sed_init.nc'
 / 
 &namsedim_diss
+   l_diss_insed=.true.
 /
 &namsedim_layer
    dzsmin=1.0e-5       
