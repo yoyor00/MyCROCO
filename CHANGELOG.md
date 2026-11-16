@@ -44,11 +44,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - SUBSTANCE : fixed (non-advected) substances now have a working initial
   condition too: `init_cv_name_fix` and `cini_wat_fix` were declared and
   read from the namelist but never actually used (their array, `cvfix_wat`,
-  was unconditionally hard-set to 0). They now follow the same
-  `init_cv_name`/`cini_wat` mechanism as advected substances: `'none'`
-  (or a named variable missing from the init file) falls back on the
-  uniform `cini_wat_fix` concentration; left empty, `init_cv_name_fix`
-  defaults to the substance's own name (#590)
+  was unconditionally hard-set to 0) (#590)
 
 - SUBSTANCE : `cv_rain` (substance concentration in rainwater) is now
   applied in `bulk_flux.F`, adding `prate * cv_rain` to each substance's
@@ -60,19 +56,19 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   applied in `bulk_flux.F` too, as a constant term added to each
   substance's surface flux (CPP key SUBSTANCE only; combines with the
   `cv_rain` wet-deposition term above when RAIN_FLUX is also defined).
-  `cini_air` remains unimplemented: unlike `flx_atm`/`cv_rain`, it has
-  no equivalent anywhere in CROCO's MUSTANG/SUBSTANCE port -- in MARS3D
-  it only feeds a separate, optional contaminant-volatilization module
-  (`key_contaminant`) that was never ported (#590)
+  (#590)
 
 - SUBSTANCE : new `t90` parameter (mortality/decay time, in hours) for
   dissolved, non-constitutive particulate and sorbed particulate
   substances, porting MARS3D's `t90`/`f90` formulation: the
   concentration is multiplied every time step by a decay factor
-  `f90 = exp(-dt*ln(10)/(t90*3600))`, computed once at initialization
-  (`MUSTANG/substance.F90`) and applied as the last operation on each
-  substance's concentration in `step3d_t.F`. `t90` = 0. (default)
+  `f90 = exp(-dt*ln(10)/(t90*3600))` `t90` = 0. (default)
   disables decay, as before this was added. (#590)
+  
+- MUSTANG : add Van der A et al. (2013) wave skewness/asymmetry bedload
+  formulation (zero-current case), activated with l\_vandera in
+  namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
+  case in BENCH (#589)
 
 ### Fixed
 
@@ -215,7 +211,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
-  (#568, #570, #572, #573)
+  (#552, #568, #570, #572, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
