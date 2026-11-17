@@ -70,6 +70,7 @@ fi
 # set OASIS-MCT (or OASIS3) directories if needed
 #
 PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
+
 #
 # set XIOS directory if needed
 #
@@ -368,10 +369,17 @@ if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
    echo " => OASIS activated"
    CHAN=MPI1
    LIBPSMILE="${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
-      ${PRISM_ROOT_DIR}/lib/libmct.a  \
-      ${PRISM_ROOT_DIR}/lib/libmpeu.a \
-      ${PRISM_ROOT_DIR}/lib/libscrip.a"
-   PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/include"
+              ${PRISM_ROOT_DIR}/lib/libmct.a            \
+              ${PRISM_ROOT_DIR}/lib/libmpeu.a           \
+              ${PRISM_ROOT_DIR}/lib/libscrip.a"
+   # For OASIS3-MCT version >= 5
+   if [ -d "${PRISM_ROOT_DIR}/include" ]; then
+      PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/include"
+   # For OASIS3-MCT version < 5
+   else
+      PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
+                     -I${PRISM_ROOT_DIR}/build/lib/mct"
+   fi
    COMPILEOASIS=TRUE
    LDFLAGS1="$LDFLAGS1 $LIBPSMILE $NETCDFLIB"
    CPPFLAGS1="$CPPFLAGS1 ${PSMILE_INCDIR} $NETCDFINC"
