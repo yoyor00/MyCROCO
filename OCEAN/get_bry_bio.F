@@ -15,6 +15,7 @@
 
       subroutine get_bry_bio    ! Read side boundary forcing
       use croco_namelist, only: dt, bry_file
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none             ! fields from boundary file
 # include "param.h"
 # include "scalars.h"
@@ -673,6 +674,16 @@ c     goto 99                                     !--> ERROR
 #  endif
 # endif     /* PISCES or (BIO_NChlPZD || BIO_N2ChlPZ2) or BIO_BioEBUS */
             endif   !condition on itrc value
+          if (itrc.eq.itemp .or. itrc.eq.isalt) then
+            call tool_origindate(bry_id,bry_time_id,
+     &                           bryt_origin_date_in_sec(itrc),
+     &                           bryt_secinunit(itrc))
+          else if (got_tbry(itrc)) then
+            call tool_origindate(bry_id,bry_tid(itrc),
+     &                           bryt_origin_date_in_sec(itrc),
+     &                           bryt_secinunit(itrc))
+          endif
+
           enddo   ! loop on itrc
 !
 ! Initialisation ierr_all
@@ -792,13 +803,9 @@ c                goto 99         !--> ERROR
               ierr=nf_get_var1_FTYPE
      &          (bry_id, bry_tid(itrc), bry_rec1(itrc), cff)
               if (ierr.eq.nf_noerr) then
-# ifdef USE_CALENDAR
-                call tool_origindate(bry_id,bry_tid(itrc),
-     &                         bry_origin_date_in_sec)
-                cff=cff+bry_origin_date_in_sec*sec2day
-# endif
+                cff=bryt_origin_date_in_sec(itrc)+cff*bryt_secinunit(itrc)
                 itbry1(itrc)=min(3-itbry1(itrc),ntbry1(itrc))
-                bry_time1(itbry1(itrc),itrc)=cff*day2sec +
+                bry_time1(itbry1(itrc),itrc)=cff +
      &            bry_cycle1(itrc)*bry_ncycle1(itrc)
 !
                 ierr_all=0
@@ -837,12 +844,9 @@ c                goto 99         !--> ERROR
                 ierr=ierr_all
                 if (ierr.eq.0) then
                   MPI_master_only  write(stdout,
-     &              '(6x,A,9x,A,1x,G12.4,1x,I4)')
+     &              '(6x,A,9x,A,1x,A19,1x,I4)')
      &              'GET_BRY_BIO    -- Read all boundary data',
-     &              'for time =', cff
-# ifdef USE_CALENDAR
-     &               -bry_origin_date_in_sec*sec2day
-# endif
+     &              'for time =', tool_sectodat(cff)
 # ifdef MPI
      &              , mynode
 # endif
@@ -864,9 +868,7 @@ c                goto 99         !--> ERROR
      $          ,'file ''',   bry_file(1:lstr),  '''',  'tdays = ',
      $          tdays,'  but the last available  bry_time ='
      $          ,bry_time(itbry1(itrc))*sec2day
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
              endif
 
           enddo                 !do while
@@ -982,13 +984,9 @@ c                goto 99         !--> ERROR
      &      '(/2(1x,A)/3(1x,A,F16.10)/)')
      &      'SET_BRY_ALL_TILE - current model time is out of bounds of',
      &      '''bry_time''.',     'BRY_TSTART=',   bry_time(it1)*sec2day
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
      &      ,'TDAYS=',  tdays,    'BRY_TEND=',     bry_time(it2)*sec2day
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
             may_day_flag=2
           endif
         endif

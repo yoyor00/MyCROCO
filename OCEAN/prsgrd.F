@@ -533,6 +533,9 @@ c********************************************************************
 #  ifdef READ_PATM
 #   include "forces.h"
 #  endif
+#  ifdef POT_TIDES
+#   include "tides.h"
+#  endif
 !
 #  include "compute_auxiliary_bounds.h"
 !

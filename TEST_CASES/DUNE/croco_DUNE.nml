@@ -7,18 +7,15 @@
 /
 
 &croco_time_stepping
-  ntimes = 172800
   dt = 1
   ndtfast = 20
   ninfo = 1
 /
 
-&croco_use_calendar
+&croco_calendar
   start_date = "2019-01-01 00:00:00"
   end_date = "2019-01-03 00:00:00"
-  dt_his = 24
-  dt_avg = 24
-  dt_rst = 24
+  calendar_type = "gregorian"
 /
 
 &croco_s_coord
@@ -46,7 +43,7 @@
 /
 
 &croco_restart
-  nrst = 172800
+  nrst = 86400
   nrpfrst = 0
   rstname = "dune_rst.nc"
 /

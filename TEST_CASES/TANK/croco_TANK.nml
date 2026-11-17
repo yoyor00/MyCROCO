@@ -7,11 +7,16 @@
 /
 
 &croco_time_stepping
-  ntimes = 200
   dt = 0.1
   ndtfast = 60
   ninfo = 100
   m2filter_alpha = 0.01
+/
+
+&croco_calendar
+  start_date    = "2000-01-01 00:00:00"
+  end_date      = "2000-01-01 00:00:20"
+  calendar_type = "gregorian"
 /
 
 &croco_time_stepping_nbq

@@ -159,13 +159,9 @@ MODULE coupler_MUSTANG
 
      DO j=jfirst,jlast
       DO i=ifirst,ilast
-#if defined key_noTSdiss_insed
-         DO iv=1,nv_adv
-#else
-         DO iv=-1,nv_adv
-#endif
-                flx_w2s_sum(iv,i,j)=flx_w2s_sum_CROCO(i,j,itsubs1+iv-1) ! flux de depot cumule effectif apres transport
-         ENDDO
+        DO iv=-1,nv_adv
+            flx_w2s_sum(iv,i,j)=flx_w2s_sum_CROCO(i,j,itsubs1+iv-1) ! flux de depot cumule effectif apres transport
+        ENDDO
      ENDDO
      ENDDO
 
