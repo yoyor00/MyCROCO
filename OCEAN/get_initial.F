@@ -275,7 +275,6 @@
             if (forw_start.ne.1) return
             forw_start=0
           endif
-#endif
         else
           MPI_master_only write(stdout,2) vname(1,indxTime)(1:lvar)
      &                                , record, ininame(1:lstr)
