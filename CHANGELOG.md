@@ -226,6 +226,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - XIOS : Unmask output grid/geometry variables so that they keep valid
   values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
+- Build : replace cross_matrix.F, the Fortran tool generating Make.depend,
+  by make_depend.py, a stdlib-only Python replacement; it fixes missing
+  dependencies that made incremental (re)builds unreliable and comes with
+  unit tests run in CI (Issue #566)
+
 ### Deprecated
 
 
@@ -319,7 +324,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven
+  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven, M. Bremond
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
