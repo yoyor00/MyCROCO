@@ -168,6 +168,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+- DIAGNOSTICS_TS_MLD cpp key has been removed (if activated, integration of tracer 
+  diagnostics was performed over density MLD. If deactivated, integration was 
+  done over hbl from mixing scheme (only valid with SKPP, not with GLS).
+  Now, the MLD criterion is chosen in namelist: turbulence (default), density or temperature
+  The turbulence MLD is now recomputed using a threshold on AKt, instead of using hbl.
 
 - Remove duplicate `scrum_time` netCDF variable from history, restart, 
   averages, diagnostics, surf and station output files; only `time` is 
