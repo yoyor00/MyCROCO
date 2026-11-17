@@ -52,9 +52,7 @@
 # undef  XIOS
                      /* Custion IO */
 # undef  FILLVAL
-                      /* Calendar */
-# undef  USE_CALENDAR
-                      /* dedicated croco.log file */
+                      /* Dedicated croco.log file */
 # undef  LOGFILE
 /*
 !-------------------------------------------------
@@ -354,7 +352,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  MORPHODYN
 #  undef  WAVE_OFFLINE
-#  define key_noTSdiss_insed
 # endif
 
 #include "cppdefs_dev.h"

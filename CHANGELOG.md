@@ -19,11 +19,28 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   potential, in addition to elevation; works now with both
   ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
+- SCRIPTS_COUPLING : deal with hours (in addition to year, month, day). (#593)
+
 - OUTPUTS : add z\_r and z\_w to history and averages files, activated with
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
+- MUSTANG : add Van der A et al. (2013) wave skewness/asymmetry bedload
+  formulation (zero-current case), activated with l\_vandera in
+  namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
+  case in BENCH (#589)
+
 ### Fixed
+
+- NC4PAR : fix wrong record index on MPI ranks > 0 when reopening an
+  existing history/restart/diagnostics file to append records (e.g. on
+  restart); non-root ranks computed total_rec one off from rank 0,
+  desyncing collective scalar writes (time, time_step) across ranks
+  (Issue #596)
+
+- USE_CALENDAR : fix off-by-one in ntimes computed from start_date/end_date
+  (missing -1, and int() instead of NINT() truncating float rounding
+  noise) (Issue #596)
 
 - WET_DRY : fix restart not bit-exact with WET_DRY; umask_wet/vmask_wet
   are now saved to and restored from the restart file (Issue #262)
@@ -141,6 +158,21 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   one: their results differ from previous versions. VORTEX input files
   have been regenerated with Vtransform = 2.
 
+- CALENDAR : Remove `USE_CALENDAR` CPP key.
+  Calendar support is now always active and controlled at runtime via `calendar_type` in the namelist (#452).
+  Supported values (case-insensitive): `gregorian` (default) / `standard` /
+  `proleptic_gregorian`, `360_day`, `noleap`/`365_day`/`no_leap`,
+  `all_leap`/`366_day`, `julian`.
+  The five standalone calendar utility files (`toolsectodat.F90`, `tooldatosec.F90`,
+  `tooldecompdat.F90`, `tooldatetosec.F90`, `toolorigindate.F90`) are replaced by a
+  single Fortran module `tools_calendar.F90`, which:
+    - provides explicit interfaces (eliminates scattered `character*19 tool_sectodat`
+      external declarations in all `get_*.F` forcing readers);
+    - extends `tool_datetosec` to support all calendar types (was Gregorian-only);
+    - renames all French variable names to English throughout in this module.
+  All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
+  (was raw floating-point days since origin).
+
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
   (croco.nml). All configuration parameters are now in structured &croco_*
@@ -149,7 +181,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
-  (#568, #570, #572, #573)
+  (#552, #568, #570, #572, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
