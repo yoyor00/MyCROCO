@@ -681,11 +681,15 @@
 !
 #  ifdef MASKING
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask(i,j)
+#   endif
 #  endif
 #  ifdef WET_DRY
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
+#   endif
 #  endif
 !++  Save for the calculation of wind stress
           aer(i,j)  = rhoAir*delW(1)
