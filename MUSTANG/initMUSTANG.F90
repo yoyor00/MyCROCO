@@ -20,12 +20,9 @@ MODULE initMUSTANG
 !&E                                       ! and the sediment layers
 !&E     subroutine MUSTANG_compatibility  ! check compatibility
 !&E                                         between the various parameters
-!&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not 
+!&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not
 !&E                                         from file
-!&E     subroutine MUSTANG_init_hsed      ! initialize the sediment thickness 
-!&E                                         function sediment parameters 
-!&E                                         (MUSTANG_mixsed)
-!&E     subroutine MUSTANG_init_param     ! initialize the settling velocity 
+!&E     subroutine MUSTANG_init_param     ! initialize the settling velocity
 !&E                                         of sand variables and erosion 
 !&E                                         parameters
 !&E     subroutine MUSTANG_init_output    ! initialize dimensions of output 
@@ -38,7 +35,7 @@ MODULE initMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
     USE module_substance
-    USE croco_namelist, ONLY : nrrec, sedname_must, rho0, testcase_name
+    USE croco_namelist, ONLY : sedname_must, rho0, testcase_name
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
     USE MUSTANG_namelist, ONLY : MUSTANG_readnml, MUSTANG_param_log
@@ -51,6 +48,7 @@ MODULE initMUSTANG
     PRIVATE
 
     !! * Local declarations
+    
     ! logging IO
     INTEGER :: ierrorlog, iwarnlog, iscreenlog
 
@@ -79,7 +77,6 @@ CONTAINS
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_split_surflayer
 #ifdef key_MUSTANG_V2
-    USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
     USE sed_MUSTANG_CROCO,  ONLY : sed_bottom_slope
 #endif
 
@@ -97,13 +94,7 @@ CONTAINS
     CHARACTER(len=lchain) :: filepc_user
     INTEGER               :: lstr
     INTEGER               :: lenstr
-#ifdef key_MUSTANG_V2
-    REAL(KIND=rsh)                  :: mass_tot, poro_kij, crel_mud_ini
-    REAL(KIND=rsh),DIMENSION(1:nvpc):: frac_sed
-    REAL(KIND=rsh),DIMENSION(1:nvp) :: mass_sed
-#else
-    REAL(KIND=rsh)                  :: somalp
-#endif
+    REAL(KIND=rsh)        :: sommud, cvolgrvsan
     LOGICAL :: l_0Dcase
 
     ierrorlog = stdout
@@ -194,33 +185,20 @@ CONTAINS
             ENDIF
 
             DO k=ksmi(i,j),ksma(i,j)
+                c_sedtot(k,i,j)=SUM(cv_sed(igrav1:imud2,k,i,j))
+                poro(k,i,j)=1.0_rsh - c_sedtot(k,i,j)/ros(1)
 #ifdef key_MUSTANG_V2
-             mass_tot = 0.0_rsh
-             DO iv=igrav1,imud2
-               mass_sed(iv)=cv_sed(iv,k,i,j)*dzs(k,i,j) 
-               mass_tot=mass_tot+mass_sed(iv)
-             END DO
-             DO iv=igrav1,imud2
-               frac_sed(iv)=mass_sed(iv)/mass_tot
-             END DO
-             crel_mud_ini=(1.0_rsh-poro_mud_ini)*ros(1)
-             CALL MUSTANGV2_comp_poro_mixsed(frac_sed,poro_mud_ini,  &
-                                crel_mud_ini,poro_kij)
-             poro(k,i,j)=poro_kij
-             crel_mud(k,i,j)=crel_mud_ini
-             poro_mud(k,i,j)=poro_mud_ini
-             c_sedtot(k,i,j)=(1.0_rsh-poro(k,i,j))*ros(1)
-             DO iv=igrav1,imud2
-               cv_sed(iv,k,i,j)=c_sedtot(k,i,j)*frac_sed(iv)
-             END DO
-#else
-             somalp=0.0_rsh
-             DO iv=1,nvpc
-                somalp=somalp+cv_sed(iv,k,i,j)/ros(iv)
-             ENDDO
-             poro(k,i,j)=1.0_rsh-somalp
+                sommud=0.0_rsh
+                DO iv=imud1,imud2
+                    sommud=sommud+cv_sed(iv,k,i,j)
+                ENDDO
+                cvolgrvsan=0.0_rsh
+                DO iv=igrav1,isand2
+                    cvolgrvsan=cvolgrvsan+cv_sed(iv,k,i,j)/ros(iv)
+                ENDDO
+                crel_mud(k,i,j)=sommud/(1.0_rsh-cvolgrvsan)
+                poro_mud(k,i,j)=1.0_rsh - crel_mud(k,i,j)/ros(1)
 #endif
-
             ENDDO
           ELSE
             poro(:,i,j)=0.0_rsh
@@ -263,7 +241,7 @@ CONTAINS
 
     END SUBROUTINE MUSTANG_init
 !!===========================================================================
- 
+
     SUBROUTINE MUSTANG_compatibility(ifirst, ilast, jfirst, jlast)
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE MUSTANG_compatibility  ***
@@ -284,27 +262,27 @@ CONTAINS
     INTEGER   :: iv, iv2, isubs, i, j 
     REAL(rsh) :: rohomog
  
-    ! test dissolved variables in sediment must be used without  key_nofluxwat_IWS
-#if defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
+    ! test dissolved variables in sediment must be used with l_fluxwat_IWS
+    IF (.not. l_fluxwat_IWS .and. l_diss_insed) THEN
     MPI_master_only WRITE(iwarnlog, *)
     MPI_master_only WRITE(iwarnlog, *) '****************************'
-    MPI_master_only WRITE(iwarnlog, *) '        WARNING           ' 
+    MPI_master_only WRITE(iwarnlog, *) '        WARNING           '
     MPI_master_only WRITE(iwarnlog, *) '****************************'
     MPI_master_only WRITE(iwarnlog, *) &
-        ' You are using CPP key : key_nofluxwat_IWS ' 
+        ' You are using l_fluxwat_IWS = .false. '
     MPI_master_only WRITE(iwarnlog, *) &
-        ' So you are not taking into account water fluxes threw water/sediment interface ' 
+        ' So you are not taking into account water fluxes threw water/sediment interface '
     MPI_master_only WRITE(iwarnlog, *) &
         ' which are generated by erosion/ settling/ consolidation..'
     MPI_master_only WRITE(iwarnlog, *) &
-        ' AND you are NOT using CPP key : key_noTSdiss_insed ' 
+        ' AND you are using l_diss_insed = .true. '
     MPI_master_only WRITE(iwarnlog, *) &
         ' so you want to simulate dissolved variables in sediment'
     MPI_master_only WRITE(iwarnlog, *) &
         ' You will have probably conservativity problems '
     MPI_master_only WRITE(iwarnlog, *) &
-        ' If you simulate dissolved variables in water AND in sediment, don t use key_nofluxwat_IWS '
-#endif
+        ' If you simulate dissolved variables in water AND in sediment, set l_fluxwat_IWS = .true. '
+    ENDIF
 
     IF (l_flocmod .AND. .not.l_ADS .and. .not.l_ASH) THEN
         MPI_master_only write(ierrorlog, *) 'CAUTION : incompatible flocculation kernel options : '
@@ -388,19 +366,6 @@ CONTAINS
        ENDIF
      ENDIF
 
-! test compatibility keys sedimento+biolo
-#if defined key_biolo && defined key_benthos && ! defined key_Pconstitonly_insed
-    MPI_master_only WRITE(ierrorlog, *)
-    MPI_master_only WRITE(ierrorlog, *) '****************************'
-    MPI_master_only WRITE(ierrorlog, *) ' You are using key_MUSTANG + key_biolo + key_benthos'
-    MPI_master_only WRITE(ierrorlog, *) ' It is not compatible'
-    MPI_master_only WRITE(ierrorlog, *) ' You must add the key key_Pconstitonly_insed and biological variables '
-    MPI_master_only WRITE(ierrorlog, *) ' will not be included in sedim module but in benthos module -in biolo)'
-    MPI_master_only WRITE(ierrorlog, *)
-    MPI_master_only WRITE(ierrorlog, *) ' OR you want simulate biological variables in sediment module'
-    MPI_master_only WRITE(ierrorlog, *) ' and you have to use : key_MUSTANG + key_biolo without key_benthos'
-    STOP
-#endif
 
 ! test compatibility key_BLOOM_insed
 #if defined key_BLOOM_insed && ! defined key_oxygen
@@ -431,37 +396,36 @@ CONTAINS
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE MUSTANG_init_param  ***
     !&E
-    !&E ** Purpose : initialize MUSTANG parameters  
+    !&E ** Purpose : initialize MUSTANG parameters
     !&E
-    !&E ** Description : 
-    !&E    - compute for each sand and gravel (for 1 to isand2)  
+    !&E ** Description :
+    !&E    - compute for each sand and gravel (for 1 to isand2)
     !&E       * diamstar
     !&E       * ws_sand
     !&E       * tetacri0
     !&E       * stresscri0
     !&E       * psi_sed (in V2)
-    !&E    - compute for each sand (for isand1 to isand2) 
+    !&E    - compute for each sand (for isand1 to isand2)
     !&E       * E0_sand (in V2)
-    !&E    - compute for each gravel, dans and mud (for 1 to imud2) 
+    !&E    - compute for each gravel, dans and mud (for 1 to imud2)
     !&E       * rosmrowsros
     !&E    - ros_sand_homogen = ros(isand1) if there is sand (isand1 > 0)
     !&E
-    !&E ** Note : g and rho0 must be known 
+    !&E ** Note : g and rho0 must be known
     !&E
     !&E ** Called by :  MUSTANG_init
     !&E
     !&E--------------------------------------------------------------------------
+    USE tools_calendar, ONLY: tool_datosec
 
     !! * Local declarations
     INTEGER        :: iv
     REAL(KIND=rlg) :: dtsedc, dtsedd, dtsedb  ! to compute consolidation subdt_consol
-    REAL(KIND=rlg) :: tool_datosec
     REAL(KIND=rsh),PARAMETER :: shield_cri_wu = 0.03_rsh          
 
     !!--------------------------------------------------------------------------
     !! * Executable part
 
-    IF (csed_mud_ini == 0.0_rsh ) csed_mud_ini = cfreshmud
     tstart_dyninsed = max(tool_datosec(date_start_dyninsed), time)
     t_dyninsed = tstart_dyninsed
     tstart_morpho = tool_datosec(date_start_morpho)
@@ -571,101 +535,6 @@ CONTAINS
     ENDIF
 
     END SUBROUTINE MUSTANG_init_param
-!!===========================================================================
-
-    SUBROUTINE MUSTANG_init_hsed(cv_sedini)
-    !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_init_hsed  ***
-    !&E
-    !&E ** Purpose : initialize sediment thickness, in order to be coherent with sediment parameters
-    !&E     function of cseduni, cvolmax, csed_ini of each sediment,
-    !&E      valid only if cv_sed  and dzs not variable
-    !&E
-    !&E ** Description : 
-    !&E
-    !&E ** Called by :  MUSTANG_init
-    !&E
-    !&E--------------------------------------------------------------------------
-    !! * Arguments
-    REAL(KIND=rsh), INTENT(IN),DIMENSION(nvpc) :: cv_sedini
-
-    !! * Local declarations
-    INTEGER        :: iv                
-    REAL(KIND=rsh) :: dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan,masdepmud,     &
-                        dvolsan,dmasmud,dmasmudgrav,dmasmudsand
-
-    !! * Executable part
-
-    ! **TODO** translate all comments in english
-      !!! Volume a deposer
-    voldepgrv=0.0_rsh
-    voldepsan=0.0_rsh        
-    DO iv=igrav1,igrav2
-        voldepgrv=voldepgrv+cv_sedini(iv)/ros(iv)*hseduni  ! kg/m3 * m /(kg/m3)  (vol_g)
-    ENDDO
-    DO iv=isand1,isand2
-        voldepsan=voldepsan+cv_sedini(iv)/ros(iv)*hseduni  ! kg/m3 * m /(kg/m3)  (vol_s)
-    ENDDO
-
-    !!! Masse a deposer
-    masdepmud=0.0_rsh
-    DO iv=imud1,imud2
-        masdepmud=masdepmud+cv_sedini(iv)*hseduni  ! kg/m2  (m_v)
-    ENDDO
-
-    !!! nouvelle Couche de gravier
-    IF(voldepgrv.GE.0.0_rsh)THEN
-        dzsgrv=voldepgrv/cvolmaxsort
-    ENDIF
-
-    !!! Couche de sable
-    IF(voldepsan.GE.0.0_rsh)THEN
-        dvolsan=MIN(voldepsan,dzsgrv*(cvolmaxmel-cvolmaxsort)) ! volume de sable qui s insere dans le gravier (cvolmaxmel-cvolmaxsort)
-        dzssan=MAX(0.,(voldepsan-dvolsan)/cvolmaxsort)
-    ENDIF
-    
-    !!! Couche de vase
-    IF(masdepmud.GE.0.0_rsh) THEN
-        IF(dzsgrv >0.0_rsh .and. dzssan > 0.0_rsh) THEN
-            ! melange sable+gravier  
-            dmasmudgrav=dzsgrv*csed_mud_ini*(1.0_rsh-cvolmaxmel)  ! masse de vase qui s insere dans le gravier (1-cvolmaxmel)
-            IF (isand2>isand1 ) THEN
-                dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxmel) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-            ELSE
-                dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxsort) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-            ENDIF
-        ELSE IF (dzssan > 0.0_rsh .AND. isand2>isand1 ) THEN
-            ! melange sables  
-            dmasmudgrav=0.
-            dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxmel) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-        ELSE IF(dzsgrv >0.0_rsh .AND. igrav2>igrav1 ) THEN
-            ! melange graviers  
-            dmasmudgrav=dzsgrv*csed_mud_ini*(1.0_rsh-cvolmaxmel)  ! masse de vase qui s insere dans le gravier (1-cvolmaxmel)
-            dmasmudsand=0.
-        ELSE
-            ! un seul type de sediment 
-            dmasmudgrav=dzsgrv*csed_mud_ini*(1.0_rsh-cvolmaxsort)  ! masse de vase qui s insere dans le gravier ou sable (1-cvolmaxsort)
-            dmasmudsand=dzssan*csed_mud_ini*(1.0_rsh-cvolmaxsort) ! masse de vase qui s insere dans le sable (1-cvolmaxsort)
-        ENDIF
-        ! nouvelle couche de vase
-        dzsmud=(masdepmud-dmasmudgrav-dmasmudsand)/csed_mud_ini
-        IF(dzsmud <0.0_rsh) THEN
-            dzsmud=0.0_rsh
-            IF (masdepmud-dmasmudgrav < 0.0_rsh) THEN
-                dmasmudgrav = masdepmud
-                dmasmudsand = 0.0_rsh
-            ELSE
-                dmasmudsand = masdepmud-dmasmudgrav
-            ENDIF
-        ENDIF     
-    dmasmud = dmasmudgrav +dmasmudsand
-    ENDIF
-
-    !!! Nouvelle Hauteur totale
-    hsed_new = dzsgrv +dzssan +dzsmud
-
-    END SUBROUTINE MUSTANG_init_hsed
-
 !!=============================================================================
   SUBROUTINE MUSTANG_init_fromfile
  
@@ -712,33 +581,21 @@ CONTAINS
  ! arrays, determine how many time records are available in the file
  ! and set record from which the dada will be read.
  !
- ! The record is set as follows: (1) if only one time record is
- ! available in the file, then that record is used REGARDLESS of
- ! value of nrrec supplied from the parameter file; (2) if the
- ! file has multiple records and nrrec is positive, then nrrec is
- ! used, provided that nrrec is within the available records; 
- ! (3) if the file has multiple records and nrrec<0, then THE LAST 
- ! available record is used.
- 
+ ! The record is set as follows: if only one time record is
+ ! available in the file, then that record is used; otherwise
+ ! THE LAST available record is used.
+
  !      if (may_day_flag.ne.0) return      !-->  EXIT
        inised_name = filrepsed
        lstr = lenstr(inised_name)
        ierr = nf_open(inised_name(1:lstr), nf_nowrite, ncid)
        if (ierr.eq.nf_noerr) then
          ierr = checkdims(ncid, inised_name, lstr, indx)
- 
+
          if (ierr.ne.nf_noerr) then
           goto 99
          elseif (indx.eq.0) then
            indx = 1
-         elseif (indx.gt.0 .and. nrrec.gt.0 .and. nrrec.le.indx) then
-           indx = nrrec
-         elseif (indx.gt.0 .and. nrrec.gt.indx) then
-           write(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')   &
-                'MUSTANG_init_fromfile ERROR: requested restart time record', &
-                nrrec, ' exceeds',  'number of available records', &
-                indx,'in netCDF file', '''',inised_name(1:lstr),'''.'
-           goto 99                                        !--> ERROR
          endif
        else
          write(stdout,'(/1x,2A/15x,3A)') &
@@ -775,8 +632,19 @@ CONTAINS
          MPI_master_only  write(stdout,1) 'ksma', inised_name(1:lstr)
          goto 99                                           !--> ERROR
        endif
- 
-      WHERE (ksmi(GLOBAL_2D_ARRAY) < ksdmin ) 
+
+! scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation): restore it exactly 
+       ierr=nf_inq_varid (ncid,'t_dyninsed', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_get_var1_FTYPE (ncid, varid, indx, t_dyninsed)
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 't_dyninsed', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       endif
+
+      WHERE (ksmi(GLOBAL_2D_ARRAY) < ksdmin )
          ksmi(GLOBAL_2D_ARRAY) = 1
          ksma(GLOBAL_2D_ARRAY) = 0
       END WHERE
@@ -855,8 +723,21 @@ CONTAINS
       do k=ksdmin,ksdmax
       WHERE (c_sedtot(k,GLOBAL_2D_ARRAY) == -valmanq) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
       enddo
- 
- 
+
+! land cells
+#ifdef MASKING
+      do k=ksdmin,ksdmax
+        WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
+        WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) dzs(k,GLOBAL_2D_ARRAY)=0.0_rsh
+        WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) poro(k,GLOBAL_2D_ARRAY)=0.0_rsh
+        do iv=-1,nv_tot
+          WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) cv_sed(iv,k,GLOBAL_2D_ARRAY)=0.0_rsh
+        enddo
+      enddo
+      WHERE (rmask(GLOBAL_2D_ARRAY) == 0.0_rsh) ksma(GLOBAL_2D_ARRAY)=0
+#endif
+
+
  ! dredging
       if (l_dredging) then
          ierr=nf_inq_varid (ncid,'dredg_hsed_init', varid)
@@ -914,7 +795,7 @@ CONTAINS
     !! * Local declarations
     CHARACTER*50   :: filesand, filemud
     INTEGER        :: i, j, k, iv, ivg, imud_nobio, IERR_MPI
-    REAL(KIND=rsh) :: somalp,dzsf,dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan,masdepmud,h0max_def,     &
+    REAL(KIND=rsh) :: dzsf,dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan,masdepmud,h0max_def,     &
                         dvolsan,dmasmud,dmasmudgrav,dmasmudsand,cini_modif,tot_csed_init,dzsmaxmin
 
     !! * Executable part
@@ -984,29 +865,15 @@ CONTAINS
             ENDDO    
         ENDIF
       
-        ! ajustement du hsed et cv_sed
-        ! ==============================
-        IF(l_unised_adjust_hsed .AND. hseduni > 0.0_rsh) THEN
-            ALLOCATE(cv_sedini(1:nvpc))
-            !!! Concentration massique
-            DO iv=1,nvpc
-                ! constitutive variables : cini_sed in % of cseduni
-                cv_sedini(iv)=cseduni*cini_sed(iv)
-            ENDDO
-
-            CALL MUSTANG_init_hsed(cv_sedini)
-            MPI_master_only WRITE(iscreenlog,*)'NEW TOTAL SEDIMENT THICKNESS AFTER ADJUSTEMENT = ',hsed_new
-            cseduni=cseduni*hseduni/hsed_new         
-            hseduni=hsed_new
-            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
-            DEALLOCATE(cv_sedini)
-        ELSE
-            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
-        ENDIF
+        WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
 
         DO j=jfirst,jlast
         DO i=ifirst,ilast
+#ifdef MASKING
+            IF(h(i,j) /= -valmanq .AND. rmask(i,j) == 1.0_rsh) THEN
+#else
             IF(h(i,j) /= -valmanq) THEN
+#endif
                 DO k=ksmi(i,j),ksma(i,j)
                     c_sedtot(k,i,j)=0.0_rsh
                     DO iv=1,nvpc
@@ -1015,9 +882,6 @@ CONTAINS
                         c_sedtot(k,i,j)=c_sedtot(k,i,j)+cv_sed(iv,k,i,j)
                     ENDDO
                     ! porosity estimation moved after dzs evaluation below
-#ifdef key_Pconstitonly_insed
-                    cv_sed(nvpc+1:nv_state,k,i,j)=0.0_rsh 
-#else
                     DO iv=nvpc+1,nvp
                         ! non constitutive variables : cini_sed in conc/kg of sediment
                         IF (irkm_var_assoc(iv) >0) THEN
@@ -1043,7 +907,6 @@ CONTAINS
                         ! + fixed variables : cini_sed in conc/m3 of sediment
                         cv_sed(iv,k,i,j)=cini_sed(iv)
                     ENDDO
-#endif
                     IF(l_initsed_vardiss) THEN
                     ! initalisation avec valeurs du fond
                         cv_sed(-1,k,i,j)=temp_bottom_MUSTANG(i,j)
@@ -1053,6 +916,12 @@ CONTAINS
                         cv_sed( 0,k,i,j)=sini_sed
                     ENDIF
                 ENDDO
+            ELSE
+                ! land cell (or invalid depth): no sediment bed here,
+                ! keep cv_sed/c_sedtot at zero instead of leaving
+                ! whatever uniform value a previous pass left behind
+                c_sedtot(ksdmin:ksdmax,i,j)=0.0_rsh
+                cv_sed(:,ksdmin:ksdmax,i,j)=0.0_rsh
             ENDIF
         ENDDO
         ENDDO
@@ -2174,10 +2043,8 @@ CONTAINS
 #ifdef key_MUSTANG_V2
     ALLOCATE(E0_sand(nvp))
     E0_sand(1:nvp)=0.0_rsh
-#endif   
-#if  ! defined key_noTSdiss_insed
-    ALLOCATE(ivdiss(-1:nv_adv-nvp))
 #endif
+    IF (l_diss_insed) ALLOCATE(ivdiss(-1:nv_adv-nvp))
  
  
     !  allocation of spatial variables  
@@ -2215,10 +2082,10 @@ CONTAINS
     cw_bottom_MUSTANG(nv_tot,GLOBAL_2D_ARRAY) = 0.0_rsh
     ws3_bottom_MUSTANG(nvp,GLOBAL_2D_ARRAY) = 0.0_rsh
     roswat_bot(GLOBAL_2D_ARRAY) = 0.0_rsh
-#if ! defined key_noTSdiss_insed
-    ALLOCATE(phitemp_s(GLOBAL_2D_ARRAY))
-    phitemp_s(GLOBAL_2D_ARRAY) = 0.0_rsh
-#endif
+    IF (l_diss_insed) THEN
+       ALLOCATE(phitemp_s(GLOBAL_2D_ARRAY))
+       phitemp_s(GLOBAL_2D_ARRAY) = 0.0_rsh
+    ENDIF
 #ifdef key_MUSTANG_V2
     ALLOCATE(sigmapsg(ksdmin:ksdmax))
     ALLOCATE(stateconsol(ksdmin:ksdmax))
@@ -2307,44 +2174,30 @@ CONTAINS
     ALLOCATE(flx_w2s_corip1(nvp,GLOBAL_2D_ARRAY))
     ALLOCATE(flx_w2s_corjm1(nvp,GLOBAL_2D_ARRAY))
     ALLOCATE(flx_w2s_corjp1(nvp,GLOBAL_2D_ARRAY))
-#if ! defined key_nofluxwat_IWS
-    ALLOCATE(phieau_s2w_corim1(GLOBAL_2D_ARRAY))
-    ALLOCATE(phieau_s2w_corip1(GLOBAL_2D_ARRAY))
-    ALLOCATE(phieau_s2w_corjm1(GLOBAL_2D_ARRAY))
-    ALLOCATE(phieau_s2w_corjp1(GLOBAL_2D_ARRAY))
-#endif
-  
+    IF (l_fluxwat_IWS) THEN
+       ALLOCATE(phieau_s2w_corim1(GLOBAL_2D_ARRAY))
+       ALLOCATE(phieau_s2w_corip1(GLOBAL_2D_ARRAY))
+       ALLOCATE(phieau_s2w_corjm1(GLOBAL_2D_ARRAY))
+       ALLOCATE(phieau_s2w_corjp1(GLOBAL_2D_ARRAY))
+    ENDIF
+
     ! Initialization
     ALLOCATE(cini_sed(nv_state))
     DO iv = 1, nv_adv
         cini_sed(iv) = cini_sed_r(irk_fil(iv)) * unit_modif_mudbio_N2dw(irk_fil(iv))
-    ENDDO   
+    ENDDO
 
-#ifdef key_Pconstitonly_insed 
-    nv_use = nvpc
-#else
     nv_use = nvp
-#endif  
 
-#if ! defined key_noTSdiss_insed
+    IF (l_diss_insed) THEN
     ! counting of dissolved variables for diffusion in the sediment
     ivdiss(:) = 0
     ivdiss(-1) = -1
     ivdiss(0) = 0
-#if ! defined key_Pconstitonly_insed
     DO iv = 1, nv_adv-nvp
         ivdiss(iv) = iv + nvp
-    ENDDO  
-#endif
-#if defined key_noTSdiss_insed
-    ALLOCATE(D0_funcT_opt(nv_state))
-    D0_funcT_opt(:)=1
-    ALLOCATE(D0_m0(nv_state))
-    D0_m0(:)=1.0_rsh
-    ALLOCATE(D0_m1(nv_state))
-    D0_m1(:)=0.0_rsh
-#endif
-#endif
+    ENDDO
+    ENDIF
 
     !  option morpho
     !!!!!!!!!!!!!!!!!!!!
@@ -2362,14 +2215,11 @@ CONTAINS
     flx_s2w_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
     flx_w2s_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
     flx_w2s_sum_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
-#if ! defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
-    ALLOCATE(WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N)) ! not operationnal, stil to code **TODO**
-    WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N) = 0.0_rsh
-#endif    
-    
-    ALLOCATE(fwet(GLOBAL_2D_ARRAY))
-    fwet(:,:) = 1.0_rsh
-  
+    IF (l_fluxwat_IWS .AND. l_diss_insed) THEN
+       ALLOCATE(WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N)) ! not operationnal, stil to code **TODO**
+       WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N) = 0.0_rsh
+    ENDIF
+
 
     END SUBROUTINE MUSTANG_alloc
 

@@ -30,30 +30,36 @@ else
 fi
 
 
-cd ${SCRIPTDIR}/
+cd "${SCRIPTDIR}/"
 
-newsdate=$( makedate $MONTH_BEGIN_JOBp1 $DAY_BEGIN_JOBp1 $YEAR_BEGIN_JOBp1 )
-newedate=${newsdate}
-months=$MONTH_BEGIN_JOBp1
-days=$DAY_BEGIN_JOBp1
-years=$YEAR_BEGIN_JOBp1
-jobleft=$NBJOB
-while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
-    #
-    mdy=$( valid_date $(( $months + $JOB_DUR_MTH )) $(( $days + $JOB_DUR_DAY - 1 )) $years )
-    monthe=$( echo $mdy | cut -d " " -f 1 )
-    daye=$( echo $mdy | cut -d " " -f 2 )
-    yeare=$( echo $mdy | cut -d " " -f 3 )
-    newedate=$( makedate $monthe $daye $yeare )   
-    jobleft=$(( $jobleft - 1))
-    #
-    future_date="${CEXPER}_${newsdate}_${newedate}${MODE_TEST}"   
+# Start from the end of the current job (exclusive).
+months=${MONTH_BEGIN_JOBp1}
+days=${DAY_BEGIN_JOBp1}
+years=${YEAR_BEGIN_JOBp1}
+hours=${HOUR_BEGIN_JOBp1}
+
+# NBJOB includes the current job: only NBJOB-1 jobs remain to submit.
+for ((jobleft = NBJOB - 1; jobleft > 0; jobleft--)); do
+    newsdate=$(makedate "$months" "$days" "$years" "$hours")
+    read -r monthe daye yeare houre <<< "$(next_job_date "$months" "$days" "$years" "$hours")"
+    newedate=$(makedate "$monthe" "$daye" "$yeare" "$houre")
+
+    # Preserve historic job names for midnight/day-or-month runs.
+    # Include hours for hourly runs or non-midnight boundaries to avoid collisions.
+    if (( JOB_DUR_HOUR > 0 || hours != 0 || houre != 0 )); then
+        printf -v newsdate '%s%02d' "$newsdate" "$hours"
+        printf -v newedate '%s%02d' "$newedate" "$houre"
+    fi
+
+    future_date="${CEXPER}_${newsdate}_${newedate}${MODE_TEST}"
     future_job="job_${future_date}${sub_ext}"
-    cd ${JOBDIR_ROOT} 
-    #
+    cd "${JOBDIR_ROOT}" || exit 1
+
+    # Preserve the original sed replacements, adding the starting hour.
     sed -e "s/YEAR_BEGIN_JOB=${YEAR_BEGIN_JOB}/YEAR_BEGIN_JOB=${years}/" \
         -e "s/MONTH_BEGIN_JOB=${MONTH_BEGIN_JOB}/MONTH_BEGIN_JOB=${months}/" \
         -e "s/DAY_BEGIN_JOB=${DAY_BEGIN_JOB}/DAY_BEGIN_JOB=${days}/" \
+        -e "s/HOUR_BEGIN_JOB=${HOUR_BEGIN_JOB}/HOUR_BEGIN_JOB=${hours}/" \
         -e "s/export NBJOB=.*/export NBJOB=${jobleft}/" \
         -e "s/export RESTART_FLAG=.*/export RESTART_FLAG=\"TRUE\"/" \
         -e "s/export CHAINED_JOB=.*/export CHAINED_JOB=\"FALSE\"/" \
@@ -114,12 +120,12 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
 
     fi
 #    
-    mdy=$( valid_date $(( $monthe )) $(( $daye + 1 )) $yeare )
-    months=$( echo $mdy | cut -d " " -f 1 )
-    days=$( echo $mdy | cut -d " " -f 2 )
-    years=$( echo $mdy | cut -d " " -f 3 )
-    newsdate=$( makedate $months $days $years )
-    
+    # Next job begins exactly when the previous job ends.
+    months=$monthe
+    days=$daye
+    years=$yeare
+    hours=$houre
+
 done
 #
 cd ${JOBDIR_ROOT}

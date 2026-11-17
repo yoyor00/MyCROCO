@@ -15,10 +15,11 @@
                                                   ! file.
         USE croco_namelist, ONLY: ldefhis, nrpfrst, rstname
 #if defined MUSTANG
-        USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
+        USE comMUSTANG, ONLY : rstMust, vname_rstMust,
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
-     &   rstMust_nbvar
+     &   rstMust_nbvar, rstT_dyninsed
 #endif
+      use tools_calendar, only: tool_sectodat
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -39,9 +40,7 @@
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
+      CHARACTER (len=19)    :: cdate
 
 #include "param.h"
 #include "scalars.h"
@@ -68,7 +67,6 @@
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (rstname, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(1:4)//cdate(6:7)
@@ -76,7 +74,6 @@
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 !
@@ -1052,6 +1049,45 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
+#  ifdef WET_DRY
+!  Wetting/drying masks at u- and v-points
+!
+        lvar=lenstr(vname(1,indxumaskwet))
+        ierr=nf_def_var (ncid, vname(1,indxumaskwet)(1:lvar),
+     &                         NF_DOUBLE, 3, u2dgrd, rstumaskwet)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstumaskwet,nf_collective)
+#   endif
+        lvar=lenstr(vname(2,indxumaskwet))
+        ierr=nf_put_att_text (ncid, rstumaskwet, 'long_name', lvar,
+     &                         vname(2,indxumaskwet)(1:lvar))
+        lvar=lenstr(vname(3,indxumaskwet))
+        ierr=nf_put_att_text (ncid, rstumaskwet, 'units', lvar,
+     &                         vname(3,indxumaskwet)(1:lvar))
+        lvar=lenstr(vname(4,indxumaskwet))
+        ierr=nf_put_att_text (ncid, rstumaskwet, 'field', lvar,
+     &                         vname(4,indxumaskwet)(1:lvar))
+      call nf_add_attribute(ncid, rstumaskwet,
+     &                      vname(:,indxumaskwet), 5, NF_DOUBLE, ierr)
+
+        lvar=lenstr(vname(1,indxvmaskwet))
+        ierr=nf_def_var (ncid, vname(1,indxvmaskwet)(1:lvar),
+     &                         NF_DOUBLE, 3, v2dgrd, rstvmaskwet)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstvmaskwet,nf_collective)
+#   endif
+        lvar=lenstr(vname(2,indxvmaskwet))
+        ierr=nf_put_att_text (ncid, rstvmaskwet, 'long_name', lvar,
+     &                         vname(2,indxvmaskwet)(1:lvar))
+        lvar=lenstr(vname(3,indxvmaskwet))
+        ierr=nf_put_att_text (ncid, rstvmaskwet, 'units', lvar,
+     &                         vname(3,indxvmaskwet)(1:lvar))
+        lvar=lenstr(vname(4,indxvmaskwet))
+        ierr=nf_put_att_text (ncid, rstvmaskwet, 'field', lvar,
+     &                         vname(4,indxvmaskwet)(1:lvar))
+      call nf_add_attribute(ncid, rstvmaskwet,
+     &                      vname(:,indxvmaskwet), 5, NF_DOUBLE, ierr)
+#  endif /* WET_DRY */
 # endif  /* EXACT_RESTART */
 #endif /* SOLVE3D */
 
@@ -1163,6 +1199,22 @@
      &              vname_rstMust(:,indx), 5, NF_DOUBLE, ierr)
             endif
         enddo
+!
+! Scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation) process: not a gridded field, stored as a single
+! scalar per restart record so it can be restored exactly instead
+! of being reset to the current time on restart.
+!
+        ierr=nf_def_var (ncid, 't_dyninsed',
+     &                              NF_DOUBLE, 1, timedim,
+     &                              rstT_dyninsed)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstT_dyninsed,nf_collective)
+#   endif
+        ierr=nf_put_att_text (ncid, rstT_dyninsed, 'long_name', 48,
+     &       'next scheduled time for dynamic-in-sediment update')
+        ierr=nf_put_att_text (ncid, rstT_dyninsed, 'units', 6,
+     &       'second')
 #endif  /* MUSTANG */
 
 
@@ -1285,7 +1337,7 @@
               rec=rec-ierr
             elseif (nrpfrst.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 #endif
             endif
@@ -1840,6 +1892,31 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
+#  ifdef WET_DRY
+        lvar=lenstr(vname(1,indxumaskwet))
+        ierr=nf_inq_varid (ncid, vname(1,indxumaskwet)(1:lvar),
+     &                                            rstumaskwet)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxumaskwet)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstumaskwet,nf_collective)
+#   endif
+
+        lvar=lenstr(vname(1,indxvmaskwet))
+        ierr=nf_inq_varid (ncid, vname(1,indxvmaskwet)(1:lvar),
+     &                                            rstvmaskwet)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxvmaskwet)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstvmaskwet,nf_collective)
+#   endif
+#  endif /* WET_DRY */
 # endif /* EXACT_RESTART */
 #endif /* SOLVE3D */
 
@@ -1904,6 +1981,15 @@
           ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
 # endif
         enddo
+
+        ierr=nf_inq_varid (ncid, 't_dyninsed', rstT_dyninsed)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) 't_dyninsed', rstname(1:lstr)
+          goto 99                                       !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstT_dyninsed,nf_collective)
+# endif
 #endif
 
 

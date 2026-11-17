@@ -19,11 +19,7 @@
 ! summation counters, etc; NONE of the physical parameters of
 ! the model is set here.
 !
-      use croco_namelist, only: dt
-# ifdef USE_CALENDAR
-      use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
-     &                          dt_rst
-# endif
+      use croco_namelist, only: dt, start_date, end_date, calendar_type
 # ifdef DIAGNOSTICS_TS_MLD
       use croco_namelist, only: mld_crit_type 
 # endif
@@ -312,21 +308,15 @@ C$OMP END PARALLEL
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(1,indxTime)='time'
       vname(2,indxTime)='time since initialization'
-#if defined USE_CALENDAR && defined ANA_INITIAL
       vname(3,indxTime)='seconds since '//start_date
-#else
-      vname(3,indxTime)='second'
-#endif
       vname(4,indxTime)='time, scalar, series'
       vname(5,indxTime)='time'
       vname(6,indxTime)='    '
       vname(7,indxTime)='T'
       vname(8,indxTime)='.NO.'
       vname(9,indxTime)=' '
-#ifdef USE_CALENDAR
       vname(10,indxTime)=start_date
-      vname(11,indxTime)='Gregorian'
-#endif
+      vname(11,indxTime)=calendar_type
 
 CR      write(stdout,'(1x,A,I3)') 'indxZ =',indxZ
       vname(1,indxZ)='zeta                                        '
@@ -1865,10 +1855,10 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
-      vname(2,indxbvf)='Brunt Vaisala Frequency                   '
-      vname(3,indxbvf)='second-1                                  '
+      vname(2,indxbvf)='Square of Brunt Vaisala Frequency         '
+      vname(3,indxbvf)='second-2                                  '
       vname(4,indxbvf)='bvf, scalar, series                       '
-      vname(5,indxbvf)='brunt_vaisala_frequency                   '
+      vname(5,indxbvf)='square_of_brunt_vaisala_frequency_in_sea_water'
       vname(7,indxbvf)='                                          '
 # endif
 
@@ -2159,6 +2149,24 @@ CR      write(stdout,'(1x,A,I3)') 'indxdRde =',indxdRde
       vname(7,indxdRde)='                                     '
 
 
+# endif
+
+# ifdef WET_DRY
+      vname(1,indxumaskwet)='umask_wet                              '
+      vname(2,indxumaskwet)='wetting/drying mask at u-points        '
+      vname(3,indxumaskwet)='nondimensional                         '
+      vname(4,indxumaskwet)='umask_wet, scalar, series              '
+      vname(5,indxumaskwet)='wetdry_mask_at_u_points                '
+      vname(6,indxumaskwet)='lat_u lon_u                            '
+      vname(7,indxumaskwet)='                                       '
+
+      vname(1,indxvmaskwet)='vmask_wet                              '
+      vname(2,indxvmaskwet)='wetting/drying mask at v-points        '
+      vname(3,indxvmaskwet)='nondimensional                         '
+      vname(4,indxvmaskwet)='vmask_wet, scalar, series              '
+      vname(5,indxvmaskwet)='wetdry_mask_at_v_points                '
+      vname(6,indxvmaskwet)='lat_v lon_v                            '
+      vname(7,indxvmaskwet)='                                       '
 # endif
 
 #endif /* EXACT_RESTART */

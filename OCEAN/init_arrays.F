@@ -47,6 +47,9 @@ C$    integer omp_get_thread_num
 #include "param.h"
 #include "ncscrum.h"
 #include "grid.h"
+#ifdef AGRIF
+# include "zoom.h"
+#endif
 #include "ocean2d.h"
 #include "ocean3d.h"
 #include "coupling.h"
@@ -147,6 +150,9 @@ C$    integer omp_get_thread_num
           umask_wet(i,j)=1
           vmask_wet(i,j)=1
           pmask_wet(i,j)=1
+# ifdef AGRIF
+          rmask_childs(i,j)=1
+# endif
 #endif
 #ifdef WAVE_DRY
           rmask_wavewet(i,j)=1

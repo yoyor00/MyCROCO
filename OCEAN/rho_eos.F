@@ -90,11 +90,11 @@
 ! [This separation and constraining algorithm is subsequently used
 ! in computation of pressure gradient in the prsgrd routine]
 !
-! If so prescribed compute the Brunt-Väisäla frequency [1/s^2] at
+! If so prescribed compute the square of Brunt-Väisäla frequency [1/s^2] at
 ! horizontal RHO-points and vertical W-points,
 !
 !                          g    d rho  |
-!             bvf^2 = - ------ ------- |                          (8)
+!               bvf = - ------ ------- |                          (8)
 !                        rho0    d z   | adiabatic
 !
 ! where density anomaly difference is computed by adiabatically
@@ -254,7 +254,7 @@
 #  endif
 !
 !-----------------------------------------------------------------------
-!  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
+!  Compute square of Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
 !  and vertical W-points!
 !-----------------------------------------------------------------------
 !
@@ -398,7 +398,7 @@
          enddo
 #  endif
 !-----------------------------------------------------------------------
-!  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
+!  Compute square of Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
 !  and vertical W-points.
 !-----------------------------------------------------------------------
 !

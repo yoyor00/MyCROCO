@@ -16,7 +16,8 @@
 
       USE croco_namelist, ONLY: rstname, nrpfrst
 #if defined MUSTANG
-      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs,
+     &                      t_dyninsed, rstT_dyninsed
       USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
 
@@ -44,7 +45,7 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
-#ifdef MORPHODYN
+#if defined MORPHODYN || defined WET_DRY
 # include "grid.h"
 #endif
 #ifdef BBL
@@ -152,9 +153,7 @@
 ! Time.
 !
       ierr=nf_put_var1_FTYPE (ncidrst, rstTime, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
+     &  - start_date_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -644,6 +643,29 @@
        endif
 
 #  endif /* TS_MIX_ISO_FILT */
+
+#  ifdef WET_DRY
+!
+! Wetting/drying masks at u- and v-points.
+!
+      ierr=nf_fwrite(umask_wet(START_2D_ARRAY), ncidrst,
+     &                             rstumaskwet, record, u2dvar)
+      if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxumaskwet))
+          write(stdout,1) vname(1,indxumaskwet)(1:lvar), record,
+     &                  ierr MYID
+          goto 99                                         !--> ERROR
+      endif
+
+      ierr=nf_fwrite(vmask_wet(START_2D_ARRAY), ncidrst,
+     &                             rstvmaskwet, record, v2dvar)
+      if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxvmaskwet))
+          write(stdout,1) vname(1,indxvmaskwet)(1:lvar), record,
+     &                  ierr MYID
+          goto 99                                         !--> ERROR
+      endif
+#  endif /* WET_DRY */
 # endif /* EXACT_RESTART */
 
 # ifdef SEDIMENT
@@ -788,6 +810,15 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           endif
        endif
 
+! scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation): a single scalar, not a gridded field
+       ierr=nf_put_var1_FTYPE (ncidrst, rstT_dyninsed, record,
+     &                                                  t_dyninsed)
+       if (ierr .ne. nf_noerr) then
+         write(stdout,1) 't_dyninsed', record, ierr
+     &                   MYID
+         goto 99                                         !--> ERROR
+       endif
 
 # endif /* MUSTANG */
 

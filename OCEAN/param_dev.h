@@ -121,12 +121,7 @@
 ! I/O : flag for type sigma vertical transformation
 !----------------------------------------------------------------------
 !
-#ifdef NEW_S_COORD
       real, parameter :: Vtransform = 2
-#else
-      real, parameter :: Vtransform = 1
-#endif
-
 
 #ifdef STATIONS
       ! Maximum number of stations

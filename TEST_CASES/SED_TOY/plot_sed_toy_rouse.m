@@ -62,10 +62,9 @@ N=size(u,1);
 theta_s=nc.theta_s(:);
 theta_b=nc.theta_b(:);
 hc=nc.hc(:);
-Vtrans=nc{'Vtransform'}(:);
 %
 depth=h(idy,idx);
-zr=zlevs(depth,zeta,theta_s,theta_b,hc,N,'r',Vtrans);
+zr=zlevs(depth,zeta,theta_s,theta_b,hc,N,'r');
 zr=squeeze(zr);
 zu=0.5*(zr(1:end-1)+zr(2:end));
 %

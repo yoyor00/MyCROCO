@@ -2560,21 +2560,12 @@ C$    integer  trd, omp_get_thread_num
         !! without time dependancy
         z_w0(0)=-hij
         do k=1,N,+1
-#  ifdef NEW_S_COORD
           cff_w =hc*sc_w(k)
           cff_r =hc*sc_r(k)
           cff1_w=Cs_w(k)
           cff1_r=Cs_r(k)
           z_w0(k)=(cff_w+cff1_w*abs(hij)) *hij*hinvij
           z_r0(k)=(cff_r+cff1_r*abs(hij)) *hij*hinvij
-#  else
-          cff_w =hc*(sc_w(k)-Cs_w(k))
-          cff_r =hc*(sc_r(k)-Cs_r(k))
-          cff1_w=Cs_w(k)
-          cff1_r=Cs_r(k)
-          z_w0(k)=cff_w+cff1_w*hij
-          z_r0(k)=cff_r+cff1_r*hij
-#  endif
         enddo
 
         Hs=hij                    ! Exponential vertical distribution

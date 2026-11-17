@@ -15,11 +15,16 @@
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 : namsedim_consolidation   : relative to sediment consolidation
-: namsedim_diffusion       : relative to dissolved diffusion in sediment 
-: namsedim_bioturb         : relative to bioturbation in sediment 
 : namsedim_morpho          : relative to morphodynamic
+: namsedim_diss            : relative to dissolved substances and porewater
+:                            exchange in sediment
+: namsedim_diffusion       : relative to dissolved diffusion in sediment 
+:                            (effective only if l_diss_insed = .true.)
+: namsedim_bioturb         : relative to bioturbation in sediment 
+:                            (l_biodiffs and its _diss parameters are
+:                             effective only if l_diss_insed = .true.)
 : namtempsed               : relative to temperature estimation in sediment 
-:                            (only if !defined key_noTSdiss_insed)
+:                            (used only if l_diss_insed = .true.)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
 : namflocmod               : parameters using for FLOCMOD module 
@@ -32,6 +37,8 @@
    l_unised = .false.   
    filrepsed='sed_init.nc'
 / 
+&namsedim_diss
+/
 &namsedim_layer
    dzsmin=1.0e-5       
    dzsmax_bottom=0.1   
@@ -40,19 +47,19 @@
    nlayer_surf_sed=5 
 /
 &namsedim_bottomstress
-   l_z0seduni=.true.  
-   z0seduni = 0.0001     
-   z0sedmud = 0.0001    
-   z0sedbedrock = 0.005  
-   l_fricwave=.false.  
+   l_z0seduni=.false.
+   z0seduni = 0.0001
+   z0sedmin = 0.0001
+   z0sedbedrock = 0.005
+   l_fricwave=.false.
 /  
 &namsedim_deposition
    cfreshmud=400.0
    csedmin=30.
-   cmudcr=600.  
+   cmudcr=600.
    cvolmaxsort=0.58
-   cvolmaxmel=0.67 
-/ 
+   cvolmaxmel=0.67
+/
 &namsedim_erosion
    activlayer=0.02  
    frmudcr2=0.7 
@@ -91,6 +98,11 @@
 &namflocmod
 /   
 &namdredging
+/
+: Only read if key_MUSTANG_V2 is defined (VILAINE_VANDERA case in BENCH);
+: ignored otherwise (VILAINE case).
+&namsedim_bedload
+   l_vandera = .TRUE.
 /
 &namsedim_poro
 /

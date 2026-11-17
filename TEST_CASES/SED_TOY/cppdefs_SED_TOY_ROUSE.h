@@ -1,7 +1,6 @@
 /* SED TOY — Rouse profile (5 x 5 x 100) */
 # undef  OPENMP
 # undef  MPI
-# define NEW_S_COORD
 # define SOLVE3D
 # undef  NONLIN_EOS
 # define SALINITY
@@ -29,7 +28,6 @@
 # endif
 
 # ifdef MUSTANG
-#  define key_noTSdiss_insed
 # endif
 
 # undef  MORPHODYN

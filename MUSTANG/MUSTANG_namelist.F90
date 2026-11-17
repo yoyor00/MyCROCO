@@ -40,8 +40,9 @@ MODULE MUSTANG_namelist
                              date_start_morpho, date_start_dyninsed,          &
                              hseduni, cseduni, ksmiuni, ksmauni,              &
                              sini_sed, tini_sed,                              &
-                             l_unised_adjust_hsed, csed_mud_ini,              &
-                             l_initsed_vardiss, poro_mud_ini
+                             l_initsed_vardiss
+
+    namelist /namsedim_diss/ l_diss_insed, l_fluxwat_IWS
 
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
                               l_dzsmaxuni, dzsmaxuni,                         &
@@ -63,7 +64,7 @@ MODULE MUSTANG_namelist
                                 E0_mud_para_indep
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
-                                     z0seduni, z0sedmud, z0sedbedrock,        &
+                                     z0seduni, z0sedmin, z0sedbedrock,        &
                                      l_tauskin_center,l_tauskin_ubar,         &
                                      l_tauskin_upwind, l_fricwave, fricwav,   &
                                      l_z0hydro_coupl_init,                    &
@@ -131,7 +132,8 @@ MODULE MUSTANG_namelist
                              Awooster, Bwooster, Bmax_wu
 #ifdef key_MUSTANG_V2
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
-                                alphabs, alphabn, hmin_bedload, l_fsusp
+                                alphabs, alphabn, hmin_bedload, l_fsusp,      &
+                                l_vandera
 #endif
 
     namelist /namflocmod/ l_flocmod, l_ADS, l_ASH, l_COLLFRAG,                &
@@ -139,11 +141,9 @@ MODULE MUSTANG_namelist
                           f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
                           f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
                           f_clim
-#if !defined key_noTSdiss_insed
     namelist /namtempsed/ mu_tempsed1, mu_tempsed2, mu_tempsed3,              &
                           epsedmin_tempsed,                                   &
                           epsedmax_tempsed
-#endif
 
 CONTAINS
 
@@ -171,6 +171,7 @@ CONTAINS
     MPI_master_only write(*,*) '*****************************************************'
 
     READ(50, namsedim_init); rewind(50)
+    READ(50, namsedim_diss); rewind(50)
     READ(50, namsedim_layer); rewind(50)
     READ(50, namsedim_bottomstress); rewind(50)
     READ(50, namsedim_deposition); rewind(50)
@@ -184,9 +185,7 @@ CONTAINS
     READ(50, namsedim_diffusion); rewind(50)
     READ(50, namsedim_bioturb); rewind(50)
     READ(50, namsedim_morpho); rewind(50)
-#if !defined key_noTSdiss_insed
     READ(50, namtempsed); rewind(50)
-#endif
     READ(50, namsedoutput); rewind(50)
     ! module FLOCULATION
     READ(50, namflocmod); rewind(50)
@@ -215,6 +214,7 @@ CONTAINS
     INTEGER   :: iv
 
     MPI_master_only WRITE(iscreenlog, namsedim_init)
+    MPI_master_only WRITE(iscreenlog, namsedim_diss)
     MPI_master_only WRITE(iscreenlog, namsedim_layer)
     MPI_master_only WRITE(iscreenlog, namsedim_bottomstress)
     MPI_master_only WRITE(iscreenlog, namsedim_deposition)
@@ -230,9 +230,7 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_diffusion)
     MPI_master_only WRITE(iscreenlog, namsedim_bioturb)
     MPI_master_only WRITE(iscreenlog, namsedim_morpho)
-#if !defined key_noTSdiss_insed
     MPI_master_only WRITE(iscreenlog, namtempsed)
-#endif
 
     IF (l_flocmod) THEN
     !! module floculation

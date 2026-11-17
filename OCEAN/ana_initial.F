@@ -78,6 +78,10 @@
 
 #ifdef ANA_INITIAL
 
+# ifdef EXACT_RESTART
+       if (nrrec.eq.0) forw_start=1
+# endif
+      
 !$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
@@ -238,6 +242,20 @@
             enddo
           enddo
         end select
+
+# ifdef WET_DRY
+!
+!  Cap how far below Dcrit the analytical zeta can be, so a dry
+!  cell never gets an arbitrarily negative total depth (h+zeta)
+!
+        do j=JR_RANGE
+          do i=IR_RANGE
+            if (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) then
+              zeta(i,j,1) = Dcrit(i,j)-h(i,j)-1.e-14
+            endif
+          enddo
+        enddo
+# endif
 
       else  !  nrrec.ne.0.
 
