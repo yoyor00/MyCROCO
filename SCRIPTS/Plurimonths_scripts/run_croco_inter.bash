@@ -93,24 +93,13 @@ TIME_SCHED=1
 # Number of year that are considered to be part of the spin-up (i.e. 365 days per year)
 NY_SPIN=0
 
-# Output frequency [days] - case 1 : No USE_CALENDAR - DEFAULT
+# Output frequency [days]
 #   average
 ND_AVG=3
 #   history (if = -1 set equal to NUMTIMES, the end of each month/year)
 ND_HIS=-1
 #   restart (if = -1 set equal to NUMTIMES, the end of each month/year)
 ND_RST=-1
-
-# Output frequency [hours] - case 2 : USE_CALENDAR - USED ONLY IF USE_CALENDAR
-#
-USE_CALENDAR=0
-#
-#  average (in hours)
-NHAVG_UC=$((24))
-#  history (in hours, if = -1 set equal t NUMTIMES*DT/3600, the end of each month/year)
-NHHIS_UC=-1
-#  restart (in hours, if = -1 set equal to NUMTIMES*DT/3600, the end of each month/year)
-NHRST_UC=-1
 
 #  Restart file - RSTFLAG=0 --> No Restart  FOR BEGINING OF SIMULATION
 #		              RSTFLAG=1 --> Restart
@@ -359,19 +348,12 @@ while [ $NY != $NY_END ]; do
       else
         NUMRST=$NUMTIMES
       fi
-      if [[ $USE_CALENDAR == 1 ]]; then
-        echo "USE_CALENDAR defined"
-        NHAVG=$((NHAVG_UC))
-        if [[ ${NHHIS_UC} -ne -1 ]]; then
-          NHHIS=$((NHHIS_UC))
-        else
-          NHHIS=$((NDAYS * 24))
-        fi
-        if [[ ${NHRST_UC} -ne -1 ]]; then
-          NHRST=$((NHRST_UC))
-        else
-          NHRST=$((NDAYS * 24))
-        fi
+      # &croco_calendar is mandatory: compute the start/end dates of this month/year
+      NM_E=$((NM + 1))
+      NY_E=$NY
+      if [[ ${NM} == 12 ]]; then
+        NM_E=1
+        NY_E=$((NY + 1))
       fi
       if [[ $EXACT_RST == 1 ]]; then
         echo "Exact restart defined"
@@ -401,6 +383,10 @@ while [ $NY != $NY_END ]; do
       echo "USING ENDMONLINE = $NM_END"
       echo "USING ONLINEFREQ = $ONLINEFREQ"
       echo "USING ONLINEPATH = $ONLINEPATH"
+      echo "USING Ystart   = $NY"
+      echo "USING Mstart   = $(printf "%02d" $NM)"
+      echo "USING Yend     = $NY_E"
+      echo "USING Mend     = $(printf "%02d" $NM_E)"
 
       if [ ! -f ${MODEL}_inter.nml${ENDF} ]; then
         echo "=="
@@ -423,33 +409,11 @@ while [ $NY != $NY_END ]; do
         -e "s/ONLINEFREQ/${ONLINEFREQ}/" \
         -e "s|ONLINEPATH|${ONLINEPATH}|" \
         -e "s|<logfilename>|${MODEL}_${TIME}.out|" \
+        -e "s/Ystart/${NY}/" \
+        -e "s/Mstart/$(printf "%02d" $NM)/" \
+        -e "s/Yend/${NY_E}/" \
+        -e "s/Mend/$(printf "%02d" $NM_E)/" \
         < "${MODEL}_inter.nml${ENDF}" > "${MODEL}_${TIME}_inter.nml${ENDF}"
-
-      if [[ $USE_CALENDAR == 1 ]]; then
-        if [[ ${NM} == 12 ]]; then
-          NM_E_UC=1
-          NY_E_UC=$((NY + 1))
-        else
-          NM_E_UC=$((NM + 1))
-          NY_E_UC=$NY
-        fi
-        echo "USING Ystart   = $NY"
-        echo "USING Mstart   = $(printf "%02d" $NM)"
-        echo "USING Yend     = $NY_E_UC"
-        echo "USING Mend     = $(printf "%02d" $NM_E_UC)"
-        echo "USING NHHIS    = $NHHIS"
-        echo "USING NHAVG    = $NHAVG"
-        echo "USING NHRST    = $NHRST"
-        sed -e "s/NHHIS/${NHHIS}/" \
-          -e "s/NHAVG/${NHAVG}/" \
-          -e "s/NHRST/${NHRST}/" \
-          -e "s/Ystart/${NY}/"   \
-          -e "s/Mstart/$(printf "%02d" $NM)/" \
-          -e "s/Yend/${NY_E_UC}/" \
-          -e "s/Mend/$(printf "%02d" $NM_E_UC)/" \
-          < "${MODEL}_${TIME}_inter.nml${ENDF}" > "${MODEL}_${TIME}_inter_UC.nml${ENDF}"
-        mv "${MODEL}_${TIME}_inter_UC.nml${ENDF}" "${MODEL}_${TIME}_inter.nml${ENDF}"
-      fi
       #
       LEVEL=$((LEVEL + 1))
     done
