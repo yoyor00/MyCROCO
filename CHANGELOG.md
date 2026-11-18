@@ -19,14 +19,36 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   potential, in addition to elevation; works now with both
   ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
+- SCRIPTS_COUPLING : deal with hours (in addition to year, month, day). (#593)
+
 - OUTPUTS : add z\_r and z\_w to history and averages files, activated with
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
+- MUSTANG : add Van der A et al. (2013) wave skewness/asymmetry bedload
+  formulation (zero-current case), activated with l\_vandera in
+  namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
+  case in BENCH (#589)
+
 ### Fixed
+
+- NC4PAR : fix wrong record index on MPI ranks > 0 when reopening an
+  existing history/restart/diagnostics file to append records (e.g. on
+  restart); non-root ranks computed total_rec one off from rank 0,
+  desyncing collective scalar writes (time, time_step) across ranks
+  (Issue #596)
+
+- USE_CALENDAR : fix off-by-one in ntimes computed from start_date/end_date
+  (missing -1, and int() instead of NINT() truncating float rounding
+  noise) (Issue #596)
 
 - WET_DRY : fix restart not bit-exact with WET_DRY; umask_wet/vmask_wet
   are now saved to and restored from the restart file (Issue #262)
+
+- TIDES_MAS : stop with a clear error instead of silently using an
+  uninitialized index when a tide period has no match in the MAS
+  catalogue; POT_TIDES : add missing tides.h include in prsgrd.F
+  (Issue #595)
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
@@ -74,6 +96,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
 - COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
 - COUPLING : Fix missing restart file update for OASIS (#501). 
+- COUPLING : Fix PSMILE_INCDIR definition in jobcomp to support all OASIS3-MCT versions (#480)
 
 - Fix time in surf average output file (#388)
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
@@ -126,6 +149,21 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   one: their results differ from previous versions. VORTEX input files
   have been regenerated with Vtransform = 2.
 
+- CALENDAR : Remove `USE_CALENDAR` CPP key.
+  Calendar support is now always active and controlled at runtime via `calendar_type` in the namelist (#452).
+  Supported values (case-insensitive): `gregorian` (default) / `standard` /
+  `proleptic_gregorian`, `360_day`, `noleap`/`365_day`/`no_leap`,
+  `all_leap`/`366_day`, `julian`.
+  The five standalone calendar utility files (`toolsectodat.F90`, `tooldatosec.F90`,
+  `tooldecompdat.F90`, `tooldatetosec.F90`, `toolorigindate.F90`) are replaced by a
+  single Fortran module `tools_calendar.F90`, which:
+    - provides explicit interfaces (eliminates scattered `character*19 tool_sectodat`
+      external declarations in all `get_*.F` forcing readers);
+    - extends `tool_datetosec` to support all calendar types (was Gregorian-only);
+    - renames all French variable names to English throughout in this module.
+  All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
+  (was raw floating-point days since origin).
+
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
   (croco.nml). All configuration parameters are now in structured &croco_*
@@ -134,7 +172,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
-  (#568, #570, #572, #573)
+  (#552, #568, #570, #572, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -191,7 +229,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Compilation : replace the legacy `include 'mpif.h'` by the standard
   `use mpi` Fortran module in OCEAN, MUSTANG, XIOS, PISCES, AGRIF and
-  STOGEN
+  STOGEN (#372)
+
+- Build : replace cross_matrix.F, the Fortran tool generating Make.depend,
+  by make_depend.py, a stdlib-only Python replacement; it fixes missing
+  dependencies that made incremental (re)builds unreliable and comes with
+  unit tests run in CI (Issue #566)
 
 ### Deprecated
 
@@ -286,7 +329,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven
+  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven, M. Bremond
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,

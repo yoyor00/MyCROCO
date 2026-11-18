@@ -51,7 +51,12 @@ N = 10
 theta_s = 1.0
 theta_b = 0.0
 hc = H0  # no hc=min(hmin,hc) constraint for vtransform=2
-vtransform=2
+vtransform = 2
+Vstretching = 4  # Shchepetkin (2005/2010) "new" stretching
+
+# Calendar
+start_date = "2000-01-01 00:00:00"
+calendar = "360_day"
 
 # Nesting
 refinecoeff = 3
@@ -140,12 +145,12 @@ def write_ini(fname, grd_fname, title, theta_s, theta_b, hc, N):
         ds.createVariable("Cs_r", "f8", ("s_rho",))[:] = Cs_r
         ot = ds.createVariable("ocean_time", "f8", ("time",))
         ot[0] = 0.0
-        ot.units    = "second"
-        ot.calendar = "360.0 days in every year"
+        ot.units    = f"seconds since {start_date}"
+        ot.calendar = calendar
         st = ds.createVariable("scrum_time", "f8", ("time",))
         st[0] = 0.0
-        st.units    = "second"
-        st.calendar = "360.0 days in every year"
+        st.units    = f"seconds since {start_date}"
+        st.calendar = calendar
 
         ds.createVariable("u", "f8", ("time", "s_rho", "eta_u", "xi_u"))
         ds.createVariable("v", "f8", ("time", "s_rho", "eta_v", "xi_v"))
@@ -247,8 +252,8 @@ def write_clm(
             tv = ds.createVariable(tname, "f8", (tname,))
             tv[:] = times
             tv.long_name = tvar_longnames[tname]
-            tv.units = "day"
-            tv.calendar = "360.0 days in every year"
+            tv.units = f"days since {start_date}"
+            tv.calendar = calendar
             tv.cycle_length = float(cycle_length)
 
         ds.createVariable("temp", "f8", ("tclm_time", "s_rho", "eta_rho", "xi_rho"))
