@@ -673,9 +673,10 @@
           EmP(i,j)=evap-prate(i,j) 
           ! add temperature flux from rain
           stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
-#   endif
+#   else
           !++  Total surface salt flux
           stflx(i,j,isalt)=(evap-prate(i,j))*t(i,j,N,nrhs,isalt)
+#   endif
 #  endif
 !
 #  ifdef MASKING
