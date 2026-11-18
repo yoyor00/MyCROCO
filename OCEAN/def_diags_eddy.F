@@ -32,6 +32,9 @@
      &     diags_eddyname_avg
 #endif
 
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -50,7 +53,6 @@
 # ifdef NC4PAR
      &      , csize,cmode
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       character*60 text
 !

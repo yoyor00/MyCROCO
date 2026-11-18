@@ -19,6 +19,9 @@
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
      &   rstMust_nbvar, rstT_dyninsed
 #endif
+# ifdef NC4PAR
+      use mpi
+# endif
       use tools_calendar, only: tool_sectodat
       implicit none
       logical create_new_file
@@ -49,7 +52,6 @@
 #include "netcdf.inc"
 #ifdef NC4PAR
 # include "mpi_cpl.h"
-      include 'mpif.h'
 #endif
 !
 ! Put time record index into file name. In  the case when model

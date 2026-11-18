@@ -369,6 +369,9 @@ CONTAINS
 
       SUBROUTINE sed_rst_wri      ! variables into restart
                                   ! netCDF file.
+#if defined MPI & !defined PARALLEL_FILES
+      use mpi
+#endif
 # include "netcdf.inc"
 
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
@@ -392,7 +395,6 @@ CONTAINS
 
 
 #if defined MPI & !defined PARALLEL_FILES
-      INCLUDE 'mpif.h'
       INTEGER status(MPI_STATUS_SIZE), blank
 #endif
 

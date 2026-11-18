@@ -25,6 +25,9 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+# ifdef NC4PAR
+      use mpi
+# endif
       use croco_namelist, only: ldefsurf, nrpfsurf, surfname, 
      &                         ldefsurf_avg, nrpfsurf_avg, surfname_avg
       implicit none
@@ -45,7 +48,6 @@
 # ifdef NC4PAR
      &      , csize,cmode
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       character*60 text
 

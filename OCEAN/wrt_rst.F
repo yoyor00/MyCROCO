@@ -20,7 +20,9 @@
      &                      t_dyninsed, rstT_dyninsed
       USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
-
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
 !     implicit none
 #include "param.h"
 #include "scalars.h"
@@ -71,7 +73,6 @@
      &      , indxWrk
 #endif
 #if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
 

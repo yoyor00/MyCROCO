@@ -237,6 +237,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - XIOS : Unmask output grid/geometry variables so that they keep valid
   values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
+- Compilation : replace the legacy `include 'mpif.h'` by the standard
+  `use mpi` Fortran module in OCEAN, MUSTANG, XIOS, PISCES, AGRIF and
+  STOGEN (#372)
+
 - Build : replace cross_matrix.F, the Fortran tool generating Make.depend,
   by make_depend.py, a stdlib-only Python replacement; it fixes missing
   dependencies that made incremental (re)builds unreliable and comes with
@@ -344,4 +348,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten, L. Maillard, N. Herry
+  S. Theetten, A. Mittermair, L. Maillard, N. Herry
