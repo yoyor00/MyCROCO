@@ -228,6 +228,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     - renames all French variable names to English throughout in this module.
   All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
   (was raw floating-point days since origin).
+  TOOL_ORIGINDATE error/warning messages now report the affected netCDF
+  file and variable (#600).
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
