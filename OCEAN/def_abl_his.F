@@ -133,6 +133,8 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 ! Decide whether to create a new file, or open existing one.
@@ -162,15 +164,14 @@
 ! is created.
 !
 
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
         create_new_file=ldefablhis
       else
         create_new_file=.false.
       endif
-# else
-      create_new_file=ldefablhis
-# endif
 
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
