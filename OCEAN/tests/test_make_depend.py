@@ -256,8 +256,8 @@ class TestParseStatement(unittest.TestCase):
 
     def test_bare_fortran_include(self):
         # Fortran INCLUDE rather than CPP #include. Real in this tree
-        # -- MPI_Setup.F, MessPass2D.F and MessPass3D.F all do
-        # "include 'mpif.h'" -- and never recognised by
+        # -- SCRIPTS_COUPLING/TOY_IN/toy_model.F90 and routine_hdlerr.F90
+        # still do "include 'mpif.h'" -- and never recognised by
         # cross_matrix.F, which only ever looked for #include "...".
         stmt = self._parse("INCLUDE 'mpif.h'")
         self.assertIsInstance(stmt, cd.IncludeStmt)
