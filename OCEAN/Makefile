@@ -224,6 +224,8 @@ mpc: mpc.F
 	$(CPP) -P $(CPPFLAGS) mpc.F > mpc_.f
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o mpc mpc_.f
 
+$(OBJS): mpc
+
 checkdefs: cppdefs_info.F90
 
 cppdefs_info.F90: cppdefs.h cppdefs_dev.h gen_cppdefs_info.py Makedefs
@@ -236,13 +238,13 @@ partit: partit.F insert_node.o lenstr.o
 	$(CFT) -c $(FFLAGS) partit._.f -o partit.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o partit partit.o insert_node.o  lenstr.o $(LCDF)
 
-ncjoin: ncjoin.F lenstr.o
+ncjoin: ncjoin.F lenstr.o mpc
 	$(CPP) -P $(CPPFLAGS) ncjoin.F | ./mpc  > ncjoin._.f
 	$(CFT) -c $(FFLAGS) ncjoin._.f -o ncjoin.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncjoin ncjoin.o lenstr.o $(LCDF)
 
 
-ncrename: ncrename.F lenstr.o
+ncrename: ncrename.F lenstr.o mpc
 	$(CPP) -P $(CPPFLAGS) ncrename.F | ./mpc > ncrename._.f
 	$(CFT) -c $(FFLAGS) ncrename._.f -o ncrename.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
