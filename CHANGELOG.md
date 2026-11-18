@@ -96,6 +96,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
 - COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
 - COUPLING : Fix missing restart file update for OASIS (#501). 
+- COUPLING : Fix PSMILE_INCDIR definition in jobcomp to support all OASIS3-MCT versions (#480)
 
 - Fix time in surf average output file (#388)
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
@@ -134,6 +135,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NH : Fix rhs typo (#538)
 
 ### Changed
+- OUTPUTS : output files are no longer overwritten on restart. Record
+  counters of the history, averages and diagnostics files are saved in
+  the restart file and restored, so a restart appends to the existing
+  file instead of starting a new one. This used to require
+  `DO_NOT_OVERWRITE` and `RESTART_DIAGS`, which are now the default
+  behavior (and no longer exist). A new namelist option `lresetrec`
+  (`&croco_initial`, default false) can be used to reset the record
+  counters to zero on restart, e.g. to change an output frequency or
+  start a new branch run (Issue #108)
+
 - Vertical coordinate : only the new s-coordinate (Vtransform = 2,
   Shchepetkin & McWilliams 2009) is kept (#396).
   Input files (initial, boundary, climatology) are checked when opened:
@@ -226,10 +237,23 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - XIOS : Unmask output grid/geometry variables so that they keep valid
   values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
+- Compilation : replace the legacy `include 'mpif.h'` by the standard
+  `use mpi` Fortran module in OCEAN, MUSTANG, XIOS, PISCES, AGRIF and
+  STOGEN (#372)
+
+- Build : replace cross_matrix.F, the Fortran tool generating Make.depend,
+  by make_depend.py, a stdlib-only Python replacement; it fixes missing
+  dependencies that made incremental (re)builds unreliable and comes with
+  unit tests run in CI (Issue #566)
+
 ### Deprecated
 
 
 ### Removed
+- DO_NOT_OVERWRITE and RESTART_DIAGS cpp keys have been removed, their
+  behavior (appending to existing output files on restart) is now the
+  default (Issue #108)
+
 - NEW_S_COORD, cpp key has been removed (if deactivated, old s-coordinate (Vtransform = 1, 
     Song & Haidvogel 1994) was chosen , Now Vtransform=2 is used by default (Shchepetkin & McWilliams 2009))
     the key has also been removed from all TEST_CASES cppdefs (#396)
@@ -319,9 +343,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven
+  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven, M. Bremond
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten, L. Maillard, N. Herry
+  S. Theetten, A. Mittermair, L. Maillard, N. Herry
