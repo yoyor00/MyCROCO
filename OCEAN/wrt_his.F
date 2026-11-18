@@ -1037,9 +1037,14 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
 !$acc update if(compute_on_device) host(stflx(:,:,isalt))
         do j=0,Mm+1
           do i=0,Lm+1
+#  ifdef RAIN_FLUX
+            work2d(i,j)=stf_cff*EmP(i,j)
+     &              SWITCH rmask(i,j)
+#  else
             work2d(i,j)=stf_cff*stflx(i,j,isalt)/
      &              ( max(eps,t(i,j,N,nstp,isalt)))
      &              SWITCH rmask(i,j)
+#  endif
           enddo
         enddo
         ierr=nf_fwrite(work2d, ncidhis, hisSwflx, record, r2dvar)
