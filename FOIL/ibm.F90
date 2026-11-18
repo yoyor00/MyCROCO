@@ -118,6 +118,7 @@ CONTAINS
                          fileprobadistrib_anc, nbSizeClass_anc, &
                          sizemin_anc, fileprobadistrib_sar, nbSizeClass_sar, sizemin_sar, &
                          catch_anc, catch_sar, fishing_strategy
+      USE tools_calendar, ONLY: tool_sectodat, tool_decompdate
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
@@ -146,7 +147,6 @@ CONTAINS
       REAL(KIND=rsh) :: Z0, Ze, z_decay
       REAL(KIND=rsh) :: alpha_sel, beta_sel
       ! To convert date to seconds or seconds to date
-      CHARACTER(len=19) :: tool_sectodat
       INTEGER :: mm_clock, hh, minu, sec ! jj and aaaa are saved as current_year/day for later
 
       TYPE(type_patch), POINTER                    :: patch                        ! Temporary shortcut for a patch in loops
@@ -531,6 +531,7 @@ CONTAINS
       USE comtraj, ONLY: fishing_strategy
       USE comtraj, ONLY: imax, jmax
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
+      USE tools_calendar, ONLY: tool_sectodat, tool_decompdate
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
@@ -562,7 +563,6 @@ CONTAINS
       INTEGER :: nb_part_total_dummy
 #endif
 
-      CHARACTER(len=19) :: tool_sectodat
       CHARACTER(len=8) :: fileout_suffix
 
       REAL(KIND=rsh) :: zlag, slag

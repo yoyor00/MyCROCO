@@ -198,6 +198,7 @@ CONTAINS
 #ifdef MPI
       USE comtraj, ONLY: down_give, up_give, right_give, left_give
 #endif
+      USE tools_calendar, ONLY: tool_sectodat, tool_decompdate
 
       !! * Arguments
       TYPE(type_particle), INTENT(inout)   :: particle
@@ -207,7 +208,6 @@ CONTAINS
 
       !! * Local declarations
       LOGICAL              :: move
-      CHARACTER(len=19)    :: tool_sectodat
       REAL(rsh)            :: v1, v2, Pi, Pj, harvest, xpos_n, ypos_n, cell
       REAL(KIND=rsh)       :: fpos_x, fpos_y
       INTEGER              :: index, icell, jcell, ipos, jpos, saison, icells, jcells

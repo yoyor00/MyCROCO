@@ -750,7 +750,7 @@ CONTAINS
 
       !! * Local declarations
       REAL(kind=rsh)                        :: depth, w
-      character(len=19)                     :: tool_sectodat, date
+      character(len=19)                     :: date
       integer                               :: jj, mm_clock, aaaa, hh, minu, sec
       TYPE(type_position)                   :: pos
 

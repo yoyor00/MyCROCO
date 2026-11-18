@@ -222,6 +222,8 @@ CONTAINS
       USE comtraj, ONLY: dsigu, dsigw, kmax, ierrorlog, iscreenlog
       USE comtraj, ONLY: wz
       USE comtraj, ONLY: type_position
+      USE croco_namelist, ONLY: end_date
+      USE tools_calendar, ONLY: tool_datosec, tool_sectodat
 
       !! * Arguments
       ! xe already sliced to the correct zeta time level (knew) by the
@@ -235,13 +237,13 @@ CONTAINS
       LOGICAL                                     :: ex, l_posit, found_restart_var
       INTEGER                                     :: lstr, lenstr
       CHARACTER(LEN=5)                            :: comment
-      CHARACTER(LEN=19)                           :: dateread, tool_sectodat
+      CHARACTER(LEN=19)                           :: dateread
 
       TYPE(type_patch), POINTER                   :: new_patch, patch
 
       ! Time info of patches
       REAL(KIND=rlg)                              :: t_traj_beg, t_traj_end
-      REAL(KIND=rlg)                              :: tool_datosec
+      REAL(KIND=rlg)                              :: time_end
 
       ! Indexes for loops
       CHARACTER(LEN=lchain)                       :: rec
@@ -330,6 +332,7 @@ CONTAINS
       kmax = N
 
       time_start = start_time
+      time_end = tool_datosec(end_date)
 
       !init ionc4
       !----------

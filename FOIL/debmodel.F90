@@ -124,6 +124,7 @@ CONTAINS
       USE comtraj, ONLY: iscreenlog
       USE comtraj, ONLY: struc_ad, struc_ad_dd_DEB
       USE comtraj, ONLY: number_tot, weight_tot, biom_tot, Wdeb_mean
+      USE tools_calendar, ONLY: tool_sectodat, tool_decompdate
 
       !! * Arguments
       LOGICAL, intent(IN)                          :: restart
@@ -143,7 +144,6 @@ CONTAINS
       REAL(KIND=rsh) :: gamma, K_biomass
       INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
       INTEGER :: jj, mm_clock, aaaa, hh, minu, sec
-      CHARACTER(len=19) :: tool_sectodat
 
       INTEGER, ALLOCATABLE, DIMENSION(:) :: daysp_nc, yearsp_nc, season_nc, nbatch_nc, num_nc
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:) :: edeb_nc, hdeb_nc, rdeb_nc, gam_nc
@@ -614,6 +614,7 @@ CONTAINS
       !! * Modules used
       USE ibmtools, ONLY: gasdev_s
       USE comtraj, ONLY: reproducibility
+      USE tools_calendar, ONLY: tool_sectodat, tool_decompdate
 
       !! * Arguments
       TYPE(type_particle), INTENT(inout) :: particle
@@ -621,7 +622,6 @@ CONTAINS
 
       !! * Local declarations
       INTEGER :: jj, mm_clock, aaaa, hh, minu, sec
-      CHARACTER(len=19) :: tool_sectodat
       REAL(KIND=rsh) :: Wash, Wat
       REAL(KIND=rsh) :: zoom ! zoom factor for inter individual variability
       INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
@@ -1144,13 +1144,14 @@ CONTAINS
       USE ionc4, ONLY: ionc4_openr, ionc4_read_subzxyt, ionc4_read_dimt, ionc4_read_time, &
                        ionc4_read_subxyt
       USE comtraj, ONLY: file_food
+      USE tools_calendar, ONLY: tool_sectodat
 
       !! * Arguments
       INTEGER, INTENT(in)                                 :: limin, limax, ljmin, ljmax
 
       !! * Local declarations
       CHARACTER(LEN=lchain)                                :: name1_in_food, name2_in_food
-      CHARACTER(LEN=19)                                    :: tool_sectodat, tdate
+      CHARACTER(LEN=19)                                    :: tdate
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:, :)            :: food1_1, food2_1
       REAL(kind=rlg)                                       :: dt1, dt2, torigin, tfood
       LOGICAL                                              :: l_pb, timestep_ibm
