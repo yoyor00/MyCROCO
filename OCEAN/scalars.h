@@ -33,10 +33,7 @@
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
       real dtfast, time, time2, time_start, tdays, start_time
-#ifdef USE_CALENDAR
-      real time_end
       character*19 date
-#endif
       integer iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
@@ -67,10 +64,7 @@
      &                       wstp, wnew,
 #endif
      &                       PREDICTOR_2D_STEP
-#ifdef USE_CALENDAR
-      common /time_indices2/ time_end,
-     &                       date
-#endif
+      common /time_indices2/ date
 
 !
 ! Slowly changing variables: these are typically set in the beginning
@@ -105,9 +99,6 @@
 ! Zobt      Bottom roughness (m).
 !
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
-!
-! mld_crit_D     Density criterion to define the ML [kg/m^3] 
-! mld_crit_T     Temperature criterion to define the ML [Celsius]
 !
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.

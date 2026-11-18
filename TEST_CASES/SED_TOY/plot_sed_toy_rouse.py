@@ -124,10 +124,6 @@ try:
         theta_s = nc.theta_s
         theta_b = nc.theta_b
         hc = nc.hc
-        try:
-            Vtrans = nc.variables["Vtransform"][:]
-        except KeyError:
-            Vtrans = 1  # Default value
 
         # Convert masked arrays if needed
         if hasattr(h, "mask"):
@@ -157,7 +153,7 @@ print(f"Depth at selected point: {depth:.3f} m")
 depth_array = np.array([[depth]])
 zeta_array = np.array([[zeta]])
 
-zr = cr.zlevs(depth_array, zeta_array, theta_s, theta_b, hc, N, "r", Vtrans)
+zr = cr.zlevs(depth_array, zeta_array, theta_s, theta_b, hc, N, "r")
 zr = np.squeeze(zr)
 zu = 0.5 * (zr[:-1] + zr[1:])
 

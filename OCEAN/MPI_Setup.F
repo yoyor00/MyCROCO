@@ -16,6 +16,7 @@
 # ifdef OPENACC
       use openacc
 # endif
+      use mpi
 !     implicit none
 # include "param.h"
       integer ierr, nsize, ii_W, ii_E, jj_S, jj_N
@@ -45,7 +46,7 @@
 # include "ncscrum.h"
 # include "mpi_cpl.h"
 # include "netcdf.inc"
-      include 'mpif.h'
+
       call MPI_Comm_size (MPI_COMM_WORLD, nsize,  ierr)
       call MPI_Comm_rank (MPI_COMM_WORLD, mynode, ierr)
       if (nsize.ne.NNODES) then
@@ -155,7 +156,7 @@
       nerr= nf_get_var_double(ncid, varid, zmask)
       if(nerr /= nf_noerr ) then
         write(*,*) 'Reading mask file failed'
-        call mpi_abort(MPI_COMM_WORLD, ierr)
+        call mpi_abort(MPI_COMM_WORLD, ierr, ierr)
       endif
       nerr= nf_close(ncid)
 
@@ -407,12 +408,12 @@ c#  include "param.h"
       end
 
       subroutine MPI_Test1_tile (Istr,Iend,Jstr,Jend)
+      use mpi
       implicit none
       integer Istr,Iend,Jstr,Jend
 #  include "param.h"
 #  include "scalars.h"
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 
       integer i,j,k,ierr
       real temp2D(GLOBAL_2D_ARRAY),

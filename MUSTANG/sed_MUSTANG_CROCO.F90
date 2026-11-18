@@ -38,12 +38,17 @@
     USE flocmod, ONLY: f_ws
     IMPLICIT NONE
 
-    !! * Accessibility 
+    !! * Accessibility
     PUBLIC sed_skinstress
     PUBLIC sed_gradvit
     PUBLIC sed_MUSTANG_settlveloc
 #ifdef key_MUSTANG_V2
     PUBLIC sed_bottom_slope
+#if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+    PUBLIC wave_height
+    PUBLIC wave_period
+    PUBLIC wave_direction
+#endif
 #if defined MPI
     PUBLIC sed_exchange_flxbedload
     PUBLIC sed_exchange_maskbedload
@@ -321,8 +326,8 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
 !    ubar / full depth if l_tauskin_ubar
 !    u(k=1) / bottom cell height otherwise
     IF (l_tauskin_ubar) THEN
-        ux = ubar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, nnew)
-        vx = vbar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, nnew)
+        ux = ubar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, knew)
+        vx = vbar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, knew)
         Zref = z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, N) &
                 - z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 0) ! full water column
         z0_factor = 2.718_rsh ! Euler number — log-layer correction
@@ -374,13 +379,14 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
 !--- Wave + current combination (Soulsby 1995) ----------------------------
 ! Note : tauskin direction is current direction (needed if bedload)
 # if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+
     CALL combine_wave_current( &
         tauskin_c(ifirst:ilast, jfirst:jlast), &
         wave_orbital_velocity(ifirst, ilast, jfirst, jlast), &
         wave_direction(ifirst, ilast, jfirst, jlast), &
         wave_period(ifirst, ilast, jfirst, jlast), &
-        ubar(ifirst:ilast, jfirst:jlast, nnew), &
-        vbar(ifirst:ilast, jfirst:jlast, nnew), &
+        ubar(ifirst:ilast, jfirst:jlast, knew), &
+        vbar(ifirst:ilast, jfirst:jlast, knew), &
         z0sed(ifirst:ilast, jfirst:jlast), &
         rho(ifirst:ilast, jfirst:jlast, 1), &
         rho0, l_fricwave, fws2, tauskin(ifirst:ilast, jfirst:jlast), &
@@ -727,6 +733,17 @@ REAL(KIND=rsh) :: Dw(ifirst:ilast, jfirst:jlast)
     Dw = Dwave(ifirst:ilast, jfirst:jlast)
 #  endif
 END FUNCTION wave_direction
+
+PURE FUNCTION wave_height(ifirst, ilast, jfirst, jlast) RESULT(Hs)
+! Wave height (RMS, m), from whichever wave forcing is active.
+INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
+REAL(KIND=rsh) :: Hs(ifirst:ilast, jfirst:jlast)
+#  if defined OW_COUPLING
+    Hs = whrm(ifirst:ilast, jfirst:jlast)
+#  else
+    Hs = 2.0_rsh*Awave(ifirst:ilast, jfirst:jlast)
+#  endif
+END FUNCTION wave_height
 
 ELEMENTAL PURE FUNCTION compute_fws2(Uwave, Pwave, z0sed, &
              l_fricwave, fws2_default) &

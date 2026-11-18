@@ -8,7 +8,7 @@
 ! STRUCTURE
 !   1.  General                  – title, logfile
 !   2.  Time stepping            – baroclinic, NBQ sub-stepping
-!   3.  Calendar                 – USE_CALENDAR absolute-date mode
+!   3.  Calendar                 – date parameters
 !   4.  Vertical grid            – S-coordinate stretching
 !   5.  Initial conditions       – IC file / restart record
 !   6.  Grid and forcing files   – grid, forcing, bulk, clim, bry, ...
@@ -114,8 +114,6 @@
 &croco_time_stepping
   ! Baroclinic (3-D) time step [s].
   dt      = 3600.0
-  ! Total number of baroclinic time steps for this run.
-  ntimes  = 720
   ! Number of barotropic (2-D) sub-steps per baroclinic step.
   ! Set ndtfast = 1 for pure 2-D configurations.
   ndtfast = 60
@@ -136,22 +134,27 @@
 
 
 ! ======================================================================
-! 3.  CALENDAR  (CPP: USE_CALENDAR)
+! 3.  CALENDAR
 ! ======================================================================
 
-&croco_use_calendar
-  ! CPP: USE_CALENDAR
-  ! Use absolute calendar dates instead of step counters for output.
-  ! Start and end dates in format "YYYY-MM-DD HH:MM:SS".
+&croco_calendar
+  ! Start and end dates (MANDATORY) in format "YYYY-MM-DD HH:MM:SS".
   start_date = "2000-01-01 00:00:00"
   end_date   = "2000-02-01 00:00:00"
-  ! Output intervals expressed in hours (real values allowed).
-  ! Time interval between history records [hours].
-  dt_his = 1.0
-  ! Time interval between averages records [hours].
-  dt_avg = 6.0
-  ! Time interval between restart records [hours].
-  dt_rst = 12.0
+  ! Calendar type: controls 
+  ! - ntimes (days per month differ, for example, 
+  !   Jan 1 to Feb 1 gives 31 days with gregorian but 30 days with 
+  !   360_day.) 
+  ! - calendar attribute written to output NetCDF files
+  ! Allowed values (case-insensitive): gregorian / standard / 
+  ! proleptic_gregorian, 360_day, noleap / 365_day / no_leap, 
+  ! all_leap / 366_day, julian
+  ! Note : For climatological runs (cyclic forcing), the seasonal 
+  ! phase is determined solely by the cycle_length attribute in your 
+  ! forcing files. Calendar_type does not affect the cycle, only the 
+  ! output.  Ensure cycle_length matches your intended annual period 
+  ! (360 or 365 days or no cycle)
+  calendar_type = "gregorian"
 /
 
 
@@ -184,6 +187,9 @@
   nrrec   = 1
   ! Path to the initial conditions or restart NetCDF file.
   ininame = "CROCO_FILES/croco_ini.nc"
+  ! Reset the record counters of all output files (his/avg/diags) on restart
+  ! and start new files (existing files with the same names are overwritten).
+  lresetrec = .false.
 /
 
 
@@ -420,7 +426,7 @@
   ! Create new file (.true.) or append (.false.).
   ldefdia  = .true.
   ! Write tracer diagnostic fields every nwrtdia steps (0 = use nwrt).
-  nwrtdia  = 72
+  nwrtdia  = 0
   ! File cycling switch.
   nrpfdia  = 0
   ! Tracer diagnostics file path.
@@ -433,7 +439,7 @@
   ! First step for accumulation of diagnostic averages.
   ntsdia_avg  = 1
   ! Write averaged tracer diagnostics every nwrtdia_avg steps (0 = navg).
-  nwrtdia_avg = 72
+  nwrtdia_avg = 0
   nrpfdia_avg = 0
   dianame_avg = "CROCO_FILES/croco_dia_avg.nc"
 /
@@ -444,6 +450,8 @@
   mld_crit_D = 3.e-2
   ! Temperature criterion for mixed-layer depth [Celsius].
   mld_crit_T = 2.e-1
+  ! Reference depth for mixed-layer criteria [m]
+  mld_depth_ref = 10
 /
 
 ! --- Momentum diagnostics  (CPP: DIAGNOSTICS_UV) ---
@@ -452,7 +460,7 @@
   ! CPP: DIAGNOSTICS_UV
   ldefdiaM  = .true.
   ! Write momentum diagnostic fields every nwrtdiaM steps (0 = nwrt).
-  nwrtdiaM  = 72
+  nwrtdiaM  = 0
   nrpfdiaM  = 0
   dianameM  = "CROCO_FILES/croco_diaM.nc"
 /
@@ -461,7 +469,7 @@
   ! CPP: DIAGNOSTICS_UV && AVERAGES
   ldefdiaM_avg = .true.
   ntsdiaM_avg  = 1
-  nwrtdiaM_avg = 72
+  nwrtdiaM_avg = 0
   nrpfdiaM_avg = 0
   dianameM_avg = "CROCO_FILES/croco_diaM_avg.nc"
 /
@@ -472,7 +480,7 @@
   ! CPP: DIAGNOSTICS_VRT
   ldefdiags_vrt  = .true.
   ! Write vorticity budget every nwrtdiags_vrt steps (0 = nwrt).
-  nwrtdiags_vrt  = 72
+  nwrtdiags_vrt  = 0
   nrpfdiags_vrt  = 0
   diags_vrtname  = "CROCO_FILES/croco_diags_vrt.nc"
 /
@@ -481,7 +489,7 @@
   ! CPP: DIAGNOSTICS_VRT && AVERAGES
   ldefdiags_vrt_avg = .true.
   ntsdiags_vrt_avg  = 1
-  nwrtdiags_vrt_avg = 72
+  nwrtdiags_vrt_avg = 0
   nrpfdiags_vrt_avg = 0
   diags_vrtname_avg = "CROCO_FILES/croco_diags_vrt_avg.nc"
 /
@@ -491,7 +499,7 @@
 &croco_diags_ek
   ! CPP: DIAGNOSTICS_KE
   ldefdiags_ek  = .true.
-  nwrtdiags_ek  = 72
+  nwrtdiags_ek  = 0
   nrpfdiags_ek  = 0
   diags_ekname  = "CROCO_FILES/croco_diags_ek.nc"
 /
@@ -500,7 +508,7 @@
   ! CPP: DIAGNOSTICS_KE && AVERAGES
   ldefdiags_ek_avg = .true.
   ntsdiags_ek_avg  = 1
-  nwrtdiags_ek_avg = 72
+  nwrtdiags_ek_avg = 0
   nrpfdiags_ek_avg = 0
   diags_ekname_avg = "CROCO_FILES/croco_diags_ek_avg.nc"
 /
@@ -510,7 +518,7 @@
 &croco_diags_pv
   ! CPP: DIAGNOSTICS_PV
   ldefdiags_pv  = .true.
-  nwrtdiags_pv  = 72
+  nwrtdiags_pv  = 0
   nrpfdiags_pv  = 0
   diags_pvname  = "CROCO_FILES/croco_diags_pv.nc"
 /
@@ -519,7 +527,7 @@
   ! CPP: DIAGNOSTICS_PV && AVERAGES
   ldefdiags_pv_avg = .true.
   ntsdiags_pv_avg  = 1
-  nwrtdiags_pv_avg = 72
+  nwrtdiags_pv_avg = 0
   nrpfdiags_pv_avg = 0
   diags_pvname_avg = "CROCO_FILES/croco_diags_pv_avg.nc"
 /
@@ -530,7 +538,7 @@
   ! CPP: DIAGNOSTICS_EDDY && !XIOS && AVERAGES
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg  = 1
-  nwrtdiags_eddy_avg = 72
+  nwrtdiags_eddy_avg = 0
   nrpfdiags_eddy_avg = 0
   diags_eddyname_avg = "CROCO_FILES/croco_diags_eddy_avg.nc"
 /
@@ -565,7 +573,7 @@
   ! CPP: ABL1D && !XIOS
   ! Create new ABL history file (.true.) or append (.false.).
   ldefablhis = .true.
-  ! Write ABL history every nwrtablhis baroclinic steps.
+  ! Write ABL history every nwrtablhis baroclinic steps (0 = use nwrt).
   nwrtablhis = 36
   nrpfablhis = 0
   ablname    = "CROCO_FILES/croco_abl_his.nc"
@@ -691,7 +699,7 @@
 &croco_diagnostics_bio
   ! CPP: DIAGNOSTICS_BIO
   ldefdiabio  = .true.
-  nwrtdiabio  = 72
+  nwrtdiabio  = 0
   nrpfdiabio  = 0
   dianamebio  = "CROCO_FILES/croco_diabio.nc"
 /
@@ -700,7 +708,7 @@
   ! CPP: DIAGNOSTICS_BIO && AVERAGES
   ldefdiabio_avg = .true.
   ntsdiabio_avg  = 1
-  nwrtdiabio_avg = 72
+  nwrtdiabio_avg = 0
   nrpfdiabio_avg = 0
   dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
 /
@@ -790,14 +798,6 @@
   obstname = "obstruction.in"
 /
 
-! --- XIOS I/O server  (CPP: XIOS) ---
-
-&croco_xios_origin_date
-  ! CPP: XIOS
-  ! Time origin for XIOS output (format: "YYYY-MM-DD HH:MM:SS").
-  xios_origin_date = "1900-01-01 00:00:00"
-/
-
 ! --- Data assimilation  (CPP: ASSIMILATION) ---
 
 &croco_assimilation
@@ -858,6 +858,8 @@
   out_his_wstr  = .false.   ! Wind stress magnitude
   out_his_ustr  = .false.   ! Surface xi-stress
   out_his_vstr  = .false.   ! Surface eta-stress
+  out_his_z_r   = .false.   ! Depth of rho-points z_r
+  out_his_z_w   = .false.   ! Depth of w-points z_w
 /
 
 ! --- Physics-specific optional fields ---
@@ -1160,6 +1162,8 @@
   out_avg_wstr  = .false.
   out_avg_ustr  = .false.
   out_avg_vstr  = .false.
+  out_avg_z_r   = .false.
+  out_avg_z_w   = .false.
 /
 
 ! --- Physics-specific optional fields ---

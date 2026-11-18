@@ -16,10 +16,13 @@
 
       USE croco_namelist, ONLY: rstname, nrpfrst
 #if defined MUSTANG
-      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs,
+     &                      t_dyninsed, rstT_dyninsed
       USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
-
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
 !     implicit none
 #include "param.h"
 #include "scalars.h"
@@ -32,6 +35,9 @@
 #if defined GLS_MIXING || defined LMD_MIXING
 # include "mixing.h"
 #endif
+#ifdef DIAGNOSTICS_TS_MLD
+# include "diagnostics.h"
+#endif
 #if defined EXACT_RESTART
 # include "coupling.h"
 # if defined M3FAST
@@ -41,7 +47,7 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
-#ifdef MORPHODYN
+#if defined MORPHODYN || defined WET_DRY
 # include "grid.h"
 #endif
 #ifdef BBL
@@ -49,6 +55,9 @@
 #endif
 #ifdef ABL1D
 # include "abl1d.h"
+#endif
+#ifndef XIOS
+      integer ibuffdg(ncntdg), startdg(2), countdg(2), idg
 #endif
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), nf_fwrite
@@ -64,10 +73,12 @@
      &      , indxWrk
 #endif
 #if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
 
+#ifdef DIAGNOSTICS_TS_MLD
+      real workkbl(GLOBAL_2D_ARRAY)
+#endif
 #if defined MUSTANG
       real workrsed(GLOBAL_2D_ARRAY,ksdmax)
       real work2d(GLOBAL_2D_ARRAY)
@@ -142,13 +153,82 @@
 #endif
 
 
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files. Each file has its own
+! output frequency, so each counter is stored in its own slot of
+! time_step_dg (slots of disabled diagnostics are set to 0).
+!
+      if (rstTstepDg.ge.0) then
+        do idg=1,ncntdg
+          ibuffdg(idg)=0
+        enddo
+# ifdef DIAGNOSTICS_TS
+      ibuffdg(1)=nrecdia
+#  ifdef AVERAGES
+      ibuffdg(2)=nrecdia_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_UV
+      ibuffdg(3)=nrecdiaM
+#  ifdef AVERAGES
+      ibuffdg(4)=nrecdiaM_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_VRT
+      ibuffdg(5)=nrecdiags_vrt
+#  ifdef AVERAGES
+      ibuffdg(6)=nrecdiags_vrt_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_KE
+      ibuffdg(7)=nrecdiags_ek
+#  ifdef AVERAGES
+      ibuffdg(8)=nrecdiags_ek_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_PV
+      ibuffdg(9)=nrecdiags_pv
+#  ifdef AVERAGES
+      ibuffdg(10)=nrecdiags_pv_avg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_EDDY
+      ibuffdg(11)=nrecdiags_eddy
+#  ifdef AVERAGES
+      ibuffdg(12)=nrecdiags_eddy_avg
+#  endif
+# endif
+# ifdef ABL1D
+      ibuffdg(13)=nrecablhis
+#  ifdef AVERAGES
+      ibuffdg(14)=nrecablavg
+#  endif
+# endif
+# ifdef DIAGNOSTICS_BIO
+      ibuffdg(15)=nrecdiabio
+#  ifdef AVERAGES
+      ibuffdg(16)=nrecdiabio_avg
+#  endif
+# endif
+        startdg(1)=1
+        startdg(2)=record
+        countdg(1)=ncntdg
+        countdg(2)=1
+        ierr=nf_put_vara_int (ncidrst, rstTstepDg, startdg, countdg,
+     &                                                       ibuffdg)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,1) 'time_step_dg', record, ierr
+     &                   MYID
+        endif
+      endif
+#endif
+
 !
 ! Time.
 !
       ierr=nf_put_var1_FTYPE (ncidrst, rstTime, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
+     &  - start_date_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -389,6 +469,22 @@
 #  endif /* LMD_BKPP  */
 # endif /* LMD_MIXING */
 
+# ifdef DIAGNOSTICS_TS_MLD
+!
+!     Write out MLD vertical index at previous time step
+!     (integer array written as real)
+!
+        workkbl=real(kbl_nstp)
+        ierr=nf_fwrite(workkbl(START_2D_ARRAY), ncidrst,
+     &                             rstKbl_nstp, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname(1,indxKbl_nstp))
+            write(stdout,1) vname(1,indxKbl_nstp)(1:lvar), record,
+     &                    ierr MYID
+            goto 99                                         !--> ERROR
+        endif
+# endif /* DIAGNOSTICS_TS_MLD */
+
 # if defined GLS_MIXING
 !
 ! Turbulent kinetic energy.
@@ -622,6 +718,29 @@
        endif
 
 #  endif /* TS_MIX_ISO_FILT */
+
+#  ifdef WET_DRY
+!
+! Wetting/drying masks at u- and v-points.
+!
+      ierr=nf_fwrite(umask_wet(START_2D_ARRAY), ncidrst,
+     &                             rstumaskwet, record, u2dvar)
+      if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxumaskwet))
+          write(stdout,1) vname(1,indxumaskwet)(1:lvar), record,
+     &                  ierr MYID
+          goto 99                                         !--> ERROR
+      endif
+
+      ierr=nf_fwrite(vmask_wet(START_2D_ARRAY), ncidrst,
+     &                             rstvmaskwet, record, v2dvar)
+      if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxvmaskwet))
+          write(stdout,1) vname(1,indxvmaskwet)(1:lvar), record,
+     &                  ierr MYID
+          goto 99                                         !--> ERROR
+      endif
+#  endif /* WET_DRY */
 # endif /* EXACT_RESTART */
 
 # ifdef SEDIMENT
@@ -766,6 +885,15 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           endif
        endif
 
+! scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation): a single scalar, not a gridded field
+       ierr=nf_put_var1_FTYPE (ncidrst, rstT_dyninsed, record,
+     &                                                  t_dyninsed)
+       if (ierr .ne. nf_noerr) then
+         write(stdout,1) 't_dyninsed', record, ierr
+     &                   MYID
+         goto 99                                         !--> ERROR
+       endif
 
 # endif /* MUSTANG */
 

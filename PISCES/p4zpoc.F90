@@ -617,7 +617,13 @@ CONTAINS
       !
       orem3(:,:,:) = 0.
       !
-      ndayflx = nday_year  ! Initialize a counter of the current day
+      ! Initialize a counter of the current day. 
+      ! The global tdays/nday_year are not yet valid here: 
+      ! PISCES initializes (pisces_ini_tile, called from OCEAN/main.F) 
+      ! before CROCO sets time_start=time
+      ! Recompute ndayflx locally with the same restart-invariant formula 
+      ! as OCEAN/step.F 
+      ndayflx = INT( rdt * REAL(nit000-1,wp) / rday ) + 1
       !
 
    END SUBROUTINE p4z_poc_init

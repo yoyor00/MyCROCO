@@ -78,6 +78,10 @@
 
 #ifdef ANA_INITIAL
 
+# ifdef EXACT_RESTART
+       if (nrrec.eq.0) forw_start=1
+# endif
+      
 !$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
@@ -238,6 +242,20 @@
             enddo
           enddo
         end select
+
+# ifdef WET_DRY
+!
+!  Cap how far below Dcrit the analytical zeta can be, so a dry
+!  cell never gets an arbitrarily negative total depth (h+zeta)
+!
+        do j=JR_RANGE
+          do i=IR_RANGE
+            if (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) then
+              zeta(i,j,1) = Dcrit(i,j)-h(i,j)-1.e-14
+            endif
+          enddo
+        enddo
+# endif
 
       else  !  nrrec.ne.0.
 
@@ -1825,6 +1843,9 @@ C$OMP BARRIER
 # ifdef AGRIF
       use Agrif_Util
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1837,12 +1858,12 @@ C$OMP BARRIER
 #  include "climat.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc,
-     &        jet_perturb, tndx
+     &        jet_perturb, tndx, ierr
       real cff,x,y,Fyz,
      &     rhomaxs,bgdrhos,zs1,dzs,drhos,drhosfs,
      &     rhomaxn,bgdrhon,zn1,dzn,drhon,drhosfn,
      &     drhosf,z0,z0p,dzs_a,dzn_a,zk,
-     &     Ljet,cff_perturb,ierr,tanh
+     &     Ljet,cff_perturb,tanh
       real*QUAD mssh,area,cff1
       real rhoprof(0:N,2)
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
@@ -1856,7 +1877,6 @@ C$OMP BARRIER
      &    dZ(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 !$acc declare create(rhoprof,ru,rv,P)
 # ifdef MPI
-      include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 # endif
       real asymth,zz,zasym,dzasym

@@ -1,7 +1,6 @@
 # undef  OPENMP
 # undef  MPI
 # undef  NONLIN_EOS
-# define NEW_S_COORD
 # define SALINITY
 # define UV_ADV
 # define TS_HADV_WENO5
@@ -43,7 +42,6 @@
 # endif
 # ifdef MUSTANG
 #  undef  key_MUSTANG_V2
-#  define key_noTSdiss_insed
 # endif
 # define PSOURCE
 # define ANA_PSOURCE

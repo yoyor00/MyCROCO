@@ -146,16 +146,9 @@
 
       endif
 
-
       lvar=lenstr(title)
       ierr=nf_put_att_text(ncid, nf_global, 'title',   lvar,
      &                                         title(1:lvar))
-
-!# ifdef USE_CALENDAR || XIOS
-!      lvar=lenstr(origin_date)
-!      ierr=nf_put_att_text(ncid, nf_global, 'origin_date',lvar,
-!     &                                     origin_date(1:lvar))
-!# endif
       lvar=lenstr(rstname)
       ierr=nf_put_att_text(ncid, nf_global, 'rst_file',lvar,
      &                                       rstname(1:lvar))
@@ -215,13 +208,10 @@
 ! S-coordinate control parameters "theta_s", "theta_b", "Tcline"
 ! and "hc" (written as global attributes).
 !
-# ifdef  NEW_S_COORD
       ierr=nf_put_att_text (ncid, nf_global, 'VertCoordType',3,'NEW')
-      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '2')
-# else
-      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '1')
-# endif
-# ifdef  LMD_SKPP2005
+      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Vtransform', nf_ftype,
+     &                                                 1, Vtransform)
+# ifdef LMD_SKPP2005
       ierr=nf_put_att_text (ncid, nf_global, 'skpp',4,'2005')
 # endif
       ierr=nf_put_att_FTYPE(ncid, nf_global,'theta_s',nf_ftype,

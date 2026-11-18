@@ -99,3 +99,18 @@ class AbstractCrocoSetup(ABC):
             New status of the key.
         """
         raise Exception("Not provided by implementation !")
+
+    @abstractmethod
+    def cppdef_h_is_defined(self, key_name: str) -> bool:
+        """
+        Check whether a CPP key is currently '# define'd in the resolved
+        cppdefs.h of the build directory. Reflects the actual compiled
+        configuration regardless of how it got there (case "cppkeys"
+        toggles or a case-provided fixed cppdefs_file).
+
+        Parameters
+        ----------
+        key_name: str
+            Name of the key to check.
+        """
+        raise Exception("Not provided by implementation !")

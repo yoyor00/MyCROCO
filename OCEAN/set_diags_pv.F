@@ -48,9 +48,14 @@
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
-                Trhs(i,j,k,itrc) = TForc(i,j,k,itrc)
-     &                           + THmix(i,j,k,itrc)
-     &                           + TVmix(i,j,k,itrc)
+!
+! Tracer diagnostic terms are cell-volume integrals:
+! divide by the cell volume to get Trhs in (unit of tracers) s-1
+!
+                Trhs(i,j,k,itrc) = ( TForc(i,j,k,itrc)
+     &                             + THmix(i,j,k,itrc)
+     &                             + TVmix(i,j,k,itrc) )
+     &                           *pm(i,j)*pn(i,j)/Hz(i,j,k)
               enddo
             enddo
           enddo

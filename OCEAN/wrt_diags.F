@@ -23,11 +23,13 @@
 #endif
 
 
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"
@@ -103,9 +105,7 @@
 ! Time
 !
       ierr=nf_put_var1_FTYPE (nciddia, diaTime, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
+     &  - start_date_in_sec
      & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -256,10 +256,12 @@
 #  if defined DIAGNOSTICS_TS_MLD_DENS
 !  indxTcrit_mld
 !
+          if (itrc.le.2) then
            work2d=Tcrit_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTcrit_mld(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
+          endif
 #  endif
         endif
 !

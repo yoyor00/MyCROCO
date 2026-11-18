@@ -82,7 +82,7 @@ C$OMP END PARALLEL
       endif
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Put phase of OASIS3
-      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)) then
+      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+2)) then
 #  ifdef AGRIF
         if(it_inside_root==Agrif_rel_idt()) then 
 #  endif
@@ -181,11 +181,8 @@ C$OMP BARRIER
 
 C$OMP MASTER
       time=time_start+dt*float(iic-ntstart)
-#ifdef USE_CALENDAR
-      tdays=(time-time_start)*sec2day
-#else
-      tdays=time*sec2day
-#endif
+      ! tdays: elapsed days since the run's true start (restart-invariant)
+      tdays=(time-time_start+dt*float(ntstart-1))*sec2day
 
 #ifdef SOLVE3D
       nstp=1+mod(iic-ntstart,2)
@@ -249,6 +246,13 @@ C$OMP BARRIER
 
 #ifdef SOLVE3D
 
+! set_vbc ahead of set_bry/ana_bry below which need patm2d 
+! (OBC_PATM inverse-barometer correction) already
+! up to date rather than lagging by one step
+      do tile=my_first,my_last
+        call set_vbc (tile)
+      enddo
+C$OMP BARRIER
       do tile=my_first,my_last
 # ifdef AGRIF
         IF (Agrif_Root()) THEN
@@ -326,7 +330,6 @@ C$OMP BARRIER
 #  endif
 # endif
       do tile=my_first,my_last
-        call set_vbc (tile)
 # if defined  BBL && !defined M3FAST
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN

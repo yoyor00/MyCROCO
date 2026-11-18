@@ -667,7 +667,7 @@
 !--------------------------------------------------------------------
 !
 # ifdef WET_DRY
-      CALL wetdry_tile (Istr,Iend,Jstr,Jend)
+      CALL wetdry_tile (Istr,Iend,Jstr,Jend, .false.)
 # endif
 !
 !--------------------------------------------------------------------

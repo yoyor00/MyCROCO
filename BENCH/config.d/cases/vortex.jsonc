@@ -19,14 +19,7 @@
       "plotphy_script_input": "vortex_his.nc",
     },
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
-    "patches": {
-      "AGRIF_FixedGrids.in": {
-        "mode": "replace",
-        "what": "17    33     13    27   3  3  3  3",
-        "by": "21    40    21    40    3    3    3    3",
-        "descr": "Set AGRIF_FixedGrids.in",
-      },
-    },
+    "patches": {},
     "cppkeys": {
       "AGRIF": true,
     },
@@ -40,14 +33,7 @@
       "plotphy_script_input": "vortex_his.nc",
     },
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
-    "patches": {
-      "AGRIF_FixedGrids.in": {
-        "mode": "replace",
-        "what": "17    33     13    27   3  3  3  3",
-        "by": "21    40    21    40    3    3    3    3",
-        "descr": "Set AGRIF_FixedGrids.in",
-      },
-    },
+    "patches": {},
     "cppkeys": {
       "AGRIF": true,
       "AGRIF_2WAY": true,

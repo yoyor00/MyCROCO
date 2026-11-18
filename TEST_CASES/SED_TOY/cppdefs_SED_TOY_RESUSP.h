@@ -1,7 +1,6 @@
 /* SED TOY — Erosion/resuspension (4 x 3 x 20) */
 # undef  OPENMP
 # undef  MPI
-# define NEW_S_COORD
 # define SOLVE3D
 # undef  NONLIN_EOS
 # define SALINITY
@@ -31,7 +30,6 @@
 # endif
 
 # ifdef MUSTANG
-#  define key_noTSdiss_insed
 # endif
 
 # undef  MORPHODYN

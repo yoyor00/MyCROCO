@@ -11,7 +11,7 @@
 ##
 #
 
-sed -e "s/<runtime>/$(( ${TOTAL_JOB_DUR} * 86400 ))/g" \
+sed -e "s/<runtime>/$(( ${TOTAL_JOB_DUR_SEC} ))/g" \
     -e "s/<cpldt>/${CPL_FREQ}/g" \
     ${CPL_NAM_DIR}/${namcouplename} > ./namcouple
 

@@ -25,6 +25,9 @@ module Agrif_Mpp
 !
     use Agrif_Arrays
     use Agrif_Grids
+#if defined AGRIF_MPI
+    use mpi
+#endif
 !
     implicit none
 !
@@ -49,7 +52,6 @@ subroutine Agrif_MPI_Init ( comm )
 !---------------------------------------------------------------------------------------------------
     integer, optional, intent(in) :: comm    !< MPI communicator to be attached to the root grid.
 !
-    include 'mpif.h'
     integer :: code, ierr
     logical :: mpi_was_called
     integer :: current_mpi_prec
@@ -92,7 +94,6 @@ subroutine Agrif_MPI_switch_comm ( comm )
 !---------------------------------------------------------------------------------------------------
     integer, intent(in) :: comm    !< MPI communicator you want to switch to.
 !
-    include 'mpif.h'
     integer :: code
     logical :: mpi_was_called
 !
@@ -130,7 +131,6 @@ subroutine Agrif_Init_ProcList ( proclist, nbprocs )
     type(Agrif_Proc_List), intent(inout) :: proclist
     integer,               intent(in)    :: nbprocs
 !
-    include 'mpif.h'
     type(Agrif_Proc), pointer     :: new_proc
     integer                       :: p, ierr
     integer                       :: imin, imax, jmin, jmax
@@ -167,7 +167,6 @@ subroutine Get_External_Data_first ( pttruetab, cetruetab, pttruetabwhole, cetru
                                      nbdim, memberoutall, coords, sendtoproc, recvfromproc, &
                                      imin, imax, imin_recv, imax_recv, bornesmin, bornesmax )
 !---------------------------------------------------------------------------------------------------
-    include 'mpif.h'
 !
     integer,                                     intent(in)  :: nbdim
     integer, dimension(nbdim,0:Agrif_NbProcs-1), intent(in)  :: pttruetab,     cetruetab
@@ -282,7 +281,6 @@ subroutine ExchangeSameLevel_first ( sendtoproc, nbdim, imin, imax, recvfromproc
     INTEGER, DIMENSION(nbdim,0:Agrif_Nbprocs-1), intent(out) :: imin_recv
     INTEGER, DIMENSION(nbdim,0:Agrif_Nbprocs-1), intent(out) :: imax_recv
 !
-    include 'mpif.h'
     INTEGER :: k
     INTEGER :: etiquette = 100
     INTEGER :: code
@@ -372,7 +370,6 @@ subroutine ExchangeSameLevel ( sendtoproc, recvfromproc, nbdim,    &
     LOGICAL,                                     intent(in)    :: memberout
     TYPE(Agrif_Variable), pointer,               intent(inout) :: tempC, tempCextend
 !
-    include 'mpif.h'
     INTEGER :: i,k
     INTEGER :: etiquette = 100
     INTEGER :: code, datasize
@@ -614,7 +611,6 @@ subroutine Agrif_Send_3Darray ( tab3D, bounds, imin, imax, k )
 !
     integer :: etiquette = 100
     integer :: datasize, code
-    include 'mpif.h'
 
     datasize = SIZE(tab3D(imin(1):imax(1),  &
                           imin(2):imax(2),  &

@@ -15,11 +15,16 @@
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 : namsedim_consolidation   : relative to sediment consolidation
-: namsedim_diffusion       : relative to dissolved diffusion in sediment 
-: namsedim_bioturb         : relative to bioturbation in sediment 
 : namsedim_morpho          : relative to morphodynamic
+: namsedim_diss            : relative to dissolved substances and porewater
+:                            exchange in sediment
+: namsedim_diffusion       : relative to dissolved diffusion in sediment 
+:                            (effective only if l_diss_insed = .true.)
+: namsedim_bioturb         : relative to bioturbation in sediment 
+:                            (l_biodiffs and its _diss parameters are
+:                             effective only if l_diss_insed = .true.)
 : namtempsed               : relative to temperature estimation in sediment 
-:                            (only if !defined key_noTSdiss_insed)
+:                            (used only if l_diss_insed = .true.)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
 : namflocmod               : parameters using for FLOCMOD module 
@@ -27,74 +32,63 @@
 : namdredging              : parameters to activate dredging effect
 
 &namsedim_init
-   date_start_dyninsed='2000/01/30 00:00:00'  
-   date_start_morpho='1990/01/08 00:00:00' 
-   l_unised = .false.   
-   filrepsed='sed_init.nc'
-/ 
-&namsedim_layer
-   dzsmin=1.0e-5       
-   dzsmax_bottom=0.1   
-   l_dzsmaxuni=.TRUE.  
-   dzsmaxuni=10.     
-   nlayer_surf_sed=5 
+   date_start_morpho='2019/01/01 00:00:00'  
+   l_unised = .true.  
+   hseduni = 3.   
+   cseduni= 702.0 
+   ksmiuni = 1  
+   ksmauni = 10  
 /
-&namsedim_bottomstress
-   l_z0seduni=.true.  
-   z0seduni = 0.0001     
-   z0sedmud = 0.0001    
-   z0sedbedrock = 0.005  
-   l_fricwave=.false.  
-/  
+&namsedim_diss
+/
+&namsedim_layer
+   l_dzsminuni=.FALSE.
+   dzsminuni=1.0e-3  
+   dzsmax_bottom=0.3   
+   l_dzsmaxuni=.TRUE. 
+   dzsmaxuni= 0.3
+   nlayer_surf_sed=5  
+/
+&namsedim_bottomstress 
+   l_z0seduni=.TRUE.  
+   z0seduni = 0.0001 
+   l_tauskin_upwind = .TRUE. 
+/
 &namsedim_deposition
-   cfreshmud=400.0
-   csedmin=30.
-   cmudcr=600.  
-   cvolmaxsort=0.58
-   cvolmaxmel=0.67 
-/ 
+/
 &namsedim_erosion
-   activlayer=0.02  
-   frmudcr2=0.7 
-   coef_frmudcr1=1000.
-   x1toce_mud=0.3   
-   x2toce_mud=0.
    E0_sand_option=0
-   E0_sand_Cst=0.0002  
-   E0_sand_para=1. 
-   n_eros_sand=1.6
-   E0_mud=0.0002  
-   n_eros_mud=1.  
-   ero_option = 1   
-   xexp_ero = 2.0     
- /  
+   E0_sand_Cst=0.0000 
+   tau_cri_option = 1
+/
+&namsedim_poro
+   poro_option=2    
+   poro_min = 0.4    
+   Awooster = 0.4
+   Bwooster = 0. 
+/
+&namsedim_bedload
+   l_peph_bedload=.FALSE. 
+   l_slope_effect_bedload=.TRUE.
+/ 
 &namsedim_lateral_erosion
 /
 &namsedim_consolidation
 /
 &namsedim_diffusion
-   l_diffused=.true.  
-   dt_diffused=500.0 
-   choice_flxdiss_diffsed=3 
-   xdifs1 = 1.e-8  
-   xdifsi1 = 1.e-6 
-   epdifi = 0.01 
-   fexcs=0.5 /  
+/
 &namsedim_bioturb
 /
 &namsedim_morpho
+  l_morphocoupl=.true.
+  dt_morpho = 0.1    
 /
 &namtempsed
 /
 &namsedoutput
 /
 &namflocmod
-/   
+/ 
 &namdredging
 /
-&namsedim_poro
-/
-
-
-
 

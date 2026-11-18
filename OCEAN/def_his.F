@@ -52,7 +52,9 @@
       USE stoarray        ! Stochastic arrays and options
       USE stoalloc        ! Stochastic working arrays
 #endif
-
+#ifdef NC4PAR
+      use mpi
+#endif
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -79,7 +81,6 @@
 #include "netcdf.inc"
 #ifdef NC4PAR
 # include "mpi_cpl.h"
-      include 'mpif.h'
 #endif
       character*70 text
 
@@ -99,6 +100,8 @@
 # define vidbvf hisbvf
 # define vidO hisO
 # define vidW hisW
+# define vidZ_r hisZ_r
+# define vidZ_w hisZ_w
 # define vidVisc hisVisc
 # define vidDiff hisDiff
 # define vidAkv hisAkv
@@ -181,6 +184,8 @@
 # define vidbvf avgbvf
 # define vidO avgO
 # define vidW avgW
+# define vidZ_r avgZ_r
+# define vidZ_w avgZ_w
 # define vidVisc avgVisc
 # define vidDiff avgDiff
 # define vidAkv avgAkv
@@ -334,15 +339,14 @@
 ! is created.
 !
 
-#ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
         create_new_file=ldefhis
       else
         create_new_file=.false.
       endif
-#else
-      create_new_file=ldefhis
-#endif
       if (ncid.ne.-1) create_new_file=.false.
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
@@ -1014,6 +1018,70 @@
      &                                  vname(4,indxW)(1:lvar))
 
           call nf_add_attribute(ncid, vidW, vname(:,indxW), 
+     &        5, NF_FOUT, ierr)
+        endif
+!
+!-----------------------------------------------------------------------
+! Depth of rho-points.
+!-----------------------------------------------------------------------
+!
+        if (wrt(indxZ_r)) then
+          lvar=lenstr(vname(1,indxZ_r))
+          ierr=nf_def_var (ncid, vname(1,indxZ_r)(1:lvar),
+     &                               NF_FOUT, 4, r3dgrd, vidZ_r)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidZ_r,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxZ_r))
+          ierr=nf_put_att_text (ncid, vidZ_r, 'long_name', lvar,
+     &                                  vname(2,indxZ_r)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxZ_r)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidZ_r, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxZ_r))
+          ierr=nf_put_att_text (ncid, vidZ_r, 'units',     lvar,
+     &                                  vname(3,indxZ_r)(1:lvar))
+          lvar=lenstr(vname(4,indxZ_r))
+          ierr=nf_put_att_text (ncid, vidZ_r, 'field',     lvar,
+     &                                  vname(4,indxZ_r)(1:lvar))
+
+          call nf_add_attribute(ncid, vidZ_r, vname(:,indxZ_r),
+     &        5, NF_FOUT, ierr)
+        endif
+!
+!-----------------------------------------------------------------------
+! Depth of w-points.
+!-----------------------------------------------------------------------
+!
+        if (wrt(indxZ_w)) then
+          lvar=lenstr(vname(1,indxZ_w))
+          ierr=nf_def_var (ncid, vname(1,indxZ_w)(1:lvar),
+     &                               NF_FOUT, 4, w3dgrd, vidZ_w)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidZ_w,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxZ_w))
+          ierr=nf_put_att_text (ncid, vidZ_w, 'long_name', lvar,
+     &                                  vname(2,indxZ_w)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxZ_w)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidZ_w, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxZ_w))
+          ierr=nf_put_att_text (ncid, vidZ_w, 'units',     lvar,
+     &                                  vname(3,indxZ_w)(1:lvar))
+          lvar=lenstr(vname(4,indxZ_w))
+          ierr=nf_put_att_text (ncid, vidZ_w, 'field',     lvar,
+     &                                  vname(4,indxZ_w)(1:lvar))
+
+          call nf_add_attribute(ncid, vidZ_w, vname(:,indxZ_w),
      &        5, NF_FOUT, ierr)
         endif
         
@@ -2680,7 +2748,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 #endif
             endif
@@ -3105,6 +3173,34 @@
           endif
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidW,nf_collective)
+# endif
+        endif
+!
+! Depth of rho-points.
+!
+        if (wrt(indxZ_r)) then
+          lvar=lenstr(vname(1,indxZ_r))
+          ierr=nf_inq_varid (ncid, vname(1,indxZ_r)(1:lvar), vidZ_r)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxZ_r)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidZ_r,nf_collective)
+# endif
+        endif
+!
+! Depth of w-points.
+!
+        if (wrt(indxZ_w)) then
+          lvar=lenstr(vname(1,indxZ_w))
+          ierr=nf_inq_varid (ncid, vname(1,indxZ_w)(1:lvar), vidZ_w)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxZ_w)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidZ_w,nf_collective)
 # endif
         endif
 # ifdef VIS_COEF_3D
@@ -3810,6 +3906,8 @@
 #undef vidO
 #undef vidW
 #undef vidW
+#undef vidZ_r
+#undef vidZ_w
 #undef vidVisc
 #undef vidDiff
 #undef vidAkv

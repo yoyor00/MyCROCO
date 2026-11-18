@@ -64,7 +64,7 @@ theta_b=nc.theta_b(:);
 hc=nc.hc(:);
 close(nc);
 
-zr = zlevs(h,zeta,theta_s,theta_b,hc,N,'r',2);
+zr = zlevs(h,zeta,theta_s,theta_b,hc,N,'r');
 zr=squeeze(zr(:,2,:));
 xr=reshape(x,1,M);
 if nbq,
