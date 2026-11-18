@@ -55,9 +55,7 @@
 # undef  XIOS
                      /* Custion IO */
 # undef  FILLVAL
-                      /* Calendar */
-# undef  USE_CALENDAR
-                      /* dedicated croco.log file */
+                      /* Dedicated croco.log file */
 # undef  LOGFILE
 /*
 !-------------------------------------------------
@@ -83,7 +81,6 @@
 # define SPHERICAL
 # define MASKING
 # undef  WET_DRY
-# define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
@@ -274,9 +271,6 @@
 !--------------------------------------------
 !
 */
-# undef DO_NOT_OVERWRITE
-# undef RESTART_DIAGS
-
 # undef DIAGNOSTICS_TS
 
 # ifdef DIAGNOSTICS_TS
@@ -361,7 +355,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  MORPHODYN
 #  undef  WAVE_OFFLINE
-#  define key_noTSdiss_insed
 # endif
 
 #include "cppdefs_dev.h"

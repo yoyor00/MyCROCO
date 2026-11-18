@@ -71,6 +71,9 @@ C$    integer omp_get_thread_num
 #if defined WET_DRY || defined OBC_REDUCED_PHYSICS
       real cff1,cff2
 #endif
+#ifdef WET_DRY
+      real wetdry_mask_clamp
+#endif
 #include "boundary.h"
 #include "climat.h"
 #include "grid.h"
@@ -802,19 +805,15 @@ C$    trd=omp_get_thread_num()
 # ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
         DO j=JstrV,Jend
-          cff1=ABS(ABS(vmask_wet(Istr-1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbar(Istr-1,j,knew))*vmask_wet(Istr-1,j)
-          vmask_wet(Istr-1,j)=0.5*vmask_wet(Istr-1,j)*cff1
-     &                                               +cff2*(1.-cff1)
+          vmask_wet(Istr-1,j)=wetdry_mask_clamp(vmask_wet(Istr-1,j),
+     &                                           vbar(Istr-1,j,knew))
           vbar(Istr-1,j,knew)=vbar(Istr-1,j,knew)*vmask_wet(Istr-1,j)
         END DO
       END IF
       if (EASTERN_EDGE) then
         DO j=JstrV,Jend
-          cff1=ABS(ABS(vmask_wet(Iend+1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbar(Iend+1,j,knew))*vmask_wet(Iend+1,j)
-          vmask_wet(Iend+1,j)=0.5*vmask_wet(Iend+1,j)*cff1
-     &                                               +cff2*(1.-cff1)
+          vmask_wet(Iend+1,j)=wetdry_mask_clamp(vmask_wet(Iend+1,j),
+     &                                           vbar(Iend+1,j,knew))
           vbar(Iend+1,j,knew)=vbar(Iend+1,j,knew)*vmask_wet(Iend+1,j)
         END DO
       END IF
@@ -822,55 +821,41 @@ C$    trd=omp_get_thread_num()
 # ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
         DO i=Istr,Iend
-          cff1=ABS(ABS(vmask_wet(i,Jstr))-1.)
-          cff2=0.5+SIGN(0.5,vbar(i,Jstr,knew))*vmask_wet(i,Jstr)
-          vmask_wet(i,Jstr)=0.5*vmask_wet(i,Jstr)*cff1
-     &                                           +cff2*(1.-cff1)
+          vmask_wet(i,Jstr)=
+     &      wetdry_mask_clamp(vmask_wet(i,Jstr),vbar(i,Jstr,knew))
           vbar(i,Jstr,knew)=vbar(i,Jstr,knew)*vmask_wet(i,Jstr)
         END DO
       END IF
       if (NORTHERN_EDGE) then
         DO i=Istr,Iend
-          cff1=ABS(ABS(vmask_wet(i,Jend+1))-1.)
-          cff2=0.5+SIGN(0.5,vbar(i,Jend+1,knew))*vmask_wet(i,Jend+1)
-          vmask_wet(i,Jend+1)=0.5*vmask_wet(i,Jend+1)*cff1
-     &                                               +cff2*(1.-cff1)
+          vmask_wet(i,Jend+1)=wetdry_mask_clamp(vmask_wet(i,Jend+1),
+     &                                           vbar(i,Jend+1,knew))
           vbar(i,Jend+1,knew)=vbar(i,Jend+1,knew)*vmask_wet(i,Jend+1)
         END DO
       END IF
 # endif
 # if !defined EW_COM_PERIODIC && !defined NS_COM_PERIODIC
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
-        cff1=ABS(ABS(vmask_wet(Istr-1,Jstr))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jstr,knew))*vmask_wet(Istr-1,Jstr)
-        vmask_wet(Istr-1,Jstr)=0.5*vmask_wet(Istr-1,Jstr)*cff1
-     &                                                   +cff2*(1.-cff1)
+        vmask_wet(Istr-1,Jstr)=wetdry_mask_clamp(vmask_wet(Istr-1,
+     &                                 Jstr),vbar(Istr-1,Jstr,knew))
         vbar(Istr-1,Jstr,knew)=vbar(Istr-1,Jstr,knew)
      &                                        *vmask_wet(Istr-1,Jstr)
       END IF
       if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
-        cff1=ABS(ABS(vmask_wet(Iend+1,Jstr))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jstr,knew))*vmask_wet(Iend+1,Jstr)
-        vmask_wet(Iend+1,Jstr)=0.5*vmask_wet(Iend+1,Jstr)*cff1
-     &                                                   +cff2*(1.-cff1)
+        vmask_wet(Iend+1,Jstr)=wetdry_mask_clamp(vmask_wet(Iend+1,
+     &                                 Jstr),vbar(Iend+1,Jstr,knew))
         vbar(Iend+1,Jstr,knew)=vbar(Iend+1,Jstr,knew)
      &                                        *vmask_wet(Iend+1,Jstr)
       END IF
       if (NORTHERN_EDGE .and. WESTERN_EDGE) then
-        cff1=ABS(ABS(vmask_wet(Istr-1,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Istr-1,Jend+1,knew))
-     &                                       *vmask_wet(Istr-1,Jend+1)
-        vmask_wet(Istr-1,Jend+1)=0.5*vmask_wet(Istr-1,Jend+1)*cff1
-     &                                              +cff2*(1.-cff1)
+        vmask_wet(Istr-1,Jend+1)=wetdry_mask_clamp(vmask_wet(Istr-1,
+     &                           Jend+1),vbar(Istr-1,Jend+1,knew))
         vbar(Istr-1,Jend+1,knew)=vbar(Istr-1,Jend+1,knew)
      &                                        *vmask_wet(Istr-1,Jend+1)
       END IF
       if (NORTHERN_EDGE .and. EASTERN_EDGE) then
-        cff1=ABS(ABS(vmask_wet(Iend+1,Jend+1))-1.)
-        cff2=0.5+SIGN(0.5,vbar(Iend+1,Jend+1,knew))
-     &                                       *vmask_wet(Iend+1,Jend+1)
-        vmask_wet(Iend+1,Jend+1)=0.5*vmask_wet(Iend+1,Jend+1)*cff1
-     &                                              +cff2*(1.-cff1)
+        vmask_wet(Iend+1,Jend+1)=wetdry_mask_clamp(vmask_wet(Iend+1,
+     &                           Jend+1),vbar(Iend+1,Jend+1,knew))
         vbar(Iend+1,Jend+1,knew)=vbar(Iend+1,Jend+1,knew)
      &                                        *vmask_wet(Iend+1,Jend+1)
       END IF

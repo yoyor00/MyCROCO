@@ -13,7 +13,6 @@ import shutil
 import platform
 import subprocess
 from datetime import timedelta
-import math
 import f90nml
 
 
@@ -80,6 +79,14 @@ class Croco:
         self.croco_paramfile = self.resolve_case_file(
             "param_file",
             "TEST_CASES/%s/param_%s.h" % (_case, _case),
+        )
+
+        # pre-resolved AGRIF_FixedGrids.in, only used if the case actually
+        # enables the AGRIF cpp key (checked once cppdefs.h is resolved)
+        # Convention: TEST_CASES/<CASE>/AGRIF_FixedGrids_<CASE>.in
+        self.croco_agrif_fixedgrids_file = self.resolve_case_file(
+            "agrif_fixedgrids_file",
+            "TEST_CASES/%s/AGRIF_FixedGrids_%s.in" % (_case, _case),
         )
 
         self.croco_build = JobcompCrocoSetup(
@@ -215,6 +222,26 @@ class Croco:
             cppdefs_file=self.croco_cppdefsfile,
             param_file=self.croco_paramfile,
         )
+
+        # AGRIF nesting is only meaningful once cppdefs.h is fully resolved
+        # (master file + per-case cppdefs_file + cppkeys toggles), so detect
+        # it from the build rather than from the raw case config.
+        if self.croco_build.cppdef_h_is_defined("AGRIF"):
+            if self.croco_agrif_fixedgrids_file is None:
+                raise Exception(
+                    f"Case '{self.case_name}': AGRIF is enabled but no "
+                    f"AGRIF_FixedGrids.in was found for case '{self.case['case']}' "
+                    f"(expected TEST_CASES/{self.case['case']}/"
+                    f"AGRIF_FixedGrids_{self.case['case']}.in, or set "
+                    f"'agrif_fixedgrids_file' in the case config)."
+                )
+            Messaging.step(
+                f"Use case AGRIF_FixedGrids.in : {self.croco_agrif_fixedgrids_file}"
+            )
+            shutil.copyfile(
+                self.croco_agrif_fixedgrids_file,
+                os.path.join(self.dirname, "AGRIF_FixedGrids.in"),
+            )
 
     def compile(self):
         # display
@@ -471,7 +498,6 @@ class Croco:
 
     def apply_debug_patches(self):
         filename_nml = self.croco_nmlfile
-        self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 6)
         self.change_nml(filename_nml, "croco_history", "nwrt", 1)
         self.change_nml(filename_nml, "croco_diagnostics_ts", "nwrtdia", 1)
         self.change_nml(filename_nml, "croco_diagnosticsm", "nwrtdiam", 1)
@@ -487,9 +513,8 @@ class Croco:
         self.change_nml(filename_nml, "croco_diags_pv_avg", "nwrtdiags_pv_avg", 3)
         self.change_nml(filename_nml, "croco_diags_eddy_avg", "nwrtdiags_eddy_avg", 3)
 
-        # and for USE_CALENDAR
+        # end_date drives ntimes (computed at runtime)
         self.change_nml_end_date(filename_nml, 6)
-        self.change_nml_output_time_steps_dthis(filename_nml, 6)
 
     def apply_restart_patches(self):
         filename_nml = self.croco_nmlfile
@@ -509,52 +534,64 @@ class Croco:
             file_nc_rst = "croco_restart.nc"
 
             # first run with filename
-            self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 3)
             self.change_nml(filename_nml, "croco_restart", "nrst", 3)
             self.change_nml(filename_nml, "croco_restart", "nrpfrst", 0)
             self.change_nml(filename_nml, "croco_restart", "rstname", file_nc_rst)
+            # end_date drives ntimes (computed at runtime)
+            self.change_nml_end_date(filename_nml, 3)
 
             # second run with filename_rst
-            self.change_nml(filename_nml_rst , "croco_time_stepping", "ntimes", 3)
             self.change_nml(filename_nml_rst , "croco_initial", "nrrec", 2)
             self.change_nml(filename_nml_rst , "croco_initial", "ininame", file_nc_rst)
+            # no need to change end_date for filename_rst
 
-            # and for USE_CALENDAR
-            self.change_nml_end_date(filename_nml, 3)
-            self.change_nml_output_time_steps_dtrst(filename_nml, 3)
-            # no need to change end_date or dtrsr for filename_rst
+            # MUSTANG keeps its own sediment bed init, separate from the
+            # hydro ininame/nrrec above: patch it too so the restarted leg
+            # reads the sediment bed back from the restart file instead of
+            # re-doing the uniform init
+            if self.croco_build.cppdef_h_is_defined("MUSTANG"):
+                self.apply_mustang_restart_patch(filename_nml_rst, file_nc_rst)
 
-    def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
+    def apply_mustang_restart_patch(self, filename_nml_rst, file_nc_rst):
+        """Make the restarted leg read the MUSTANG sediment bed from the
+        restart file instead of re-applying the case's init.
+
+        The ocean nml and its _rst copy originally point at the same
+        MUSTANG param file (sedname_must), so this duplicates that file for
+        the _rst leg and switches it to l_unised=False / filrepsed pointing
+        at the restart file produced by the first leg.
+        """
+        full_filename_nml_rst = os.path.join(self.dirname, filename_nml_rst)
+        nml_rst = f90nml.read(full_filename_nml_rst)
+        sedname_must = nml_rst.get("croco_sediments_mustang", {}).get("sedname_must")
+        if not sedname_must:
+            return
+        sedname_must_base, sedname_must_ext = os.path.splitext(sedname_must)
+        sedname_must_rst = f"{sedname_must_base}_rst{sedname_must_ext}"
+
+        shutil.copy(
+            os.path.join(self.dirname, sedname_must),
+            os.path.join(self.dirname, sedname_must_rst),
+        )
+        self.change_nml(sedname_must_rst, "namsedim_init", "l_unised", False)
+        self.change_nml(sedname_must_rst, "namsedim_init", "filrepsed", file_nc_rst)
+        self.change_nml(
+            filename_nml_rst, "croco_sediments_mustang", "sedname_must", sedname_must_rst
+        )
+
+    def change_nml_end_date(self, filename, ntimes):
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
+        if "croco_calendar" in nml:
             dt = nml["croco_time_stepping"]["dt"]
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
-            self.change_nml(filename, "croco_use_calendar", "dt_his", dt_his_hours)
-
-    def change_nml_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
-        full_filename = os.path.join(self.dirname, filename)
-        nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
-            dt = nml["croco_time_stepping"]["dt"]
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            dt_rst_hours = duration / 3600.0
-            self.change_nml(filename, "croco_use_calendar", "dt_rst", dt_rst_hours)
-
-    def change_nml_end_date(self, filename, ntimes, min_dt=1.0):
-        full_filename = os.path.join(self.dirname, filename)
-        nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
-            dt = nml["croco_time_stepping"]["dt"]
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            datetime_start = parse_datetime(nml["croco_use_calendar"]["start_date"])
+            duration = dt * ntimes
+            datetime_start = parse_datetime(nml["croco_calendar"]["start_date"])
             datetime_end = datetime_start + timedelta(seconds=duration)
-            end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
-            self.change_nml(filename, "croco_use_calendar", "end_date", end_date)
+            if datetime_end.microsecond:
+                end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S.%f")
+            else:
+                end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
+            self.change_nml(filename, "croco_calendar", "end_date", end_date)
 
     def change_nml(self, filename, nml_section_name, nml_param_name, values):
         """Change value in a CROCO namelist file."""

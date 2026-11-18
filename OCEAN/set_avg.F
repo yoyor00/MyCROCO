@@ -317,6 +317,24 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+        if (wrtavg(indxZ_r)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                z_r_avg(i,j,k)=cff*(cff1*z_r_avg(i,j,k)+z_r(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxZ_w)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                z_w_avg(i,j,k)=cff*(cff1*z_w_avg(i,j,k)+z_w(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
         if (wrtavg(indxW)) then
 #  ifdef NBQ
           do k=0,N

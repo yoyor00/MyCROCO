@@ -96,9 +96,9 @@ contains
       namelist /croco_testcase/ testcase_name
       namelist /croco_title/ title
       namelist /croco_logfile/ logname
-      namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo, m2filter_alpha
+      namelist /croco_time_stepping/ dt, ndtfast, ninfo, m2filter_alpha
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
-      namelist /croco_initial/ nrrec, ininame
+      namelist /croco_initial/ nrrec, ininame, lresetrec
       namelist /croco_restart/ nrst, nrpfrst, rstname
 #ifdef NBQ
       namelist /croco_time_stepping_nbq/ csound_nbq, visc2_nbq
@@ -106,10 +106,7 @@ contains
 #ifdef SOLVE3D
       namelist /croco_s_coord/ theta_s, theta_b, hc
 #endif
-#ifdef USE_CALENDAR
-      namelist /croco_use_calendar/ start_date, end_date, &
-         dt_his, dt_avg, dt_rst
-#endif
+      namelist /croco_calendar/ start_date, end_date, calendar_type
 #ifndef ANA_GRID
       namelist /croco_grid/ grdname
 #endif
@@ -186,7 +183,7 @@ contains
          nrpfdia_avg, dianame_avg
 #  endif
 #  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-      namelist /croco_diag_mld_dens/ mld_crit_D, mld_crit_T
+      namelist /croco_diag_mld_dens/ mld_crit_D, mld_crit_T, mld_depth_ref
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV
@@ -345,7 +342,8 @@ contains
 # if defined SOLVE3D || defined RIP
       namelist /croco_auxiliary_history_fields/ &
          out_his_rho, out_his_omega, out_his_w, out_his_akv, &
-         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
+         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr, &
+         out_his_z_r, out_his_z_w
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
       namelist /croco_temperature_history_fields/ out_his_akt, out_his_shflx, out_his_shflx_rsw
@@ -395,7 +393,8 @@ contains
 # if defined AVERAGES && defined SOLVE3D
       namelist /croco_auxiliary_averages_fields/ &
          out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
-         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr, &
+         out_avg_z_r, out_avg_z_w
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
       namelist /croco_temperature_averages_fields/ out_avg_akt, out_avg_shflx, out_avg_shflx_rsw
@@ -533,9 +532,6 @@ contains
 #endif
 #ifdef FOIL
       namelist /croco_foil/ foilname
-#endif
-#ifdef XIOS
-      namelist /croco_xios_origin_date/ xios_origin_date
 #endif
 #ifdef ASSIMILATION
       namelist /croco_assimilation/ aparnam, assname
@@ -729,18 +725,16 @@ contains
       end if
 #endif /* NBQ */
 
-#ifdef USE_CALENDAR
-      ! --- croco_use_calendar (mandatory if USE_CALENDAR) ---
-      call check_nml_presence(nmlunit, "croco_use_calendar", .true., found, ierr)
+      ! --- croco_calendar (mandatory) ---
+      call check_nml_presence(nmlunit, "croco_calendar", .true., found, ierr)
       if (found) then
-         read (nmlunit, nml=croco_use_calendar, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         read (nmlunit, nml=croco_calendar, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then
-            call fatal_nml_error("croco_use_calendar (parse error)", nmlunit, ios, iomsg)
-            MPI_master_only WRITE (stdout, nml=croco_use_calendar)
+            call fatal_nml_error("croco_calendar (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_calendar)
             ierr = ierr + 1
          end if
       end if
-#endif /* USE_CALENDAR */
 
 #ifdef SOLVE3D
       ! --- croco_s_coord (optional if SOLVE3D) ---
@@ -2166,19 +2160,6 @@ contains
       end if
 #endif
 
-#ifdef XIOS
-      ! --- croco_xios_origin_date (optional) ---
-      call check_nml_presence(nmlunit, "croco_xios_origin_date", .false., found, ierr)
-      if (found) then
-         read (nmlunit, nml=croco_xios_origin_date, iostat=ios, iomsg=iomsg); rewind (nmlunit)
-         if (ios /= 0) then
-            call fatal_nml_error("croco_xios_origin_date (parse error)", nmlunit, ios, iomsg)
-            MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
-            ierr = ierr + 1
-         end if
-      end if
-#endif
-
 #ifdef ASSIMILATION
       ! --- croco_assimilation (optional) ---
       call check_nml_presence(nmlunit, "croco_assimilation", .false., found, ierr)
@@ -2392,10 +2373,8 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_time_stepping_nbq)
 #endif
 
-      MPI_master_only WRITE (stdout, *) "3.  CALENDAR  (CPP: USE_CALENDAR) ------------------"
-#ifdef USE_CALENDAR
-      MPI_master_only WRITE (stdout, nml=croco_use_calendar)
-#endif
+      MPI_master_only WRITE (stdout, *) "3.  CALENDAR  ------------------"
+      MPI_master_only WRITE (stdout, nml=croco_calendar)
 
       MPI_master_only WRITE (stdout, *) "4.  VERTICAL GRID  (CPP: SOLVE3D) ------------------"
 #ifdef SOLVE3D
@@ -2598,9 +2577,6 @@ contains
 #endif
 #ifdef FOIL
       MPI_master_only WRITE (stdout, nml=croco_foil)
-#endif
-#ifdef XIOS
-      MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
 #endif
 #ifdef ASSIMILATION
       MPI_master_only WRITE (stdout, nml=croco_assimilation)

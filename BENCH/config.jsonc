@@ -104,6 +104,7 @@
       "BENGUELA_LR_LAGRANGIAN",
       "BENGUELA_LR_FOIL",
       "VILAINE",
+      "VILAINE_VANDERA",
     ],
     "@realist": [
       "BENGUELA_LR_BRY",

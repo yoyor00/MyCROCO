@@ -56,11 +56,10 @@ N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 nc.close()
 
 # Compute depths using zlevs
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = zr[:, :, 0]  # First column (MATLAB: `(:,:,1)` -> Python: `[:,:,0]`)
 yr = np.tile(y / 1000, (N, 1))  # Convert y to km and replicate for contour plots
 

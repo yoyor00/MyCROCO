@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
-
+import warnings
 
 # ──────────────────────────────────────────────────────────
 #  Internal building blocks
@@ -35,9 +35,10 @@ def _compute_sc(N, point_type):
         raise ValueError(f"Unknown point_type '{point_type}', expected 'r' or 'w'")
 
 
-def _compute_cs(sc, theta_s, theta_b, vtransform):
+def _compute_cs(sc, theta_s, theta_b):
     """
     Compute the CS stretching function.
+    Vtransform 2 = new (Shchepetkin 2005).
 
     Parameters
     ----------
@@ -47,43 +48,31 @@ def _compute_cs(sc, theta_s, theta_b, vtransform):
         Surface control parameter.
     theta_b : float
         Bottom control parameter.
-    vtransform : int
-        1 = old (Song & Haidvogel 1994), 2 = new (Shchepetkin 2005).
 
     Returns
     -------
     Cs : np.ndarray
         Stretching function, same shape as *sc*.
     """
-    if vtransform == 2:
-        # New S-coordinate: delegate to the two-step Cs formula
-        if theta_s > 0.0:
-            csrf = (1.0 - np.cosh(theta_s * sc)) / (np.cosh(theta_s) - 1.0)
-        else:
-            csrf = -(sc**2)
-
-        if theta_b > 0.0:
-            Cs = (np.exp(theta_b * csrf) - 1.0) / (1.0 - np.exp(-theta_b))
-        else:
-            Cs = csrf
-
-    elif vtransform == 1:
-        # Old S-coordinate: sinh/tanh stretching
-        cff1 = 1.0 / np.sinh(theta_s)
-        cff2 = 0.5 / np.tanh(0.5 * theta_s)
-        Cs = (1.0 - theta_b) * cff1 * np.sinh(theta_s * sc) + theta_b * (
-            cff2 * np.tanh(theta_s * (sc + 0.5)) - 0.5
-        )
-
+    # New S-coordinate: delegate to the two-step Cs formula
+    if theta_s > 0.0:
+        csrf = (1.0 - np.cosh(theta_s * sc)) / (np.cosh(theta_s) - 1.0)
     else:
-        raise ValueError(f"Unknown vtransform={vtransform}, expected 1 or 2")
+        csrf = -(sc**2)
+
+    if theta_b > 0.0:
+        Cs = (np.exp(theta_b * csrf) - 1.0) / (1.0 - np.exp(-theta_b))
+    else:
+        Cs = csrf
+
 
     return Cs
 
 
-def _compute_z(h, zeta, sc, Cs, hc, vtransform):
+def _compute_z(h, zeta, sc, Cs, hc):
     """
     Compute 3D depth field from S-coordinate parameters.
+    Vtransform 2 = new (Shchepetkin 2005).    
 
     Parameters
     ----------
@@ -97,8 +86,6 @@ def _compute_z(h, zeta, sc, Cs, hc, vtransform):
         Stretching function, shape (Nk,).
     hc : float
         Critical depth parameter.
-    vtransform : int
-        Vertical transformation equation (1 or 2).
 
     Returns
     -------
@@ -109,17 +96,10 @@ def _compute_z(h, zeta, sc, Cs, hc, vtransform):
     M, L = h.shape
     z = np.empty((Nk, M, L))
 
-    if vtransform == 1:
-        hinv = 1.0 / h
-        for k in range(Nk):
-            z0 = hc * (sc[k] - Cs[k]) + Cs[k] * h
-            z[k, :, :] = z0 + zeta * (1.0 + z0 * hinv)
-
-    elif vtransform == 2:
-        hinv = 1.0 / (h + hc)
-        for k in range(Nk):
-            z0 = hc * sc[k] + Cs[k] * h
-            z[k, :, :] = z0 * h * hinv + zeta * (1.0 + z0 * hinv)
+    hinv = 1.0 / (h + hc)
+    for k in range(Nk):
+        z0 = hc * sc[k] + Cs[k] * h
+        z[k, :, :] = z0 * h * hinv + zeta * (1.0 + z0 * hinv)
 
     return z
 
@@ -134,14 +114,15 @@ def get_csf(sc, theta_s, theta_b):
     CS stretching function for the new S-coordinate (vtransform=2).
 
     Kept for backward compatibility.  Equivalent to
-    ``_compute_cs(sc, theta_s, theta_b, vtransform=2)``.
+    ``_compute_cs(sc, theta_s, theta_b)``.
     """
-    return _compute_cs(sc, theta_s, theta_b, vtransform=2)
+    return _compute_cs(sc, theta_s, theta_b)
 
 
-def scoordinate(theta_s, theta_b, N, hc, vtransform):
+def scoordinate(theta_s, theta_b, N, hc):
     """
     Compute S-coordinate values and stretching at both rho and w points.
+    Vtransform 2 = new (Shchepetkin 2005).
 
     Parameters
     ----------
@@ -151,8 +132,6 @@ def scoordinate(theta_s, theta_b, N, hc, vtransform):
         Number of rho-levels.
     hc : float
         Critical depth (unused here, kept for interface compatibility).
-    vtransform : int
-        1 (old) or 2 (new).
 
     Returns
     -------
@@ -163,14 +142,15 @@ def scoordinate(theta_s, theta_b, N, hc, vtransform):
     """
     sc_r = _compute_sc(N, "r")
     sc_w = _compute_sc(N, "w")
-    Cs_r = _compute_cs(sc_r, theta_s, theta_b, vtransform)
-    Cs_w = _compute_cs(sc_w, theta_s, theta_b, vtransform)
+    Cs_r = _compute_cs(sc_r, theta_s, theta_b)
+    Cs_w = _compute_cs(sc_w, theta_s, theta_b)
     return sc_r, Cs_r, sc_w, Cs_w
 
 
-def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
+def zlevs(h, zeta, theta_s, theta_b, hc, N, type):
     """
     Compute the depths of rho or w points for CROCO.
+    Vtransform 2 = new (Shchepetkin 2005).    
 
     Parameters
     ----------
@@ -186,8 +166,6 @@ def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
         Number of rho-levels.
     type : str
         'r' for rho points, 'w' for w points.
-    vtransform : int
-        Vertical transformation equation (1 or 2).
 
     Returns
     -------
@@ -203,8 +181,8 @@ def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
         raise ValueError("zlevs: h must be 1D or 2D")
 
     sc = _compute_sc(N, type)
-    Cs = _compute_cs(sc, theta_s, theta_b, vtransform)
-    z = _compute_z(h, zeta, sc, Cs, hc, vtransform)
+    Cs = _compute_cs(sc, theta_s, theta_b)
+    z = _compute_z(h, zeta, sc, Cs, hc)
 
     return z.squeeze()
 
@@ -491,7 +469,7 @@ def get_depths(fname, gname, tindex, point_type):
         fname (str): Path to the history file.
         gname (str): Path to the grid file.
         tindex (int): Time index.
-        point_type (str): Point type ('rho', 'u', 'v', 'w').
+        point_type (str): Point type ('r', 'u', 'v', 'w').
 
     Returns:
         numpy.ndarray: Depths of sigma levels (3D matrix).
@@ -508,30 +486,45 @@ def get_depths(fname, gname, tindex, point_type):
         if hmorph is not None:
             h = np.squeeze(hmorph[tindex, :, :])
 
-        # Reading sigma grid parameter
-        try:
-            theta_s = float(nc.variables["theta_s"][:])
-            theta_b = float(nc.variables["theta_b"][:])
-            Tcline = float(nc.variables["Tcline"][:])
-            hc_var = nc.variables.get("hc", None)
-            hc = float(hc_var[:]) if hc_var is not None else None
-        except KeyError:
+        # Reading sigma grid parameters (variable first, then global attribute)
+        if "theta_s" in nc.variables:
+            theta_s = float(np.squeeze(nc.variables["theta_s"][:]))
+            theta_b = float(np.squeeze(nc.variables["theta_b"][:]))
+        else:
             theta_s = float(nc.theta_s)
             theta_b = float(nc.theta_b)
-            Tcline = float(nc.Tcline)
-            hc = float(nc.hc) if hasattr(nc, "hc") else None
 
-        if hc is None:
-            hc = min(float(np.min(h)), Tcline)
+        if "hc" in nc.variables:
+            hc = float(np.squeeze(nc.variables["hc"][:]))
+        elif hasattr(nc, "hc"):
+            hc = float(nc.hc)
+        else:
+            raise ValueError(
+                f"hc not found in {fname}: file probably produced by an old "
+                "CROCO/ROMS version.\n"
+                "To process this file, please use croco <= v2.1.3"
+            )
 
         N = len(nc.dimensions["s_rho"])
-        VertCoordType = getattr(nc, "VertCoordType", "")
-        vtrans = nc.variables.get("Vtransform", None)
-        vtrans = int(np.squeeze(vtrans[:])) if vtrans is not None else None
-        s_coord = 2 if VertCoordType == "NEW" or vtrans == 2 else 1
 
-        if s_coord == 2:
-            hc = Tcline
+        # Check the vertical coordinate convention (only Vtransform = 2)
+        if "Vtransform" in nc.variables:
+            vtrans = int(np.squeeze(nc.variables["Vtransform"][:]))
+        elif hasattr(nc, "Vtransform"):
+            vtrans = int(float(nc.Vtransform))
+        else:
+            vtrans = None
+
+        if vtrans is None:
+            warnings.warn(
+                f"No Vtransform found in {fname}, assuming Vtransform = 2."
+            )
+        elif vtrans != 2:
+            raise ValueError(
+                f"Vtransform = {vtrans} in {fname} is no longer supported.\n"
+                "CROCO now uses only the new s-coordinate (Vtransform = 2).\n"
+                "To process this file, please use croco <= v2.1.3"
+            )
 
     if zeta is None:
         zeta = np.zeros_like(h)
@@ -541,7 +534,7 @@ def get_depths(fname, gname, tindex, point_type):
     if point_type in ("u", "v"):
         vtype = "r"
 
-    z = zlevs(h, zeta, theta_s, theta_b, hc, N, vtype, s_coord)
+    z = zlevs(h, zeta, theta_s, theta_b, hc, N, vtype)
 
     # Swicth to U- or V- grid
     if point_type == "u":

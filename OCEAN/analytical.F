@@ -581,6 +581,9 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       USE croco_namelist, ONLY: testcase_name
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -598,7 +601,6 @@ C$    integer  trd, omp_get_thread_num
       real*QUAD mssh,area,cff1
 #  ifdef MPI
 #   include "mpi_cpl.h"
-      include 'mpif.h'
       integer ierr
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 #  endif
@@ -1628,6 +1630,9 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       USE croco_namelist, ONLY: testcase_name
+# ifdef MPI
+      use mpi
+# endif
       implicit none
       real wamp,wdir,wprd,
      &     ho,khd,kh,kw,kr,ks,wday,ramp,cff,co,gamw,
@@ -1639,6 +1644,10 @@ C$    integer  trd, omp_get_thread_num
 # include "forces.h"
 # include "ocean3d.h"
 # include "scalars.h"
+# ifdef MPI
+#  include "mpi_cpl.h"
+      integer ierr
+# endif
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
@@ -2560,21 +2569,12 @@ C$    integer  trd, omp_get_thread_num
         !! without time dependancy
         z_w0(0)=-hij
         do k=1,N,+1
-#  ifdef NEW_S_COORD
           cff_w =hc*sc_w(k)
           cff_r =hc*sc_r(k)
           cff1_w=Cs_w(k)
           cff1_r=Cs_r(k)
           z_w0(k)=(cff_w+cff1_w*abs(hij)) *hij*hinvij
           z_r0(k)=(cff_r+cff1_r*abs(hij)) *hij*hinvij
-#  else
-          cff_w =hc*(sc_w(k)-Cs_w(k))
-          cff_r =hc*(sc_r(k)-Cs_r(k))
-          cff1_w=Cs_w(k)
-          cff1_r=Cs_r(k)
-          z_w0(k)=cff_w+cff1_w*hij
-          z_r0(k)=cff_r+cff1_r*hij
-#  endif
         enddo
 
         Hs=hij                    ! Exponential vertical distribution

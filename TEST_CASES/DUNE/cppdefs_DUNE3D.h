@@ -4,7 +4,6 @@
 # undef  MPI
 # define M2FILTER_NONE
 # define UV_ADV
-# define NEW_S_COORD
 # undef  UV_COR
 # define SOLVE3D
 # define ANA_GRID
@@ -33,7 +32,6 @@
 # endif
 # ifdef MUSTANG
 #  define key_MUSTANG_V2
-#  define key_noTSdiss_insed
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE

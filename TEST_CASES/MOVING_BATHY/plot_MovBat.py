@@ -108,11 +108,6 @@ try:
         theta_b = nc.theta_b
         rho0 = nc.rho0
         hc = nc.hc
-        try:
-            Vtrans = nc.variables["Vtransform"][:]
-        except KeyError:
-            Vtrans = 1  # Default value
-
         N = len(nc.dimensions["s_rho"])
 
         print(f"Grid dimensions: N={N}, L={L}")
@@ -127,8 +122,8 @@ except Exception as e:
 
 print("Computing vertical coordinates...")
 # Compute vertical coordinates
-zr = np.squeeze(cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", Vtrans))
-zw = np.squeeze(cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "w", Vtrans))
+zr = np.squeeze(cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r"))
+zw = np.squeeze(cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "w"))
 
 # Create u-grid coordinates
 zu = np.zeros((N, L - 1))

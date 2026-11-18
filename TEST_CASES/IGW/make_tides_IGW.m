@@ -25,7 +25,7 @@
 %
 %  Copyright (c) 2003-2006 by Patrick Marchesiello and Meinte Blass
 %
-%  Updated   1-Sep-2006 by Pierrick Penven (generalisation of romstools_param.m)
+%  Updated   1-Sep-2006 by Pierrick Penven (generalisation of crocotools_param.m)
 %  Updated   3-Oct-2006 by Pierrick Penven (cleaning + phase lag for Yorig time)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,7 +35,7 @@ close all
 %
 % Common parameters
 %
-romstools_param
+crocotools_param
 %
 %%%%%%%%%%%%%%%%%%% END USERS DEFINED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%
 %

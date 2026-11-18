@@ -71,6 +71,10 @@
       USE stoalloc        ! Stochastic working arrays
 #endif
 
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff
@@ -87,7 +91,6 @@
       integer tile, itrc,i,j,k
 #endif
 #if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
 #include "param.h"
@@ -215,9 +218,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     Time
 !
       ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
+     &  - start_date_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -748,7 +749,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
 # if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
-!     Brunt vaisala frequency.
+!     Square of Brunt vaisala frequency (N^2).
 !
       if (wrthis(indxbvf)) then
 !$acc update if(compute_on_device) host(bvf(:,:,:))
@@ -810,6 +811,23 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 # endif
 
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
+      endif
+!
+!     Write out depth of rho- and w-points (m).
+!
+      if (wrthis(indxZ_r)) then
+!$acc update if(compute_on_device) host(z_r(:,:,:))
+        workr=z_r
+        call fillvalue3d(workr,ncidhis,hisZ_r,vname(1,indxZ_r),
+     &        record,r3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_r' MYID
+      endif
+      if (wrthis(indxZ_w)) then
+!$acc update if(compute_on_device) host(z_w(:,:,:))
+        work=z_w
+        call fillvalue3d_w(work,ncidhis,hisZ_w,vname(1,indxZ_w),
+     &        record,w3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_w' MYID
       endif
 !
 # ifdef VIS_COEF_3D

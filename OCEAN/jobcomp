@@ -224,14 +224,6 @@ else
    echo "  file namelist_sediment copied from source directory"
 fi
 
-if [[ -d MUSTANG_NAMELIST ]]; then
-   echo "  Mustang namelist directory MUSTANG_NAMELIST exists"
-else
-   mkdir -p "$RUNDIR/MUSTANG_NAMELIST"
-   \cp -rf "${ROOT_DIR}/"MUSTANG/MUSTANG_NAMELIST/*txt "$RUNDIR/MUSTANG_NAMELIST/."
-   echo "  file para*txt copied from source directory"
-fi
-
 #
 # overwrite with local files
 #
@@ -379,11 +371,17 @@ if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
    echo " => OASIS activated"
    CHAN=MPI1
    LIBPSMILE="${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
-      ${PRISM_ROOT_DIR}/lib/libmct.a  \
-      ${PRISM_ROOT_DIR}/lib/libmpeu.a \
-      ${PRISM_ROOT_DIR}/lib/libscrip.a"
-   PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
-      -I${PRISM_ROOT_DIR}/build/lib/mct"
+              ${PRISM_ROOT_DIR}/lib/libmct.a            \
+              ${PRISM_ROOT_DIR}/lib/libmpeu.a           \
+              ${PRISM_ROOT_DIR}/lib/libscrip.a"
+   # For OASIS3-MCT version >= 5
+   if [ -d "${PRISM_ROOT_DIR}/include" ]; then
+      PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/include"
+   # For OASIS3-MCT version < 5
+   else
+      PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
+                     -I${PRISM_ROOT_DIR}/build/lib/mct"
+   fi
    COMPILEOASIS=TRUE
    LDFLAGS1="$LDFLAGS1 $LIBPSMILE $NETCDFLIB"
    CPPFLAGS1="$CPPFLAGS1 ${PSMILE_INCDIR} $NETCDFINC"

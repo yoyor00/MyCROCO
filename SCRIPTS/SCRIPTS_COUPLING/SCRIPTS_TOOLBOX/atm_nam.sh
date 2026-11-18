@@ -48,8 +48,8 @@ echo "Filling time section of the namelist"
 sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/<mo1>/${MONTH_BEGIN_JOB}/g"   -e "s/<mo2>/${MONTH_END_JOB}/g"  \
     -e "s/<dy1>/${DAY_BEGIN_JOB}/g"   -e "s/<dy2>/${DAY_END_JOB}/g"  \
-    -e "s/<hr1>/${hh}/g"   -e "s/<hr2>/24/g"  \
-    -e "s/<rst>/$rst/g"              -e "s/<rst_int>/$(( ${TOTAL_JOB_DUR} * 24 *60 ))/g"            \
+    -e "s/<hr1>/${HOUR_BEGIN_JOB}/g"   -e "s/<hr2>/$(( ${HOUR_END_JOB} + 1))/g"  \
+    -e "s/<rst>/$rst/g"              -e "s/<rst_int>/$(( ${TOTAL_JOB_DUR_HOUR} * 60 ))/g"            \
     -e "s/<his_nb_out>/${atm_his_frames}/g"    \
     -e "s/<xtrm_nb_out>/${atm_diag_frames}/g"  \
     -e "s/<nproc_x>/${atm_nprocX}/g"            -e "s/<nproc_y>/${atm_nprocY}/g"             \

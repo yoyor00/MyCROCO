@@ -51,8 +51,9 @@ MODULE croco_namelist
    ! &croco_time_stepping
    real    :: dt = 3600.0
    !! Baroclinic time step [s]
-   integer :: ntimes = 720
-   !! Number of time-steps required for the simulation
+   integer :: ntimes = 0
+   !! Total number of baroclinic time steps — derived at runtime from end_date - start_date.
+   !! Not read from the namelist; kept here for internal use only.
    integer :: ndtfast = 60
    !! Number of barotropic time-steps between each baroclinic time step.
    !! For 2D configurations, ndtfast should be unity.
@@ -86,6 +87,15 @@ MODULE croco_namelist
    !! in the file (the initialization record is assigned internally).
    character(len=180) :: ininame = "CROCO_FILES/croco_ini.nc"
    !! Name of file containing the initial state
+   logical :: lresetrec = .false.
+   !! Flag (T/F) to reset to zero the record counters of the history,
+   !! averages and diagnostics files when starting from `ininame`.
+   !! By default (`.false.`) the counters stored in the restart file are used,
+   !! so that the output is appended to the existing files. If `.true.`,
+   !! new output files are started (the first record is written at the
+   !! initial time); existing files with the same names are overwritten.
+   !! Useful to change an output frequency or to start a new branch at a
+   !! time step that is not a multiple of `nrpf*`.
 
    ! &croco_restart
    integer :: nrst = 720
@@ -119,19 +129,18 @@ MODULE croco_namelist
    !! Kept for backward-compatible NetCDF global attribute; initialized to hc after read
 #endif
 
-#ifdef USE_CALENDAR
-   ! &croco_use_calendar
-   character(len=19) :: start_date = '2000-01-01 00:00:00'
-   !! Run start date, format `YYYY-MM-DD HH:MM:SS` (used with `USE_CALENDAR`)
-   character(len=19) :: end_date = '2000-02-01 00:00:00'
-   !! Run end date, format `YYYY-MM-DD HH:MM:SS` (used with `USE_CALENDAR`)
-   real :: dt_his = 1.0
-   !! Time interval between history output records [hours] (used with `USE_CALENDAR`)
-   real :: dt_avg = 6.0
-   !! Time interval between averages output records [hours] (used with `USE_CALENDAR`)
-   real :: dt_rst = 12.0
-   !! Time interval between restart output records [hours] (used with `USE_CALENDAR`)
-#endif
+   ! &croco_calendar
+   character(len=26) :: start_date = '                          '
+   !! Run start date, format `YYYY-MM-DD HH:MM:SS[.ffff...]` (mandatory).
+   !! The optional fractional-second suffix is for sub-second dt test cases.
+   character(len=26) :: end_date = '                          '
+   !! Run end date, format `YYYY-MM-DD HH:MM:SS[.ffff...]` (mandatory).
+   !! The optional fractional-second suffix is for sub-second dt test cases.
+   character(len=20) :: calendar_type = 'gregorian'
+   !! CF-convention calendar type written to output files and used for time arithmetic
+   !! (case-insensitive). Allowed values: 'gregorian' (default) / 'standard' /
+   !! 'proleptic_gregorian', '360_day', 'noleap' / '365_day' / 'no_leap',
+   !! 'all_leap' / '366_day', 'julian'.
 
 #ifndef ANA_GRID
    ! &croco_grid
@@ -323,7 +332,7 @@ MODULE croco_namelist
    !! Flag (T/F) for creating the ABL history file.
    !! If `.true.`, a new file is created; if `.false.`, data is appended.
    integer :: nwrtablhis = 36
-   !! Number of time-steps between writing of ABL history fields
+   !! Number of time-steps between writing of ABL history fields (0 = use nwrt)
    integer :: nrpfablhis = 0
    !! ABL history file cycling switch:
    !!
@@ -339,7 +348,7 @@ MODULE croco_namelist
    integer :: ntsablavg = 1
    !! Starting time-step for the accumulation of ABL time-averaged data
    integer :: nwrtablavg = 0
-   !! Number of time-steps between writing of ABL averaged fields
+   !! Number of time-steps between writing of ABL averaged fields (0 = use navg)
    integer :: nrpfablavg = 0
    !! ABL averages file cycling switch:
    !!
@@ -435,12 +444,6 @@ MODULE croco_namelist
    !! FOIL parameters input file
 #endif
 
-#ifdef XIOS
-   ! &croco_xios_origin_date
-   character(len=80) :: xios_origin_date = "1900-01-01 00:00:00"
-   !! XIOS time origin date (format: `YYYY-MM-DD HH:MM:SS`)
-#endif
-
 #ifdef ASSIMILATION
    ! &croco_assimilation
    character(len=180) :: aparnam = "assimilation.par"
@@ -531,7 +534,7 @@ MODULE croco_namelist
    ! &croco_diagnostics_ts
    logical :: ldefdia = .true.
    !! Flag (T/F) for writing the tracer diagnostics file
-   integer :: nwrtdia = 72
+   integer :: nwrtdia = 0
    !! Number of time-steps between writing of tracer diagnostic fields (0 = use nwrt)
    integer :: nrpfdia = 0
    !! Tracer diagnostics file cycling switch (0: multi-record, >0: multi-file, -1: overwrite)
@@ -543,7 +546,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged tracer diagnostics
    integer :: ntsdia_avg = 1
    !! Starting time-step for accumulation of averaged tracer diagnostics
-   integer :: nwrtdia_avg = 72
+   integer :: nwrtdia_avg = 0
    !! Number of time-steps between writing of averaged tracer diagnostics (0 = use navg)
    integer :: nrpfdia_avg = 0
    !! Averaged tracer diagnostics file cycling switch
@@ -556,6 +559,8 @@ MODULE croco_namelist
    !! Density criterion to define the mixed layer depth [kg/m3]
    real :: mld_crit_T = 0.2
    !! Temperature criterion to define the mixed layer depth [Celsius]
+   real :: mld_depth_ref = 10
+   !! Reference depth to define the mixed layer depth [m]
 #  endif
 #endif
 
@@ -563,7 +568,7 @@ MODULE croco_namelist
    ! &croco_diagnosticsM
    logical :: ldefdiaM = .true.
    !! Flag (T/F) for writing momentum diagnostics file
-   integer :: nwrtdiaM = 72
+   integer :: nwrtdiaM = 0
    !! Number of time-steps between writing of momentum diagnostics (0 = use nwrt)
    integer :: nrpfdiaM = 0
    !! Momentum diagnostics file cycling switch
@@ -575,7 +580,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged momentum diagnostics
    integer :: ntsdiaM_avg = 1
    !! Starting time-step for accumulation of averaged momentum diagnostics
-   integer :: nwrtdiaM_avg = 72
+   integer :: nwrtdiaM_avg = 0
    !! Number of time-steps between writing of averaged momentum diagnostics (0 = use navg)
    integer :: nrpfdiaM_avg = 0
    !! Averaged momentum diagnostics file cycling switch
@@ -588,7 +593,7 @@ MODULE croco_namelist
    ! &croco_diags_vrt
    logical :: ldefdiags_vrt = .true.
    !! Flag (T/F) for writing vorticity diagnostics file
-   integer :: nwrtdiags_vrt = 72
+   integer :: nwrtdiags_vrt = 0
    !! Number of time-steps between writing of vorticity diagnostics (0 = use nwrt)
    integer :: nrpfdiags_vrt = 0
    !! Vorticity diagnostics file cycling switch
@@ -600,7 +605,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged vorticity diagnostics
    integer :: ntsdiags_vrt_avg = 1
    !! Starting time-step for accumulation of averaged vorticity diagnostics
-   integer :: nwrtdiags_vrt_avg = 72
+   integer :: nwrtdiags_vrt_avg = 0
    !! Number of time-steps between writing of averaged vorticity diagnostics (0 = use navg)
    integer :: nrpfdiags_vrt_avg = 0
    !! Averaged vorticity diagnostics file cycling switch
@@ -613,7 +618,7 @@ MODULE croco_namelist
    ! &croco_diags_ek
    logical :: ldefdiags_ek = .true.
    !! Flag (T/F) for writing energy diagnostics file
-   integer :: nwrtdiags_ek = 72
+   integer :: nwrtdiags_ek = 0
    !! Number of time-steps between writing of energy diagnostics (0 = use nwrt)
    integer :: nrpfdiags_ek = 0
    !! Energy diagnostics file cycling switch
@@ -625,7 +630,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged energy diagnostics
    integer :: ntsdiags_ek_avg = 1
    !! Starting time-step for accumulation of averaged energy diagnostics
-   integer :: nwrtdiags_ek_avg = 72
+   integer :: nwrtdiags_ek_avg = 0
    !! Number of time-steps between writing of averaged energy diagnostics (0 = use navg)
    integer :: nrpfdiags_ek_avg = 0
    !! Averaged energy diagnostics file cycling switch
@@ -638,7 +643,7 @@ MODULE croco_namelist
    ! &croco_diags_pv
    logical :: ldefdiags_pv = .true.
    !! Flag (T/F) for writing potential vorticity diagnostics file
-   integer :: nwrtdiags_pv = 72
+   integer :: nwrtdiags_pv = 0
    !! Number of time-steps between writing of PV diagnostics (0 = use nwrt)
    integer :: nrpfdiags_pv = 0
    !! PV diagnostics file cycling switch
@@ -650,7 +655,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged PV diagnostics
    integer :: ntsdiags_pv_avg = 1
    !! Starting time-step for accumulation of averaged PV diagnostics
-   integer :: nwrtdiags_pv_avg = 72
+   integer :: nwrtdiags_pv_avg = 0
    !! Number of time-steps between writing of averaged PV diagnostics (0 = use navg)
    integer :: nrpfdiags_pv_avg = 0
    !! Averaged PV diagnostics file cycling switch
@@ -666,7 +671,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged eddy diagnostics
    integer :: ntsdiags_eddy_avg = 1
    !! Starting time-step for accumulation of averaged eddy diagnostics
-   integer :: nwrtdiags_eddy_avg = 72
+   integer :: nwrtdiags_eddy_avg = 0
    !! Number of time-steps between writing of averaged eddy diagnostics (0 = use navg)
    integer :: nrpfdiags_eddy_avg = 0
    !! Averaged eddy diagnostics file cycling switch
@@ -679,7 +684,7 @@ MODULE croco_namelist
    ! &croco_diagnostics_bio
    logical :: ldefdiabio = .true.
    !! Flag (T/F) for writing biogeochemical diagnostics file
-   integer :: nwrtdiabio = 72
+   integer :: nwrtdiabio = 0
    !! Number of time-steps between writing of bio diagnostics (0 = use nwrt)
    integer :: nrpfdiabio = 0
    !! Bio diagnostics file cycling switch
@@ -691,7 +696,7 @@ MODULE croco_namelist
    !! Flag (T/F) for writing averaged bio diagnostics
    integer :: ntsdiabio_avg = 1
    !! Starting time-step for accumulation of averaged bio diagnostics
-   integer :: nwrtdiabio_avg = 72
+   integer :: nwrtdiabio_avg = 0
    !! Number of time-steps between writing of averaged bio diagnostics (0 = use navg)
    integer :: nrpfdiabio_avg = 0
    !! Averaged bio diagnostics file cycling switch
@@ -1064,6 +1069,8 @@ MODULE croco_namelist
    logical :: out_his_wstr = .false.
    logical :: out_his_ustr = .false.
    logical :: out_his_vstr = .false.
+   logical :: out_his_z_r = .false.
+   logical :: out_his_z_w = .false.
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_history_fields
@@ -1145,6 +1152,8 @@ MODULE croco_namelist
    logical :: out_avg_wstr = .false.
    logical :: out_avg_ustr = .false.
    logical :: out_avg_vstr = .false.
+   logical :: out_avg_z_r = .false.
+   logical :: out_avg_z_w = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_averages_fields
