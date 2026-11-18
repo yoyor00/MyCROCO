@@ -268,9 +268,6 @@
 !--------------------------------------------
 !
 */
-# undef DO_NOT_OVERWRITE
-# undef RESTART_DIAGS
-
 # undef DIAGNOSTICS_TS
 
 # ifdef DIAGNOSTICS_TS
