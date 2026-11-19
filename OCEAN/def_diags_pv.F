@@ -32,6 +32,9 @@
      &     diags_pvname_avg
 #endif
 
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -42,7 +45,6 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -98,12 +100,16 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
          create_new_file=ldefdiags_pv
@@ -111,19 +117,8 @@
          create_new_file=ldefdiags_pv_avg
 #  endif
       else
-#  ifndef AVRH
         create_new_file=.false.
-#  else
-        create_new_file=.false.
-#  endif
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefdiags_pv
-#  else
-      create_new_file=ldefdiags_pv_avg
-#  endif
-# endif
 
 !
       if (ncid.ne.-1) create_new_file=.false.
