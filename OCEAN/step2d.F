@@ -585,8 +585,8 @@ C$OMP BARRIER
 ! Apply Rain flux 
 !-----------------------------------------------------------------------
 # ifdef RAIN_FLUX
-      do j=JstrR,JendR
-       do i=IstrR,IendR
+      do j=JstrV-1,Jend
+       do i=IstrU-1,Iend
         zeta(i,j,knew)=zeta(i,j,knew)-EmP(i,j)*dtfast 
        enddo
       enddo
