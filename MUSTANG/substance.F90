@@ -36,14 +36,14 @@ MODULE substance
    ! variables for all ntrc_subs
    CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: name_var_r, long_name_var_r, standard_name_var_r, &
                                                       unit_var_r, init_cv_name_r, obc_cv_name_r
-   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cini_air_r, cobc_wat_r
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cobc_wat_r
    REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: t90_r
    LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r
 
    ! local variable to read each namelist with different length (variables by group of substances)
    CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE  :: name_var_n, long_name_var_n, standard_name_var_n, &
                                                       unit_var_n, init_cv_name_n, obc_cv_name_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cini_air_n, cobc_wat_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cobc_wat_n
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: t90_n
    LOGICAL, DIMENSION(:),ALLOCATABLE               :: l_out_subs_n    
 #ifdef MUSTANG
@@ -121,44 +121,44 @@ CONTAINS
    NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_grav, nv_sand, nv_mud, nv_sorb
    NAMELIST/nmlgravels/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n,cini_sed_n,l_bedload_n, &
-                       cini_air_n,l_out_subs_n, &
+                       l_out_subs_n, &
                        tocd_n,ros_n,diam_n
    NAMELIST/nmlsands/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,l_bedload_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        tocd_n,ros_n,diam_n,l_sand2D_n,l_outsandrouse_n
    NAMELIST/nmlmuds/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        tocd_n,ros_n,diam_n, &
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n,tocd_n,ros_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n,tocd_n,ros_n, &
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartsorb/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        name_varpc_assoc_n
    NAMELIST/nmlvardiss/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
                        D0_funcT_opt_n,D0_m0_n,D0_m1_n,                       &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #else     
    NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_sorb                 
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        ws_free_min_n,ws_free_max_n
    NAMELIST/nmlpartsorb/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n,            &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        name_varpc_assoc_n
    NAMELIST/nmlvardiss/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #endif                      
    NAMELIST/nmlvarfix/name_var_fix,long_name_var_fix,standard_name_var_fix,unit_var_fix, &
                        cini_wat_fix,l_out_subs_fix,init_cv_name_fix  
@@ -536,7 +536,7 @@ CONTAINS
     !******************************************
 
 #if defined BLOOM && (defined key_N_tracer || defined key_P_tracer)
-  CALL bloom_create_vartracer(flx_atm_r,cv_rain_r,cini_wat_r,cini_air_r,          &
+  CALL bloom_create_vartracer(flx_atm_r,cv_rain_r,cini_wat_r,          &
                                   l_out_subs_r,init_cv_name_r,obc_cv_name_r,            &
 #if defined MUSTANG
                                   ws_free_opt_r,ws_free_para_r,ws_hind_opt_r,           &
@@ -551,7 +551,7 @@ CONTAINS
 #endif
 
 #if defined PEPTIC
-   CALL peptic_create_var(iv,flx_atm_r,cv_rain_r,cini_wat_r,cini_air_r, &
+   CALL peptic_create_var(iv,flx_atm_r,cv_rain_r,cini_wat_r, &
                                 l_out_subs_r,ws_free_min_r,ws_free_max_r,cobc_wat_r,   &
                                 itypv_r,init_cv_name_r,obc_cv_name_r,unit_var_r,       &
                                 long_name_var)
@@ -567,7 +567,7 @@ CONTAINS
 !        CALL conta_read_data(obc_cv_name_r,nb_frac_var_r,                         &
 !                             icon_var_r, init_cv_name_r,ispc_var_r,               &
 !                             flx_atm_r,cv_rain_r,cini_wat_r,cini_sed_r,           &
-!                             cini_air_r,l_out_subs_r,tocd_r,ros_r,diam_r,         &
+!                             l_out_subs_r,tocd_r,ros_r,diam_r,                   &
 !                             ws_free_opt_r,ws_free_min_r,ws_free_max_r,           &
 !                             ws_free_para_r,ws_hind_opt_r,ws_hind_para_r          &
 !
@@ -712,7 +712,6 @@ CONTAINS
     ALLOCATE(f90(itsubs1:itsubs2))
     ALLOCATE(cini_wat(itsubs1:itsubs2))
     ALLOCATE(cobc_wat(itsubs1:itsubs2))
-    ALLOCATE(cini_air(itsubs1:itsubs2))
     ALLOCATE(ws_part(GLOBAL_2D_ARRAY,N,itsubs1:itsubs2))
     ALLOCATE(typdiss(itsubs1:itsubs2)) 
     ws_part(:,:,:,:)=0.0
@@ -773,7 +772,6 @@ CONTAINS
 
       cini_wat(ivr)=cini_wat_r(irk_fil(iv))
       cobc_wat(ivr)=cobc_wat_r(irk_fil(iv))
-      cini_air(ivr)=cini_air_r(irk_fil(iv))
       init_cv_name(ivr)=init_cv_name_r(irk_fil(iv))
       obc_cv_name(ivr)=obc_cv_name_r(irk_fil(iv))
       cv_rain(ivr)=cv_rain_r(irk_fil(iv))
@@ -924,7 +922,6 @@ CONTAINS
      ENDIF
 #endif
 #endif
-     MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
      MPI_master_only WRITE(stdout,*) &
          'name of substance read from init cond file: ', &
          TRIM(ADJUSTL(ADJUSTR(init_cv_name_r(isubs))))
@@ -1102,7 +1099,6 @@ CONTAINS
    ALLOCATE(cv_rain_n(nballoc))
    ALLOCATE(t90_n(nballoc))
    ALLOCATE(cini_wat_n(nballoc))
-   ALLOCATE(cini_air_n(nballoc))
    ALLOCATE(cobc_wat_n(nballoc))
    ALLOCATE(l_out_subs_n(nballoc))
    ALLOCATE(init_cv_name_n(nballoc))
@@ -1117,7 +1113,6 @@ CONTAINS
    ALLOCATE(cini_sed_n(nballoc))
    cini_sed_n(:)=0.
 #endif
-   cini_air_n(:)=0.
    init_cv_name_n(:)=''
    obc_cv_name_n(:)=''
    name_var_n(:)=''
@@ -1158,14 +1153,13 @@ CONTAINS
 #ifdef MUSTANG
      cini_sed_r(iv)=cini_sed_n(ivr)
 #endif
-     cini_air_r(iv)=cini_air_n(ivr)
      l_out_subs_r(iv)=l_out_subs_n(ivr)
      init_cv_name_r(iv)=init_cv_name_n(ivr)
      obc_cv_name_r(iv)=obc_cv_name_n(ivr)
    ENDDO
    DEALLOCATE(name_var_n,long_name_var_n,standard_name_var_n,unit_var_n)
    DEALLOCATE(flx_atm_n,cv_rain_n,t90_n)
-   DEALLOCATE(cini_wat_n,cini_air_n,cobc_wat_n)
+   DEALLOCATE(cini_wat_n,cobc_wat_n)
    DEALLOCATE(l_out_subs_n)
    DEALLOCATE(init_cv_name_n,obc_cv_name_n)
 #ifdef MUSTANG

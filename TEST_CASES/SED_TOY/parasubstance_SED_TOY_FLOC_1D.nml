@@ -36,7 +36,6 @@
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition
 :                       file, falling back to its uniform cini_wat_n()
@@ -82,7 +81,6 @@
       cini_wat_n(1)=0.00465
       cobc_wat_n(1)=0.00465
       cini_sed_n(1)=1.
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='SED1'
       obc_cv_name_n(1)='SED1'
@@ -104,7 +102,6 @@
       cini_wat_n(2)=0.0093
       cobc_wat_n(2)=0.0093
       cini_sed_n(2)=0.
-      cini_air_n(2)=0.0
       l_out_subs_n(2)=.TRUE.
       init_cv_name_n(2)='SED2'
       obc_cv_name_n(2)='SED2'
@@ -126,7 +123,6 @@
       cini_wat_n(3)=0.0186
       cobc_wat_n(3)=0.0186
       cini_sed_n(3)=0.
-      cini_air_n(3)=0.0
       l_out_subs_n(3)=.TRUE.
       init_cv_name_n(3)='SED3'
       obc_cv_name_n(3)='SED3'
@@ -148,7 +144,6 @@
       cini_wat_n(4)=0.0372
       cobc_wat_n(4)=0.0372
       cini_sed_n(4)=0.
-      cini_air_n(4)=0.0
       l_out_subs_n(4)=.TRUE.
       init_cv_name_n(4)='SED4'
       obc_cv_name_n(4)='SED4'
@@ -170,7 +165,6 @@
       cini_wat_n(5)=0.02325
       cobc_wat_n(5)=0.02325
       cini_sed_n(5)=0.
-      cini_air_n(5)=0.0
       l_out_subs_n(5)=.TRUE.
       init_cv_name_n(5)='SED5'
       obc_cv_name_n(5)='SED5'
@@ -192,7 +186,6 @@
       cini_wat_n(6)=0.0
       cobc_wat_n(6)=0.0
       cini_sed_n(6)=0.0
-      cini_air_n(6)=0.0
       l_out_subs_n(6)=.TRUE.
       init_cv_name_n(6)='SED6'
       obc_cv_name_n(6)='SED6'
@@ -214,7 +207,6 @@
       cini_wat_n(7)=0.0
       cobc_wat_n(7)=0.0
       cini_sed_n(7)=0.
-      cini_air_n(7)=0.0
       l_out_subs_n(7)=.TRUE.
       init_cv_name_n(7)='SED7'
       obc_cv_name_n(7)='SED7'
@@ -236,7 +228,6 @@
       cini_wat_n(8)=0.0
       cobc_wat_n(8)=0.0
       cini_sed_n(8)=0.
-      cini_air_n(8)=0.0
       l_out_subs_n(8)=.TRUE.
       init_cv_name_n(8)='SED8'
       obc_cv_name_n(8)='SED8'

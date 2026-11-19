@@ -36,7 +36,6 @@
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition
 :                       file, falling back to its uniform cini_wat_n()
@@ -79,7 +78,6 @@
       cv_rain_n(1)=0.0
       cini_wat_n(1)=0.0
       cini_sed_n(1)=0.4
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       l_bedload_n(1)=.FALSE.
       init_cv_name_n(1)='GRAV'
@@ -100,7 +98,6 @@
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition
 :                       file, falling back to its uniform cini_wat_n()
@@ -146,7 +143,6 @@
       cini_wat_n(1)=0.00
       cobc_wat_n(1)=0.00
       cini_sed_n(1)=0.6
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='MUD'
       obc_cv_name_n(1)='MUD'

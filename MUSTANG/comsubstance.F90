@@ -57,7 +57,7 @@ MODULE comsubstance
     INTEGER, DIMENSION(:), ALLOCATABLE  :: irk_mod !rank (position) in the model of the variable in the array managing substances
     INTEGER, DIMENSION(:), ALLOCATABLE  :: irk_fil !rank (position) in the data file of the variable
 
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_wat, cini_air, cobc_wat
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_wat, cobc_wat
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: typdiss
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: sub_flx_atm, cv_rain
     ! t90 : user-set mortality/decay time (h, 0. = no decay);

@@ -37,7 +37,6 @@
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
 :    cobc_wat_n() : real, boundaries uniform and constant concentration
 :                   (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of
 :                   dry sediment)  (only if cppkey MUSTANG)
@@ -62,7 +61,6 @@
       cini_wat_n(1)=0.0
       cobc_wat_n(1)=1.
       cini_sed_n(1)=0.0
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       l_bedload_n(1)=.TRUE.
       tocd_n(1)=0.0
@@ -81,7 +79,6 @@
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition
 :                       file, falling back to its uniform cini_wat_n()
@@ -124,7 +121,6 @@
       cv_rain_n(1)=0.0
       cini_wat_n(1)=0.0
       cini_sed_n(1)=0.2
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       l_bedload_n(1)=.TRUE.
       init_cv_name_n(1)='GRAV'
@@ -142,7 +138,6 @@
       cv_rain_n(2)=0.0
       cini_wat_n(2)=0.0
       cini_sed_n(2)=0.2
-      cini_air_n(2)=0.0
       l_out_subs_n(2)=.TRUE.
       l_bedload_n(2)=.TRUE.
       init_cv_name_n(2)='SAND'
@@ -163,7 +158,6 @@
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
 :    init_cv_name_n() : string, name of substance read from initial condition
 :                       file, falling back to its uniform cini_wat_n()
@@ -209,7 +203,6 @@
       cini_wat_n(1)=0.0
       cobc_wat_n(1)=0.0
       cini_sed_n(1)=0.6
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='MUD1'
       obc_cv_name_n(1)='nullGradient'
@@ -247,7 +240,6 @@
       cini_wat_n(1)=1.0
       cobc_wat_n(1)=1.0
       cini_sed_n(1)=1.0
-      cini_air_n(1)=0.0
       D0_funcT_opt_n(1)=1
       D0_m0_n(1)=0.0
       D0_m1_n(1)=0.0
@@ -264,7 +256,6 @@
       cini_wat_n(2)=0.0
       cobc_wat_n(2)=0.0
       cini_sed_n(2)=0.0
-      cini_air_n(2)=0.0
       D0_funcT_opt_n(2)=1
       D0_m0_n(2)=0.0
       D0_m1_n(2)=0.0
@@ -281,7 +272,6 @@
       cini_wat_n(3)=0.0
       cobc_wat_n(3)=0.0
       cini_sed_n(3)=0.0
-      cini_air_n(3)=0.0
       D0_funcT_opt_n(3)=1
       D0_m0_n(3)=0.0
       D0_m1_n(3)=0.0
