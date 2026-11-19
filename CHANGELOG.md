@@ -234,7 +234,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     Song & Haidvogel 1994) was chosen , Now Vtransform=2 is used by default (Shchepetkin & McWilliams 2009))
     the key has also been removed from all TEST_CASES cppdefs (#396)
 
-- DIAGNOSTICS_TS_MLD cpp key has been removed (if activated, integration of tracer 
+- DIAGNOSTICS_TS_MLD_DENS cpp key has been removed (if activated, integration of tracer 
   diagnostics was performed over density MLD. If deactivated, integration was 
   done over hbl from mixing scheme (only valid with SKPP, not with GLS).
   Now, the MLD criterion is chosen in namelist: turbulence (default), density or temperature
