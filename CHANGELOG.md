@@ -31,6 +31,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   case in BENCH (#589)
 
 ### Fixed
+- RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
+  Before the fix, the outputs were zero everywhere (Issue #549) 
+
+- RAIN_FLUX : fix MPI reproducibility when BULK_FLUX and RAIN_FLUX were activated (Issue #549)
+
+- BULK_FLUX : fix compilation error when SALINITY was not defined (Issue #549)
 
 - PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
   which caused the river discharge Qsrc to be applied twice to u/v in
