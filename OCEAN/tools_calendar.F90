@@ -344,16 +344,19 @@ CONTAINS
    !!              plain STOP, which only terminates the calling process
    !!              and can leave the other ranks hanging.
 
+#if defined MPI
+      use mpi
+#endif
       IMPLICIT NONE
 #if defined MPI
-      include 'mpif.h'
+      INTEGER :: ierr
 # if defined OA_COUPLING || defined OW_COUPLING || defined XIOS || defined ENSEMBLE
 !$AGRIF_DO_NOT_TREAT
       INTEGER :: ocean_grid_comm
       common /cpl_comm/ ocean_grid_comm
 !$AGRIF_END_DO_NOT_TREAT
 # endif
-      call mpi_abort (MPI_COMM_WORLD, 1)
+      call mpi_abort (MPI_COMM_WORLD, 1, ierr)
 #endif
       STOP
 
