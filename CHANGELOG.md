@@ -32,6 +32,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
+  which caused the river discharge Qsrc to be applied twice to u/v in
+  step3d_uv2.F (once through PSOURCE_MASS's mass-flux treatment and once
+  through PSOURCE's momentum-based treatment) (Issue #599)
+
 - NC4PAR : fix wrong record index on MPI ranks > 0 when reopening an
   existing history/restart/diagnostics file to append records (e.g. on
   restart); non-root ranks computed total_rec one off from rank 0,
