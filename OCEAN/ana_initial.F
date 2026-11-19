@@ -1816,6 +1816,9 @@ C$OMP BARRIER
 # ifdef AGRIF
       use Agrif_Util
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1828,12 +1831,12 @@ C$OMP BARRIER
 #  include "climat.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc,
-     &        jet_perturb, tndx
+     &        jet_perturb, tndx, ierr
       real cff,x,y,Fyz,
      &     rhomaxs,bgdrhos,zs1,dzs,drhos,drhosfs,
      &     rhomaxn,bgdrhon,zn1,dzn,drhon,drhosfn,
      &     drhosf,z0,z0p,dzs_a,dzn_a,zk,
-     &     Ljet,cff_perturb,ierr,tanh
+     &     Ljet,cff_perturb,tanh
       real*QUAD mssh,area,cff1
       real rhoprof(0:N,2)
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
@@ -1847,7 +1850,6 @@ C$OMP BARRIER
      &    dZ(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 !$acc declare create(rhoprof,ru,rv,P)
 # ifdef MPI
-      include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 # endif
       real asymth,zz,zasym,dzasym
