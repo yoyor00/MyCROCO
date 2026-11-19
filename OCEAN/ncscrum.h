@@ -2124,50 +2124,6 @@
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                                ,  diags_eddyname
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-     &                                ,  surfname
-# ifdef AVERAGES
-     &                                ,  surfname_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-     &                                ,  dianamebio
-# ifdef AVERAGES
-     &                                ,  dianamebio_avg
-# endif
-#endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA)\
- || (defined ZCLIMATOLOGY  && !defined ANA_SSH)\
- || (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA)\
- || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-     &                                ,   clmname
-#endif
-#ifdef FRC_BRY
-     &                                ,   bry_file
-#endif
-#if defined WKB_WWAVE && !defined ANA_BRY_WKB
-     &                                ,   brywkb_file
-#endif
-#ifdef WAVE_OFFLINE
-     &                                ,   wave_file
-#endif
-#ifdef ASSIMILATION
-     &                     ,   aparnam,   assname
-#endif
-#ifdef BIOLOGY
-     &                                ,   bioname
-#endif
-#ifdef SEDIMENT
-     &                                ,   sedname
-#elif defined MUSTANG
-     &               ,   sedname_must
-#endif
-#if defined SUBSTANCE
-     &               ,    subsfilename
-#endif
-#if defined OBSTRUCTION
-     &               ,    obstname
-#endif
 
       character*75  vname(20, 2000)
 
