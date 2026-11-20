@@ -144,6 +144,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - COUPLING : Fix missing restart file update for OASIS (#501). 
 - COUPLING : Fix PSMILE_INCDIR definition in jobcomp to support all OASIS3-MCT versions (#480)
 
+- OBC_PATM : fix wrong i-index in get_bry.F, zetabry_west atmospheric pressure correction used Istr instead of IstrR (#530)
+
 - Fix time in surf average output file (#388)
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
   surf, ABL and bio-diags average files: fields kept accumulating instead of being reset (#320)
