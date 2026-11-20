@@ -97,7 +97,7 @@
     do k=1,nz_max
         do j=ny_min,ny_max
             do i=nx_min,nx_max
-                if (var(iinut)%conc(i,j,k) > Vmax*var(iinut)%conc(i,j,k)/(var(iinut)%conc(i,j,k) + k_demi) &
+                if (var(iinut)%conc(i,j,k) > 1.1 * Vmax*var(iinut)%conc(i,j,k)/(var(iinut)%conc(i,j,k) + k_demi) &
                                                               * var(iCell)%conc(i,j,k) * dt_bio) then
                   f_upt_monod_cell(i,j,k) = &
                      (Vmax * var(iinut)%conc(i,j,k)/(var(iinut)%conc(i,j,k) + k_demi)) * var(iCell)%conc(i,j,k)
