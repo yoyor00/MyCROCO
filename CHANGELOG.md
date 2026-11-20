@@ -296,6 +296,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+- AVERAGES_K cpp key has been removed (Issue #374). 
+   If deactivated, averaged vertical mixing coefficients AKv, AKt and AKs were not saved.
+   Removed because redundant with booleans out_avg_akv, out_avg_akt and out_avg_aks in namelist. 
+
 - DO_NOT_OVERWRITE and RESTART_DIAGS cpp keys have been removed, their
   behavior (appending to existing output files on restart) is now the
   default (Issue #108)
