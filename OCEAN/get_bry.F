@@ -19,6 +19,9 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+# ifdef SUBSTANCE
+      use comsubstance, ONLY : obc_cv_name
+# endif
       use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
@@ -27,6 +30,7 @@
 # include "netcdf.inc"
 # include "boundary.h"
       real cff
+      character*60 vname1
       character*180 units, transf
       integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc,
      &         varid, vtransform_value, vt_rec, ierr_vt
@@ -138,6 +142,24 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_west'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_west(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_west'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_west_id(itrc))
+              if (ierr.ne.nf_noerr) then
+!                 named variable not found
+                  got_tbry_west(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_west(itrc)=.false.
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -175,6 +197,23 @@
      &         tbry_east_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_east'
           ierr_all=ierr_all+ierr
+#    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_east(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_east'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_east_id(itrc))
+              if (ierr.ne.nf_noerr) then
+                  got_tbry_east(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_east(itrc)=.false.
+            endif
+          enddo
 #    endif
 #   endif
 #  endif
@@ -214,6 +253,23 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_south'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_south(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_south'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_south_id(itrc))
+              if (ierr.ne.nf_noerr) then
+                  got_tbry_south(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_south(itrc)=.false.
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -251,6 +307,23 @@
      &         tbry_north_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_north'
           ierr_all=ierr_all+ierr
+#    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_north(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_north'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_north_id(itrc))
+              if (ierr.ne.nf_noerr) then
+                  got_tbry_north(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_north(itrc)=.false.
+            endif
+          enddo
 #    endif
 #   endif
 #  endif
@@ -334,6 +407,17 @@
             call update_device(tbry_west_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_west(itrc)) then
+              ierr=nf_read_bry_EW (tbry_west_dt(START_1D_ARRAYETA,1
+     &             ,itbry,itrc),bry_id,tbry_west_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_west'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -388,6 +472,17 @@
             call update_device(tbry_east_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_east(itrc)) then
+              ierr=nf_read_bry_EW (tbry_east_dt(START_1D_ARRAYETA,1
+     &             ,itbry,itrc),bry_id,tbry_east_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_east'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -443,6 +538,17 @@
             call update_device(tbry_south_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_south(itrc)) then
+              ierr=nf_read_bry_NS (tbry_south_dt(START_1D_ARRAYXI,1
+     &             ,itbry,itrc),bry_id,tbry_south_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_south'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -497,6 +603,17 @@
             call update_device(tbry_north_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_north(itrc)) then
+              ierr=nf_read_bry_NS (tbry_north_dt(START_1D_ARRAYXI,1
+     &             ,itbry,itrc),bry_id,tbry_north_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_north'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -549,6 +666,9 @@
 !--------------------------------------------------------------------
 !
       use croco_namelist, only: dt, rho0
+# ifdef SUBSTANCE
+      use comsubstance, ONLY : obc_cv_name, cobc_wat
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2, itrc
       real cff, cff1,cff2
@@ -628,6 +748,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_west(itrc)) then
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_west(j,k,itrc)=cff1*tbry_west_dt(j,k,it1,itrc)
+     &                               +cff2*tbry_west_dt(j,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_west(j,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif
@@ -688,6 +831,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_east(itrc)) then
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_east(j,k,itrc)=cff1*tbry_east_dt(j,k,it1,itrc)
+     &                               +cff2*tbry_east_dt(j,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_east(j,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif
@@ -748,6 +914,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_south(itrc)) then
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_south(i,k,itrc)=cff1*tbry_south_dt(i,k,it1,itrc)
+     &                                +cff2*tbry_south_dt(i,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_south(i,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif
@@ -809,6 +998,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_north(itrc)) then
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_north(i,k,itrc)=cff1*tbry_north_dt(i,k,it1,itrc)
+     &                                +cff2*tbry_north_dt(i,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_north(i,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif
