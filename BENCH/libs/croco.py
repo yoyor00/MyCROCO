@@ -849,6 +849,7 @@ class Croco:
         for filename in self.case["check_outputs"]:
             orig_path = f"{dirname}/{filename}"
             dest_path = f"{refdir_case}/{filename}"
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
             Messaging.step(f"Storing file {case_name} / {filename}")
             shutil.copyfile(orig_path, dest_path)
 
@@ -857,8 +858,9 @@ class Croco:
 
         # add the case namelist file
         nml_file = self.croco_nmlfile
-        os.makedirs(f"{refdir}/{case_name}/TEST_CASES", exist_ok=True)
-        shutil.copyfile(f"{dirname}/{nml_file}", f"{refdir}/{case_name}/{nml_file}")
+        nml_dest_path = f"{refdir}/{case_name}/{nml_file}"
+        os.makedirs(os.path.dirname(nml_dest_path), exist_ok=True)
+        shutil.copyfile(f"{dirname}/{nml_file}", nml_dest_path)
 
         # dump case info
         with open(f"{refdir}/{case_name}/case.json", "w+") as fp:
