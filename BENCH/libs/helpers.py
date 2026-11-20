@@ -57,8 +57,7 @@ def replace_symlink(target: str, link_name: str) -> None:
 
     `os.path.exists` cannot be used to test that: it follows the link, so a
     dangling symlink reports False while still occupying the name, and
-    `os.symlink` then fails with FileExistsError.  That is what happened to the
-    `results/last` link once the previous run directory was removed.
+    `os.symlink` then fails with FileExistsError.
     """
     if os.path.lexists(link_name):
         if os.path.isdir(link_name) and not os.path.islink(link_name):
