@@ -139,7 +139,7 @@
    NAMELIST/namgrazing/ p_mesz_captdiat,p_mesz_captdino,p_mesz_captmicz,p_micz_captdiat,      &
                         p_micz_captnano,p_micz_captdet,p_micz_captdino,p_txfiltbenthmax
    NAMELIST/namatmdepo/ l_atmdepo, nb_dust_vars, dust_vname, mod_vars, conv_fac, path_dust, &
-                        dust_filename_prefix
+                        dust_filename_prefix, dust_ts
 
 
 

@@ -6,10 +6,13 @@ MODULE atm_deposition
 
       USE croco_namelist
       USE comsubstance
-      USE comBIOLink , ONLY: path_dust,dust_filename_prefix,&
-          dust_vname, mod_vars, conv_fac, nb_dust_vars, &
-          iv_nutr_NO3, iv_nutr_NH4, iv_nutr_PO4
+      USE comBIOLink , ONLY: path_dust,dust_filename_prefix,dust_ts, &
+              dust_vname, mod_vars, conv_fac, nb_dust_vars, &
+              iv_nutr_NO3, iv_nutr_NH4, iv_nutr_PO4
 
+# if defined XIOS
+      USE iom
+# endif
 
 #  if defined MPI
       use scalars, ONLY: mynode, time
@@ -19,6 +22,7 @@ MODULE atm_deposition
 
 # include "param.h"
 # include "netcdf.inc"
+
         
 
         REAL(KIND=rsh), DIMENSION(:,:,:,:), ALLOCATABLE ::  dust_N
@@ -26,18 +30,19 @@ MODULE atm_deposition
 
 
         contains
-                SUBROUTINE atm_deposition_init() 
-
+                SUBROUTINE atm_deposition_init()
 
 
                         INTEGER :: iyear, var_id, ierr, ncid_dust, time_id
                         INTEGER :: start_year, start_month, end_year, end_month
-                        INTEGER :: nrec_dust, nrec, indx, i_rec, lstr, max_rec
+                        INTEGER :: nrec_dust_r, nrec_dust, nrec, indx, i_rec, lstr, max_rec
                         INTEGER :: nf_fread, lenstr, dust_varid,checkdims
                         CHARACTER(len=200) :: dust_filename
                         CHARACTER(len=4) :: iyear_str
+                        !CHARACTER(len=1) :: dust_ts
 
                         REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE ::  dustmp
+
 
 
                         ! Table allocation
@@ -48,15 +53,31 @@ MODULE atm_deposition
                         read(end_date(1:4)  , '(I4)') end_year
                         read(end_date(6:7)  , '(I2)') end_month
 
+                        ! the number of time values in each file
+                        IF(dust_ts == "M") THEN
+                                nrec_dust_r = (end_year - start_year + 1) * 12
+
+                                ALLOCATE(dustmp(GLOBAL_2D_ARRAY,12))
+
+                        ELSEIF (dust_ts == "D") THEN
+                                nrec_dust_r = 0
+                                DO iyear = start_year, end_year
+                                        nrec_dust_r = nrec_dust_r + 365
+                                        IF(MOD(iyear,4) ==0) nrec_dust_r = nrec_dust_r + 1
+                                ENDDO
+
+                                ALLOCATE(dustmp(GLOBAL_2D_ARRAY, 366))
+                        ELSE
+                                MPI_master_only write(stdout,*) 'ERROR: Invalid value for `dust_ts` in the namelist. Expected values are `D` (daily) or `M` (monthly).'
+                                error stop
+
+                        ENDIF
 
 
-                        ! We assume that we have monthly files
+                        ! Allocation 
 
-                        nrec_dust = (end_year - start_year + 1) * 12
+                        ALLOCATE( dust_N(GLOBAL_2D_ARRAY,nrec_dust_r,nb_dust_vars))
 
-                        ALLOCATE( dust_N(GLOBAL_2D_ARRAY,nrec_dust,nb_dust_vars))
-
-                        ALLOCATE(dustmp(GLOBAL_2D_ARRAY,12))
 
                         ! Initialization:
                         dust_N(:,:,:,:) = 0.
@@ -67,7 +88,6 @@ MODULE atm_deposition
                         DO iyear = start_year, end_year
                                 
                                 write(iyear_str,'(I0)') iyear
-
 
                                 ! Get the file name
 
@@ -106,11 +126,17 @@ MODULE atm_deposition
                                                                         dust_filename(1:lstr)
                                         MPI_master_only write(stdout,*) 'NetCDF error: ', nf_strerror(ierr)
                                         error stop
+                                ELSEIF (nrec_dust /= nrec_dust_r) THEN
+                                       MPI_master_only write(stdout,*) 'ERROR: The number of time records in file : ', &
+                                               dust_filename(1:lstr), ' does not match the expected value: ' , nrec_dust_r
+
+                                      error stop
+
                                 ENDIF
 
 
 
-                                DO var_id = 1,nb_dust_vars ! TODO: nb_dust_vars and dust_vname need to be read from the namelist
+                                DO var_id = 1,nb_dust_vars 
 
                                         dustmp(:,:,:) = 0               
 
@@ -144,7 +170,7 @@ MODULE atm_deposition
 
                                         ENDDO
 
-                                         dust_N(:,:,nrec+1:nrec+nrec_dust,var_id) = dustmp(:,:,:)
+                                         dust_N(:,:,nrec+1:nrec+nrec_dust,var_id) = dustmp(:,:,1:nrec_dust)
 
                                  ENDDO
 
@@ -162,9 +188,8 @@ MODULE atm_deposition
 
                 SUBROUTINE include_atm_deposition(i,j,epn,dc,flx_dep_N)
 
-
                         INTEGER, INTENT(IN) :: i,j
-                        REAL(KIND=rsh) :: epn
+                        REAL(KIND=rsh)      :: epn
                         REAL(KIND=rsh),DIMENSION(nv_adv), intent(inout)  :: dc
                         REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE, INTENT(INOUT) :: flx_dep_N
 
@@ -178,7 +203,6 @@ MODULE atm_deposition
                         CHARACTER(len=19) :: current_date
 
 
-
                         nut_idx=(/iv_nutr_NO3, iv_nutr_NH4, iv_nutr_PO4/)
 
 
@@ -189,11 +213,13 @@ MODULE atm_deposition
                         read(current_date(1:4), '(I4)') current_year
                         read(current_date(6:7), '(I2)') current_month
 
-                        
-                         mth = nb_days_month(current_month)
-                         
-                         IF((current_month == 2) .AND. (MOD(current_year,4) == 0)) &
-                                 mth = nb_days_month(current_month) + 1
+                        IF(dust_ts == "M") THEN
+                                mth = nb_days_month(current_month)
+                                IF((current_month == 2) .AND. (MOD(current_year,4) == 0)) &
+                                        mth = nb_days_month(current_month) + 1
+                        ELSEIF(dust_ts == "D") THEN
+                                mth = 1
+                        ENDIF
        
 
                         ! the position to be read in the 3rd dimension of the table related to time
@@ -203,7 +229,7 @@ MODULE atm_deposition
                         ! the position to be read in the 4th dimension of the table related to variable
                         DO i_var=1,nb_dust_vars
     
-                            ! Flux in mmol m-2 d-1
+                            ! Flux in mmole m-2 d-1
 
                              flx_dep_N(i_var) = dust_N(i,j,t_pos,i_var) * conv_fac(i_var) / mth
                              DO i_nut = 1, size(nutrient_names)
@@ -214,7 +240,7 @@ MODULE atm_deposition
                              END DO
 
                              ! update the dc of the corresponding state variable
-                             dc(iv_nut) = dc(iv_nut) + flx_dep_N(i_var) /epn ! Hz(i,j,N) the height of the shallowest layer
+                             dc(iv_nut) = dc(iv_nut) + flx_dep_N(i_var) /epn ! epn = Hz(i,j,N) the height of the shallowest layer
 
                         END DO
 

@@ -23,6 +23,7 @@ MODULE COMBLOOM
    CHARACTER(LEN=50), PUBLIC   :: dust_vname(max_vars)
    CHARACTER(LEN=25) , PUBLIC   :: mod_vars(max_vars)
    REAL(KIND=rsh),DIMENSION(max_vars) ,PUBLIC      :: conv_fac
+   CHARACTER(len=1) :: dust_ts
 
 
    !!!!  ---------------------------------------

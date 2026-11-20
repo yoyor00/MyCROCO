@@ -18,6 +18,7 @@
    CHARACTER(LEN=50), PUBLIC   :: dust_vname(10)
    CHARACTER(LEN=25) , PUBLIC   :: mod_vars(10)
    REAL(KIND=rsh),DIMENSION(10) ,PUBLIC      :: conv_fac
+   CHARACTER(len=1) :: dust_ts
 
 
   !!!!  ---------------------------------------
