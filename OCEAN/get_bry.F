@@ -705,7 +705,7 @@
 !$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
            zetabry_west(j)=zetabry_west(j)
-     &                     -(patm2d(Istr,j)-paref)/(g*rho0)
+     &                     -(patm2d(IstrR,j)-paref)/(g*rho0)
           enddo
 #   endif
 #   ifdef WET_DRY
