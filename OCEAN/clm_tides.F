@@ -43,14 +43,19 @@
 !*********************************************************************
 !
 # ifdef TIDES_MAS
-      USE mod_tides_mas
+      USE mod_tides_mas, ONLY : mas_init_ssh,
+#  if defined UV_TIDES
+     &                          mas_init_uv,
+#  endif
+     &                          mas_init_pot, mas_daily_update,
+     &                          mas_interpolate, mas_ijour,
+     &                          mas_imois, mas_ian, mas_tempis,
+     &                          mas_is_new_day
 # endif
       USE croco_namelist, only:dt
       use tools_calendar, only: tool_decompdate, tool_sectodat
       implicit none
-# ifndef TIDES_MAS
-#  include "param.h"
-# endif
+# include "param.h"
 # include "climat.h"
 # include "grid.h"
 # include "scalars.h"

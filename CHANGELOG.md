@@ -95,6 +95,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   catalogue; POT_TIDES : add missing tides.h include in prsgrd.F
   (Issue #595)
 
+- TIDES_MAS : fix AGRIF compilation failure caused by `mod_tides_mas`
+  re-exporting `param.h` constants and a module array named `omega`
+  colliding with the `omega` subroutine (#605)
+
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
 	- DIAGNOSTICS\_TSVAR terms were multiplied twice by the cell volume
