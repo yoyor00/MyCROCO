@@ -25,6 +25,46 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
+- SUBSTANCE : substance boundary conditions (`obc_cv_name`) now support
+  `'nullGradient'` and `'none'`; `'none'` falls back to the uniform
+  `cobc_wat` concentration. Left empty, `obc_cv_name` now defaults to the
+  substance's own name (`name_var`), reading it from the bry file if
+  present, same as `init_cv_name` for initial conditions below (#590)
+
+- SUBSTANCE : substance initial conditions (`init_cv_name`) now support
+  `'none'`, which skips reading the initial file for that substance and
+  falls back on the uniform `cini_wat` concentration, mirroring the
+  `obc_cv_name`/`cobc_wat` mechanism above. Left empty, `init_cv_name`
+  keeps defaulting to the substance's own name, as before. Whenever a
+  substance's initial condition is not read from file (`'none'`, or a
+  named variable missing from the file), it now always falls back on
+  `cini_wat` directly; the previous test-case/depth-dependent gap-filling
+  for substances is removed (#590)
+
+- SUBSTANCE : fixed (non-advected) substances now have a working initial
+  condition too: `init_cv_name_fix` and `cini_wat_fix` were declared and
+  read from the namelist but never actually used (their array, `cvfix_wat`,
+  was unconditionally hard-set to 0) (#590)
+
+- SUBSTANCE : `cv_rain` (substance concentration in rainwater) is now
+  applied in `bulk_flux.F`, adding `prate * cv_rain` to each substance's
+  surface flux, the same way rain already contributes to the temperature
+  flux there; only active if CPP keys SALINITY and RAIN_FLUX are both
+  defined (#590)
+
+- SUBSTANCE : `flx_atm` (uniform atmospheric dry deposition) is now
+  applied in `bulk_flux.F` too, as a constant term added to each
+  substance's surface flux (CPP key SUBSTANCE only; combines with the
+  `cv_rain` wet-deposition term above when RAIN_FLUX is also defined).
+  (#590)
+
+- SUBSTANCE : new `t90` parameter (mortality/decay time, in hours) for
+  dissolved, non-constitutive particulate and sorbed particulate
+  substances, porting MARS3D's `t90`/`f90` formulation: the
+  concentration is multiplied every time step by a decay factor
+  `f90 = exp(-dt*ln(10)/(t90*3600))` `t90` = 0. (default)
+  disables decay, as before this was added. (#590)
+  
 - MUSTANG : add Van der A et al. (2013) wave skewness/asymmetry bedload
   formulation (zero-current case), activated with l\_vandera in
   namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
@@ -93,6 +133,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BENCH : Fix AGRIF handling with a per-test-case AGRIF_FixedGrids.in,
   detected from the resolved cppdefs.h instead of sharing OCEAN's file
   across all cases (#489 and #576)
+- BENCH : Fix --build-ref crashing when a check-output or namelist path has subdirectories (#606)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
