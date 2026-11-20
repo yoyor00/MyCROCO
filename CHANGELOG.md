@@ -190,6 +190,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NH : Fix rhs typo (#538)
 
 ### Changed
+- OUTPUTS : output variable indices in ncscrum.h no longer differ between
+  2D and 3D configurations (#500)
+
 - OUTPUTS : output files are no longer overwritten on restart. Record
   counters of the history, averages and diagnostics files are saved in
   the restart file and restored, so a restart appends to the existing
