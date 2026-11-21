@@ -41,6 +41,9 @@ C$    integer omp_get_thread_num
 # endif
 # endif
 !     implicit none
+# ifdef MPI
+      use mpi
+# endif
 #include "param.h"
 #include "ncscrum.h"
 #include "grid.h"
@@ -102,7 +105,6 @@ C$    integer omp_get_thread_num
       real init    !!!!  0xFFFA5A5A ==> NaN
       parameter (init=0.)
 #ifdef MPI
-      include 'mpif.h'
       integer ierr
 #endif
 !
@@ -1402,8 +1404,14 @@ C$    integer omp_get_thread_num
           do i=IstrR,IendR
 # if !defined LMD_MIXING && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
+#  ifdef AVERAGES
+            Akv_avg(i,j,k)=Akv_bak
+#  endif
 # else
             Akv(i,j,k)=init
+#  ifdef AVERAGES
+            Akv_avg(i,j,k)=init
+#  endif
 # endif
 # if defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
@@ -1416,16 +1424,28 @@ C$    integer omp_get_thread_num
 # if !defined LMD_MIXING && !defined GLS_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,itemp)=Akt_bak(itemp)
+#   endif
 #  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,isalt)=Akt_bak(isalt)
+#   endif
 #  endif
 # else
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=init
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,itemp)=init
+#   endif
 #  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=init
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,isalt)=init
+#   endif
 #  endif
 # endif
           enddo

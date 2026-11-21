@@ -25,12 +25,60 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   out\_his\_z\_r, out\_his\_z\_w, out\_avg\_z\_r, out\_avg\_z\_w in the
   auxiliary fields namelist blocks (Issue #543)
 
+- SUBSTANCE : substance boundary conditions (`obc_cv_name`) now support
+  `'nullGradient'` and `'none'`; `'none'` falls back to the uniform
+  `cobc_wat` concentration. Left empty, `obc_cv_name` now defaults to the
+  substance's own name (`name_var`), reading it from the bry file if
+  present, same as `init_cv_name` for initial conditions below (#590)
+
+- SUBSTANCE : substance initial conditions (`init_cv_name`) now support
+  `'none'`, which skips reading the initial file for that substance and
+  falls back on the uniform `cini_wat` concentration, mirroring the
+  `obc_cv_name`/`cobc_wat` mechanism above. Left empty, `init_cv_name`
+  keeps defaulting to the substance's own name, as before. Whenever a
+  substance's initial condition is not read from file (`'none'`, or a
+  named variable missing from the file), it now always falls back on
+  `cini_wat` directly; the previous test-case/depth-dependent gap-filling
+  for substances is removed (#590)
+
+- SUBSTANCE : fixed (non-advected) substances now have a working initial
+  condition too: `init_cv_name_fix` and `cini_wat_fix` were declared and
+  read from the namelist but never actually used (their array, `cvfix_wat`,
+  was unconditionally hard-set to 0) (#590)
+
+- SUBSTANCE : `cv_rain` (substance concentration in rainwater) is now
+  applied in `bulk_flux.F`, adding `prate * cv_rain` to each substance's
+  surface flux, the same way rain already contributes to the temperature
+  flux there; only active if CPP keys SALINITY and RAIN_FLUX are both
+  defined (#590)
+
+- SUBSTANCE : `flx_atm` (uniform atmospheric dry deposition) is now
+  applied in `bulk_flux.F` too, as a constant term added to each
+  substance's surface flux (CPP key SUBSTANCE only; combines with the
+  `cv_rain` wet-deposition term above when RAIN_FLUX is also defined).
+  (#590)
+
+- SUBSTANCE : new `t90` parameter (mortality/decay time, in hours) for
+  dissolved, non-constitutive particulate and sorbed particulate
+  substances, porting MARS3D's `t90`/`f90` formulation: the
+  concentration is multiplied every time step by a decay factor
+  `f90 = exp(-dt*ln(10)/(t90*3600))` `t90` = 0. (default)
+  disables decay, as before this was added. (#590)
+  
 - MUSTANG : add Van der A et al. (2013) wave skewness/asymmetry bedload
   formulation (zero-current case), activated with l\_vandera in
   namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
   case in BENCH (#589)
 
+- TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
+  per-rank JSON output), enabled at build time with `jobcomp --timings`
+
 ### Fixed
+
+- PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
+  which caused the river discharge Qsrc to be applied twice to u/v in
+  step3d_uv2.F (once through PSOURCE_MASS's mass-flux treatment and once
+  through PSOURCE's momentum-based treatment) (Issue #599)
 
 - NC4PAR : fix wrong record index on MPI ranks > 0 when reopening an
   existing history/restart/diagnostics file to append records (e.g. on
@@ -49,6 +97,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   uninitialized index when a tide period has no match in the MAS
   catalogue; POT_TIDES : add missing tides.h include in prsgrd.F
   (Issue #595)
+
+- TIDES_MAS : fix AGRIF compilation failure caused by `mod_tides_mas`
+  re-exporting `param.h` constants and a module array named `omega`
+  colliding with the `omega` subroutine (#605)
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
@@ -82,6 +134,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BENCH : Fix AGRIF handling with a per-test-case AGRIF_FixedGrids.in,
   detected from the resolved cppdefs.h instead of sharing OCEAN's file
   across all cases (#489 and #576)
+- BENCH : Fix --build-ref crashing when a check-output or namelist path has subdirectories (#606)
+- BENCH : Fix --build-ref crashing when results/last is a dangling symlink, 
+  replace it with helpers.replace_symlink() instead (#607)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
@@ -96,6 +151,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
 - COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
 - COUPLING : Fix missing restart file update for OASIS (#501). 
+- COUPLING : Fix PSMILE_INCDIR definition in jobcomp to support all OASIS3-MCT versions (#480)
+
+- OBC_PATM : fix wrong i-index in get_bry.F, zetabry_west atmospheric pressure correction used Istr instead of IstrR (#530)
 
 - Fix time in surf average output file (#388)
 - Fix averages over a single time step (nwrt\*\_avg = 1) in diags, diags\_pv, diags\_eddy,
@@ -134,6 +192,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NH : Fix rhs typo (#538)
 
 ### Changed
+- OUTPUTS : output files are no longer overwritten on restart. Record
+  counters of the history, averages and diagnostics files are saved in
+  the restart file and restored, so a restart appends to the existing
+  file instead of starting a new one. This used to require
+  `DO_NOT_OVERWRITE` and `RESTART_DIAGS`, which are now the default
+  behavior (and no longer exist). A new namelist option `lresetrec`
+  (`&croco_initial`, default false) can be used to reset the record
+  counters to zero on restart, e.g. to change an output frequency or
+  start a new branch run (Issue #108)
+
 - Vertical coordinate : only the new s-coordinate (Vtransform = 2,
   Shchepetkin & McWilliams 2009) is kept (#396).
   Input files (initial, boundary, climatology) are checked when opened:
@@ -162,6 +230,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     - renames all French variable names to English throughout in this module.
   All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
   (was raw floating-point days since origin).
+  TOOL_ORIGINDATE error/warning messages now report the affected netCDF
+  file and variable (#600).
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
@@ -226,10 +296,27 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - XIOS : Unmask output grid/geometry variables so that they keep valid
   values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
+- Compilation : replace the legacy `include 'mpif.h'` by the standard
+  `use mpi` Fortran module in OCEAN, MUSTANG, XIOS, PISCES, AGRIF and
+  STOGEN (#372)
+
+- Build : replace cross_matrix.F, the Fortran tool generating Make.depend,
+  by make_depend.py, a stdlib-only Python replacement; it fixes missing
+  dependencies that made incremental (re)builds unreliable and comes with
+  unit tests run in CI (Issue #566)
+
 ### Deprecated
 
 
 ### Removed
+- AVERAGES_K cpp key has been removed (Issue #374). 
+   If deactivated, averaged vertical mixing coefficients AKv, AKt and AKs were not saved.
+   Removed because redundant with booleans out_avg_akv, out_avg_akt and out_avg_aks in namelist. 
+
+- DO_NOT_OVERWRITE and RESTART_DIAGS cpp keys have been removed, their
+  behavior (appending to existing output files on restart) is now the
+  default (Issue #108)
+
 - NEW_S_COORD, cpp key has been removed (if deactivated, old s-coordinate (Vtransform = 1, 
     Song & Haidvogel 1994) was chosen , Now Vtransform=2 is used by default (Shchepetkin & McWilliams 2009))
     the key has also been removed from all TEST_CASES cppdefs (#396)
@@ -319,9 +406,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven
+  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre, P. Penven, M. Bremond
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
-  S. Theetten, L. Maillard, N. Herry
+  S. Theetten, A. Mittermair, L. Maillard, N. Herry

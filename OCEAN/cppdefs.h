@@ -253,7 +253,6 @@
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
 # define AVERAGES
-# define AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
 /*
@@ -266,9 +265,6 @@
 !--------------------------------------------
 !
 */
-# undef DO_NOT_OVERWRITE
-# undef RESTART_DIAGS
-
 # undef DIAGNOSTICS_TS
 
 # ifdef DIAGNOSTICS_TS

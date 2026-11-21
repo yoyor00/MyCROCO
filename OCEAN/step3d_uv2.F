@@ -87,7 +87,7 @@
 #  include "diags_pv.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j,k
-# ifdef PSOURCE
+# if defined PSOURCE && !defined PSOURCE_MASS
      &       ,is
 # endif
       REAL     :: EPSIL
@@ -1061,7 +1061,7 @@
 ! variables not containing mass point sources info during the
 ! coupling process (P. Marchesiello, 17 Jun 2004).
 !
-# ifdef PSOURCE
+# if defined PSOURCE && !defined PSOURCE_MASS
       do is=1,Nsrc
 #  ifdef MPI
            i=Isrc_mpi(is,mynode)
