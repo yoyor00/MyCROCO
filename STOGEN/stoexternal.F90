@@ -17,6 +17,9 @@ MODULE stoexternal
 #include "cppdefs.h"
    USE croco_namelist, only: dt
    USE scalars
+#ifdef MPI
+   use mpi
+#endif
    IMPLICIT NONE
    PRIVATE
    ! include definition of grid and mask from CROCO
@@ -25,11 +28,6 @@ MODULE stoexternal
 #ifdef ENSEMBLE
    ! include definition of local CROCO communicator (here to get member index)
 # include "mpi_cpl.h"
-#endif
-
-   ! import MPI include file                                         |
-#ifdef MPI
-   include 'mpif.h'
 #endif
 
    ! Type of variables

@@ -30,9 +30,7 @@
 #if defined ABL1D && !defined XIOS
           USE croco_namelist, ONLY : ldefablhis
 #endif
-#ifdef USE_CALENDAR
           USE croco_namelist, ONLY : end_date
-#endif
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif
@@ -72,8 +70,13 @@
       use openacc
 #endif
       use buffer, only: init_buffer
+#ifdef MPI
+      use mpi
+#endif
+      use tools_calendar, only: tool_datosec, tool_sectodat
+!$croco timings use
 !     implicit none
-      integer tile, subs, trd, ierr
+      integer tile, subs, trd, ierr, err
 #include "param.h"
 #include "private_scratch.h"
 #include "nbq.h"
@@ -95,14 +98,10 @@
 # include "sta.h"
 # include "nc_sta.h"
 #endif
-#ifdef USE_CALENDAR
-       character*19 :: tool_sectodat
-#endif
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours
 #endif
 #ifdef MPI
-      include 'mpif.h'
 !     real*8 start_time2, start_time1, exe_time
 #endif
       integer :: iifroot, iicroot
@@ -120,6 +119,11 @@
 #endif
 !
 #include "dynderivparam.h"
+!
+!  Wall-clock timing facility.
+!
+!$croco timings init
+!$croco timings start main_init
 
 #ifdef JEANZAY
 ! Initialise OpenACC...
@@ -174,7 +178,7 @@
 !  Setup MPI domain decomposition
 !
 #ifdef MPI
-!     start_time1=PMPI_Wtime()
+!     start_time1=MPI_Wtime()
       call MPI_Setup (ierr)
       if (ierr.ne.0) goto 100        !--> ERROR
 #endif
@@ -413,13 +417,9 @@ C$OMP BARRIER
       tdays=time*sec2day        ! is set by get_initial or analytically
                                 ! --> copy it into threadprivate "time"
 
-#ifdef USE_CALENDAR
-      time_end=tool_datosec(end_date)
-      ntimes=int((time_end-time)/dt)
+      ntimes=NINT((tool_datosec(end_date)-time)/dt)+ntstart-1
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
-      ntimes=ntimes+ntstart
-#endif
 !
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
@@ -889,7 +889,12 @@ C$OMP PARALLEL DO PRIVATE(tile)
         enddo
       endif
 #else
-      if (ldefhis .and. wrthis(indxTime)) call wrt_his
+!
+! In case of restart (record counter already restored by get_initial),
+! the initial state is already in the history file: do not write it again.
+!
+      if (ldefhis .and. wrthis(indxTime) .and. nrechis.eq.0)
+     &                                                call wrt_his
 #endif
 
 #ifdef ABL1D
@@ -898,11 +903,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call abl_ini (tile)
       enddo
 # ifndef XIOS
-      if (ldefablhis .and. wrtabl(indxTime)) call wrt_abl_his
+      if (ldefablhis .and. wrtabl(indxTime) .and. nrecablhis.eq.0)
+     &                                            call wrt_abl_his
 # endif
 #endif
 
 CR      write(*,*) '  0' MYID
+!$croco timings stop main_init
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
 !
 !
@@ -924,9 +931,6 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
-#ifdef USE_CALENDAR
-      time_end=tool_datosec(end_date)
-#endif
 
 ! XIOS (
 !  Clean log output a bit
@@ -953,19 +957,13 @@ CR      write(*,*) '  0' MYID
 
 #ifdef MPI_TIME
 ! Start Chrono
-      start_time1=PMPI_Wtime()
+      start_time1=MPI_Wtime()
 #endif
 
+!$croco timings start time_step
       do iicroot=ntstart,ntimes+1
 #ifdef MPI_TIME
-        start_time1_1=PMPI_Wtime()
-#endif
-
-#ifdef USE_CALENDAR
-        if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(stdout,'(a)') tool_sectodat(time)
-        endif
-        if (time .gt. time_end) goto 99
+        start_time1_1=MPI_Wtime()
 #endif
 
 #ifdef SOLVE3D
@@ -987,15 +985,17 @@ CR      write(*,*) '  0' MYID
         enddo
 #endif
 #ifdef MPI_TIME
-        start_time1_2=PMPI_Wtime()
+        start_time1_2=MPI_Wtime()
         exe_time_1 = start_time1_2 - start_time1_1
           if (mynode.eq.0) write(97,*) exe_time_1
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
+!$croco timings stop time_step
   99  continue                             ! SHUTDOWN:
+!$croco timings start main_finalize
 #ifdef MPI_TIME
-      start_time2=PMPI_Wtime()
+      start_time2=MPI_Wtime()
       exe_time = start_time2 - start_time1
       MPI_master_only write(stdout,*) '*******************************'
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
@@ -1023,16 +1023,17 @@ CR      write(*,*) '  0' MYID
         parcours => parcours % next
       enddo
 #endif
+!$croco timings stop main_finalize
 
  100  continue
 
       if (may_day_flag.ne.0) ierr=1
 
 #ifdef MPI
-      if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
+      if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, err,ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
 
-!     start_time2=PMPI_Wtime()
+!     start_time2=MPI_Wtime()
 !     exe_time = start_time2 - start_time1
 !     if (mynode.eq.0) print *,'exe_time =',exe_time
 
@@ -1059,5 +1060,6 @@ CR      write(*,*) '  0' MYID
 # endif
 #endif
 
+!$croco timings finalize
       stop
       end

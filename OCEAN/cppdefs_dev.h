@@ -571,9 +571,6 @@
 #ifdef TIDES_MAS
 # define MASKING
 #endif
-#if defined TIDES_MAS  && !defined USE_CALENDAR
-#error "TIDES with TIDES_MAS requires USE_CALENDAR "
-#endif
 
 /*
 ======================================================================
@@ -604,17 +601,17 @@
     PSOURCE / PSOURCE_NCFILE option
 ======================================================================
 */
+#if defined PSOURCE_NCFILE
+# ifndef PSOURCE_MASS
+#  define PSOURCE
+# endif
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS
 # define ANA_PSOURCE  /* ON: set vertical profil for qbar */
 # undef RIVER_RAMP
 #endif
 #ifdef PSOURCE_MASS
 # undef PSOURCE
-#endif
-#if defined PSOURCE_NCFILE
-# define PSOURCE
-# define ANA_PSOURCE
-# undef RIVER_RAMP
 #endif
 
 /*
@@ -871,10 +868,8 @@
 #ifdef MUSTANG
 # undef  SEDIMENT
 # define SUBSTANCE
-# define USE_CALENDAR
 # define TEMPERATURE
 # define SALINITY
-# define key_nofluxwat_IWS
 #endif /* MUSTANG */
 
 
@@ -1043,7 +1038,6 @@
 ======================================================================
 */
 #ifndef SOLVE3D
-# undef AVERAGES_K
 # undef TRACERS
 # undef TEMPERATURE
 # undef SALINITY

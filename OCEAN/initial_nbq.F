@@ -56,11 +56,11 @@
 # ifdef NBQ
       use croco_namelist, only: csound_nbq
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
       integer  Istr, Iend, Jstr, Jend
-# ifdef MPI
-      include 'mpif.h'
-# endif
 # include "param.h"
 # include "scalars.h"
 # include "private_scratch.h"

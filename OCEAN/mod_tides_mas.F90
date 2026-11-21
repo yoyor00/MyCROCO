@@ -5,7 +5,7 @@
 #include "cppdefs.h"
 module mod_tides_mas
 #ifdef TIDES_MAS
-  use param
+  use param, only : Lm, Mm, padd_X, padd_E
   integer, parameter :: nmarmax=144
   integer, dimension(nmarmax)            :: nu
   integer, dimension(30,8)               :: nomd
@@ -13,7 +13,7 @@ module mod_tides_mas
   character(len=100), dimension(nmarmax) :: nommar
   logical, dimension(nmarmax)            :: l_presence
   integer, dimension(nmarmax)            :: doodson
-  real, dimension(nmarmax)               :: omega
+  real, dimension(nmarmax)               :: omega_mas
   real, dimension(nmarmax)               :: frequence,equitide
 
   integer :: inivm,isa,issa,imsm,imm,imsf,imf,imfm,i2q1,isigma1
@@ -349,7 +349,7 @@ contains
            valonmsol*(nd_tmp(3)-5)+valonperl*(nd_tmp(4)-5)     &
            +valonascl*(nd_tmp(5)-5)+valonpers*(nd_tmp(6)-5)
       frequence(i)=max(mod(asfo/24.0,360.0),1e-10)
-      omega(i)=2*pi*frequence(i)*(pi/180.0/3600.0)
+      omega_mas(i)=2*pi*frequence(i)*(pi/180.0/3600.0)
     end do
   end subroutine tide_data
 
@@ -520,9 +520,10 @@ contains
 !  loop that calls clm_tides): this is the only place jourmem is
 !  touched, so calling it per-tile instead would race across threads.
 !
+    use tools_calendar, only: tool_sectodat, tool_decompdate
     implicit none
     real, intent(in) :: time
-    character(len=19) :: cdate,tool_sectodat
+    character(len=19) :: cdate
     integer :: iheure,iminu,isec
 
     cdate = tool_sectodat(time)

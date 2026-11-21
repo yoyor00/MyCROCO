@@ -71,6 +71,10 @@
       USE stoalloc        ! Stochastic working arrays
 #endif
 
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff
@@ -87,7 +91,6 @@
       integer tile, itrc,i,j,k
 #endif
 #if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
 #include "param.h"
@@ -215,9 +218,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     Time
 !
       ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
+     &  - start_date_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))

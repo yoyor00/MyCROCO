@@ -20,6 +20,7 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -84,6 +85,9 @@
           write(stdout,3) 'uclm_time', clmname(1:lstr)
           goto 99                                     !--> ERROR
         endif
+        call tool_origindate(ncidclm,uclm_tid,
+     &                       uclm_origin_date_in_sec, uclm_secinunit)
+
 # ifdef M2CLIMATOLOGY
         lvar=lenstr(vname(1,indxUb))
         ierr=nf_inq_varid (ncidclm, vname(1,indxUb)(1:lvar), ubclm_id)
@@ -157,13 +161,9 @@
         write(stdout,6) 'Xclm_time', uclm_rec
         goto 99                                        !--> ERROR
       endif
-# ifdef USE_CALENDAR
-        call tool_origindate(ncidclm,uclm_tid,
-     &                       uclm_origin_date_in_sec)
-        cff=cff+uclm_origin_date_in_sec*sec2day
-# endif
+        cff=uclm_origin_date_in_sec+cff*uclm_secinunit
 
-      uclm_time(i)=cff*day2sec+uclm_cycle
+      uclm_time(i)=cff+uclm_cycle
      &                             *uclm_ncycle
       if (uclm_time(ituclm).eq.-1.E+20)
      &    uclm_time(ituclm)=uclm_time(i)
@@ -219,11 +219,9 @@
 # endif
 
       ituclm=i
-      MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
-     &'GET_UCLIMA -- Read momentum climatology      for time =', cff
-# ifdef USE_CALENDAR
-     &  -uclm_origin_date_in_sec*sec2day
-# endif
+      MPI_master_only write(stdout,'(6x,A,1x,A19,1x,I4)')
+     &'GET_UCLIMA -- Read momentum climatology      for time =',
+     &  tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -366,9 +364,7 @@ C$    integer  trd, omp_get_thread_num
      &            'bounds of ''uclm_time''.', 'UCLM_TSTART=',
      &             uclm_time(it1)*sec2day,     'TDAYS=',  tdays,
      &            'UCLM_TEND=',   uclm_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &  -uclm_origin_date_in_sec*sec2day
-# endif
           may_day_flag=2
       endif
       return

@@ -19,11 +19,16 @@
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
      &   rstMust_nbvar, rstT_dyninsed
 #endif
+# ifdef NC4PAR
+      use mpi
+# endif
+      use tools_calendar, only: tool_sectodat
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3),  auxil(2),  checkdims
      &      , b3dgrd(4)
+     &      , auxildg(2)
 #ifdef ABL1D
      &      , abl3dgrd(4)
 #endif
@@ -39,9 +44,7 @@
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
+      CHARACTER (len=19)    :: cdate
 
 #include "param.h"
 #include "scalars.h"
@@ -49,7 +52,6 @@
 #include "netcdf.inc"
 #ifdef NC4PAR
 # include "mpi_cpl.h"
-      include 'mpif.h'
 #endif
 !
 ! Put time record index into file name. In  the case when model
@@ -68,7 +70,6 @@
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (rstname, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(1:4)//cdate(6:7)
@@ -76,7 +77,6 @@
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 !
@@ -168,6 +168,10 @@
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
 #endif
         auxil(2)=timedim
+#ifndef XIOS
+        ierr=nf_def_dim (ncid, 'auxil_dg', ncntdg, auxildg(1))
+        auxildg(2)=timedim
+#endif
 
         r2dgrd(3)=timedim           ! Free surface
 
@@ -235,6 +239,19 @@
 #endif
         ierr=nf_put_att_text (ncid, rstTstep, 'long_name', 48,
      &       'time step and record numbers from initialization')
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files: each file has its own
+! output frequency, so its counter is stored separately.
+!
+        ierr=nf_def_var (ncid, 'time_step_dg', nf_int, 2, auxildg,
+     &       rstTstepDg)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTstepDg,nf_collective)
+# endif
+        ierr=nf_put_att_text (ncid, rstTstepDg, 'long_name', 54,
+     &       'record numbers of the diagnostics files (time_step_dg)')
+#endif
 !
 ! Time.
 !
@@ -1340,7 +1357,7 @@
               rec=rec-ierr
             elseif (nrpfrst.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 #endif
             endif
@@ -1377,6 +1394,20 @@
         endif
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTstep,nf_collective)
+#endif
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files (absent in old files).
+!
+        ierr=nf_inq_varid (ncid, 'time_step_dg', rstTstepDg)
+        if (ierr .ne. nf_noerr) then
+          rstTstepDg=-1
+        else
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstTstepDg,nf_collective)
+# endif
+        endif
+        ierr=nf_noerr
 #endif
 !
 ! Time.

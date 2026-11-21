@@ -17,13 +17,14 @@ MODULE substance
    USE module_substance
    USE comsubstance
    USE submassbalance, ONLY :  submassbalance_readdomain
-   USE croco_namelist, ONLY : subsfilename
+   USE croco_namelist, ONLY : subsfilename, dt
+   USE tools_calendar, ONLY: tool_datosec
 
 # if defined BIOLink
    USE comBIOLink
 # endif
-#if defined MUSTANG && ! defined key_noTSdiss_insed
-   USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1
+#if defined MUSTANG
+   USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1,l_diss_insed
 #endif
 
    IMPLICIT NONE
@@ -35,13 +36,15 @@ MODULE substance
    ! variables for all ntrc_subs
    CHARACTER(LEN=lchain),DIMENSION(ntrc_subs)      :: name_var_r, long_name_var_r, standard_name_var_r, &
                                                       unit_var_r, init_cv_name_r, obc_cv_name_r
-   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cini_air_r, cobc_wat_r
-   LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r 
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: flx_atm_r, cv_rain_r, cini_wat_r, cobc_wat_r
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)            :: t90_r
+   LOGICAL, DIMENSION(ntrc_subs)                   :: l_out_subs_r
 
    ! local variable to read each namelist with different length (variables by group of substances)
    CHARACTER(LEN=lchain),DIMENSION(:),ALLOCATABLE  :: name_var_n, long_name_var_n, standard_name_var_n, &
                                                       unit_var_n, init_cv_name_n, obc_cv_name_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cini_air_n, cobc_wat_n  
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: flx_atm_n, cv_rain_n, cini_wat_n, cobc_wat_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE        :: t90_n
    LOGICAL, DIMENSION(:),ALLOCATABLE               :: l_out_subs_n    
 #ifdef MUSTANG
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: cini_sed_n
@@ -93,10 +96,8 @@ CONTAINS
    REAL(KIND=rsh), DIMENSION(4,ntrc_subs)     :: ws_free_para_r
    REAL(KIND=rsh), DIMENSION(2,ntrc_subs)     :: ws_hind_para_r 
    INTEGER, DIMENSION(ntrc_subs)              :: ws_hind_opt_r,ws_free_opt_r 
-# if ! defined key_noTSdiss_insed
-      INTEGER, DIMENSION(ntrc_subs)           :: D0_funcT_opt_r
-      REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
-# endif
+   INTEGER, DIMENSION(ntrc_subs)           :: D0_funcT_opt_r
+   REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
    LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n, l_outsandrouse_n, l_bedload_n
    REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
@@ -113,51 +114,51 @@ CONTAINS
    LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
 #endif
 
-   REAL(KIND=rlg)        :: tool_datosec
-                                    
+
+
    !! *  define namelists reading in parasubstance.txt
 #ifdef MUSTANG
    NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_grav, nv_sand, nv_mud, nv_sorb
    NAMELIST/nmlgravels/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,l_bedload_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n,cini_sed_n,l_bedload_n, &
+                       l_out_subs_n, &
                        tocd_n,ros_n,diam_n
    NAMELIST/nmlsands/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,l_bedload_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        tocd_n,ros_n,diam_n,l_sand2D_n,l_outsandrouse_n
    NAMELIST/nmlmuds/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
                        flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        tocd_n,ros_n,diam_n, &
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n,tocd_n,ros_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n,tocd_n,ros_n, &
                        ws_free_opt_n,ws_free_min_n,ws_free_max_n,ws_free_para_n, &
                        ws_hind_opt_n,ws_hind_para_n
    NAMELIST/nmlpartsorb/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        name_varpc_assoc_n
    NAMELIST/nmlvardiss/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cini_sed_n,cobc_wat_n, &
                        D0_funcT_opt_n,D0_m0_n,D0_m1_n,                       &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #else     
    NAMELIST/nmlnbvar/ nv_dis, nv_ncp, nv_bent, nv_fix, nv_sorb                 
    NAMELIST/nmlpartnc/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        ws_free_min_n,ws_free_max_n
    NAMELIST/nmlpartsorb/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n,            &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n,            &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n, &
                        name_varpc_assoc_n
    NAMELIST/nmlvardiss/name_var_n,long_name_var_n,standard_name_var_n,unit_var_n, &
-                       flx_atm_n,cv_rain_n,cini_wat_n,cobc_wat_n, &
-                       cini_air_n,l_out_subs_n,init_cv_name_n,obc_cv_name_n
+                       flx_atm_n,cv_rain_n,t90_n,cini_wat_n,cobc_wat_n, &
+                       l_out_subs_n,init_cv_name_n,obc_cv_name_n
 #endif                      
    NAMELIST/nmlvarfix/name_var_fix,long_name_var_fix,standard_name_var_fix,unit_var_fix, &
                        cini_wat_fix,l_out_subs_fix,init_cv_name_fix  
@@ -261,7 +262,16 @@ CONTAINS
     ALLOCATE(diam_n(nv_grav))
     ALLOCATE(ros_n(nv_grav))
     ALLOCATE(l_bedload_n(nv_grav))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    diam_n(:)=0.
+    ros_n(:)=0.
+    l_bedload_n(:)=.FALSE.
     READ(500,nmlgravels)
+    ! gravels are never in suspension (bedload only): always use the
+    ! uniform cini_wat_n()/cobc_wat_n() constants, never read from file
+    init_cv_name_n(:)='none'
+    obc_cv_name_n(:)='none'
     iv0=iv
     CALL DEFVAR_DEALLOC(nv_grav,iv)
     DO ivr=1,nv_grav
@@ -285,6 +295,13 @@ CONTAINS
     ALLOCATE(l_sand2D_n(nv_sand))
     ALLOCATE(l_outsandrouse_n(nv_sand))
     ALLOCATE(l_bedload_n(nv_sand))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    diam_n(:)=0.
+    ros_n(:)=0.
+    l_sand2D_n(:)=.FALSE.
+    l_outsandrouse_n(:)=.FALSE.
+    l_bedload_n(:)=.FALSE.
     READ(500,nmlsands)
     iv0=iv
     CALL DEFVAR_DEALLOC(nv_sand,iv)   
@@ -314,6 +331,16 @@ CONTAINS
     ALLOCATE(ws_free_para_n(4,nv_mud))
     ALLOCATE(ws_hind_opt_n(nv_mud))
     ALLOCATE(ws_hind_para_n(2,nv_mud))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    diam_n(:)=0.
+    ros_n(:)=0.
+    ws_free_opt_n(:)=0.
+    ws_free_min_n(:)=0.
+    ws_free_max_n(:)=0.
+    ws_free_para_n(:,:)=0.
+    ws_hind_opt_n(:)=0.
+    ws_hind_para_n(:,:)=0.
     READ(500,nmlmuds)
     iv0=iv   
     CALL DEFVAR_DEALLOC(nv_mud,iv)   
@@ -352,9 +379,18 @@ CONTAINS
     ALLOCATE(ws_free_para_n(4,nv_ncp))
     ALLOCATE(ws_hind_opt_n(nv_ncp))
     ALLOCATE(ws_hind_para_n(2,nv_ncp))
+    ! safe defaults if left unset in the namelist
+    tocd_n(:)=0.
+    ros_n(:)=0.
+    ws_free_opt_n(:)=0.
+    ws_free_para_n(:,:)=0.
+    ws_hind_opt_n(:)=0.
+    ws_hind_para_n(:,:)=0.
 #endif
     ALLOCATE(ws_free_min_n(nv_ncp))
     ALLOCATE(ws_free_max_n(nv_ncp))
+    ws_free_min_n(:)=0.
+    ws_free_max_n(:)=0.
 
     READ(500,nmlpartnc)
     iv0=iv   
@@ -386,6 +422,7 @@ CONTAINS
    IF(nv_sorb > 0) THEN
     CALL ALLOC_DEFVAR(nv_sorb)   
     ALLOCATE(name_varpc_assoc_n(nv_sorb))
+    name_varpc_assoc_n(:)=''
     READ(500,nmlpartsorb)
     iv0=iv   
     CALL DEFVAR_DEALLOC(nv_sorb,iv)   
@@ -404,6 +441,14 @@ CONTAINS
       ALLOCATE(D0_funcT_opt_n(nv_dis))
       ALLOCATE(D0_m0_n(nv_dis))
       ALLOCATE(D0_m1_n(nv_dis))
+      ! safe default if left unset in the namelist: D0_funcT_opt_n=1
+      ! with D0_m0_n=D0_m1_n=0. gives D0=0 (no molecular-diffusion
+      ! enhancement in sediment porewater), instead of being left
+      ! uninitialized (see sed_MUSTANG.F90, which has no ELSE branch
+      ! for D0_funcT_opt not in {1,2})
+      D0_funcT_opt_n(:)=1
+      D0_m0_n(:)=0.
+      D0_m1_n(:)=0.
 #endif
 
     READ(500,nmlvardiss)
@@ -411,14 +456,12 @@ CONTAINS
     CALL DEFVAR_DEALLOC(nv_dis,iv)   
     itypv_r(iv0+1:iv)=6
 #if defined MUSTANG
-# if ! defined key_noTSdiss_insed
-      DO ivr=1,nv_dis
-       D0_funcT_opt_r(iv0+ivr)=D0_funcT_opt_n(ivr)
-       D0_m0_r(iv0+ivr)=D0_m0_n(ivr)
-       D0_m1_r(iv0+ivr)=D0_m1_n(ivr)
-      ENDDO
-# endif
-      DEALLOCATE(D0_funcT_opt_n,D0_m0_n,D0_m1_n)
+   DO ivr=1,nv_dis
+      D0_funcT_opt_r(iv0+ivr)=D0_funcT_opt_n(ivr)
+      D0_m0_r(iv0+ivr)=D0_m0_n(ivr)
+      D0_m1_r(iv0+ivr)=D0_m1_n(ivr)
+   ENDDO
+   DEALLOCATE(D0_funcT_opt_n,D0_m0_n,D0_m1_n)
 #endif
 
    ENDIF
@@ -431,7 +474,20 @@ CONTAINS
     ALLOCATE(init_cv_name_fix(nballoc))
     ALLOCATE(standard_name_var_fix(nballoc))
     ALLOCATE(name_var_fix(nballoc))
+    ! safe defaults if left unset in the namelist
+    cini_wat_fix(:)=0.
+    init_cv_name_fix(:)=''
+    standard_name_var_fix(:)=''
+    name_var_fix(:)=''
+    long_name_var_fix(:)=''
+    unit_var_fix(:)=''
+    l_out_subs_fix(:)=.TRUE.
     READ(500,nmlvarfix)
+    DO ivr=1,nballoc
+      IF(init_cv_name_fix(ivr)=='') THEN
+         init_cv_name_fix(ivr)=name_var_fix(ivr)
+      ENDIF
+    ENDDO
    ENDIF
  
 #ifdef key_benthic
@@ -445,6 +501,13 @@ CONTAINS
     ALLOCATE(unit_var_bent(nballoc))
     ALLOCATE(cini_bent(nballoc))
     ALLOCATE(l_out_subs_bent(nballoc))
+    ! safe defaults if left unset in the namelist
+    name_var_bent(:)=''
+    long_name_var_bent(:)=''
+    standard_name_var_bent(:)=''
+    unit_var_bent(:)=''
+    cini_bent(:)=0.
+    l_out_subs_bent(:)=.TRUE.
     READ(500,nmlvarbent)
    ENDIF
 #endif
@@ -473,7 +536,7 @@ CONTAINS
     !******************************************
 
 #if defined BLOOM && (defined key_N_tracer || defined key_P_tracer)
-  CALL bloom_create_vartracer(flx_atm_r,cv_rain_r,cini_wat_r,cini_air_r,          &
+  CALL bloom_create_vartracer(flx_atm_r,cv_rain_r,cini_wat_r,          &
                                   l_out_subs_r,init_cv_name_r,obc_cv_name_r,            &
 #if defined MUSTANG
                                   ws_free_opt_r,ws_free_para_r,ws_hind_opt_r,           &
@@ -488,7 +551,7 @@ CONTAINS
 #endif
 
 #if defined PEPTIC
-   CALL peptic_create_var(iv,flx_atm_r,cv_rain_r,cini_wat_r,cini_air_r, &
+   CALL peptic_create_var(iv,flx_atm_r,cv_rain_r,cini_wat_r, &
                                 l_out_subs_r,ws_free_min_r,ws_free_max_r,cobc_wat_r,   &
                                 itypv_r,init_cv_name_r,obc_cv_name_r,unit_var_r,       &
                                 long_name_var)
@@ -504,7 +567,7 @@ CONTAINS
 !        CALL conta_read_data(obc_cv_name_r,nb_frac_var_r,                         &
 !                             icon_var_r, init_cv_name_r,ispc_var_r,               &
 !                             flx_atm_r,cv_rain_r,cini_wat_r,cini_sed_r,           &
-!                             cini_air_r,l_out_subs_r,tocd_r,ros_r,diam_r,         &
+!                             l_out_subs_r,tocd_r,ros_r,diam_r,                   &
 !                             ws_free_opt_r,ws_free_min_r,ws_free_max_r,           &
 !                             ws_free_para_r,ws_hind_opt_r,ws_hind_para_r          &
 !
@@ -645,9 +708,10 @@ CONTAINS
     ALLOCATE(init_cv_name(itsubs1:itsubs2))
     ALLOCATE(sub_flx_atm(itsubs1:itsubs2))
     ALLOCATE(cv_rain(itsubs1:itsubs2))
+    ALLOCATE(t90(itsubs1:itsubs2))
+    ALLOCATE(f90(itsubs1:itsubs2))
     ALLOCATE(cini_wat(itsubs1:itsubs2))
     ALLOCATE(cobc_wat(itsubs1:itsubs2))
-    ALLOCATE(cini_air(itsubs1:itsubs2))
     ALLOCATE(ws_part(GLOBAL_2D_ARRAY,N,itsubs1:itsubs2))
     ALLOCATE(typdiss(itsubs1:itsubs2)) 
     ws_part(:,:,:,:)=0.0
@@ -672,11 +736,12 @@ CONTAINS
       tocd(:)=0.0
       ros(:)=0.0
       diam_sed(:)=0.0
-# if ! defined key_noTSdiss_insed
       ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
       ALLOCATE(D0_m0(nvp+1:nv_tot))
       ALLOCATE(D0_m1(nvp+1:nv_tot))
-# endif 
+      D0_funcT_opt(:)=1
+      D0_m0(:)=0.
+      D0_m1(:)=0.
 
 #else
       ALLOCATE(ws_free_min(nvp)) 
@@ -707,11 +772,27 @@ CONTAINS
 
       cini_wat(ivr)=cini_wat_r(irk_fil(iv))
       cobc_wat(ivr)=cobc_wat_r(irk_fil(iv))
-      cini_air(ivr)=cini_air_r(irk_fil(iv))
       init_cv_name(ivr)=init_cv_name_r(irk_fil(iv))
       obc_cv_name(ivr)=obc_cv_name_r(irk_fil(iv))
       cv_rain(ivr)=cv_rain_r(irk_fil(iv))
       sub_flx_atm(ivr)=flx_atm_r(irk_fil(iv))
+      t90(ivr)=t90_r(irk_fil(iv))
+   END DO
+
+   ! T90 mortality/decay: f90 is the fraction of concentration
+   ! surviving one time step dt, derived once here from the user-set
+   ! t90 (decay time in hours, 0. = no decay). Applied as
+   ! t(:,:,:,nnew,itrc)=t(:,:,:,nnew,itrc)*f90(itrc) in step3d_t.F.
+   ! f90 = exp(-dt*ln(10)/(t90*3600)) so that after a time t90 (in
+   ! seconds: t90*3600) the concentration has dropped to 10% of its
+   ! initial value (same formulation as MARS3D's f90/t90, which
+   ! recomputes it every time step to also support a varying dt; CROCO
+   ! runs with a fixed dt, so it is computed once here instead).
+   f90(:)=1.0_rsh
+   DO ivr=itsubs1,itsubs2
+     IF (t90(ivr) /= 0.0_rsh) THEN
+       f90(ivr)=EXP(-REAL(dt,rsh)*2.302585093_rsh/(t90(ivr)*3600.0_rsh))
+     ENDIF
    END DO
 
 
@@ -834,12 +915,13 @@ CONTAINS
      MPI_master_only WRITE(stdout,*)'OBC uniforme and constant conc.        : ',cobc_wat_r(isubs)
 #ifdef MUSTANG
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in sediment      : ',cini_sed_r(isubs)
-#if defined BLOOM && defined key_BLOOM_insed && ! defined key_noTSdiss_insed
+#if defined BLOOM && defined key_BLOOM_insed
+     IF (l_diss_insed) THEN
      MPI_master_only WRITE(stdout,*)'type of calculation of in sediment diffusion/biodiff (1or2): ',D0_funcT_opt_r(isubs)
      MPI_master_only WRITE(stdout,*)'coefs for in sediment diffusion/biodiff calculation : ',D0_m0_r(isubs),D0_m1_r(isubs)
+     ENDIF
 #endif
 #endif
-     MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
      MPI_master_only WRITE(stdout,*) &
          'name of substance read from init cond file: ', &
          TRIM(ADJUSTL(ADJUSTR(init_cv_name_r(isubs))))
@@ -953,13 +1035,11 @@ CONTAINS
      ros(iv)=ros_r(irk_fil(iv))
      diam_sed(iv)=diam_r(irk_fil(iv))
    END DO
-# if ! defined key_noTSdiss_insed
-      DO iv=nvp+1,nvp+nv_dis
-       D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
-       D0_m0(iv)=D0_m0_r(iv)
-       D0_m1(iv)=D0_m1_r(iv)
-      ENDDO
-# endif
+   DO iv=nvp+1,nvp+nv_dis
+      D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
+      D0_m0(iv)=D0_m0_r(iv)
+      D0_m1(iv)=D0_m1_r(iv)
+   ENDDO
 
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.
@@ -1017,8 +1097,8 @@ CONTAINS
    ALLOCATE(unit_var_n(nballoc))
    ALLOCATE(flx_atm_n(nballoc))
    ALLOCATE(cv_rain_n(nballoc))
+   ALLOCATE(t90_n(nballoc))
    ALLOCATE(cini_wat_n(nballoc))
-   ALLOCATE(cini_air_n(nballoc))
    ALLOCATE(cobc_wat_n(nballoc))
    ALLOCATE(l_out_subs_n(nballoc))
    ALLOCATE(init_cv_name_n(nballoc))
@@ -1026,13 +1106,13 @@ CONTAINS
    !initialization
    flx_atm_n(:)=0.
    cv_rain_n(:)=0.
+   t90_n(:)=0.
    cini_wat_n(:)=0.
    cobc_wat_n(:)=0.
 #ifdef MUSTANG
    ALLOCATE(cini_sed_n(nballoc))
    cini_sed_n(:)=0.
 #endif
-   cini_air_n(:)=0.
    init_cv_name_n(:)=''
    obc_cv_name_n(:)=''
    name_var_n(:)=''
@@ -1067,19 +1147,19 @@ CONTAINS
      unit_var_r(iv)=unit_var_n(ivr)
      flx_atm_r(iv)=flx_atm_n(ivr)
      cv_rain_r(iv)=cv_rain_n(ivr)
+     t90_r(iv)=t90_n(ivr)
      cini_wat_r(iv)=cini_wat_n(ivr)
      cobc_wat_r(iv)=cobc_wat_n(ivr)
 #ifdef MUSTANG
      cini_sed_r(iv)=cini_sed_n(ivr)
 #endif
-     cini_air_r(iv)=cini_air_n(ivr)
      l_out_subs_r(iv)=l_out_subs_n(ivr)
      init_cv_name_r(iv)=init_cv_name_n(ivr)
      obc_cv_name_r(iv)=obc_cv_name_n(ivr)
    ENDDO
    DEALLOCATE(name_var_n,long_name_var_n,standard_name_var_n,unit_var_n)
-   DEALLOCATE(flx_atm_n,cv_rain_n)
-   DEALLOCATE(cini_wat_n,cini_air_n,cobc_wat_n)
+   DEALLOCATE(flx_atm_n,cv_rain_n,t90_n)
+   DEALLOCATE(cini_wat_n,cobc_wat_n)
    DEALLOCATE(l_out_subs_n)
    DEALLOCATE(init_cv_name_n,obc_cv_name_n)
 #ifdef MUSTANG
