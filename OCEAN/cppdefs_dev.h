@@ -601,17 +601,17 @@
     PSOURCE / PSOURCE_NCFILE option
 ======================================================================
 */
+#if defined PSOURCE_NCFILE
+# ifndef PSOURCE_MASS
+#  define PSOURCE
+# endif
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS
 # define ANA_PSOURCE  /* ON: set vertical profil for qbar */
 # undef RIVER_RAMP
 #endif
 #ifdef PSOURCE_MASS
 # undef PSOURCE
-#endif
-#if defined PSOURCE_NCFILE
-# define PSOURCE
-# define ANA_PSOURCE
-# undef RIVER_RAMP
 #endif
 
 /*
@@ -870,7 +870,6 @@
 # define SUBSTANCE
 # define TEMPERATURE
 # define SALINITY
-# define key_nofluxwat_IWS
 #endif /* MUSTANG */
 
 
@@ -1039,7 +1038,6 @@
 ======================================================================
 */
 #ifndef SOLVE3D
-# undef AVERAGES_K
 # undef TRACERS
 # undef TEMPERATURE
 # undef SALINITY

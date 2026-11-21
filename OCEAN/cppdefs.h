@@ -253,7 +253,6 @@
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
 # define AVERAGES
-# define AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
                      /* Exact restart */
@@ -268,9 +267,6 @@
 !--------------------------------------------
 !
 */
-# undef DO_NOT_OVERWRITE
-# undef RESTART_DIAGS
-
 # undef DIAGNOSTICS_TS
 
 # ifdef DIAGNOSTICS_TS
@@ -355,7 +351,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  MORPHODYN
 #  undef  WAVE_OFFLINE
-#  define key_noTSdiss_insed
 # endif
 
 #include "cppdefs_dev.h"

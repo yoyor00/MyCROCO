@@ -55,6 +55,12 @@
 #   ifdef T_FRC_BRY
       integer tbry_west_id(NT)
       common /t_west_id/ tbry_west_id
+#    ifdef SUBSTANCE
+!     per-substance, per-side flag: true if obc_cv_name(itrc) names a
+!     variable that was actually found in the bry file for this side
+      logical got_tbry_west(NT)
+      common /got_tbry_west/ got_tbry_west
+#    endif
 #   endif
 #  endif
 # endif
@@ -76,6 +82,10 @@
 #   ifdef T_FRC_BRY
       integer tbry_east_id(NT)
       common /t_east_id/ tbry_east_id
+#    ifdef SUBSTANCE
+      logical got_tbry_east(NT)
+      common /got_tbry_east/ got_tbry_east
+#    endif
 #   endif
 #  endif
 # endif
@@ -97,6 +107,10 @@
 #   ifdef T_FRC_BRY
       integer tbry_south_id(NT)
       common /t_south_id/ tbry_south_id
+#    ifdef SUBSTANCE
+      logical got_tbry_south(NT)
+      common /got_tbry_south/ got_tbry_south
+#    endif
 #   endif
 #  endif
 # endif
@@ -118,6 +132,10 @@
 #   ifdef T_FRC_BRY
       integer tbry_north_id(NT)
       common /t_north_id/ tbry_north_id
+#    ifdef SUBSTANCE
+      logical got_tbry_north(NT)
+      common /got_tbry_north/ got_tbry_north
+#    endif
 #   endif
 #  endif
 # endif

@@ -8,6 +8,10 @@
 # else
       subroutine MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend, A)
 # endif
+# ifdef MPI
+      use mpi
+# endif
+
 !
 !======================================================================
 !
@@ -22,7 +26,6 @@
 # include "param.h"
 # include "scalars.h"
 # include "mpi_cpl.h"
-      include 'mpif.h'
       integer Npts
 # if (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)
@@ -233,7 +236,7 @@ c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
 ! Wait for completion of receive and fill ghost points: sides...
 !
       if (WEST_INTER2) then
-        call MPI_Wait (req(1),status(1,1),ierr)
+        call MPI_Wait (req(1),status(:,1),ierr)
 !$acc update device(jbuf_revW) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -279,7 +282,7 @@ c          endif
       endif
 
       if (EAST_INTER2) then
-        call MPI_Wait (req(2),status(1,2),ierr)
+        call MPI_Wait (req(2),status(:,2),ierr)
 !$acc update device(jbuf_revE) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -323,7 +326,7 @@ c          endif
       endif
 
       if (SOUTH_INTER2) then
-        call MPI_Wait (req(3),status(1,3),ierr)
+        call MPI_Wait (req(3),status(:,3),ierr)
 !$acc update device(ibuf_revS) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -367,7 +370,7 @@ c          endif
       endif
 
       if (NORTH_INTER2) then
-        call MPI_Wait (req(4),status(1,4),ierr)
+        call MPI_Wait (req(4),status(:,4),ierr)
 !$acc update device(ibuf_revN) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -414,7 +417,7 @@ c          endif
 ! ...corners:
 !
       if ( CORNER_SW) then
-        call MPI_Wait (req(5),status(1,5),ierr)
+        call MPI_Wait (req(5),status(:,5),ierr)
 !$acc update device(buf_rev1) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -436,7 +439,7 @@ c          endif
        endif
 
       if ( CORNER_NE) then
-        call MPI_Wait (req(6),status(1,6),ierr)
+        call MPI_Wait (req(6),status(:,6),ierr)
 !$acc update device(buf_rev2) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -458,7 +461,7 @@ c          endif
        endif
 
       if (CORNER_SE) then
-        call MPI_Wait (req(7),status(1,7),ierr)
+        call MPI_Wait (req(7),status(:,7),ierr)
 !$acc update device(buf_rev3) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)
@@ -481,7 +484,7 @@ c          endif
 
 
       if (CORNER_NW) then
-        call MPI_Wait (req(8),status(1,8),ierr)
+        call MPI_Wait (req(8),status(:,8),ierr)
 !$acc update device(buf_rev4) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) independent
 !$acc&  default(present) collapse(2)

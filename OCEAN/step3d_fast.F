@@ -125,13 +125,16 @@ C$    trd=omp_get_thread_num()
 # ifdef CVTK_DEBUG
       USE debug
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, kbak,kold,
      &        imin,imax,jmin,jmax,
      &        k1, k2, kp1
 # ifdef MPI
-     &       ,err
+     &       ,err, ierr
 # endif
 # ifdef PSOURCE
      &       ,is
@@ -200,7 +203,6 @@ C$    trd=omp_get_thread_num()
      &               ntcorv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &               ntcorw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # endif
-
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
@@ -245,7 +247,6 @@ C$    trd=omp_get_thread_num()
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -4197,7 +4198,7 @@ C$OMP END MASTER
 
         may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err)
+        call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
         stop                            !-->  EXIT
 # endif

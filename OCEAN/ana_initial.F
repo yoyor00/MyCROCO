@@ -350,7 +350,7 @@
       use Agrif_Util
 # endif
 # ifdef SUBSTANCE
-      USE comsubstance, ONLY: cini_wat
+      USE comsubstance, ONLY: cini_wat, cini_wat_fix, cvfix_wat
 # endif
       implicit none
 # include "param.h"
@@ -1274,39 +1274,12 @@
           do i=IR_RANGE
             do iv=itsubs1,itsubs2
               if (.not.got_tini(iv)) then
-                select case (trim(testcase_name))
-                case ('')
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                case ('TIDAL_FLAT', 'ESTUARY', 'ESTUARY_SQUARE')
-                  if (h(i,j).gt.0) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                case ('DUNE', 'DUNE3D', 'ANA_DUNE')
-# ifdef MUSTANG
-                  t(i,j,k,1,iv)=cini_wat(iv)
-# else
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-# endif
-                case ('SED_TOY', 'SED_TOY_ROUSE', 'SED_TOY_FLOC_0D',
-     &                'SED_TOY_FLOC_1D', 'SED_TOY_RESUSP', 'SED_TOY_CONSOLID')
-                  t(i,j,k,1,iv)=cini_wat(iv)
-                case default
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                end select
+                t(i,j,k,1,iv)=cini_wat(iv)
+              endif
+            enddo
+            do iv=1,ntfix
+              if (.not.got_tini_fix(iv)) then
+                cvfix_wat(i,j,k,iv)=cini_wat_fix(iv)
               endif
             enddo
           enddo
@@ -1843,6 +1816,9 @@ C$OMP BARRIER
 # ifdef AGRIF
       use Agrif_Util
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1855,12 +1831,12 @@ C$OMP BARRIER
 #  include "climat.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc,
-     &        jet_perturb, tndx
+     &        jet_perturb, tndx, ierr
       real cff,x,y,Fyz,
      &     rhomaxs,bgdrhos,zs1,dzs,drhos,drhosfs,
      &     rhomaxn,bgdrhon,zn1,dzn,drhon,drhosfn,
      &     drhosf,z0,z0p,dzs_a,dzn_a,zk,
-     &     Ljet,cff_perturb,ierr,tanh
+     &     Ljet,cff_perturb,tanh
       real*QUAD mssh,area,cff1
       real rhoprof(0:N,2)
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
@@ -1874,7 +1850,6 @@ C$OMP BARRIER
      &    dZ(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 !$acc declare create(rhoprof,ru,rv,P)
 # ifdef MPI
-      include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 # endif
       real asymth,zz,zasym,dzasym
