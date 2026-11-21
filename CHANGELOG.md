@@ -356,6 +356,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
   cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
   Benguela example is also copied to OCEAN.
+  ana_initial.F : Add comment explaining why testcase_name == '' (realistic
+  config, no idealized dispatch) is handled separately from case default
+  (fallback for an unrecognized testcase_name) (#560)
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
