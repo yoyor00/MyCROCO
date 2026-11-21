@@ -35,15 +35,6 @@ Output :
 
 ---
 
-## Runtime Validation
-
-- `CROCO_CHECK_VELOCITY` — Check the barotropic velocities for a CFL violation at every
-  barotropic step, in `step2d` and in `step3d_fast`, and abort with `STEP2D: ABNORMAL JOB END`
-  (`VMAX`, `IMAX`, `JMAX`) when `VMAX > 100 m/s`. Off by default: the global maximum reduction is
-  a synchronisation point which costs performance in production runs, so it is opt in.
-
----
-
 ## Non-Hydrostatic Option
 
 - `NBQ` — Non-Boussinesq (non-hydrostatic) solver

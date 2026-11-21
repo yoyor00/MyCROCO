@@ -98,7 +98,9 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !
       USE debug
-      USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha ! needed when AGRIF_CONSERV_VOL
+! dt, rdrg, rdrg2, m2filter_alpha are needed when AGRIF_CONSERV_VOL
+      USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha
+      USE croco_namelist, only: lcheck_velocity
 # ifdef MPI
       use mpi
 # endif
@@ -1848,25 +1850,25 @@ C$OMP END MASTER
        endif
 #  endif
 # endif /* AGRIF */
-#ifdef CROCO_CHECK_VELOCITY
+      if (lcheck_velocity) then
 !
 !-----------------------------------------------------------------------
 !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
 !-----------------------------------------------------------------------
 !
-      VMAXL=100.
-      VMAX=0.
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          VMAX=max(VMAX,abs(ubar(i,j,knew)))
+        VMAXL=100.
+        VMAX=0.
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            VMAX=max(VMAX,abs(ubar(i,j,knew)))
+          enddo
         enddo
-      enddo
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          VMAX=max(VMAX,abs(vbar(i,j,knew)))
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            VMAX=max(VMAX,abs(vbar(i,j,knew)))
+          enddo
         enddo
-      enddo
-#endif /* CROCO_CHECK_VELOCITY */
+      endif
 !$acc end kernels
 !
 !-----------------------------------------------------------------------
@@ -1883,24 +1885,24 @@ C$OMP MASTER
 C$OMP END MASTER
 # endif
 
-#ifdef CROCO_CHECK_VELOCITY
-      IF (VMAX.GT.VMAXL) THEN
+      if (lcheck_velocity) then
+        IF (VMAX.GT.VMAXL) THEN
 !$acc update if(compute_on_device) host(ubar(Istr:Iend,Jstr:Jend,knew))
 !$acc update if(compute_on_device) host(vbar(Istr:Iend,Jstr:Jend,knew))
-        cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
-        cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
-        IF (cff1>cff2) THEN
-          ijmax= maxloc(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
-        ELSE
-          ijmax= maxloc(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
-        ENDIF
-        imax=ijmax(1)
-        jmax=ijmax(2)
+          cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+          cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+          IF (cff1>cff2) THEN
+            ijmax= maxloc(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+          ELSE
+            ijmax= maxloc(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+          ENDIF
+          imax=ijmax(1)
+          jmax=ijmax(2)
 # ifdef MPI
-        imax=imax+iminmpi-1
-        jmax=jmax+jminmpi-1
+          imax=imax+iminmpi-1
+          jmax=jmax+jminmpi-1
 # endif
-        write(stdout,'(9(A/))')
+          write(stdout,'(9(A/))')
      &     '                                         ',
      &     '                                         ',
      &     ' ======================================= ',
@@ -1910,35 +1912,35 @@ C$OMP END MASTER
      &     ' =                                     = ',
      &     ' ======================================= ',
      &     '                                         '
-        if (VMAX.eq.666.) then
-          write(stdout,'(A,F10.2)')
+          if (VMAX.eq.666.) then
+            write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'
-        else
-          write(stdout,'(A,F10.2)')
+          else
+            write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =',VMAX
-        endif
-        write(stdout,'(A,2I6)')
+          endif
+          write(stdout,'(A,2I6)')
      &                                       '  IMAX JMAX  =',imax,jmax
 # if defined MPI
-        write(stdout,'(A,I6)')
+          write(stdout,'(A,I6)')
      &                                       '  NODE  =',mynode
-        write(stdout,'(A,2I6)')
+          write(stdout,'(A,2I6)')
      &       '  IMAX JMAX  =',imax-iminmpi+1,jmax-jminmpi+1
 # endif
 # ifdef SOLVE3D
-        write(stdout,'(A,2I6/)')
+          write(stdout,'(A,2I6/)')
      &                                         '  IINT IEXT  =',iic,iif
 # else
-        write(stdout,'(A,I6/)')    '  IIC        =',iic
+          write(stdout,'(A,I6/)')    '  IIC        =',iic
 # endif
-        may_day_flag=1
+          may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err, ierr)
+          call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
-        stop                            !-->  EXIT
+          stop                            !-->  EXIT
 # endif
-      ENDIF
-#endif /* CROCO_CHECK_VELOCITY */
+        ENDIF
+      endif
 
 # ifdef SOLVE3D
       if (LAST_FAST_STEP) then

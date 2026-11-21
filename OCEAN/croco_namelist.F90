@@ -61,6 +61,14 @@ MODULE croco_namelist
    !! Number of time-steps between printing of information to standard output
    real :: m2filter_alpha = 0.25
    !! M2FILTER_NONE alpha coefficient (controls barotropic time-filter weight)
+   logical :: lcheck_velocity = .false.
+   !! Flag (T/F) to check the barotropic velocities for a CFL violation and to
+   !! print the maximum velocity. The check runs at every barotropic step, in
+   !! `step2d` and in `step3d_fast`, and aborts the job with
+   !! `ABNORMAL JOB END` (`VMAX`, `IMAX`, `JMAX`) when `VMAX > 100 m/s`.
+   !! It is off by default: the global maximum reduction of `ubar`/`vbar` is a
+   !! synchronisation point in every barotropic step, which costs performance
+   !! in production runs.
 
    ! &croco_history
    logical :: ldefhis = .true.

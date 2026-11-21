@@ -119,6 +119,7 @@ C$    trd=omp_get_thread_num()
 !***********************************************************************
 !
       use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max
+      use croco_namelist, only: lcheck_velocity
 # ifdef NBQ
       use croco_namelist, only: csound_nbq, visc2_nbq
 # endif
@@ -4111,27 +4112,27 @@ C$OMP END MASTER
 
 # endif  /* NBQ_HZCORRECT */
 
-#ifdef CROCO_CHECK_VELOCITY
+      if (lcheck_velocity) then
 !
 !-----------------------------------------------------------------------
 !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
 !-----------------------------------------------------------------------
 !
-
 !$acc kernels if(compute_on_device) default(present)
-      VMAXL=100.
-      VMAX=0.
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          VMAX=max(VMAX,abs(ubar(i,j,knew)))
+        VMAXL=100.
+        VMAX=0.
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            VMAX=max(VMAX,abs(ubar(i,j,knew)))
+          enddo
         enddo
-      enddo
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          VMAX=max(VMAX,abs(vbar(i,j,knew)))
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            VMAX=max(VMAX,abs(vbar(i,j,knew)))
+          enddo
         enddo
-      enddo
 !$acc end kernels
+      endif
 
 # ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
@@ -4147,25 +4148,26 @@ C$OMP MASTER
       endif
 #  endif
 C$OMP END MASTER
-# endif 
+# endif
 
-      IF (VMAX.GT.VMAXL) THEN
+      if (lcheck_velocity) then
+        IF (VMAX.GT.VMAXL) THEN
 !$acc update if(compute_on_device) host(ubar(Istr:Iend,Jstr:Jend,knew))
 !$acc update if(compute_on_device) host(vbar(Istr:Iend,Jstr:Jend,knew))
-        cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
-        cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
-        IF (cff1>cff2) THEN
-          ijmax= maxloc(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
-        ELSE
-          ijmax= maxloc(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
-        ENDIF
-        imax=ijmax(1)
-        jmax=ijmax(2)
+          cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+          cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+          IF (cff1>cff2) THEN
+            ijmax= maxloc(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+          ELSE
+            ijmax= maxloc(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+          ENDIF
+          imax=ijmax(1)
+          jmax=ijmax(2)
 # ifdef MPI
-        imax=imax+iminmpi-1
-        jmax=jmax+jminmpi-1
+          imax=imax+iminmpi-1
+          jmax=jmax+jminmpi-1
 # endif
-        write(stdout,'(9(A/))')
+          write(stdout,'(9(A/))')
      &     '                                         ',
      &     '                                         ',
      &     ' ======================================= ',
@@ -4177,33 +4179,33 @@ C$OMP END MASTER
      &     '                                         '
 
 # ifdef MPI
-        write(stdout,'(A,I4)') '      mynode =',mynode
+          write(stdout,'(A,I4)') '      mynode =',mynode
 # endif
 
-        if (VMAX.eq.666.) then
-          write(stdout,'(A,F10.2)')
+          if (VMAX.eq.666.) then
+            write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'
-        else
-          write(stdout,'(A,F10.2)') 
+          else
+            write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =',VMAX
-        endif
-        write(stdout,'(A,2I6)')  
+          endif
+          write(stdout,'(A,2I6)')
      &                                       '  IMAX JMAX   =',imax,jmax
-        write(stdout,'(A,2I6/)')
+          write(stdout,'(A,2I6/)')
      &                                       '  IINT IFAST  =',iic,iif
 
 !     GC quik fix Comment this because it blocks the correct mpi_abort
-!     croco do not hang out  
+!     croco do not hang out
 !!      call wrt_his            ! get output during blow-up
 
-        may_day_flag=1
+          may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err, ierr)
+          call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
-        stop                            !-->  EXIT
+          stop                            !-->  EXIT
 # endif
-      ENDIF
-#endif /* CROCO_CHECK_VELOCITY */
+        ENDIF
+      endif
 
 # undef zwrk 
 # undef rzeta  

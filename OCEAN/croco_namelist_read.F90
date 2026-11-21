@@ -96,7 +96,7 @@ contains
       namelist /croco_testcase/ testcase_name
       namelist /croco_title/ title
       namelist /croco_logfile/ logname
-      namelist /croco_time_stepping/ dt, ndtfast, ninfo, m2filter_alpha
+      namelist /croco_time_stepping/ dt, ndtfast, ninfo, m2filter_alpha, lcheck_velocity
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
       namelist /croco_initial/ nrrec, ininame, lresetrec
       namelist /croco_restart/ nrst, nrpfrst, rstname

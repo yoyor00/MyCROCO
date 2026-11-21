@@ -233,6 +233,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   TOOL_ORIGINDATE error/warning messages now report the affected netCDF
   file and variable (#600).
 
+- TIME STEPPING : Remove `CROCO_CHECK_VELOCITY` CPP key.
+  The barotropic CFL check of `step2d` and `step3d_fast` (prints `VMAX`,
+  `IMAX`, `JMAX` and stops with `ABNORMAL JOB END` when `VMAX > 100 m/s`)
+  is now controlled at runtime by `lcheck_velocity` in
+  `&croco_time_stepping` (default `.false.`). It stays opt in, since the
+  global maximum reduction of `ubar`/`vbar` is a synchronisation point in
+  every barotropic step.
+
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
   (croco.nml). All configuration parameters are now in structured &croco_*
