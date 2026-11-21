@@ -121,13 +121,10 @@
   ninfo   = 1
   ! M2FILTER_NONE alpha coefficient (controls barotropic time-filter weight).
   m2filter_alpha = 0.25
-  ! Check the barotropic velocities for a CFL violation and print the maximum
-  ! velocity.  The check runs at every barotropic step, in step2d and in
-  ! step3d_fast, and stops the job ("ABNORMAL JOB END", with VMAX, IMAX,
-  ! JMAX) when VMAX > 100 m/s.
-  ! Keep it .false. in production runs: the global maximum reduction of
-  ! ubar/vbar is a synchronisation point in every barotropic step.
-  lcheck_velocity = .false.
+  ! Check the barotropic velocities for a CFL violation: print VMAX, IMAX,
+  ! JMAX and stop when VMAX > 100 m/s. Set to .false. in production runs
+  ! (the maximum reduction synchronises at every barotropic step).
+  lcheck_velocity = .true.
 /
 
 &croco_time_stepping_nbq
