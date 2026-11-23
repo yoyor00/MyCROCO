@@ -86,6 +86,7 @@
       use mpi
 #endif
       use tools_calendar, only: tool_datosec, tool_sectodat
+!$croco timings use
 !     implicit none
       integer tile, subs, trd, ierr, err
 #include "param.h"
@@ -130,6 +131,11 @@
 #endif
 !
 #include "dynderivparam.h"
+!
+!  Wall-clock timing facility.
+!
+!$croco timings init
+!$croco timings start main_init
 
 #ifdef JEANZAY
 ! Initialise OpenACC...
@@ -942,6 +948,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 
 CR      write(*,*) '  0' MYID
+!$croco timings stop main_init
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
 !
 !
@@ -992,6 +999,7 @@ CR      write(*,*) '  0' MYID
       start_time1=MPI_Wtime()
 #endif
 
+!$croco timings start time_step
       do iicroot=ntstart,ntimes+1
 #ifdef MPI_TIME
         start_time1_1=MPI_Wtime()
@@ -1022,7 +1030,9 @@ CR      write(*,*) '  0' MYID
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
+!$croco timings stop time_step
   99  continue                             ! SHUTDOWN:
+!$croco timings start main_finalize
 #ifdef MPI_TIME
       start_time2=MPI_Wtime()
       exe_time = start_time2 - start_time1
@@ -1052,6 +1062,7 @@ CR      write(*,*) '  0' MYID
         parcours => parcours % next
       enddo
 #endif
+!$croco timings stop main_finalize
 
  100  continue
 
@@ -1088,5 +1099,6 @@ CR      write(*,*) '  0' MYID
 # endif
 #endif
 
+!$croco timings finalize
       stop
       end
