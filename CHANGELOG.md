@@ -112,7 +112,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   re-exporting `param.h` constants and a module array named `omega`
   colliding with the `omega` subroutine (#605)
 
-- ANA_GRID : fix AGRIF `conv` failure, 72-column fixed-form rewrap (#613)
+- AGRIF `conv` failure, 72-column fixed-form rewrap in ana_grid.F and ana_initial.F (#613 #612)
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
