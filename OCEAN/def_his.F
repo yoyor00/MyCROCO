@@ -39,6 +39,7 @@
 #ifdef AVERAGES
       USE croco_namelist, ONLY: nrpfavg, avgname
 #endif
+      USE tools_calendar, ONLY: tool_check_output_origin
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,
@@ -89,6 +90,7 @@
 # define rec_per_file nrpfhis
 # define wrt wrthis
 # define vidTime hisTime
+# define vidOrigin his_origin_in_sec
 # define vidTstep hisTstep
 # define vidZ hisZ
 # define vidUb hisUb
@@ -173,6 +175,7 @@
 # define rec_per_file nrpfavg
 # define wrt wrtavg
 # define vidTime avgTime
+# define vidOrigin avg_origin_in_sec
 # define vidTstep avgTstep
 # define vidZ avgZ
 # define vidUb avgUb
@@ -498,6 +501,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 
 !=======================================================================
 !
@@ -2799,6 +2804,8 @@
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 #endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 
 !
 ! Free-surface.
@@ -3894,6 +3901,7 @@
 #undef rec_per_file
 #undef wrt
 #undef vidTime
+#undef vidOrigin
 #undef vidTstep
 #undef vidZ
 #undef vidUb

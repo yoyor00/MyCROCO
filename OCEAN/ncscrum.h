@@ -2118,6 +2118,17 @@
 
       REAL(kind=8) :: origin_date_in_sec, origin_secinunit
       REAL(kind=8) :: start_date_in_sec
+!
+! Per-output-file time-axis origin (seconds). Set to start_date_in_sec
+! when a file is (re)created, or to the origin already embedded in the
+! file's time variable when reopening an existing file to append new
+! records (see tool_check_output_origin), so that every record written
+! to a given file stays expressed against the same epoch.
+!
+      REAL(kind=8) :: rst_origin_in_sec, his_origin_in_sec
+     &              , avg_origin_in_sec
+     &              , dia_origin_in_sec, dia_avg_origin_in_sec
+     &              , surf_origin_in_sec, surf_avg_origin_in_sec
 
       character*180 usrname
      &         ,   qbarname, tsrcname
@@ -2178,6 +2189,10 @@
      &             origin_date
      &         ,   origin_date_in_sec
      &         ,   start_date_in_sec
+     &         ,   rst_origin_in_sec, his_origin_in_sec
+     &         ,   avg_origin_in_sec
+     &         ,   dia_origin_in_sec, dia_avg_origin_in_sec
+     &         ,   surf_origin_in_sec, surf_avg_origin_in_sec
      &         ,   origin_secinunit
      &         ,   usrname
      &         ,   qbarname, tsrcname

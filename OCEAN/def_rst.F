@@ -22,7 +22,7 @@
 # ifdef NC4PAR
       use mpi
 # endif
-      use tools_calendar, only: tool_sectodat
+      use tools_calendar, only: tool_sectodat, tool_check_output_origin
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -273,6 +273,8 @@
 
         call nf_add_attribute(ncid, rstTime, vname(:,indxTime),
      &      5, NF_DOUBLE, ierr)
+
+        rst_origin_in_sec=start_date_in_sec
 !
 !     Free-surface.
 !
@@ -1421,6 +1423,8 @@
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTime,nf_collective)
 #endif
+        call tool_check_output_origin(ncid, rstTime, start_date_in_sec,
+     &                                 rst_origin_in_sec)
 
 ! Free-surface.
 !
