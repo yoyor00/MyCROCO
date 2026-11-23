@@ -51,6 +51,7 @@
 #  endif
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
+      USE comsubstance, ONLY : f90
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
@@ -659,6 +660,14 @@
           enddo
 #  endif
 
+#  ifdef SUBSTANCE
+          if (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
+            do i=Istr,Iend
+              t(i,j,N,nnew,itrc)=t(i,j,N,nnew,itrc)+FC(i,N)
+            enddo
+          endif
+#  endif /* SUBSTANCE */
+
 #  ifdef TS_MIX_IMP
 #   if defined TEMPERATURE && defined SALINITY
           if (itrc .le. 2) then                  ! active tracers
@@ -909,6 +918,24 @@
           enddo
         enddo
 #  endif /* TNUDGING && TCLIMATOLOGY */
+!
+!======================================================================
+! Compute the T90 mortality/decay: f90(itrc)
+!======================================================================
+!
+#  ifdef SUBSTANCE
+        if (itrc.ge.itsubs1 .and. itrc.le.itsubs2) then
+          if (f90(itrc).ne.1.0) then
+            do k=1,N
+              do j=JstrR,JendR
+                do i=IstrR,IendR
+                  t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)*f90(itrc)
+                enddo
+              enddo
+            enddo
+          endif
+        endif
+#  endif /* SUBSTANCE */
 !
 !======================================================================
 ! Compute the tendency term of tracer diagnostics

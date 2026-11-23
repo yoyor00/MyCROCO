@@ -15,11 +15,16 @@
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 : namsedim_consolidation   : relative to sediment consolidation
-: namsedim_diffusion       : relative to dissolved diffusion in sediment 
-: namsedim_bioturb         : relative to bioturbation in sediment 
 : namsedim_morpho          : relative to morphodynamic
+: namsedim_diss            : relative to dissolved substances and porewater
+:                            exchange in sediment
+: namsedim_diffusion       : relative to dissolved diffusion in sediment 
+:                            (effective only if l_diss_insed = .true.)
+: namsedim_bioturb         : relative to bioturbation in sediment 
+:                            (l_biodiffs and its _diss parameters are
+:                             effective only if l_diss_insed = .true.)
 : namtempsed               : relative to temperature estimation in sediment 
-:                            (only if !defined key_noTSdiss_insed)
+:                            (used only if l_diss_insed = .true.)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
 : namflocmod               : parameters using for FLOCMOD module 
@@ -33,6 +38,8 @@
    cseduni= 702.0 
    ksmiuni = 1  
    ksmauni = 10  
+/
+&namsedim_diss
 /
 &namsedim_layer
    l_dzsminuni=.FALSE.

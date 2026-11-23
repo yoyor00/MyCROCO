@@ -15,6 +15,8 @@ printf "\n ************* Period of Job *****************\n\n"
 #printf "\n Period of Job:\n"
 printf  "%12s%10d%22s%14d%17s\n" "BEGINING:" ${DATE_BEGIN_JOB} "(in ${CALTYPE} calendar)" ${JDAY_BEGIN_JOB} "(in Julian days)"
 printf          "%44s%14d%17s\n" "Job duration" ${TOTAL_JOB_DUR} "(in Julian days)"
+printf          "%44s%14d%17s\n" "Job duration" ${TOTAL_JOB_DUR_HOUR} "(in hours)"
+printf          "%44s%14d%17s\n" "Job duration" ${TOTAL_JOB_DUR_SEC} "(in seconds)"
 printf  "%12s%10d%22s%14d%17s\n\n\n" "END:" ${DATE_END_JOB} "(in ${CALTYPE} calendar)" ${JDAY_END_JOB} "(in Julian days)"
 
 printf  "%16s%10d%20s%10d%20s%10d\n"     "YEAR_BEGIN_JOB:  " ${YEAR_BEGIN_JOB}   "YEAR_END_JOB:  " ${YEAR_END_JOB}    "YEAR_BEGIN_JOBp1:  " ${YEAR_BEGIN_JOBp1}

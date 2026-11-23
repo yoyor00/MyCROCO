@@ -670,7 +670,7 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
     !Called by : sub_budget_main
     !----------------------------------------------------------------------
 # ifdef MPI
-      include "mpif.h"
+      use mpi
 #     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
 # endif
