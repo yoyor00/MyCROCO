@@ -1,7 +1,7 @@
 #!/bin/bash
 
-XIOS_NAM_DIR=
-ROOT_DIR=
+XIOS_NAM_DIR=${XIOS_NAM_DIR:-}
+ROOT_DIR=${ROOT_DIR:-}
 RUNDIR=`pwd`
 CPP1="cpp -traditional"
 

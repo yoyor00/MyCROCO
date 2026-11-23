@@ -21,7 +21,10 @@
       use croco_namelist, only: ntimes, dt, ndtfast,
      &                              ininame, rstname, title, frcname,
      &                              theta_s, theta_b, Tcline, hc,
-     &                              nwrt, rdrg, rho0, gamma2, x_sponge
+     &                              nwrt, rdrg, rho0, gamma2
+#if (defined SPONGE && !defined SPONGE_GRID)
+      use croco_namelist, only: x_sponge
+#endif
 #ifndef ANA_GRID
       use croco_namelist, only: grdname
 #endif

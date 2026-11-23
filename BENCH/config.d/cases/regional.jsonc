@@ -19,6 +19,34 @@
     "patches": {},
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
   },
+  "BENGUELA_LR_XIOS": {
+    "title": "BENGUELA_LR_XIOS",
+    "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
+      "plotphy_script_input": "CROCO_FILES/croco_his.nc",
+    },
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "cppkeys": {
+      "TIDES": true,
+      "BULK_FLUX": true,
+      "XIOS": true,
+    },
+    "patches": {},
+    "check_outputs": [],
+    // XIOS always forces MPI on (see OCEAN/cppdefs_dev.h: "#ifdef XIOS
+    // # define MPI"), so a run with no mpirun at all can never match the
+    // compiled-in NP_XI*NP_ETA - only "mpi-N" variants are meaningful here.
+    "unsupported": ["sequential", "openmp"],
+    // Number of xios_server.exe ranks launched alongside croco (MPMD, see
+    // XIOS/xios_launch.file) - 1 is enough I/O capacity for this small
+    // low-resolution test grid.
+    "xios_server_tasks": 1,
+  },
   "BENGUELA_LR_BULK": {
     "title": "BENGUELA_LR_BULK",
     "case": "REGIONAL",

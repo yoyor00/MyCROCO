@@ -5,24 +5,29 @@
       "cpu": 4,
       "gpu": 1,
     },
+    "xios_dir": "/xios/xios-3.0-trunk/",
     "tuning": {
       "gnu": {
         "extra": "-march=native",
         "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
         "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
-        "mpi_options": "-use-hwthread-cpus --allow-run-as-root",
+        // --mca osc ^rdma: this container blocks process_vm_readv (CMA,
+        // errno=38/ENOSYS - no CAP_SYS_PTRACE), which plain two-sided MPI
+        // tolerates but breaks Open MPI's RDMA one-sided component, which
+        // XIOS's client-server buffer handshake needs (MPI_Win/Fetch_and_op).
+        "mpi_options": "-use-hwthread-cpus --allow-run-as-root --mca osc ^rdma",
       },
       "intel": {
         "extra": "",
         "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
         "debug": "-O0 -g -i4 -r8 -traceback -check bounds -CA -CB -CS -ftrapuv -fpe1",
-        "mpi_options": "",
+        "mpi_options": "--mca osc ^rdma",
       },
       "nvfortran": {
         "extra": "-tp=native",
         "standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
         "debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
-        "mpi_options": "",
+        "mpi_options": "--mca osc ^rdma",
       },
       "environ": {
         "OMP_PROC_BIND": "spread",

@@ -25,6 +25,7 @@ from .helpers import (
     patch_lines,
     copy_tree_with_absolute_symlinks,
     parse_datetime,
+    run_shell_command,
 )
 from .hyperfine import run_hyperfine
 from .check import compare_netcdf_files
@@ -243,6 +244,58 @@ class Croco:
                 os.path.join(self.dirname, "AGRIF_FixedGrids.in"),
             )
 
+        if self.croco_build.cppdef_h_is_defined("XIOS"):
+            xios_dir = self.config.host.get("xios_dir")
+            if not xios_dir:
+                raise Exception(
+                    f"Case '{self.case_name}': XIOS is enabled but no 'xios_dir' "
+                    f"was declared for host '{self.config.use_host_config}' "
+                    f"(see hosts.<name>.xios_dir in libs/schema.json) - point "
+                    f"it at an XIOS install (containing lib/libxios.a, inc/, "
+                    f"bin/xios_server.exe)."
+                )
+            self.croco_build.set_xios_dir(xios_dir)
+            self.setup_xios()
+
+    def setup_xios(self):
+        """
+        Generate the XIOS XML configuration (iodef.xml, context_croco.xml,
+        domain_def_croco.xml, field_def_croco.xml, file_def_croco.xml) for
+        this case into the build/run directory, using
+        XIOS/process_xios_xml.sh.
+
+        Relies on the resolved cppdefs.h (case "cppkeys" already applied) to
+        pick the right iodef.xml: BENCH only ever drives the ocean
+        component (no WRF/ATM_XIOS), and OASIS is detected from
+        OA_COUPLING/OW_COUPLING so that iodef.xml_croco_xios(_wrf_noxios) is
+        selected accordingly by the script.
+        """
+        Messaging.step("Setup XIOS xml files")
+
+        croco_source_dir = self.config.croco_source_dir
+        use_oasis = self.croco_build.cppdef_h_is_defined(
+            "OA_COUPLING"
+        ) or self.croco_build.cppdef_h_is_defined("OW_COUPLING")
+
+        # XIOS_NAM_DIR is set equal to RUNDIR (the build dir, where the
+        # croco executable lives and will run from) so the script reuses
+        # the already-resolved per-case cppdefs.h in place instead of
+        # copying the master one.
+        command = (
+            f'ROOT_DIR="{croco_source_dir}" '
+            f'XIOS_NAM_DIR="{self.dirname}" '
+            'OCE_XIOS="TRUE" ATM_XIOS="FALSE" '
+            f'USE_OASIS="{"TRUE" if use_oasis else "FALSE"}" '
+            f'"{croco_source_dir}/XIOS/process_xios_xml.sh"'
+        )
+
+        with move_in_dir(self.dirname):
+            run_shell_command(
+                command,
+                logfilename="process_xios_xml.log",
+                capture=self.config.capture,
+            )
+
     def compile(self):
         # display
         Messaging.step("Compile")
@@ -383,18 +436,29 @@ class Croco:
         for var, value in environ.items():
             env_line += f'{var}="{value}" '
 
+        # XIOS runs with using_server=true (see XIOS/iodef.xml_croco_xios),
+        # so it needs its own xios_server.exe ranks launched alongside croco
+        # in the same MPI job (MPMD, see XIOS/xios_launch.file) rather than
+        # as a plain extra command.
+        xios_suffix = ""
+        if self.croco_build.cppdef_h_is_defined("XIOS"):
+            xios_server_tasks = self.case.get("xios_server_tasks", 1)
+            xios_suffix = " : -np %d ./xios_server.exe" % xios_server_tasks
+
         # build command and run
-        command = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
+        command = "%s ../../../scripts/correct_end.sh %s ./croco %s%s" % (
             env_line,
             command_prefix,
             self.croco_nmlfile,
+            xios_suffix,
         )
         command = command.rstrip()
         if restart:
-            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
+            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s%s" % (
                 env_line,
                 command_prefix,
                 "%s_rst" % self.croco_nmlfile,
+                xios_suffix,
             )
             command_rst = command_rst.rstrip()
             # execute twice one without restart and one with

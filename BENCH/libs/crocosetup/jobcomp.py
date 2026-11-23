@@ -194,6 +194,15 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.fflags = ""
         self.fc = "gfortran"
         self.mpif90 = "mpif90"
+        self.xios_dir = ""
+
+    def set_xios_dir(self, xios_dir: str) -> None:
+        """
+        Set the XIOS install (containing lib/libxios.a, inc/,
+        bin/xios_server.exe) jobcomp should link CROCO against, passed as
+        jobcomp's --xios-dir at build time.
+        """
+        self.xios_dir = xios_dir
 
     @staticmethod
     def convert_arg_for_argparse(arg_string: str) -> list:
@@ -481,8 +490,8 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # move in dir & call jobcomp
         with move_in_dir(self.builddir):
             run_shell_command(
-                "./jobcomp --fc %s --mpif90 %s --fflags '%s' --jobs %s"
-                % (self.fc, self.mpif90, self.fflags, jobs),
+                "./jobcomp --fc %s --mpif90 %s --fflags '%s' --xios-dir '%s' --jobs %s"
+                % (self.fc, self.mpif90, self.fflags, self.xios_dir, jobs),
                 logfilename="jobcomp.log",
                 capture=self.config.capture,
             )

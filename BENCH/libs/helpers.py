@@ -122,16 +122,26 @@ def run_shell_command_time(command, logfilename=None, verbose: bool = False):
             )
         except subprocess.CalledProcessError as e:
             # Handle subprocess-specific error
-            display_run_error(command, log_fp)
+            display_run_error(command, _read_log(log_fp))
             raise Exception(f"Command failed: {e}") from e
         except OSError as e:
             # Handle OS-related errors (e.g., command not found)
-            display_run_error(command, log_fp)
+            display_run_error(command, _read_log(log_fp))
             raise Exception(f"OS error occurred while running the command: {e}") from e
         except Exception as e:
             # Handle any other unforeseen exceptions
-            display_run_error(command, log_fp)
+            display_run_error(command, _read_log(log_fp))
             raise Exception(f"An error occurred while running the command: {e}") from e
+
+
+def _read_log(log_fp: str) -> str:
+    """Read back the log file run_shell_command_time redirected output to,
+    for display on failure (log_fp is a path, not the output itself)."""
+    try:
+        with open(log_fp, "r") as f:
+            return f.read()
+    except OSError:
+        return f"(could not read log file: {log_fp})"
 
 
 def replace_in_file(in_path: str, out_path: str, pattern: str, replace_by: str):

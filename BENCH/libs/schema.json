@@ -21,6 +21,10 @@
             },
             "required": ["cpu", "gpu"]
           },
+          "xios_dir": {
+            "type": "string",
+            "description": "Path to an XIOS install (containing lib/libxios.a, inc/, bin/xios_server.exe) used to link CROCO when a case enables the XIOS cppkey (passed to jobcomp as --xios-dir). Not set by default, so an XIOS-enabled case fails fast with a clear error until a host declares it."
+          },
           "tuning": {
             "type": "object",
             "properties": {
@@ -176,7 +180,11 @@
           "nml_file": { "type": "string" },
           "cppdefs_file": { "type": "string" },
           "param_file": { "type": "string" },
-          "agrif_fixedgrids_file": { "type": "string" }
+          "agrif_fixedgrids_file": { "type": "string" },
+          "xios_server_tasks": {
+            "type": "integer",
+            "description": "Number of xios_server.exe ranks to launch alongside croco (MPMD) when the case enables the XIOS cppkey. Default: 1."
+          }
         },
         "required": ["title", "case", "splitting", "patches", "check_outputs"]
       }
