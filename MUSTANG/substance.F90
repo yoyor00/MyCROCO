@@ -740,20 +740,20 @@ CONTAINS
       tocd(:)=0.0
       ros(:)=0.0
       diam_sed(:)=0.0
-      ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
-      ALLOCATE(D0_m0(nvp+1:nv_tot))
-      ALLOCATE(D0_m1(nvp+1:nv_tot))
-      D0_funcT_opt(:)=1
-      D0_m0(:)=0.
-      D0_m1(:)=0.
 
 #else
-      ALLOCATE(ws_free_min(nvp)) 
-      ALLOCATE(ws_free_max(nvp)) 
+      ALLOCATE(ws_free_min(nvp))
+      ALLOCATE(ws_free_max(nvp))
       ws_free_min(:)=0.0
       ws_free_max(:)=0.0
 #endif
    ENDIF
+   ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
+   ALLOCATE(D0_m0(nvp+1:nv_tot))
+   ALLOCATE(D0_m1(nvp+1:nv_tot))
+   D0_funcT_opt(:)=1
+   D0_m0(:)=0.
+   D0_m1(:)=0.
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
 #ifdef MUSTANG
