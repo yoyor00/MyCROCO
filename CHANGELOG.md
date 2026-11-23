@@ -202,6 +202,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NH : Fix rhs typo (#538)
 
 ### Changed
+- STEP2D : recompute `knew` from `kstp` locally, so that constraint solvers see
+  the relation between the two temporal indices (no change in results)
+
 - OUTPUTS : output variable indices in ncscrum.h no longer differ between
   2D and 3D configurations (#500)
 
