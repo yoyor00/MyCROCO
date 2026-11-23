@@ -605,7 +605,8 @@ C$    integer omp_get_thread_num
           cff=dy*float(j)
 # endif
           if (cff.gt.Length_ETA/2.) cff=Length_ETA-cff+dy
-          cff=min(depth,84.5+66.526*tanh(0.00015*(cff-0.125*Length_ETA)))
+          cff=min(depth,84.5+66.526*tanh(0.00015*
+     &          (cff-0.125*Length_ETA)))
           do i=IstrR,IendR
             h(i,j)=cff
           enddo
