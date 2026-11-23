@@ -1033,16 +1033,21 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
 !
 !       --> convert [psu.m.s-1] => [cm/days] :
 !       stf_cff= 86400/0.01 = 1/stf_scale
-!       After forcing reading (get_stflx.F), multiply by 0.01/86400.
+!       After forcing reading (get_stflux.F), multiply by 0.01/86400.
 !       Then in get_vbc.F, mult. by salinity t(i,j,N,nstp,isalt)
 !
       if (wrthis(indxSwflx)) then
 !$acc update if(compute_on_device) host(stflx(:,:,isalt))
         do j=0,Mm+1
           do i=0,Lm+1
+#  ifdef RAIN_FLUX
+            work2d(i,j)=stf_cff*EmP(i,j)
+     &              SWITCH rmask(i,j)
+#  else
             work2d(i,j)=stf_cff*stflx(i,j,isalt)/
      &              ( max(eps,t(i,j,N,nstp,isalt)))
      &              SWITCH rmask(i,j)
+#  endif
           enddo
         enddo
         ierr=nf_fwrite(work2d, ncidhis, hisSwflx, record, r2dvar)

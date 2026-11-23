@@ -470,9 +470,14 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
+#   ifdef RAIN_FLUX
+              stflx_avg(i,j,isalt)=cff*(cff1*stflx_avg(i,j,isalt)+
+     &                               stf_cff*EmP(i,j) )
+#   else
               stflx_avg(i,j,isalt)=cff*(cff1*stflx_avg(i,j,isalt)+
      &                               stf_cff*stflx(i,j,isalt) /
      &               ( max(eps,t(i,j,N,nstp,isalt)) ) )
+#   endif
             enddo
           enddo
         endif

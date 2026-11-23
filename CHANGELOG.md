@@ -74,6 +74,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   per-rank JSON output), enabled at build time with `jobcomp --timings`
 
 ### Fixed
+- RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
+  Before the fix, the outputs were zero everywhere (Issue #549) 
+
+- RAIN_FLUX : fix MPI reproducibility when BULK_FLUX and RAIN_FLUX were activated (Issue #549)
+
+- BULK_FLUX : fix compilation error when SALINITY was not defined (Issue #549)
 
 - SUBSTANCE/MUSTANG/RAIN_FLUX : fix restart not bit-exact (Issue #610)
 

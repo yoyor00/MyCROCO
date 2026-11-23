@@ -453,10 +453,11 @@ C$OMP END MASTER
       enddo
 # endif /* ZNUDGING */
 
-!-----------------------------------------------------------------------
-! Apply mass point sources (volume vertical influx) 
-!-----------------------------------------------------------------------
+
 !
+!-----------------------------------------------------------------------
+! Apply mass point sources (volume vertical influx)
+!-----------------------------------------------------------------------
 # ifdef PSOURCE_MASS
       do is=1,Nsrc
 #  ifdef MPI
@@ -468,23 +469,21 @@ C$OMP END MASTER
 #  endif
         if (IstrR.le.i .and. i.le.IendR .and.
      &      JstrR.le.j .and. j.le.JendR) then
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast 
+          zeta_new(i,j)=zeta_new(i,j)+
+     &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast
         endif
       enddo
 # endif
-
 !-----------------------------------------------------------------------
-! Apply Rain flux 
+! Apply Rain flux
 !-----------------------------------------------------------------------
 # ifdef RAIN_FLUX
       do j=JstrV-1,Jend
-        do i=IstrU-1,Iend
-          zeta_new(i,j)=zeta_new(i,j)-EmP(i,j)*dtfast 
+       do i=IstrU-1,Iend
+        zeta_new(i,j)=zeta_new(i,j)-EmP(i,j)*dtfast
        enddo
       enddo
 # endif
-
 !
 !-----------------------------------------------------------------------
 ! Mask land cells & ensure that total depth in masked cells is > Dcrit

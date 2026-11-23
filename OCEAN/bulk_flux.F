@@ -703,7 +703,9 @@
 !
 #  ifdef MASKING
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask(i,j)
+#   endif
 #   ifdef SUBSTANCE
           do itrc=itsubs1,itsubs2
             stflx(i,j,itrc)=stflx(i,j,itrc)*rmask(i,j)
@@ -712,7 +714,9 @@
 #  endif
 #  ifdef WET_DRY
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
+#   endif
 #   ifdef SUBSTANCE
           do itrc=itsubs1,itsubs2
             stflx(i,j,itrc)=stflx(i,j,itrc)*rmask_wet(i,j)
