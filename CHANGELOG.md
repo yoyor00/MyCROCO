@@ -70,6 +70,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
   case in BENCH (#589)
 
+- TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
+  per-rank JSON output), enabled at build time with `jobcomp --timings`
+
 ### Fixed
 - RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
   Before the fix, the outputs were zero everywhere (Issue #549) 
@@ -100,6 +103,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   uninitialized index when a tide period has no match in the MAS
   catalogue; POT_TIDES : add missing tides.h include in prsgrd.F
   (Issue #595)
+
+- TIDES_MAS : fix AGRIF compilation failure caused by `mod_tides_mas`
+  re-exporting `param.h` constants and a module array named `omega`
+  colliding with the `omega` subroutine (#605)
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
@@ -134,6 +141,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   detected from the resolved cppdefs.h instead of sharing OCEAN's file
   across all cases (#489 and #576)
 - BENCH : Fix --build-ref crashing when a check-output or namelist path has subdirectories (#606)
+- BENCH : Fix --build-ref crashing when results/last is a dangling symlink, 
+  replace it with helpers.replace_symlink() instead (#607)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
@@ -227,6 +236,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     - renames all French variable names to English throughout in this module.
   All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
   (was raw floating-point days since origin).
+  TOOL_ORIGINDATE error/warning messages now report the affected netCDF
+  file and variable (#600).
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
@@ -236,6 +247,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
+  The per-source namelist groups are not printed when there is no source (#608)
   (#552, #568, #570, #572, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
@@ -350,6 +362,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
   cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
   Benguela example is also copied to OCEAN.
+  ana_initial.F : Add comment explaining why testcase_name == '' (realistic
+  config, no idealized dispatch) is handled separately from case default
+  (fallback for an unrecognized testcase_name) (#560)
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
