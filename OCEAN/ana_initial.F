@@ -99,8 +99,8 @@
             y0=el/2.
 #  ifdef AGRIF
           else
-            x0=2.*Agrif_Parent_xl/3.
-            y0=Agrif_Parent_el/2.
+            x0=2.*Agrif_Parent(xl)/3.
+            y0=Agrif_Parent(el)/2.
           endif
 #  endif
           cff1=0.395
