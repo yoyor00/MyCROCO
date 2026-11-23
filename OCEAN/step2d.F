@@ -201,6 +201,8 @@ C$    trd=omp_get_thread_num()
         irhoy = Agrif_Irhoy()
         irhot = Agrif_Irhot()
 # endif
+      knew=kstp+1
+      if (knew.gt.4) knew=1
       if (FIRST_2D_STEP) then         ! Meaning of temporal indices
         kbak=kstp                     ! ------- -- -------- -------
         kold=kstp                     ! m-2     m-1      m      m+1
