@@ -1174,7 +1174,10 @@
               enddo
             enddo
           enddo
-
+!  Note (#560): 
+!  case default (flat 20C/35psu profile) only catches a misspelled or new
+!  testcase_name with no dedicated ana_initial branch, kept for backward
+!  compatibility.
         case default
           do k=1,N
             do j=JR_RANGE
