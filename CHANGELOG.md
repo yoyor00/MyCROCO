@@ -28,6 +28,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - WET_DRY : fix restart not bit-exact with WET_DRY; umask_wet/vmask_wet
   are now saved to and restored from the restart file (Issue #262)
 
+- ANA_INITIAL : fix build failure with AGRIF + ANA_INITIAL (#609)
+
 - TIDES_MAS : stop with a clear error instead of silently using an
   uninitialized index when a tide period has no match in the MAS
   catalogue; POT_TIDES : add missing tides.h include in prsgrd.F
