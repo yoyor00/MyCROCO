@@ -81,6 +81,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BULK_FLUX : fix compilation error when SALINITY was not defined (Issue #549)
 
+- SUBSTANCE/MUSTANG/RAIN_FLUX : fix restart not bit-exact (Issue #610)
+
 - PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
   which caused the river discharge Qsrc to be applied twice to u/v in
   step3d_uv2.F (once through PSOURCE_MASS's mass-flux treatment and once
@@ -198,6 +200,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NH : Fix rhs typo (#538)
 
 ### Changed
+- OUTPUTS : output variable indices in ncscrum.h no longer differ between
+  2D and 3D configurations (#500)
+
 - OUTPUTS : output files are no longer overwritten on restart. Record
   counters of the history, averages and diagnostics files are saved in
   the restart file and restored, so a restart appends to the existing

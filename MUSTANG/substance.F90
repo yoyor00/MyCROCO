@@ -61,16 +61,20 @@ CONTAINS
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
       !
-   
+
 #if defined BLOOM
 # if defined key_N_tracer || key_P_tracer
     USE bloom_initdefine , ONLY : bloom_create_vartracer
 # endif
 #endif
-   
+
    !! Argument
    INTEGER,INTENT(INOUT)                     ::  may_day_flag
    INTEGER,INTENT(IN)                        ::  indxT, indxTsrc
+   ! indxTSUBS(isubs), used below, is ncscrum.h's own vname column
+   ! for the isubs-th substance tracer -- already module-level here
+   ! via USE module_substance (which #include "ncscrum.h"s), same as
+   ! vname/wrthis/ntrc_subs, so it does not need to be passed in.
    
    !! Local declarations
    LOGICAL                                   :: l_varassoc
@@ -736,20 +740,20 @@ CONTAINS
       tocd(:)=0.0
       ros(:)=0.0
       diam_sed(:)=0.0
-      ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
-      ALLOCATE(D0_m0(nvp+1:nv_tot))
-      ALLOCATE(D0_m1(nvp+1:nv_tot))
-      D0_funcT_opt(:)=1
-      D0_m0(:)=0.
-      D0_m1(:)=0.
 
 #else
-      ALLOCATE(ws_free_min(nvp)) 
-      ALLOCATE(ws_free_max(nvp)) 
+      ALLOCATE(ws_free_min(nvp))
+      ALLOCATE(ws_free_max(nvp))
       ws_free_min(:)=0.0
       ws_free_max(:)=0.0
 #endif
    ENDIF
+   ALLOCATE(D0_funcT_opt(nvp+1:nv_tot))
+   ALLOCATE(D0_m0(nvp+1:nv_tot))
+   ALLOCATE(D0_m1(nvp+1:nv_tot))
+   D0_funcT_opt(:)=1
+   D0_m0(:)=0.
+   D0_m1(:)=0.
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
 #ifdef MUSTANG
@@ -968,7 +972,7 @@ CONTAINS
   !  remplissage du tableau vname declare dans ncscrum.h
    !write(*,*)'in substance indxT=',indxT
    DO isubs=1,ntrc_subs
-     indx=indxT+ntrc_salt+isubs
+     indx=indxTSUBS(isubs)
      vname(1,indx)=name_var(isubs)
      MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
      vname(2,indx)=long_name_var(isubs)
@@ -985,7 +989,7 @@ CONTAINS
    ENDDO
    IF (nv_fix>0) THEN
       DO isubs=1,nv_fix
-      indx=indxT+ntrc_salt+ntrc_subs+isubs
+      indx=indxTSUBS(ntrc_subs)+isubs
       !  write(*,*)'fix, indice vname',indx
       vname(1,indx)=name_var_fix(isubs)
       MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
@@ -1003,7 +1007,7 @@ CONTAINS
 
 #ifdef PSOURCE_NCFILE_TS
    DO isubs=1,ntrc_subs
-          indx=indxT+ntrc_salt+isubs
+          indx=indxTSUBS(isubs)
           vname(1,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(1,indx) )))//'_src        '
           vname(2,indxTsrc+isubs+1)='Tracer source concentration     '
           vname(3,indxTsrc+isubs+1)=trim(ADJUSTL(ADJUSTR(vname(3,indx) )))//''

@@ -1668,6 +1668,11 @@ CR        write(stdout,'(1x,A,I3,1x,I3)') 'gravel_bdlv_ Nb',i, indxBDLV(i)
 #  endif
 # endif /* SEDIMENT */
 
+! SUBSTANCE tracer names are NOT set here: MUSTANG/substance.F90's
+! substance_read_alloc already fills vname(:,indxTSUBS(isubs)) with
+! the real, namelist-configured names (name_var/long_name_var/
+! unit_var/standard_name_var), not generic placeholders.
+
 # ifdef BBL
 CR      write(stdout,'(1x,A,I3)') 'indxAbed=',indxBBL
       vname(1,indxBBL)  ='Abed                                    '

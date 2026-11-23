@@ -244,7 +244,7 @@
       D0_m0_n(1)=0.0
       D0_m1_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
-      init_cv_name_n(1)='none'
+      init_cv_name_n(1)='DIAG_T90'
       obc_cv_name_n(1)='nullGradient'
     name_var_n(2)='DIAG_ATM'
       long_name_var_n(2)='flx_atm dry-deposition test tracer'
@@ -260,7 +260,7 @@
       D0_m0_n(2)=0.0
       D0_m1_n(2)=0.0
       l_out_subs_n(2)=.TRUE.
-      init_cv_name_n(2)='none'
+      init_cv_name_n(2)='DIAG_ATM'
       obc_cv_name_n(2)='none'
     name_var_n(3)='DIAG_RAIN'
       long_name_var_n(3)='cv_rain wet-deposition test tracer'
@@ -276,6 +276,6 @@
       D0_m0_n(3)=0.0
       D0_m1_n(3)=0.0
       l_out_subs_n(3)=.TRUE.
-      init_cv_name_n(3)='none'
+      init_cv_name_n(3)='DIAG_RAIN'
       obc_cv_name_n(3)='none' /
 
