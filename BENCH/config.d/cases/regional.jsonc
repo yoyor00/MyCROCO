@@ -30,7 +30,7 @@
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
-    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "splitting": { "1": "1x1", "2": "1x2"},
     "cppkeys": {
       "TIDES": true,
       "BULK_FLUX": true,

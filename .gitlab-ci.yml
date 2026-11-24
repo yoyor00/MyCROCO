@@ -74,6 +74,7 @@ gfortran_parallel:
     matrix:
       - { CASES: "@realist_base",  VARIANTS: "sequential,mpi-4", TITLE: "debug_realist_base",  OPTIONS: "--debug" }
       - { CASES: "@agrif_realist", VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist", OPTIONS: "--debug" }
+      - { CASES: "@xios",          VARIANTS: "mpi-2",            TITLE: "debug_xios",          OPTIONS: "--debug" }
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
