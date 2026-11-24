@@ -92,7 +92,7 @@ CONTAINS
       REAL(wp) :: zmaxsi, zpexpod, zrsize, zrsizen, zrsized, znano, zdiat
       REAL(wp) :: zlogtemp1, zlogtemp2
       REAL(wp), DIMENSION(A2D(0),jpk) :: zproportn, zproportd, zprodlig, zgrarem
-      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zfezoo, zzligprod, zw3d,
+      REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zfezoo, zzligprod, zw3d
       CHARACTER (len=25) :: charout
 
       !!---------------------------------------------------------------------
