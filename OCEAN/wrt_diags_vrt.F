@@ -102,7 +102,9 @@
 !
 ! Time
 !
-      ierr=nf_put_var1_FTYPE (nciddiags_vrt, diags_vrtTime, record, time)
+      ierr=nf_put_var1_FTYPE (nciddiags_vrt, diags_vrtTime, record, time
+     &  - dia_vrt_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr

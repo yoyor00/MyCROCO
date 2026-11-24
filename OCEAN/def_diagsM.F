@@ -29,6 +29,7 @@
      &     dianameM, ldefdiaM_avg, ntsdiaM_avg, nwrtdiaM_avg,
      &     nrpfdiaM_avg, dianameM_avg
 #endif
+      use tools_calendar, only: tool_check_output_origin
 
 # ifdef NC4PAR
       use mpi
@@ -60,6 +61,7 @@
 #  define rec_per_file nrpfdiaM
 #  define wrt wrtdiaM
 #  define vidTime diaTimeM
+#  define vidOrigin diaM_origin_in_sec
 #  define vidTstep diaTstepM
 !
 #  define vidMXadv diaMXadv
@@ -95,6 +97,7 @@
 #  define rec_per_file nrpfdiaM_avg
 #  define wrt wrtdiaM_avg
 #  define vidTime diaTimeM_avg
+#  define vidOrigin diaM_avg_origin_in_sec
 #  define vidTstep diaTstepM_avg
 !
 #  define vidMXadv diaMXadv_avg
@@ -292,6 +295,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 
 ! Momentum diagnostics variables.
 ! -------- ----------- --------
@@ -997,7 +1002,9 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
-
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+!
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
 !
@@ -1348,6 +1355,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 # undef vidMXadv

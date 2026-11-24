@@ -2127,7 +2127,15 @@
 !
       REAL(kind=8) :: rst_origin_in_sec, his_origin_in_sec
      &              , avg_origin_in_sec
+     &              , sta_origin_in_sec
      &              , dia_origin_in_sec, dia_avg_origin_in_sec
+     &              , dia_pv_origin_in_sec, dia_pv_avg_origin_in_sec
+     &              , dia_vrt_origin_in_sec, dia_vrt_avg_origin_in_sec
+     &              , dia_ek_origin_in_sec, dia_ek_avg_origin_in_sec
+     &              , dia_eddy_origin_in_sec, dia_eddy_avg_origin_in_sec
+     &              , diaM_origin_in_sec, diaM_avg_origin_in_sec
+     &              , dia_bio_origin_in_sec, dia_bio_avg_origin_in_sec
+     &              , ablhis_origin_in_sec, ablavg_origin_in_sec
      &              , surf_origin_in_sec, surf_avg_origin_in_sec
 
       character*180 usrname
@@ -2191,7 +2199,15 @@
      &         ,   start_date_in_sec
      &         ,   rst_origin_in_sec, his_origin_in_sec
      &         ,   avg_origin_in_sec
+     &         ,   sta_origin_in_sec
      &         ,   dia_origin_in_sec, dia_avg_origin_in_sec
+     &         ,   dia_pv_origin_in_sec, dia_pv_avg_origin_in_sec
+     &         ,   dia_vrt_origin_in_sec, dia_vrt_avg_origin_in_sec
+     &         ,   dia_ek_origin_in_sec, dia_ek_avg_origin_in_sec
+     &         ,   dia_eddy_origin_in_sec, dia_eddy_avg_origin_in_sec
+     &         ,   diaM_origin_in_sec, diaM_avg_origin_in_sec
+     &         ,   dia_bio_origin_in_sec, dia_bio_avg_origin_in_sec
+     &         ,   ablhis_origin_in_sec, ablavg_origin_in_sec
      &         ,   surf_origin_in_sec, surf_avg_origin_in_sec
      &         ,   origin_secinunit
      &         ,   usrname

@@ -118,7 +118,9 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !-----------------------------------------------------------------------
 !     Time
 !-----------------------------------------------------------------------
-      ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime, record, time)
+      ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime, record, time
+     &  - ablhis_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)

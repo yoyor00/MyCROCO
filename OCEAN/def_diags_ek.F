@@ -29,6 +29,8 @@
      &     nrpfdiags_ek, diags_ekname, ldefdiags_ek_avg,
      &     ntsdiags_ek_avg, nwrtdiags_ek_avg, nrpfdiags_ek_avg,
      &     diags_ekname_avg
+      
+      use tools_calendar, only: tool_check_output_origin
 
 # ifdef NC4PAR
       use mpi
@@ -60,6 +62,7 @@
 #  define rec_per_file nrpfdiags_ek
 #  define wrt wrtdiags_ek
 #  define vidTime diags_ekTime
+#  define vidOrigin dia_ek_origin_in_sec
 #  define vidTstep diags_ekTstep
 #  define viddiags_ekHadv diags_ekHadv
 #  define viddiags_ekHdiff diags_ekHdiff
@@ -87,6 +90,7 @@
 #  define rec_per_file nrpfdiags_ek_avg
 #  define wrt wrtdiags_ek_avg
 #  define vidTime diags_ekTime_avg
+#  define vidOrigin dia_ek_avg_origin_in_sec
 #  define vidTstep diags_ekTstep_avg
 #  define viddiags_ekHadv diags_ekHadv_avg
 #  define viddiags_ekHdiff diags_ekHdiff_avg
@@ -281,6 +285,8 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &                        NF_FOUT, ierr)
 
+
+        vidOrigin=start_date_in_sec
 ! Energy diagnostics variables.
 ! -------- ----------- --------
 !
@@ -829,6 +835,9 @@
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
 
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+
 
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
@@ -1097,6 +1106,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 # undef viddiags_ekHadv
 # undef viddiags_ekHdiff

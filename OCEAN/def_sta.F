@@ -23,6 +23,8 @@
 !
           use croco_namelist, only: ldefsta, nsta, nrpfsta,
      &                              staname, staposname
+          use tools_calendar, only: tool_check_output_origin
+
           implicit none
 # include "param.h"
 # include "mixing.h"
@@ -163,6 +165,7 @@
         lvar=lenstr(vname(4,indxTime))
         ierr=nf_put_att_text(ncid,staTime,'field',lvar,
      &                         vname(4,indxTime)(1:lvar))
+        sta_origin_in_sec=start_date_in_sec
 !
 !  Define stations (lon,lat) or (x,y) and z locations.
 !
@@ -628,6 +631,8 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+        call tool_check_output_origin(ncid, staTime, start_date_in_sec,
+     &                                 sta_origin_in_sec)
 !
 !  Define stations (lon,lat) or (x,y) and z locations.
 !
