@@ -63,7 +63,7 @@ MODULE tools_calendar
 
    PUBLIC :: tool_sectodat, tool_datosec, tool_datetosec, &
              tool_decompdate, tool_origindate, init_tools_calendar, &
-             tool_xios_calendar_type
+             tool_xios_calendar_type, tool_check_output_origin
 
    ! Module-level copies of namelist calendar settings.
    ! Set once via init_tools_calendar (called from init_calendar).
@@ -945,6 +945,52 @@ CONTAINS
       IF (PRESENT(secs_per_unit)) secs_per_unit = unit_factor
 
    END SUBROUTINE tool_origindate
+
+   !====================================================================
+   SUBROUTINE tool_check_output_origin(netcdfid, varid, start_date_in_sec, &
+                                        origin_in_sec)
+   !! ** Purpose : called when an output file (restart, history, averages,
+   !!              diagnostics, surf...) already exists and is being
+   !!              reopened to append new records. Reads back the origin
+   !!              date already embedded in its time variable (the 'units'
+   !!              attribute) and returns it as origin_in_sec, so that the
+   !!              caller writes new records against the SAME epoch as the
+   !!              records already in the file, instead of silently
+   !!              recomputing a new reference from the current run's
+   !!              start_date. Warns (does not abort) if the two differ,
+   !!              since this normally means start_date was changed
+   !!              between two legs of the same restarted run.
+#if defined MPI
+      USE scalars, ONLY: mynode
+#endif
+      USE netcdf
+      IMPLICIT NONE
+
+      INTEGER, INTENT(in)         :: netcdfid, varid
+      REAL(kind=rlg), INTENT(in)  :: start_date_in_sec
+      REAL(kind=rlg), INTENT(out) :: origin_in_sec
+
+      CHARACTER*40  :: varname
+      CHARACTER*250 :: ncfile
+      INTEGER       :: ierr3, ierr4, pathlen
+
+      CALL tool_origindate(netcdfid, varid, origin_in_sec)
+
+      IF (ABS(origin_in_sec - start_date_in_sec) .GT. 0.001_rlg) THEN
+         varname = 'time'
+         ierr3 = nf90_inquire_variable(netcdfid, varid, name=varname)
+         ncfile = '(unknown file)'
+         ierr4 = nf90_inq_path(netcdfid, path=ncfile, pathlen=pathlen)
+         MPI_master_only write (*, '(/1x,2A/6x,2A/6x,2A/6x,2A/6x,A/)') &
+            'TOOL_CHECK_OUTPUT_ORIGIN WARNING: this file already holds ', &
+            'records written with a different start_date than the current run.', &
+            'Affected file   : ', TRIM(ncfile), &
+            'File origin     : ', tool_sectodat(origin_in_sec), &
+            'Current start_date: ', tool_sectodat(start_date_in_sec), &
+            'New records keep the file''s original origin, so its time axis stays consistent.'
+      END IF
+
+   END SUBROUTINE tool_check_output_origin
 
    !====================================================================
    SUBROUTINE init_tools_calendar(cal_type, s_date)

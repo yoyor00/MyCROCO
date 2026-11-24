@@ -104,7 +104,9 @@
 ! Averaged diag Time
 !
       ierr=nf_put_var1_FTYPE (nciddiags_ek_avg, diags_ekTime_avg,
-     &                       record, timediags_ek_avg)
+     &                       record, timediags_ek_avg
+     &  - dia_ek_avg_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
