@@ -74,8 +74,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   per-rank JSON output), enabled at build time with `jobcomp --timings`
 
 ### Fixed
-- STATIONS : fix compilation error with new namelist  
-
 - RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
   Before the fix, the outputs were zero everywhere (Issue #549) 
 
@@ -266,6 +264,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
   The per-source namelist groups are not printed when there is no source (#608)
+  The station nc_sta.h file is updated (#622)
   (#552, #568, #570, #572, #573)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
