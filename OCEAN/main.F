@@ -904,10 +904,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 
 #ifdef ABL1D
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call abl_ini (tile)
-      enddo
 # ifndef XIOS
       if (ldefablhis .and. wrtabl(indxTime) .and. nrecablhis.eq.0)
      &                                            call wrt_abl_his
