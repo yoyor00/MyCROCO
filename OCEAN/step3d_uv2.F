@@ -841,11 +841,7 @@
 !  Smooth vertically at interior points.
 !
 #  ifdef TS_MIX_ISO_FILT
-#   ifdef EXACT_RESTART
       if (mod(iic-1,ismooth).eq.0) then
-#   else
-      if (mod(iic-ntstart,ismooth).eq.0) then
-#   endif
         do k=N-1,2,-1
           do i=IU_RANGE
             dRdx(i,j,k)=0.05*dRdx(i,j,k-1)+
@@ -974,11 +970,7 @@
 !  Smooth vertically at interior points.
 !
 #  ifdef TS_MIX_ISO_FILT
-#   ifdef EXACT_RESTART
       if (mod(iic-1,ismooth).eq.0) then
-#   else
-      if (mod(iic-ntstart,ismooth).eq.0) then
-#   endif
         do k=N-1,2,-1
           do i=IV_RANGE
             dRde(i,j,k)=0.05*dRde(i,j,k-1)+

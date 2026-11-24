@@ -164,6 +164,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
 - COUPLING : Fix missing restart file update for OASIS (#501). 
 - COUPLING : Fix PSMILE_INCDIR definition in jobcomp to support all OASIS3-MCT versions (#480)
+- ABL1D : Fix ABL1D exact restart and dates in ABL his/avg files (#553)
 
 - OBC_PATM : fix wrong i-index in get_bry.F, zetabry_west atmospheric pressure correction used Istr instead of IstrR (#530)
 
@@ -204,6 +205,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NH : Fix rhs typo (#538)
 
 ### Changed
+- Default namelist values changed following EXACT_RESTART removal: `nrst`
+  now defaults to -1 (restart file written once, at the end of the run,
+  instead of every 720 time steps) and `nrpfrst` now defaults to 0 (#553)
+
 - OUTPUTS : output variable indices in ncscrum.h no longer differ between
   2D and 3D configurations (#500)
 
@@ -327,6 +332,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+- EXACT_RESTART cpp key has been removed, exact bit-reproducible restart
+  is now always active by default (#553)
+
 - AVERAGES_K cpp key has been removed (Issue #374). 
    If deactivated, averaged vertical mixing coefficients AKv, AKt and AKs were not saved.
    Removed because redundant with booleans out_avg_akv, out_avg_akt and out_avg_aks in namelist. 

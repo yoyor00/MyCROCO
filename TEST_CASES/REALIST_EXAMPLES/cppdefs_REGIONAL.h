@@ -257,8 +257,6 @@
 # define AVERAGES
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
-                     /* Exact restart */
-# undef EXACT_RESTART
 /*
 !                        Diagnostics
 !--------------------------------------------

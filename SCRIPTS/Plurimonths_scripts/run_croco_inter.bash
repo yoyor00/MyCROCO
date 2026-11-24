@@ -78,7 +78,11 @@ NLEVEL=1
 # AGRIF nesting refinement coefficient
 AGRIF_REF=3
 
-# Start and End year 
+# WARNING: months must be given without leading zero (1, 2, ..., 9, 10, ...),
+#          not 01, 02, ..., 09 (bash arithmetic would interpret them as octal numbers).
+#          Use MTH_FORMAT below to get 2-digit months in the output file names.
+#
+# Start and End year
 NY_START=2005
 NY_END=2005
 # Start and End month
@@ -106,12 +110,9 @@ ND_RST=-1
 RSTFLAG=0
 
 # Cold start Year and Month - define the Year and Month of the cold start ini file
+# (no leading zero, see WARNING above)
 NY_COLDSTART=2005
 NM_COLDSTART=1
-
-#  Exact restart - EXACT_RST=0 --> Exact restart OFF
-#                - EXACT_RST=1 --> Exact restart ON
-EXACT_RST=1
 
 #unalias cp
 #unalias mv
@@ -355,18 +356,12 @@ while [ $NY != $NY_END ]; do
         NM_E=1
         NY_E=$((NY + 1))
       fi
-      if [[ $EXACT_RST == 1 ]]; then
-        echo "Exact restart defined"
-        if [[ $NY == $NY_COLDSTART && $NM == $NM_COLDSTART ]]; then
-          NUMRECINI=1
-          echo "Exact restart activated but COLD START: NY=$NY_COLDSTART NM=$NM_COLDSTART => USING NUMRECINI = $NUMRECINI"
-        else
-          NUMRECINI=2
-          echo "Exact restart activated => USING NUMRECINI = $NUMRECINI"
-        fi
-      else  # no exact restart
+      if [[ $NY == $NY_COLDSTART && $NM == $NM_COLDSTART ]]; then
         NUMRECINI=1
-        echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
+        echo "COLD START (NY=$NY NM=$NM) => only 1 record available => set NUMRECINI = $NUMRECINI"
+      else
+        NUMRECINI=2
+        echo "EXACT RESTART (NY=$NY NM=$NM) => 2 records needed => set NUMRECINI = $NUMRECINI"
       fi
 
       echo "Writing in ${MODEL}_inter.in${ENDF}"

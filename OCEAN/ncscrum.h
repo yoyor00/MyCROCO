@@ -640,7 +640,6 @@
       parameter (indxbvfLast=indxSSH)
 #endif
 
-#ifdef EXACT_RESTART
       integer indxrufrc
       parameter (indxrufrc=indxbvfLast+1)
       integer indxrvfrc
@@ -688,12 +687,6 @@
       integer indxSUSTRLast
       parameter (indxSUSTRLast=indxSVSTR)
 # endif
-#else
-      integer indxSUSTR, indxSVSTR
-      parameter (indxSUSTR=indxbvfLast+1, indxSVSTR=indxSUSTR+1)
-      integer indxSUSTRLast
-      parameter (indxSUSTRLast=indxSVSTR)
-#endif
 
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
@@ -1132,7 +1125,6 @@
       integer rstSed(NST+2)
 # endif
 #endif
-#ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
 # ifdef M3FAST
       integer rstru_nbq,rstrv_nbq
@@ -1145,7 +1137,6 @@
 # ifdef WET_DRY
       integer rstumaskwet,rstvmaskwet
 # endif
-#endif
 #ifdef MORPHODYN
       integer rstHm
 #endif
@@ -1689,7 +1680,6 @@
      &      , rstBustr,rstBvstr
 #  endif
 # endif
-# ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
 #  ifdef M3FAST
      &      , rstru_nbq,rstrv_nbq
@@ -1702,7 +1692,6 @@
 #  ifdef WET_DRY
      &      , rstumaskwet,rstvmaskwet
 #  endif
-# endif
 
 # ifdef SEDIMENT
      &                         , rstSed
