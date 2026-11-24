@@ -23,7 +23,7 @@
 !
           USE croco_namelist_read, ONLY : read_nml, read_nml_fname
           USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
-          USE croco_namelist, ONLY : ldefhis, nrrec
+          USE croco_namelist, ONLY : ldefhis, nrrec, nrst
 #ifdef STATIONS
           USE croco_namelist, ONLY : ldefsta
 #endif
@@ -391,7 +391,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #ifdef ANA_INITIAL
       if (nrrec.ne.0) then            ! read from NetCDF file
 #endif
-#ifdef EXACT_RESTART
         call get_initial (nrrec-1, 2) ! Set initial conditions
                                       ! in case of restart
 C$OMP BARRIER
@@ -401,7 +400,6 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
 # endif
-#endif
         call get_initial (nrrec, 1)   ! Set initial conditions
 #ifdef ANA_INITIAL
       else  ! nrrec.eq.0
@@ -420,6 +418,14 @@ C$OMP BARRIER
       ntimes=NINT((tool_datosec(end_date)-time)/dt)+ntstart-1
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
+!
+!  nrst=-1 : write a restart file only once, at the end of the
+!  simulation (forced here since ntimes is now known). nrst is
+!  compared against ilc=1+iic-ntstart (steps since this run started),
+!  so it must be set to the number of steps in this run, not to the
+!  absolute final step index ntimes.
+!
+      if (nrst.eq.-1) nrst=ntimes-ntstart+1
 !
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
@@ -898,10 +904,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 
 #ifdef ABL1D
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call abl_ini (tile)
-      enddo
 # ifndef XIOS
       if (ldefablhis .and. wrtabl(indxTime) .and. nrecablhis.eq.0)
      &                                            call wrt_abl_his

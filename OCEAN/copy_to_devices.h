@@ -705,7 +705,6 @@
   || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 #endif
-#ifdef EXACT_RESTART
 # ifdef M3FAST
 #  ifdef TS_MIX_ISO_FILT
 #  else
@@ -715,8 +714,6 @@
 #  else
 #  endif
 # endif
-#else
-#endif
 #ifdef SOLVE3D
 # ifdef SALINITY
 # else
@@ -789,8 +786,6 @@
 # ifdef MUSTANG
 !$acc&, rstMUS
 # endif
-#endif
-#ifdef EXACT_RESTART
 #endif
 #ifdef BBL
 !$acc&, rstBBL
@@ -1105,8 +1100,6 @@
 # if defined GLS_MIXING
 # endif
 # ifdef M3FAST
-# endif
-# ifdef EXACT_RESTART
 # endif
 #endif
 #ifdef SOLVE3D

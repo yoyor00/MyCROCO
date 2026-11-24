@@ -29,10 +29,6 @@ export ONLINE_COMP=1
 export DT_OCE=3600
 export NDTFAST=60
 
-# EXACT_RESTART
-#--------------
-export EXACT_RESTART="FALSE"
-
 # MPI_NOLAND
 #-----------
 export MPI_NOLAND="FALSE"

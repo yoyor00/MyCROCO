@@ -161,7 +161,9 @@ C$OMP END PARALLEL
 #if defined CVTK_DEBUG_ADVANCED
 # include "coupling.h"
 #endif
-
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -197,6 +199,11 @@ C$OMP MASTER
       nstp=1+mod(iic-ntstart,2)
       nrhs=nstp
       nnew=3
+#endif
+
+#ifdef ABL1D
+      nt_n = 1 + MOD(iic-ntstart  , 2)
+      nt_a = 1 + MOD(iic-ntstart+1, 2)
 #endif
 
 #ifdef AGRIF
