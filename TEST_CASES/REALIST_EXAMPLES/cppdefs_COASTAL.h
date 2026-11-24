@@ -127,6 +127,7 @@
 #  undef  BULK_ECUMEV6
 #  undef  BULK_WASP
 #  define BULK_GUSTINESS
+#  define RAIN_FLUX
 #  undef  BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
@@ -255,11 +256,8 @@
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
 # undef  AVERAGES
-# undef  AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
-                     /* Exact restart */
-# undef EXACT_RESTART
 /*
 !                        Diagnostics
 !--------------------------------------------

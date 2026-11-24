@@ -54,7 +54,11 @@ NLEVEL=1
 # AGRIF nesting refinement coefficient
 AGRIF_REF=3
 
-# Start and End year 
+# WARNING: years and months must be given without leading zero (1, 2, ..., 9, 10, ...),
+#          not 01, 02, ..., 09 (bash arithmetic would interpret them as octal numbers).
+#          Use MTH_FORMAT below to get 2-digit months in the output file names.
+#
+# Start and End year
 NY_START=1
 NY_END=10
 # Start and End month
@@ -75,9 +79,6 @@ ND_AVG=3
 ND_HIS=-1
 #   restart (if = -1 set equal to NUMTIMES)
 ND_RST=-1
-
-# Flag for using exact restart - EXACT_RST=1 --> Exact restart ON
-EXACT_RST=1
 
 #unalias cp
 #unalias mv
@@ -228,8 +229,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
   sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
     -e 's/\bNUMAVG\b/'$NUMAVG'/' \
     -e 's/\bNUMHIS\b/'$NUMHIS'/' \
-    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.nml${ENDF} > ${MODEL}_inter.nml${ENDF}.tmp1 \
-  && mv ${MODEL}_inter.nml${ENDF}.tmp1 ${MODEL}.nml${ENDF}
+    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.nml${ENDF} > ${MODEL}_inter.nml${ENDF}.tmp1
 
   LEVEL=$((LEVEL + 1))
 done
@@ -278,22 +278,15 @@ while [[ $NY != $NY_END ]]; do
       fi
       if [[ $NY == 1 && $NM == 1 ]]; then
         NUMRECINI=1
-        [[ $EXACT_RST == 1 ]] && echo "Exact restart activated but COLD START: NY=1 NM=1 => USING NUMRECINI = $NUMRECINI"
-        [[ $EXACT_RST != 1 ]] && echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
+        echo "COLD START (NY=$NY NM=$NM) => only 1 record available => set NUMRECINI = $NUMRECINI"
       else
-        if [[ $EXACT_RST == 1 ]]; then
-          NUMRECINI=2
-          echo "Exact restart activated => USING NUMRECINI = $NUMRECINI"
-        else
-          NUMRECINI=1
-          echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
-        fi
+        NUMRECINI=2
+        echo "EXACT RESTART (NY=$NY NM=$NM) => 2 records needed => set NUMRECINI = $NUMRECINI"
       fi
       #
       sed -e 's/NUMRECINI/'$NUMRECINI'/' \
           -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
-          < ${MODEL}.nml${ENDF} > ${MODEL}.nml${ENDF}.tmp1 \
-      && mv ${MODEL}.nml${ENDF}.tmp1 ${MODEL}.nml${ENDF}
+          < ${MODEL}_inter.nml${ENDF}.tmp1 > ${MODEL}.nml${ENDF}
       #
       LEVEL=$((LEVEL + 1))
     done

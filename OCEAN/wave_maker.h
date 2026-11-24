@@ -97,7 +97,7 @@
 !
 !  Read file
 !
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           open(117,file='datwaves.txt',form='formatted',status='old')
           do iw=1,Nfrq  !--> forces.h
             read(117,*) wa_bry(iw),wf_bry(iw),wpha_bry(iw),wk_bry(iw)
@@ -116,7 +116,7 @@
 !
 !  Build wave spectrum
 !
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 
           fmin=0.2*wf  ! frequency spread
           fmax=5.0*wf
@@ -565,7 +565,7 @@
 !--------------------------------------------------------------------
 !
 #ifdef T_FRC_BRY
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           do k=1,N
             do j=JstrR,JendR
               do itrc=1,NT

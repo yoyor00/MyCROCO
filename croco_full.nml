@@ -303,9 +303,12 @@
 
 &croco_restart
   ! Write restart fields every nrst baroclinic time steps.
-  nrst    = 720
+  ! If nrst = -1, it is forced to the number of time steps of the
+  ! current run, so that a restart file is written only once, at the
+  ! end of the simulation.
+  nrst    = -1
   ! Restart file cycling switch (see header for values).
-  nrpfrst = -1
+  nrpfrst = 0
   ! Restart output file path.
   rstname = "CROCO_FILES/croco_rst.nc"
 /

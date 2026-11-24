@@ -495,8 +495,9 @@ ENDIF
 
    !! * Local declarations
    INTEGER        :: iappel,iexchge_MPI_cvwat
-   !! * Executable part 
-  
+   INTEGER        :: iv,ivr,i,j,k
+   !! * Executable part
+
    !deposit if strong bottom slope   
      flx_w2s_corim1(:,:,:)=0.0_rsh   
      flx_w2s_corip1(:,:,:)=0.0_rsh
@@ -537,6 +538,22 @@ ENDIF
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    call sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
+
+   IF (l_diss_insed) THEN
+! T90 mortality/decay in sediment porewater 
+    DO iv=nvp+1,nv_adv
+      ivr=itsubs1+iv-1
+      IF (t90(ivr) /= 0.0_rsh) THEN
+        DO j=jfirst,jlast
+          DO i=ifirst,ilast
+            DO k=ksmi(i,j),ksma(i,j)
+              cv_sed(iv,k,i,j)=cv_sed(iv,k,i,j)*f90(ivr)
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDIF
+    ENDDO
+   ENDIF
 
     !**TODO** code sed_exchange_cvwat CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION,iexchge_MPI_cvwat)
 
@@ -5362,8 +5379,14 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                     D0=(D0_m0(iv)+D0_m1(iv)*temp_bottom_MUSTANG(i,j))*1e-06_rsh     ! D0 in cm2/s
                   ELSEIF(D0_funcT_opt(iv) == 2) THEN
                     D0=(D0_m0(iv)+D0_m1(iv)*(temp_bottom_MUSTANG(i,j)+273.15_rsh)/mu)*1e-05_rsh
+                  ELSE
+                    D0=0.0_rsh
                   ENDIF
-                  Sc = nu/D0
+                  IF (D0 > 0.0_rsh) THEN
+                    Sc = nu/D0
+                  ELSE
+                    Sc = HUGE(Sc)       ! D0=0: no molecular diffusion
+                  ENDIF
                 ENDIF
                 disvi(k,ivv)=0.0889*ustarbot(i,j)*Sc**(-0.704)
                 !write(*,*)'Beta mass transfert coef at the interface =',disvi(k)
@@ -5388,6 +5411,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                        + cv_sed(0,k,i,j)*(4.8429e-05_rsh*cv_sed(-1,k,i,j) - 4.7172e-06_rsh*cv_sed(-1,k,i,j)**2 &
                        + 7.5986e-08_rsh*cv_sed(-1,k,i,j)**3))
                     D0=(D0_m0(iv)+D0_m1(iv)*(cv_sed(-1,k,i,j)+273.15_rsh)/mu)*1e-05_rsh
+                  ELSE
+                    D0=0.0_rsh
                   ENDIF
                   xdifs1b = D0*0.94_rsh  ! convertion from 'infinite-dilution' into 'porewater' diff (Li&Gregory, 1974 in Boudreau p.125)
                   xdifs1b = xdifs1b/10000.0_rsh      ! from cm2/s to m2/s

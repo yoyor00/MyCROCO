@@ -857,7 +857,6 @@
 #  endif /* M3FAST */
 # endif /* LMD_MIXING */
 
-# ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.
 !
@@ -1069,6 +1068,7 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
+
 #  ifdef WET_DRY
 !  Wetting/drying masks at u- and v-points
 !
@@ -1108,7 +1108,7 @@
       call nf_add_attribute(ncid, rstvmaskwet,
      &                      vname(:,indxvmaskwet), 5, NF_DOUBLE, ierr)
 #  endif /* WET_DRY */
-# endif  /* EXACT_RESTART */
+
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT
@@ -1778,7 +1778,6 @@
 #  endif
 # endif
 
-# ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.
 !
@@ -1926,6 +1925,7 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
+
 #  ifdef WET_DRY
         lvar=lenstr(vname(1,indxumaskwet))
         ierr=nf_inq_varid (ncid, vname(1,indxumaskwet)(1:lvar),
@@ -1951,7 +1951,7 @@
         ierr=nf_var_par_access(ncid,rstvmaskwet,nf_collective)
 #   endif
 #  endif /* WET_DRY */
-# endif /* EXACT_RESTART */
+
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT

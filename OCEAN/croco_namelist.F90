@@ -98,9 +98,12 @@ MODULE croco_namelist
    !! time step that is not a multiple of `nrpf*`.
 
    ! &croco_restart
-   integer :: nrst = 720
-   !! Number of time-steps between writing of restart fields
-   integer :: nrpfrst = -1
+   integer :: nrst = -1
+   !! Number of time-steps between writing of restart fields.
+   !! If `nrst = -1`, it is forced to the number of time-steps of the
+   !! current run (`ntimes-ntstart+1`), so that a restart file is
+   !! written only once, at the end of the simulation.
+   integer :: nrpfrst = 0
    !! Restart file cycling switch:
    !!
    !!  - 0: write several records every NRST time steps
