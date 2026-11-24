@@ -84,7 +84,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - SUBSTANCE/MUSTANG/RAIN_FLUX : fix restart not bit-exact (Issue #610)
 
 - OUTPUTS : fix output time axis inconsistency when appending to an existing
-  restart/history/averages/diagnostics/surf file with a different
+  restart/history/averages/diagnostics/surf/abl/station file with a different
   `start_date` than the one used when the file was created (#611)
 
 - PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
