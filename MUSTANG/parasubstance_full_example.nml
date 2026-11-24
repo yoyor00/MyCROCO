@@ -36,22 +36,26 @@
 :    long_name_var_n() : string, long name of variable
 :    standard_name_var_n() : string, standard name of variable
 :    unit_var_n() : string, unit of concentration of variable
-:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
+:    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s)
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
+:    cobc_wat_n() : real, boundaries uniform and constant concentration
+:                   (unit/m3)
 :    l_out_subs_n() : boolean, saving in output file if TRUE
-:    init_cv_name_n() : string, name of substance read from initial condition 
-:                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
-:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    tocd_n() : real, critical stress of deposition (N/m2)
 :    ros_n()  : real, density of particle (kg/m3)
-:    l_bedload_n() : boolean, allow bedload transport (used only if 
+:    l_bedload_n() : boolean, allow bedload transport (used only if
 :                    key_MUSTANG_V2)
 :    diam_n() : real, diameter of particles (m)
-:   
+:
+:    GRAVEL substances are never in suspension (bedload only): unlike
+:    SAND/MUD/dissolved substances, they have no init_cv_name_n()/
+:    obc_cv_name_n() parameter -- their initial and boundary water
+:    concentrations are always the uniform cini_wat_n()/cobc_wat_n()
+:    constants above, never read from a file.
+:
  &nmlgravels
     name_var_n(1)=''
       long_name_var_n(1)=''
@@ -60,12 +64,10 @@
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
       cini_wat_n(1)=0.0
+      cobc_wat_n(1)=0.0
       cini_sed_n(1)=0.0
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       l_bedload_n(1)=.TRUE.
-      init_cv_name_n(1)='none'
-      obc_cv_name_n(1)='none'
       tocd_n(1)=0.0
       ros_n(1)=0.0
       diam_n(1)=0.0 /
@@ -81,11 +83,25 @@
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
-:    init_cv_name_n() : string, name of substance read from initial condition 
-:                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    init_cv_name_n() : string, name of substance read from initial condition
+:                       file, falling back to its uniform cini_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special value: 'none' skips reading an
+:                       initial-file variable for this substance. Left
+:                       empty (''), it defaults to name_var_n() (i.e. the
+:                       variable is read if present in the init file, same
+:                       name as the substance itself)
+:    obc_cv_name_n() : string, name of substance read from obc file,
+:                       falling back to its uniform cobc_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special values: 'none' skips reading a
+:                       bry-file variable for this substance.
+:                       'nullGradient' imposes a plain zero-gradient
+:                       (Neumann) condition instead (no bry-file value, no
+:                       cobc_wat_n()). Left empty (''), it defaults to
+:                       name_var_n() (i.e. the variable is read if present
+:                       in the bry file, same name as the substance itself)
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    tocd_n() : real, critical stress of deposition (N/m2) 
@@ -110,7 +126,6 @@
       cv_rain_n(1)=0.0
       cini_wat_n(1)=0.0
       cini_sed_n(1)=0.4
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       l_bedload_n(1)=.FALSE.
       init_cv_name_n(1)='GRAV'
@@ -128,7 +143,6 @@
       cv_rain_n(2)=0.0
       cini_wat_n(2)=0.0
       cini_sed_n(2)=0.4
-      cini_air_n(2)=0.0
       l_out_subs_n(2)=.TRUE.
       l_bedload_n(2)=.FALSE.
       init_cv_name_n(2)='SAND'
@@ -149,11 +163,25 @@
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
-:    init_cv_name_n() : string, name of substance read from initial condition 
-:                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    init_cv_name_n() : string, name of substance read from initial condition
+:                       file, falling back to its uniform cini_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special value: 'none' skips reading an
+:                       initial-file variable for this substance. Left
+:                       empty (''), it defaults to name_var_n() (i.e. the
+:                       variable is read if present in the init file, same
+:                       name as the substance itself)
+:    obc_cv_name_n() : string, name of substance read from obc file,
+:                       falling back to its uniform cobc_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special values: 'none' skips reading a
+:                       bry-file variable for this substance.
+:                       'nullGradient' imposes a plain zero-gradient
+:                       (Neumann) condition instead (no bry-file value, no
+:                       cobc_wat_n()). Left empty (''), it defaults to
+:                       name_var_n() (i.e. the variable is read if present
+:                       in the bry file, same name as the substance itself)
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
@@ -181,7 +209,6 @@
       cini_wat_n(1)=0.02
       cobc_wat_n(1)=0.02
       cini_sed_n(1)=0.2
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='MUD'
       obc_cv_name_n(1)='MUD'
@@ -210,12 +237,30 @@
 :    unit_var_n() : string, unit of concentration of variable
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    t90_n() : real, mortality/decay time (h); the concentration is
+:              multiplied every time step by f90_n() = exp(-dt*ln(10)/
+:              (t90_n()*3600)), so that after a time t90_n() (hours) it
+:              has dropped to 10% of its value. 0. (default) = no decay
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
-:    init_cv_name_n() : string, name of substance read from initial condition 
-:                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    init_cv_name_n() : string, name of substance read from initial condition
+:                       file, falling back to its uniform cini_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special value: 'none' skips reading an
+:                       initial-file variable for this substance. Left
+:                       empty (''), it defaults to name_var_n() (i.e. the
+:                       variable is read if present in the init file, same
+:                       name as the substance itself)
+:    obc_cv_name_n() : string, name of substance read from obc file,
+:                       falling back to its uniform cobc_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special values: 'none' skips reading a
+:                       bry-file variable for this substance.
+:                       'nullGradient' imposes a plain zero-gradient
+:                       (Neumann) condition instead (no bry-file value, no
+:                       cobc_wat_n()). Left empty (''), it defaults to
+:                       name_var_n() (i.e. the variable is read if present
+:                       in the bry file, same name as the substance itself)
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
 :                   (kg/m3)
 :    ws_free_min_n() : real, minimum setling velocity (m/s)
@@ -243,10 +288,10 @@
       unit_var_n(1)='g.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
+      t90_n(1)=0.0
       cini_wat_n(1)=1.0
       cobc_wat_n(1)=1.
       cini_sed_n(1)=0.4
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='MES'
       obc_cv_name_n(1)='MES'
@@ -273,12 +318,30 @@
 :    unit_var_n() : string, unit of concentration of variable
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    t90_n() : real, mortality/decay time (h); the concentration is
+:              multiplied every time step by f90_n() = exp(-dt*ln(10)/
+:              (t90_n()*3600)), so that after a time t90_n() (hours) it
+:              has dropped to 10% of its value. 0. (default) = no decay
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
-:    init_cv_name_n() : string, name of substance read from initial condition 
-:                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
+:    init_cv_name_n() : string, name of substance read from initial condition
+:                       file, falling back to its uniform cini_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special value: 'none' skips reading an
+:                       initial-file variable for this substance. Left
+:                       empty (''), it defaults to name_var_n() (i.e. the
+:                       variable is read if present in the init file, same
+:                       name as the substance itself)
+:    obc_cv_name_n() : string, name of substance read from obc file,
+:                       falling back to its uniform cobc_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special values: 'none' skips reading a
+:                       bry-file variable for this substance.
+:                       'nullGradient' imposes a plain zero-gradient
+:                       (Neumann) condition instead (no bry-file value, no
+:                       cobc_wat_n()). Left empty (''), it defaults to
+:                       name_var_n() (i.e. the variable is read if present
+:                       in the bry file, same name as the substance itself)
 :    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
@@ -293,9 +356,9 @@
       unit_var_n(1)='ng.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
+      t90_n(1)=0.0
       cini_wat_n(1)=1.0
       cini_sed_n(1)=10.
-      cini_air_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='none'
       obc_cv_name_n(1)='none' 
@@ -312,16 +375,45 @@
 :    unit_var_n() : string, unit of concentration of variable
 :    flx_atm_n() : real, uniform atmospherical deposition (unit/m2/s) 
 :    cv_rain_n() : real, concentration in rainwater (unit/m3 of water)
+:    t90_n() : real, mortality/decay time (h); the concentration is
+:              multiplied every time step by f90_n() = exp(-dt*ln(10)/
+:              (t90_n()*3600)), so that after a time t90_n() (hours) it
+:              has dropped to 10% of its value. 0. (default) = no decay
 :    cini_wat_n() : real, initial concentration in water column (unit/m3)
-:    cini_air_n() : real, initial concentration in air
 :    l_out_subs_n() : boolean, saving in output file if TRUE
-:    init_cv_name_n() : string, name of substance read from initial condition 
-:                       file
-:    obc_cv_name_n() : string, name of substance read from obc file
-:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of 
+:    init_cv_name_n() : string, name of substance read from initial condition
+:                       file, falling back to its uniform cini_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special value: 'none' skips reading an
+:                       initial-file variable for this substance. Left
+:                       empty (''), it defaults to name_var_n() (i.e. the
+:                       variable is read if present in the init file, same
+:                       name as the substance itself)
+:    obc_cv_name_n() : string, name of substance read from obc file,
+:                       falling back to its uniform cobc_wat_n()
+:                       concentration if 'none' or if the variable is not
+:                       found. Special values: 'none' skips reading a
+:                       bry-file variable for this substance.
+:                       'nullGradient' imposes a plain zero-gradient
+:                       (Neumann) condition instead (no bry-file value, no
+:                       cobc_wat_n()). Left empty (''), it defaults to
+:                       name_var_n() (i.e. the variable is read if present
+:                       in the bry file, same name as the substance itself)
+:    cini_sed_n() : real, initial concentration in sediment (quantity/kg of
 :                   dry sediment)  (only if cppkey MUSTANG)
-:    cobc_wat_n() : real, boundaries uniform and constant concentration 
+:    cobc_wat_n() : real, boundaries uniform and constant concentration
 :                   (kg/m3)
+:    D0_funcT_opt_n() : integer, choice of formulation for the molecular
+:                       diffusion coefficient D0 of the dissolved substance
+:                       in sediment porewater: 1 for a direct linear fit
+:                       with temperature (D0 = D0_m0_n + D0_m1_n x T), 2
+:                       for a Stokes-Einstein-like temperature/viscosity
+:                       fit. 1 (default) with D0_m0_n=D0_m1_n=0. (also
+:                       default) gives D0=0, i.e. no molecular diffusion
+:                       enhancement in sediment porewater (used only if
+:                       cppkey MUSTANG and l_diss_insed=.true.)
+:    D0_m0_n(), D0_m1_n() : real, coefficients of the D0_funcT_opt_n()
+:                       formulation above
 :
  &nmlvardiss
     name_var_n(1)='DISS'
@@ -330,10 +422,13 @@
       unit_var_n(1)='ng.l-1'
       flx_atm_n(1)=0.0
       cv_rain_n(1)=0.0
+      t90_n(1)=0.0
       cini_wat_n(1)=100.0
       cobc_wat_n(1)=100.
       cini_sed_n(1)=0.
-      cini_air_n(1)=0.0
+      D0_funcT_opt_n(1)=1
+      D0_m0_n(1)=0.0
+      D0_m1_n(1)=0.0
       l_out_subs_n(1)=.TRUE.
       init_cv_name_n(1)='testdiss'
       obc_cv_name_n(1)='testdiss' /
@@ -346,11 +441,18 @@
 :    long_name_var_fix() : string, long name of variable
 :    standard_name_var_fix() : string, standard name of variable
 :    unit_var_fix() : string, unit of concentration of variable
-:    cini_wat_fix) : real, initial concentration in water column (unit/m3)
+:    cini_wat_fix() : real, initial concentration in water column (unit/m3)
 :    l_out_subs_fix() : boolean, saving in output file if TRUE
-:    init_cv_name_fix() : string, name of substance read from initial  
-:                         condition file
-:    
+:    init_cv_name_fix() : string, name of substance read from initial
+:                         condition file, falling back to its uniform
+:                         cini_wat_fix() concentration if 'none' or if
+:                         the variable is not found. Special value:
+:                         'none' skips reading an initial-file variable
+:                         for this substance. Left empty (''), it
+:                         defaults to name_var_fix() (i.e. the variable
+:                         is read if present in the init file, same
+:                         name as the substance itself)
+:
  &nmlvarfix
     name_var_fix(1)=''
        long_name_var_fix(1)=''

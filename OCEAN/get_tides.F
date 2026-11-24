@@ -15,7 +15,9 @@
                               ! Scale them.
 #if defined SSH_TIDES || defined UV_TIDES
 # ifdef TIDES_MAS
-      USE mod_tides_mas
+      USE mod_tides_mas, ONLY : tide_data, mas_init_waves,
+     &                          l_presence, nu, frequence,
+     &                          nmarmax, rr0, rr1
 # endif
 #ifdef OPENACC
       use exchange_device_host
@@ -23,9 +25,7 @@
       use croco_namelist, only : frcname
       implicit none
 
-# ifndef TIDES_MAS
-#  include "param.h"
-# endif
+# include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
 # include "tides.h"

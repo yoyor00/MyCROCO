@@ -37,6 +37,9 @@
       USE stoalloc        ! Stochastic working arrays
 # endif
       use croco_namelist, only: rho0
+# ifdef SUBSTANCE
+      USE comsubstance, ONLY: cv_rain, sub_flx_atm
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -50,6 +53,9 @@
 !++ Local integers
       INTEGER              :: i, j, m, iter
       INTEGER              :: Istr, Iend, Jstr, Jend
+# ifdef SUBSTANCE
+      INTEGER              :: itrc
+# endif
       INTEGER              :: imin, imax, jmin, jmax
       INTEGER, PARAMETER   :: IterFl = 3
 # ifdef CFB_WIND_TRA
@@ -665,14 +671,30 @@
           hfsen=-hfsen*rho0i*cpi
 !++  Total surface heat flux
           stflx(i,j,itemp)=srflx(i,j)+hflw+hflat+hfsen
+#  ifdef SUBSTANCE
+          ! uniform atmospheric (dry) deposition flux (flx_atm_n(),
+          ! stored as sub_flx_atm()); the wet-deposition (rain) term
+          ! is added on top of this below if RAIN_FLUX is defined
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=sub_flx_atm(itrc)
+          enddo
+#  endif
 #  ifdef SALINITY
           ! evap from latent heat flux
           evap=-cp*hflat/Hlv
 #   ifdef RAIN_FLUX
           ! E-P bilan in m/s
-          EmP(i,j)=evap-prate(i,j) 
+          EmP(i,j)=evap-prate(i,j)
           ! add temperature flux from rain
           stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
+#   ifdef SUBSTANCE
+          ! add wet-deposition substance flux from rain (cv_rain_n():
+          ! substance concentration in rainwater, kg/m3), on top of
+          ! the dry-deposition flux set above
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)+prate(i,j)*cv_rain(itrc)
+          enddo
+#   endif
 #   else
           !++  Total surface salt flux
           stflx(i,j,isalt)=(evap-prate(i,j))*t(i,j,N,nrhs,isalt)
@@ -681,11 +703,25 @@
 !
 #  ifdef MASKING
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask(i,j)
+#   endif
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)*rmask(i,j)
+          enddo
+#   endif
 #  endif
 #  ifdef WET_DRY
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
+#   endif
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)*rmask_wet(i,j)
+          enddo
+#   endif
 #  endif
 !++  Save for the calculation of wind stress
           aer(i,j)  = rhoAir*delW(1)
