@@ -95,8 +95,8 @@
             y0=el/2.
 #  ifdef AGRIF
           else
-            x0=2.*Agrif_Parent_xl/3.
-            y0=Agrif_Parent_el/2.
+            x0=2.*Agrif_Parent(xl)/3.
+            y0=Agrif_Parent(el)/2.
           endif
 #  endif
           cff1=0.395
@@ -478,8 +478,10 @@
           cmax = 0.D0
           do j=JstrV,Jend-1
             do i=IstrU,Iend-1
-              cx = dt*( MAX(u(i+1,j,N,1),0.)-MIN(u(i,j,N,1),0.) )*pm(i,j)
-              cy = dt*( MAX(v(i,j+1,N,1),0.)-MIN(v(i,j,N,1),0.) )*pn(i,j)
+              cx = dt*( MAX(u(i+1,j,N,1),0.)
+     &                -MIN(u(i,j,N,1),0.) )*pm(i,j)
+              cy = dt*( MAX(v(i,j+1,N,1),0.)
+     &                -MIN(v(i,j,N,1),0.) )*pn(i,j)
               cmax = MAX( cx+cy, cmax )
             enddo
           enddo
@@ -540,9 +542,9 @@
                 v(i,j,k,2)  = 0.
 #   ifdef NBQ
                 wz(i,j,k,1) = -0.01*du*hup0*
-     &                                (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                    *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
-     &                                    *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+     &                        (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
+     &                        *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                        *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
                 wz(i,j,k,2) = wz(i,j,k,1)
 #   endif
               enddo
@@ -1056,26 +1058,6 @@
             enddo
           enddo
 
-        case ('')
-          do k=1,N
-            do j=JR_RANGE
-              do i=IR_RANGE
-# ifdef TEMPERATURE
-                t(i,j,k,1,itemp)=14.+5.*50.*log(
-     &                           cosh((z_w(i,j,k )-(-80.))/50.)
-     &                          /cosh((z_w(i,j,k-1)-(-80.))/50.)
-     &                              )/(z_w(i,j,k)-z_w(i,j,k-1))
-     &              +((z_w(i,j,k)+z_w(i,j,k-1))/2.-0.)/1000.
-                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-# endif /* TEMPERATURE */
-# ifdef SALINITY
-                t(i,j,k,1,isalt)=35.
-                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-# endif
-              enddo
-            enddo
-          enddo
-
         case ('ANA_JET')
           ! All fields set by ana_jet_initial_tile
 
@@ -1154,7 +1136,8 @@
             do j=JR_RANGE
               do i=IR_RANGE
 # ifdef TEMPERATURE
-                t(i,j,k,1,itemp)=(288.95-273.16)+1.5*TANH(xr(i,j)/100.E+3)
+                t(i,j,k,1,itemp)=(288.95-273.16)
+     &                          +1.5*TANH(xr(i,j)/100.E+3)
                 t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 # endif /* TEMPERATURE */
 # ifdef SALINITY
@@ -1165,6 +1148,35 @@
             enddo
           enddo
 
+!  Note (#560): testcase_name == '' is the established convention
+!  for realistic config , so it is handled here with its own stratification 
+!  rather than falling through to the case default below. 
+!  case default (flat 20C/35psu profile) only catches a misspelled or new
+!  testcase_name with no dedicated ana_initial branch, kept for backward
+!  compatibility.
+        case ('')
+          do k=1,N
+            do j=JR_RANGE
+              do i=IR_RANGE
+# ifdef TEMPERATURE
+                t(i,j,k,1,itemp)=14.+5.*50.*log(
+     &                           cosh((z_w(i,j,k )-(-80.))/50.)
+     &                          /cosh((z_w(i,j,k-1)-(-80.))/50.)
+     &                              )/(z_w(i,j,k)-z_w(i,j,k-1))
+     &              +((z_w(i,j,k)+z_w(i,j,k-1))/2.-0.)/1000.
+                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+# endif /* TEMPERATURE */
+# ifdef SALINITY
+                t(i,j,k,1,isalt)=35.
+                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+# endif
+              enddo
+            enddo
+          enddo
+!  Note (#560): 
+!  case default (flat 20C/35psu profile) only catches a misspelled or new
+!  testcase_name with no dedicated ana_initial branch, kept for backward
+!  compatibility.
         case default
           do k=1,N
             do j=JR_RANGE

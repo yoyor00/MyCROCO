@@ -183,18 +183,13 @@
       integer indxHm
       parameter (indxHm=5)
 #endif
-#ifdef SOLVE3D
 #  ifdef M3FAST_HIS
       integer indxRnbq, indxUnbq, indxVnbq, indxWnbq, indxCnbq
       parameter  (indxUnbq=6, indxVnbq=7, indxWnbq=8,
      &  indxCnbq=9, indxRnbq=10)
-
+#  endif
       integer indxU, indxV
       parameter (indxU=11, indxV=12)
-#  else
-      integer indxU, indxV
-      parameter (indxU=6, indxV=7)
-#  endif
 
 # ifdef TRACERS
 #  ifdef TEMPERATURE
@@ -207,19 +202,13 @@
       parameter (indxS=indxV+ntrc_temp+1)
 #  endif
 
-#  ifdef STOGEN
-      integer indxXIsto1d, indxXIsto2d, indxXIsto3d
-      parameter (indxXIsto1d=indxV+ntrc_temp+ntrc_salt+1)
-      parameter (indxXIsto2d=indxV+ntrc_temp+ntrc_salt+2)
-      parameter (indxXIsto3d=indxV+ntrc_temp+ntrc_salt+3)
-#  endif
-
 #  ifdef PASSIVE_TRACER
       integer, dimension(ntrc_pas) :: indxTPAS
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+1,
-     &  indxV+ntrc_temp+ntrc_salt+ntrc_stogen+ntrc_pas)/)
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas)/)
 #  endif
 # endif
+
 # ifdef BIOLOGY
 #  ifdef PISCES
       integer ncidpisrst, nrecpisrst
@@ -231,8 +220,7 @@
      &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,
      &        indxGOC, indxSFE, indxDFE, indxGSI, indxNFE,
      &        indxNCH, indxDCH, indxNO3, indxNH4
-      parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+
-     &                    ntrc_stogen+ntrc_pas+1,
+      parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
 #   ifdef key_pisces_npzd
       parameter (indxPOC=indxDIC+3, indxPHY =indxDIC+4,
@@ -287,8 +275,7 @@
 #   ifdef OXYGEN
      &      , indxO2
 #   endif
-      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+
-     &                    ntrc_stogen+ntrc_pas+1,
+      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
      &           indxChla=indxNO3+1,
      &           indxPhy1=indxNO3+2,
      &           indxZoo1=indxNO3+3,
@@ -300,8 +287,7 @@
       integer indxNO3, indxNH4, indxChla,
      &        indxPhy1, indxZoo1,
      &        indxDet1, indxDet2
-      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+
-     &                    ntrc_stogen+ntrc_pas+1,
+      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
      &           indxNH4 =indxNO3+1, indxChla=indxNO3+2,
      &           indxPhy1=indxNO3+3,
      &           indxZoo1=indxNO3+4,
@@ -310,46 +296,51 @@
       integer indxNO3, indxNO2, indxNH4,
      &        indxPhy1, indxPhy2, indxZoo1, indxZoo2,
      &        indxDet1, indxDet2, indxDON, indxO2
-      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+
-     &                    ntrc_stogen+ntrc_pas+1,
+      parameter (indxNO3 =indxV+ntrc_temp+ntrc_salt+ntrc_pas+1,
      &           indxNO2 =indxNO3+1,
      &           indxNH4 =indxNO3+2,
      &           indxPhy1=indxNO3+3, indxPhy2=indxNO3+4,
      &           indxZoo1=indxNO3+5, indxZoo2=indxNO3+6,
      &           indxDet1=indxNO3+7, indxDet2=indxNO3+8,
-     &           indxDON =indxNO3+9, indxO2  =indxNO3+10)
+     &           indxDON =indxDet2+1, indxO2  =indxDON+1)
 #   ifdef NITROUS_OXIDE
       integer indxN2O
-      parameter (indxN2O=indxNO3+11)
+      parameter (indxN2O=indxO2+1)
 #   endif
 #  endif
 # endif /* BIOLOGY */
+
 # ifdef SEDIMENT
       integer, dimension(NGRAV) ::  indxGRAV
-     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_stogen+
-     &                                ntrc_pas+ntrc_bio+1,
-     &  indxV+ntrc_temp+ntrc_salt+
-     &                    ntrc_stogen+ntrc_pas+ntrc_bio+NGRAV)/)
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1,
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV)/)
       integer, dimension(NSAND) :: indxSAND
-     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+
-     &    ntrc_stogen+ntrc_pas+ntrc_bio+1+
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1+
      &	NGRAV,
-     &  indxV+ntrc_temp+ntrc_salt+ntrc_stogen+ntrc_pas+ntrc_bio+
-     &    NGRAV+NSAND)/)
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+NGRAV+NSAND)/)
       integer, dimension(NMUD)   :: indxMUD
-     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_stogen+
-     &  ntrc_pas+ntrc_bio+1+
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+1+
      &  NGRAV+NSAND,
-     &  indxV+ntrc_temp+ntrc_salt+ntrc_stogen+ntrc_pas+ntrc_bio+
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+
      &  NGRAV+NSAND+NMUD)/)
 # endif
+# ifdef SUBSTANCE
+      integer, dimension(ntrc_subs) :: indxTSUBS
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_pas+ntrc_bio+
+     &  ntrc_sed+1, indxV+ntrc_temp+
+     &  ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)/)
+# endif
 
-# if (!defined ANA_BSEDIM  && !defined SEDIMENT)
-      integer indxBSD, indxBSS
-      parameter (indxBSD=indxV+ntrc_temp+ntrc_salt+
-     &                    ntrc_stogen+ntrc_pas+
-     &           ntrc_bio+1,
-     &           indxBSS=101)
+# ifdef STOGEN
+      integer indxXIsto1d, indxXIsto2d, indxXIsto3d
+      parameter (indxXIsto1d=indxV+NTot+1,
+     &           indxXIsto2d=indxXIsto1d+1,
+     &           indxXIsto3d=indxXIsto2d+1)
+      integer indxStoLast
+      parameter (indxStoLast=indxXIsto3d)
+# else
+      integer indxStoLast
+      parameter (indxStoLast=indxV+NTot)
 # endif
 
 # ifdef DIAGNOSTICS_TS
@@ -366,9 +357,7 @@
      &      , indxTcrit_mld
 #   endif
 #  endif
-      parameter (indxTXadv=indxV+ntrc_temp+ntrc_salt+
-     &                    ntrc_stogen+ntrc_pas+
-     &           ntrc_bio+ntrc_sed+1,
+      parameter (indxTXadv=indxStoLast+1,
      &           indxTYadv=indxTXadv+NT,
      &           indxTVadv=indxTYadv+NT,
      &           indxTHmix=indxTVadv+NT,
@@ -403,9 +392,7 @@
       integer indxMXadv,indxMYadv,indxMVadv,indxMCor,
      &        indxMPrsgrd,indxMHmix,indxMVmix,indxMrate,
      &        indxMVmix2,indxMHdiff
-      parameter (indxMXadv=indxV+ntrc_temp+ntrc_salt+
-     &           ntrc_stogen+ntrc_pas+ntrc_bio+ntrc_sed+
-     &           ntrc_diats+1,
+      parameter (indxMXadv=indxStoLast+ntrc_diats+1,
      &           indxMYadv=indxMXadv+2,
      &           indxMVadv=indxMYadv+2,
      &           indxMCor=indxMVadv+2,
@@ -428,10 +415,7 @@
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
      &        indxvrtPrsgrd,indxvrtHmix,indxvrtVmix,indxvrtrate,
      &        indxvrtVmix2,indxvrtWind,indxvrtDrag
-      parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt
-     &                        +ntrc_stogen+ntrc_pas
-     &                        +ntrc_bio+ntrc_sed
-     &                        +ntrc_diats+ntrc_diauv+1,
+      parameter (indxvrtXadv=indxStoLast+ntrc_diats+ntrc_diauv+1,
      &           indxvrtYadv=indxvrtXadv+1,
      &           indxvrtHdiff=indxvrtYadv+1,
      &           indxvrtCor=indxvrtHdiff+1,
@@ -455,10 +439,8 @@
       integer indxekHadv,indxekHdiff,indxekVadv,indxekCor,
      &        indxekPrsgrd,indxekHmix,indxekVmix,indxekrate,
      &        indxekvol,indxekVmix2,indxekWind,indxekDrag
-      parameter (indxekHadv=indxV+ntrc_temp+ntrc_salt+
-     &           ntrc_stogen+ntrc_pas+
-     &           ntrc_bio+ntrc_sed+
-     &           ntrc_diats+ntrc_diauv+ntrc_diavrt+1,
+      parameter (indxekHadv=indxStoLast+ntrc_diats+ntrc_diauv+
+     &           ntrc_diavrt+1,
      &           indxekHdiff=indxekHadv+1,
      &           indxekVadv=indxekHdiff+1,
      &           indxekCor=indxekVadv+1,
@@ -481,10 +463,8 @@
 # endif
 # ifdef DIAGNOSTICS_PV
       integer indxpvMrhs,indxpvTrhs
-      parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt+
-     &                ntrc_stogen+ntrc_pas+
-     &                ntrc_bio+ntrc_sed+
-     &                ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
+      parameter (indxpvTrhs=indxStoLast+ntrc_diats+ntrc_diauv+
+     &                ntrc_diavrt+ntrc_diaek+1,
      &           indxpvMrhs=indxpvTrhs+2)
 #  ifdef DIAGNOSTICS_PV_FULL
       integer indxpvpv,indxpvpvd
@@ -499,9 +479,7 @@
      &        indxeddyubu,indxeddyvbv,
      &        indxeddyusu,indxeddyvsv,
      &        indxeddyugsu,indxeddyvgsv
-      parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt
-     &                           +ntrc_stogen
-     &                           +ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxeddyzz=indxStoLast
      &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
      &                           +ntrc_diaek+ntrc_diapv+400,
      &           indxeddyuu=indxeddyzz+1,
@@ -522,9 +500,7 @@
 # if defined OUTPUTS_SURFACE && ! defined XIOS
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
      &        indxsurfv
-      parameter (indxsurft=indxV+ntrc_temp+ntrc_salt
-     &                         +ntrc_stogen
-     &                         +ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxsurft=indxStoLast
      &                         +ntrc_diats+ntrc_diauv+ntrc_diavrt
      &                         +ntrc_diaek+ntrc_diapv+ntrc_diaeddy+400,
      &           indxsurfs=indxsurft+1,
@@ -537,9 +513,7 @@
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
      &        , indxGasExcFlux
 #  endif
-      parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt
-     &                           +ntrc_stogen
-     &                           +ntrc_pas+ntrc_bio+ntrc_sed
+      parameter (indxbioFlux=indxStoLast
      &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
      &                           +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
      &                                               +ntrc_surf+400)
@@ -551,81 +525,79 @@
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
-      parameter (indxO=indxV+ntrc_temp+ntrc_salt
-     &                      +ntrc_stogen+ntrc_pas+ntrc_bio
-     &                      +ntrc_sed+ntrc_substot
+      parameter (indxO=indxStoLast
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
-# ifdef ABL1D
-      integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
-     &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
-     &        indxabl_u_abl   , indxabl_v_abl  , indxabl_t_abl   ,
-     &        indxabl_q_abl   , indxabl_tke_abl, indxabl_mxlm_abl,
-     &        indxabl_mxld_abl, indxabl_avm_abl, indxabl_avt_abl ,
-     &        indxabl_ablh_abl, indxabl_zr_abl , indxabl_zw_abl  ,
-     &        indxabl_Hzr_abl , indxabl_Hzw_abl
-! begin at 2 because 1 is for indxTime in wrtabl
-      parameter (indxabl_pu_dta   = 2,
-     &           indxabl_pv_dta   = indxabl_pu_dta+ 1,
-     &           indxabl_pt_dta   = indxabl_pu_dta+ 2,
-     &           indxabl_pq_dta   = indxabl_pu_dta+ 3,
-     &           indxabl_pgu_dta  = indxabl_pu_dta+ 4,
-     &           indxabl_pgv_dta  = indxabl_pu_dta+ 5,
-     &           indxabl_u_abl    = indxabl_pu_dta+ 6,
-     &           indxabl_v_abl    = indxabl_pu_dta+ 7,
-     &           indxabl_t_abl    = indxabl_pu_dta+ 8,
-     &           indxabl_q_abl    = indxabl_pu_dta+ 9,
-     &           indxabl_tke_abl  = indxabl_pu_dta+10,
-     &           indxabl_mxlm_abl = indxabl_pu_dta+11,
-     &           indxabl_mxld_abl = indxabl_pu_dta+12,
-     &           indxabl_avm_abl  = indxabl_pu_dta+13,
-     &           indxabl_avt_abl  = indxabl_pu_dta+14,
-     &           indxabl_ablh_abl = indxabl_pu_dta+15,
-     &           indxabl_zr_abl   = indxabl_pu_dta+16,
-     &           indxabl_zw_abl   = indxabl_pu_dta+17,
-     &           indxabl_Hzr_abl  = indxabl_pu_dta+18,
-     &           indxabl_Hzw_abl  = indxabl_pu_dta+19)
-# endif
 
 # ifdef BIOLOGY
 #  ifdef BIO_BioEBUS
       integer indxAOU, indxWIND10
-      parameter (indxAOU=indxAkv+ntrc_temp+1,
-     &           indxWIND10=indxAkv+ntrc_temp+2)
+      parameter (indxAOU=indxAkt+1,
+     &           indxWIND10=indxAOU+1)
 #   ifdef CARBON
       integer indxpCO2
-      parameter (indxpCO2=indxAkv+ntrc_temp+3)
+      parameter (indxpCO2=indxWIND10+1)
+      integer indxBioEBUSLast
+      parameter (indxBioEBUSLast=indxpCO2)
+#   else
+      integer indxBioEBUSLast
+      parameter (indxBioEBUSLast=indxWIND10)
 #   endif
+#  else
+      integer indxBioEBUSLast
+      parameter (indxBioEBUSLast=indxAkt)
 #  endif
+# else
+      integer indxBioEBUSLast
+      parameter (indxBioEBUSLast=indxAkt)
 # endif
 
 # ifdef SALINITY
       integer indxAks
-      parameter (indxAks=indxAkv+ntrc_temp+4)
+      parameter (indxAks=indxBioEBUSLast+1)
+      integer indxAksLast
+      parameter (indxAksLast=indxAks)
+# else
+      integer indxAksLast
+      parameter (indxAksLast=indxBioEBUSLast)
 # endif
 # if defined LMD_SKPP || defined GLS_MIXING
       integer indxHbl
-      parameter (indxHbl=indxAkv+ntrc_temp+5)
+      parameter (indxHbl=indxAksLast+1)
+      integer indxHblLast
+      parameter (indxHblLast=indxHbl)
+# else
+      integer indxHblLast
+      parameter (indxHblLast=indxAksLast)
 # endif
 # ifdef LMD_BKPP
       integer indxHbbl
-      parameter (indxHbbl=indxAkv+ntrc_temp+6)
+      parameter (indxHbbl=indxHblLast+1)
+      integer indxHbblLast
+      parameter (indxHbblLast=indxHbbl)
+# else
+      integer indxHbblLast
+      parameter (indxHbblLast=indxHblLast)
 # endif
 # ifdef GLS_MIXING
       integer indxTke
-      parameter (indxTke=indxAkv+ntrc_temp+7)
+      parameter (indxTke=indxHbblLast+1)
       integer indxGls
-      parameter (indxGls=indxAkv+ntrc_temp+8)
+      parameter (indxGls=indxTke+1)
       integer indxLsc
-      parameter (indxLsc=indxAkv+ntrc_temp+9)
+      parameter (indxLsc=indxGls+1)
       integer indxAkk
-      parameter (indxAkk=indxAkv+ntrc_temp+10)
+      parameter (indxAkk=indxLsc+1)
       integer indxAkp
-      parameter (indxAkp=indxAkv+ntrc_temp+11)
+      parameter (indxAkp=indxAkk+1)
+      integer indxGLSLast
+      parameter (indxGLSLast=indxAkp)
+# else
+      integer indxGLSLast
+      parameter (indxGLSLast=indxHbblLast)
 # endif
-#endif
 
       integer indxSSH
 #if defined BIOLOGY && !defined PISCES
@@ -638,9 +610,8 @@
 # endif
 #endif /* BIOLOGY*/
 
-#ifdef SOLVE3D
 # if defined BIOLOGY && !defined PISCES
-      parameter (indxHel=indxAkv+ntrc_temp+12)
+      parameter (indxHel=indxGLSLast+1)
 #  if (defined BIO_NChlPZD || defined BIO_N2ChlPZD2)
       parameter (indxChC=indxHel+1)
 #   ifdef OXYGEN
@@ -655,35 +626,22 @@
       parameter (indxSSH=indxHel+1)
 #  endif
 # else
-      parameter (indxSSH=indxAkv+ntrc_temp+12)
+      parameter (indxSSH=indxGLSLast+1)
 # endif
-#else
-# if defined BIOLOGY && !defined PISCES
-      parameter (indxHel=indxVb+1)
-#  ifdef BIO_NChlPZD
-      parameter (indxChC=indxHel+1)
-#   ifdef OXYGEN
-      parameter (indxU10=indxChC+1)
-      parameter (indxKvO2=indxU10+1)
-      parameter (indxO2sat=indxKvO2+1)
-      parameter (indxSSH=indxO2sat+1)
-#   else
-      parameter (indxSSH=indxChC+1)
-#   endif
-#  endif
-# else
-      parameter (indxSSH=indxVb+1)
-# endif
-#endif /* SOLVE3D */
 
 #if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
+      integer indxbvfLast
+      parameter (indxbvfLast=indxbvf)
+#else
+      integer indxbvfLast
+      parameter (indxbvfLast=indxSSH)
 #endif
 
       integer indxrufrc
-      parameter (indxrufrc=indxSSH+300)
+      parameter (indxrufrc=indxbvfLast+1)
       integer indxrvfrc
       parameter (indxrvfrc=indxrufrc+1)
       integer indxSUSTR, indxSVSTR
@@ -723,11 +681,16 @@
       integer indxumaskwet,indxvmaskwet
       parameter (indxumaskwet=indxSVSTR+1,
      &           indxvmaskwet=indxumaskwet+1)
+      integer indxSUSTRLast
+      parameter (indxSUSTRLast=indxvmaskwet)
+# else
+      integer indxSUSTRLast
+      parameter (indxSUSTRLast=indxSVSTR)
 # endif
 
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
-      parameter (indxShflx=indxSUSTR+5)
+      parameter (indxShflx=indxSUSTRLast+1)
 # ifdef SALINITY
       integer indxSwflx
       parameter (indxSwflx=indxShflx+1, indxShflx_rsw=indxShflx+2)
@@ -751,48 +714,66 @@
       integer indxShflx_rlw,indxShflx_lat,indxShflx_sen
       parameter (indxShflx_rlw=indxSST+12,
      &           indxShflx_lat=indxSST+13, indxShflx_sen=indxSST+14)
-#  ifdef ABL1D
-      integer indxUHPG, indxVHPG,
-     &        indxZR  , indxZW  ,
-     &        indxHZR , indxHZW
-      parameter (indxUHPG = indxabl_pu_dta+20, 
-     &           indxVHPG = indxabl_pu_dta+21,
-     &           indxZR   = indxabl_pu_dta+22, 
-     &           indxZW   = indxabl_pu_dta+23,
-     &           indxHZR  = indxabl_pu_dta+24, 
-     &           indxHZW  = indxabl_pu_dta+25)
-#  endif
+      integer indxShflxLast
+      parameter (indxShflxLast=indxShflx_sen)
+# elif defined SALINITY && defined SFLX_CORR
+      integer indxShflxLast
+      parameter (indxShflxLast=indxSSS)
+# else
+      integer indxShflxLast
+      parameter (indxShflxLast=indxdQdSST)
 # endif
+#else
+      integer indxShflxLast
+      parameter (indxShflxLast=indxSUSTRLast)
 #endif /* SOLVE3D */
 
       integer indxWstr
-      parameter (indxWstr=indxSUSTR+23)
+      parameter (indxWstr=indxShflxLast+1)
       integer indxUWstr
-      parameter (indxUWstr=indxSUSTR+24)
+      parameter (indxUWstr=indxWstr+1)
       integer indxVWstr
-      parameter (indxVWstr=indxSUSTR+25)
+      parameter (indxVWstr=indxUWstr+1)
       integer indxBostr
-      parameter (indxBostr=indxSUSTR+26)
+      parameter (indxBostr=indxVWstr+1)
       integer indxBustr, indxBvstr
-      parameter (indxBustr=indxSUSTR+27,  indxBvstr=indxBustr+1)
+      parameter (indxBustr=indxBostr+1,  indxBvstr=indxBustr+1)
+! From here on, every optional block below used to start from a
+! fixed numeric offset from indxSUSTR (e.g. indxShflx_rswbio=
+! indxSUSTR+120). Those offsets were only "safe" by coincidence:
+! they assumed a bounded size for every earlier block regardless of
+! which CPP keys were combined, which is exactly how issue #500
+! happened (2D+WAVE silently exceeded the old, too-small vname
+! bound). Each block below now starts right after the true last
+! index used by the previous one ("...Last" markers), so blocks
+! compose correctly no matter which combination of keys is active.
 #ifdef SOLVE3D
 # ifdef SEDIMENT
       integer indxSed, indxATHK, indxBTHK, indxBPOR
-      parameter (indxATHK=indxSUSTR+29,
-     &           indxSed=indxSUSTR+30,
+      parameter (indxATHK=indxBvstr+1,
+     &           indxSed=indxBvstr+2,
      &           indxBTHK=indxSed, indxBPOR=indxSed+1)
       integer, dimension(NST) :: indxBFRA
      & =(/(iloop,iloop=indxSed+2,indxSed+1+NST)/)
+! indxSedArrEnd is set right next to whichever array above is
+! actually the last one declared, so it cannot drift out of sync
+! with it the way a separately re-derived formula could.
+      integer indxSedArrEnd
+      parameter (indxSedArrEnd=indxSed+1+NST)
 #  ifdef SUSPLOAD
       integer, dimension(NST):: indxDFLX
      & =(/(iloop,iloop=indxSed+2+NST,indxSed+1+2*NST)/)
       integer, dimension(NST) ::indxEFLX
      & =(/(iloop,iloop=indxSed+2+2*NST,indxSed+1+3*NST)/)
+      integer indxSedArrEnd2
+      parameter (indxSedArrEnd2=indxSed+1+3*NST)
 #   ifdef BEDLOAD
       integer, dimension(NST):: indxBDLU
      & =(/(iloop,iloop=indxSed+2+3*NST,indxSed+1+4*NST)/)
       integer, dimension(NST) ::indxBDLV
      & =(/(iloop,iloop=indxSed+2+4*NST,indxSed+1+5*NST)/)
+      integer indxSedArrEnd3
+      parameter (indxSedArrEnd3=indxSed+1+5*NST)
 #   endif
 #  else
 #   ifdef BEDLOAD
@@ -800,78 +781,84 @@
      & =(/(iloop,iloop=indxSed+2+NST,indxSed+1+2*NST)/)
       integer, dimension(NST) ::indxBDLV
      & =(/(iloop,iloop=indxSed+2+2*NST,indxSed+1+3*NST)/)
+      integer indxSedArrEnd3
+      parameter (indxSedArrEnd3=indxSed+1+3*NST)
 #   endif
 #  endif
 #  if defined MIXED_BED || defined COHESIVE_BED
       integer indxBTCR
 #   if defined BEDLOAD && defined SUSPLOAD
-      parameter (indxBTCR=indxSed+1+5*NST+1)
+      parameter (indxBTCR=indxSedArrEnd3+1)
+#   elif defined SUSPLOAD
+      parameter (indxBTCR=indxSedArrEnd2+1)
+#   elif defined BEDLOAD
+      parameter (indxBTCR=indxSedArrEnd3+1)
 #   else
-      parameter (indxBTCR=indxSed+1+3*NST+1)
+      parameter (indxBTCR=indxSedArrEnd+1)
 #   endif
+      integer indxSedLast
+      parameter (indxSedLast=indxBTCR)
+#  elif defined BEDLOAD
+      integer indxSedLast
+      parameter (indxSedLast=indxSedArrEnd3)
+#  elif defined SUSPLOAD
+      integer indxSedLast
+      parameter (indxSedLast=indxSedArrEnd2)
+#  else
+      integer indxSedLast
+      parameter (indxSedLast=indxSedArrEnd)
 #  endif
-# endif
+# else
+      integer indxSedLast
+      parameter (indxSedLast=indxBvstr)
+# endif /* SEDIMENT */
 # if defined SST_SKIN && defined TEMPERATURE
-      integer indxSST_skin
-      parameter (indxSST_skin=indxSUSTR+41)
+      integer indxSST_skin, indxPostSed
+      parameter (indxSST_skin=indxSedLast+1)
+      parameter (indxPostSed=indxSST_skin)
+# else
+      integer indxPostSed
+      parameter (indxPostSed=indxSedLast)
 # endif
+#else
+      integer indxSedLast, indxPostSed
+      parameter (indxSedLast=indxBvstr, indxPostSed=indxBvstr)
 #endif /* SOLVE3D */
 
 #ifdef BBL
       integer indxBBL, indxAbed, indxHrip, indxLrip, indxZbnot,
      &        indxZbapp, indxBostrw
-# ifdef SEDIMENT
-      parameter (indxBBL=indxSUSTR+42+6*NST,
-# else
-      parameter (indxBBL=indxSUSTR+42,
-# endif
+      parameter (indxBBL=indxPostSed+1,
      &           indxAbed  =indxBBL,    indxHrip  =indxAbed+1,
      &           indxLrip  =indxAbed+2, indxZbnot =indxAbed+3,
      &           indxZbapp =indxAbed+4, indxBostrw=indxAbed+5)
 # ifndef ANA_WWAVE
-      integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
-#  ifdef MUSTANG
-     &          ,indxWWU
-#  endif
+      integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER,indxWWU
       parameter (indxWWA=indxAbed+6, indxWWD=indxWWA+1,
-     &           indxWWP=indxWWA+2
-#  ifdef MUSTANG
-     &          ,indxWWU=indxWWA+7
-#  endif
-#  ifdef MRL_WCI
-     &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
-     &           indxWER=indxWWA+5
-#  endif
-     &                             )
+     &           indxWWP=indxWWA+2, indxWEB=indxWWA+3,
+     &           indxWED=indxWWA+4, indxWER=indxWWA+5,
+     &           indxWWU=indxWWA+6)
+      integer indxWaveLast
+      parameter (indxWaveLast=indxWWU)
+# else /* ANA_WWAVE */
+      integer indxWaveLast
+      parameter (indxWaveLast=indxBostrw)
 # endif /* !ANA_WWAVE */
-# ifndef ANA_BSEDIM
-# endif
 
 #else /* BBL */
 
-      integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER
-# ifdef MUSTANG
-     &          ,indxWWU
-# endif
-      parameter (indxWWA=indxSUSTR+42, indxWWD=indxWWA+1,
-     &           indxWWP=indxWWA+2
-# ifdef MUSTANG
-     &          ,indxWWU=indxWWA+7
-# endif
-# ifdef MRL_WCI
-     &          ,indxWEB=indxWWA+3,indxWED=indxWWA+4,
-     &           indxWER=indxWWA+5
-# endif
-     &                             )
+      integer indxWWA,indxWWD,indxWWP,indxWEB,indxWED,indxWER,indxWWU
+      parameter (indxWWA=indxPostSed+1, indxWWD=indxWWA+1,
+     &           indxWWP=indxWWA+2, indxWEB=indxWWA+3,
+     &           indxWED=indxWWA+4, indxWER=indxWWA+5,
+     &           indxWWU=indxWWA+6)
+      integer indxWaveLast
+      parameter (indxWaveLast=indxWWU)
 #endif  /* BBL */
 
 #if defined MRL_WCI || defined OW_COUPLING
       integer indxSUP, indxUST2D,indxVST2D
-# ifdef SEDIMENT
-      parameter (indxSUP=indxSUSTR+54+6*NST,
-# else
-      parameter (indxSUP  =indxSUSTR+54,
-# endif
+      parameter (indxSUP=indxWaveLast+1,
      &           indxUST2D =indxSUP+1, indxVST2D=indxSUP+2)
 # ifdef SOLVE3D
       integer indxUST,indxVST,indxWST,indxAkb,indxAkw,indxKVF,
@@ -896,34 +883,79 @@
      &           indxWKX=indxHRM+3, indxWKE=indxHRM+4,
      &           indxEPB=indxHRM+5, indxEPD=indxHRM+6,
      &           indxWAR=indxHRM+7, indxEPR=indxHRM+8 )
+      integer indxMWCILast
+      parameter (indxMWCILast=indxEPR)
+#else
+      integer indxMWCILast
+      parameter (indxMWCILast=indxWaveLast)
 #endif  /* MRL_WCI */
 
 #ifdef DIURNAL_INPUT_SRFLX
       integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+120)
+      parameter (indxShflx_rswbio=indxMWCILast+1)
+      integer indxDiurnalLast
+      parameter (indxDiurnalLast=indxShflx_rswbio)
+#else
+      integer indxDiurnalLast
+      parameter (indxDiurnalLast=indxMWCILast)
 #endif
 
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
-      parameter (indxQBAR=indxSUSTR+122)
+      parameter (indxQBAR=indxDiurnalLast+1)
 # ifdef PSOURCE_NCFILE_TS
       integer indxTsrc
-      parameter (indxTsrc=indxSUSTR+123)
+      parameter (indxTsrc=indxQBAR+1)
+      integer indxPsourceLast
+      parameter (indxPsourceLast=indxTsrc)
+# else
+      integer indxPsourceLast
+      parameter (indxPsourceLast=indxQBAR)
 # endif
+#else
+      integer indxPsourceLast
+      parameter (indxPsourceLast=indxDiurnalLast)
 #endif /* PSOURCE_NCFILE */
 
 #if defined BHFLUX
       integer indxBhflx
-      parameter (indxBhflx=indxSUSTR+131)
+      parameter (indxBhflx=indxPsourceLast+1)
+      integer indxBhfluxLast
+      parameter (indxBhfluxLast=indxBhflx)
+#else
+      integer indxBhfluxLast
+      parameter (indxBhfluxLast=indxPsourceLast)
 #endif
 #if defined BWFLUX  && defined SALINITY
       integer indxBwflx
-      parameter (indxBwflx=indxSUSTR+132)
+      parameter (indxBwflx=indxBhfluxLast+1)
+      integer indxBwfluxLast
+      parameter (indxBwfluxLast=indxBwflx)
+#else
+      integer indxBwfluxLast
+      parameter (indxBwfluxLast=indxBhfluxLast)
 #endif
 #ifdef SOLVE3D
       integer indxZ_r, indxZ_w
-      parameter (indxZ_r=indxSUSTR+141, indxZ_w=indxSUSTR+142)
+      parameter (indxZ_r=indxBwfluxLast+1, indxZ_w=indxZ_r+1)
+      integer indxZLast
+      parameter (indxZLast=indxZ_w)
+#else
+      integer indxZLast
+      parameter (indxZLast=indxBwfluxLast)
 #endif
+
+! indxBSD/indxBSS used to be computed from the same early, pre-diag
+! base as indxTXadv/indxMXadv/indxO (see DIAGNOSTICS_TS/UV and the
+! indxO chain above): whenever none of SEDIMENT/DIAGNOSTICS_* added
+! anything, indxBSD silently collided with indxO (and indxBSS was a
+! separate hardcoded "101"). Chaining it off indxZLast instead puts
+! it strictly after everything else, regardless of which optional
+! blocks are active.
+# if (!defined ANA_BSEDIM  && !defined SEDIMENT)
+      integer indxBSD, indxBSS
+      parameter (indxBSD=indxZLast+1, indxBSS=indxBSD+1)
+# endif
 !
 !===================================================================
 !
@@ -1522,11 +1554,14 @@
 
 #endif /* AVERAGES */
 
-#ifdef SOLVE3D
-# define NWRTHIS 1000+NT
-#else
-# define NWRTHIS 500
-#endif
+
+! Margin bumped from the historical 1000: a verification script run
+! while fixing issue #500 found that a very full-featured 3D config
+! (full PISCES-quota biology + DIAGNOSTICS_TS with MLD_DENS, which
+! scales as 18*NT, + sediment + wave) can need over 1000 vname slots
+! on its own. A proper fix would size this from
+! the real last index instead of a constant; this is a stopgap.
+# define NWRTHIS 2000+NT
       logical wrthis(NWRTHIS)
 #ifdef AVERAGES
      &      , wrtavg(NWRTHIS)
@@ -2078,15 +2113,54 @@
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                                ,  diags_eddyname
 #endif
-#ifdef SOLVE3D
-      character*75  vname(20, 1000)
-#else
-      character*75  vname(20, 90)
-#endif
+
+      character*75  vname(20, 2000)
 
 #ifdef ABL1D
-      character*75  vname_abl1d(20, 27) 
+      character*75  vname_abl1d(20, 27)
 ! 26 abl1d var + 1 var Time
+!
+! indxabl_* and indxUHPG..indxHZW below are their own self-contained
+! index namespace into vname_abl1d just above (1 is indxTime, 2..27
+! covers everything here) and intentionally take no part in the
+! vname index chain used throughout the rest of this file.
+      integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
+     &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
+     &        indxabl_u_abl   , indxabl_v_abl  , indxabl_t_abl   ,
+     &        indxabl_q_abl   , indxabl_tke_abl, indxabl_mxlm_abl,
+     &        indxabl_mxld_abl, indxabl_avm_abl, indxabl_avt_abl ,
+     &        indxabl_ablh_abl, indxabl_zr_abl , indxabl_zw_abl  ,
+     &        indxabl_Hzr_abl , indxabl_Hzw_abl
+! begin at 2 because 1 is for indxTime in wrtabl
+      parameter (indxabl_pu_dta   = 2,
+     &           indxabl_pv_dta   = indxabl_pu_dta+ 1,
+     &           indxabl_pt_dta   = indxabl_pu_dta+ 2,
+     &           indxabl_pq_dta   = indxabl_pu_dta+ 3,
+     &           indxabl_pgu_dta  = indxabl_pu_dta+ 4,
+     &           indxabl_pgv_dta  = indxabl_pu_dta+ 5,
+     &           indxabl_u_abl    = indxabl_pu_dta+ 6,
+     &           indxabl_v_abl    = indxabl_pu_dta+ 7,
+     &           indxabl_t_abl    = indxabl_pu_dta+ 8,
+     &           indxabl_q_abl    = indxabl_pu_dta+ 9,
+     &           indxabl_tke_abl  = indxabl_pu_dta+10,
+     &           indxabl_mxlm_abl = indxabl_pu_dta+11,
+     &           indxabl_mxld_abl = indxabl_pu_dta+12,
+     &           indxabl_avm_abl  = indxabl_pu_dta+13,
+     &           indxabl_avt_abl  = indxabl_pu_dta+14,
+     &           indxabl_ablh_abl = indxabl_pu_dta+15,
+     &           indxabl_zr_abl   = indxabl_pu_dta+16,
+     &           indxabl_zw_abl   = indxabl_pu_dta+17,
+     &           indxabl_Hzr_abl  = indxabl_pu_dta+18,
+     &           indxabl_Hzw_abl  = indxabl_pu_dta+19)
+      integer indxUHPG, indxVHPG,
+     &        indxZR  , indxZW  ,
+     &        indxHZR , indxHZW
+      parameter (indxUHPG = indxabl_pu_dta+20,
+     &           indxVHPG = indxabl_pu_dta+21,
+     &           indxZR   = indxabl_pu_dta+22,
+     &           indxZW   = indxabl_pu_dta+23,
+     &           indxHZR  = indxabl_pu_dta+24,
+     &           indxHZW  = indxabl_pu_dta+25)
 #endif
 
       common /cncscrum/
