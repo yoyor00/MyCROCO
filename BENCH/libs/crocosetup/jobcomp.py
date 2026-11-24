@@ -194,6 +194,15 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.fflags = ""
         self.fc = "gfortran"
         self.mpif90 = "mpif90"
+        self.oasis_dir = ""
+
+    def set_oasis_dir(self, oasis_dir: str) -> None:
+        """
+        Set the OASIS3-MCT install (containing lib/libpsmile.*.a etc.)
+        jobcomp should link CROCO against, passed as jobcomp's --prism-dir
+        at build time.
+        """
+        self.oasis_dir = oasis_dir
 
     @staticmethod
     def convert_arg_for_argparse(arg_string: str) -> list:
@@ -481,8 +490,8 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # move in dir & call jobcomp
         with move_in_dir(self.builddir):
             run_shell_command(
-                "./jobcomp --fc %s --mpif90 %s --fflags '%s' --jobs %s"
-                % (self.fc, self.mpif90, self.fflags, jobs),
+                "./jobcomp --fc %s --mpif90 %s --fflags '%s' --prism-dir '%s' --jobs %s"
+                % (self.fc, self.mpif90, self.fflags, self.oasis_dir, jobs),
                 logfilename="jobcomp.log",
                 capture=self.config.capture,
             )

@@ -21,6 +21,10 @@
             },
             "required": ["cpu", "gpu"]
           },
+          "oasis_dir": {
+            "type": "string",
+            "description": "Path to an OASIS3-MCT install (containing lib/libpsmile.*.a, lib/libmct.a, lib/libmpeu.a, lib/libscrip.a) used to link CROCO and the TOY coupling components when a case enables the OA_COUPLING/OW_COUPLING cppkey (passed to jobcomp as --prism-dir, and to the TOY Makefile as CPL=). Not set by default, so a coupled case fails fast with a clear error until a host declares it."
+          },
           "tuning": {
             "type": "object",
             "properties": {
@@ -176,7 +180,67 @@
           "nml_file": { "type": "string" },
           "cppdefs_file": { "type": "string" },
           "param_file": { "type": "string" },
-          "agrif_fixedgrids_file": { "type": "string" }
+          "agrif_fixedgrids_file": { "type": "string" },
+          "namcouple": {
+            "type": "string",
+            "description": "Path (relative to the CROCO source tree) to the OASIS3-MCT namcouple template for this case's coupled components (see 'components' below). '<key>' placeholders are substituted from 'template_vars' (see BENCH/libs/helpers.py substitute_angle_vars)."
+          },
+          "template_vars": {
+            "type": "object",
+            "additionalProperties": { "type": ["string", "number"] },
+            "description": "Values substituted into the namcouple and each coupling component's namelist for their '<key>' placeholders."
+          },
+          "template_vars_debug": {
+            "type": "object",
+            "additionalProperties": { "type": ["string", "number"] },
+            "description": "Overrides merged into 'template_vars' only when --debug is set, to keep a coupled component's own iteration count in sync with croco's debug-shortened run (see Croco.prepare_coupling_inputs - without this, a component built for the case's full runtime keeps expecting exchanges a debug-truncated croco will never send, and hangs)."
+          },
+          "components": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "kind": { "type": "string" },
+                "toy_flavor": { "type": "string" },
+                "exe": { "type": "string" },
+                "nml_file": { "type": "string" },
+                "tasks": { "type": "integer" },
+                "forcing_file": { "type": "string" },
+                "forcing_model": { "type": "string" },
+                "forcing_timerange": { "type": "string" },
+                "patches": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": ["array", "object"],
+                    "properties": {
+                      "what": { "type": "string" },
+                      "by": { "type": "string" }
+                    },
+                    "required": ["what"]
+                  }
+                }
+              },
+              "required": ["kind", "exe", "tasks"]
+            },
+            "description": "Extra executable(s) coupled to the ocean component through OASIS, launched alongside croco in the same MPI job (MPMD). Currently only kind 'toy' (see SCRIPTS/SCRIPTS_COUPLING/TOY_IN) is supported."
+          },
+          "oasis_restarts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "grid_file": { "type": "string" },
+                "out_file": { "type": "string" },
+                "model": { "type": "string" },
+                "vars": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["grid_file", "out_file", "model", "vars"]
+            },
+            "description": "Zero-valued OASIS restart files to generate for a calm start, one per exchanged field group (see OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh)."
+          }
         },
         "required": ["title", "case", "splitting", "patches", "check_outputs"]
       }

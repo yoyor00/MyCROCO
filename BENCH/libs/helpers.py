@@ -444,6 +444,35 @@ def apply_vars_in_str(value: str, vars: {}) -> str:
     return value
 
 
+##########################################################
+def substitute_angle_vars(filename: str, vars: dict) -> None:
+    """
+    Replace every "<key>" placeholder in filename with str(vars[key]), in
+    place. Used for the OASIS-side templates (namcouple, TOY namelists),
+    which use this "<key>" convention rather than apply_vars_in_str's
+    "{a.b}" one.
+
+    Raises if a "<...>"-shaped placeholder remains unresolved (missing
+    template_vars entry) so a typo fails fast instead of shipping a
+    half-templated namcouple/namelist to OASIS.
+    """
+    with open(filename, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    for key, value in vars.items():
+        content = content.replace(f"<{key}>", str(value))
+
+    remaining = re.findall(r"<[a-zA-Z0-9_-]+>", content)
+    if remaining:
+        raise Exception(
+            f"Unresolved template placeholder(s) {sorted(set(remaining))} in "
+            f"'{filename}' - add them to the case's 'template_vars'."
+        )
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(content)
+
+
 def create_symlink(src_path, dest_path):
     """Helper function to create a symbolic link."""
     try:

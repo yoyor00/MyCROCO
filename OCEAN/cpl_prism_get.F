@@ -318,12 +318,12 @@
                   do io = imin_halo, imax_halo
                      wfrq(io,jo) = 0.0
                      if (tab_t_tmp(io, jo) == tab_t_tmp(io, jo) .and. ! Not NaN
-     &                  tab_t_tmp(io, jo) >= 0.0 ) then               ! Non-negative
-                            wfrq(io,jo) = rmask(io,jo) * (2*pi) / 
+     &                  tab_t_tmp(io, jo) > 0.0 ) then                ! Positive
+                            wfrq(io,jo) = rmask(io,jo) * (2*pi) /
      &                                       max(tab_t_tmp(io,jo), eps)
                      endif
                  enddo
-               enddo     
+               enddo
 
             endif
          end if

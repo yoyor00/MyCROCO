@@ -5,6 +5,7 @@
       "cpu": 4,
       "gpu": 1,
     },
+    "oasis_dir": "/oasis/compile_oa3-mct",
     "tuning": {
       "gnu": {
         "extra": "-march=native",

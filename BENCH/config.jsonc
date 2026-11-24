@@ -104,6 +104,14 @@
       "VILAINE",
       "VILAINE_VANDERA",
     ],
+    // Run separately from @realist_base: OASIS coupling forces MPI + an
+    // extra TOY component rank on top of the ocean ranks, so it doesn't fit
+    // the "sequential,mpi-4" matrix the other realist cases use on a 4-cpu
+    // runner (same reasoning as @xios on branch 380-bench-xios) - needs its
+    // own "mpi-2"-only entry instead.
+    "@coupling": [
+      "BENGUELA_OW_TOYWAV",
+    ],
     "@realist": [
       "BENGUELA_LR_BRY",
       "BENGUELA_LR_BRY_PISCES",

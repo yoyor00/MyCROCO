@@ -1,0 +1,96 @@
+{
+  // BENGUELA ocean/wave coupling via OASIS, using the lightweight TOY model
+  // as a stand-in for WW3 (see SCRIPTS/SCRIPTS_COUPLING and
+  // croco_doc/source/tutos/tutos.18.coupling.run.croco_toy.rst).
+  //
+  // Needs an OASIS3-MCT install available on the host, pointed to by
+  // hosts.<name>.oasis_dir (see libs/schema.json) - not set by default,
+  // so this case fails fast with a clear error until a host declares it.
+  //
+  // template_vars values below are the ones already validated by hand on
+  // branch 190-test-case-for-coupling-with-toy for this exact REGIONAL/
+  // BENGUELA_LR grid (41x42), not derived automatically.
+  "BENGUELA_OW_TOYWAV": {
+    "title": "BENGUELA - OASIS ocean/wave coupling (TOY wave model)",
+    "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL_OW_TOYWAV.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+
+    // "4" (2x2) dropped: with the "toy" component's 2 extra MPI tasks, that
+    // would need 6 total ranks - more than host_ci's 4 cpus
+    "splitting": { "1": "1x1", "2": "1x2" },
+
+    "cppkeys": {
+      "OW_COUPLING": true,
+      "BULK_FLUX": true,
+      "FRC_BRY": true,
+    },
+
+    // OASIS3-MCT coupling namelist describing the exchanged fields
+    // (CROCO_SSH/EOCE/NOCE -> toy, TOY_T0M1/_HS/_DIR -> CROCO).
+    "namcouple": "SCRIPTS/SCRIPTS_COUPLING/OASIS_IN/namcouple.base.ow.toywav",
+
+    "template_vars": {
+      "runtime": 259200,  // total simulated time (s) = ntimes * ocean dt
+      "cpldt": 21600,     // coupling period (s), 6h
+      "ocedt": 3600,      // ocean (croco) timestep (s), matches croco_REGIONAL.nml
+      "wavdt": 21600,     // toy timestep (s) = cpldt (toy exchanges every call)
+      "toydt": 21600,
+      "toytimes": 12,     // = runtime / toydt
+      "ocenx": 41, "oceny": 42,
+      "wavnx": 41, "wavny": 42,
+    },
+
+    // --debug truncates croco's own run to 6 ocean steps (BENCH's
+    // apply_debug_patches -> change_nml_end_date) = 6*ocedt = 21600s -
+    // exactly 1 coupling period at cpldt=21600s above. 
+    "template_vars_debug": {
+      "runtime": 21600,
+      "toytimes": 1,
+    },
+
+    // Extra executable(s) coupled to the ocean component above through
+    // OASIS. Each entry needs its own build
+    "components": {
+      "toy": {
+        "kind": "toy",
+        "toy_flavor": "wav",
+        "exe": "toy_wav",
+        "nml_file": "SCRIPTS/SCRIPTS_COUPLING/TOY_IN/TOYNAMELIST.nam.wav.ow",
+        "tasks": 2,
+        "forcing_file": "TOY_FILES/ww3_20050101_20050131.nc",
+        "forcing_model": "ww3",
+        "forcing_timerange": "1,12",
+
+        "patches": {},
+      },
+    },
+
+    // zero-valued OASIS restarts for every exchanged field (calm start,
+    // no pre-existing CROCO/toy output to restart from). 
+    "oasis_restarts": [
+      {
+        "grid_file": "CROCO_FILES/croco_grd.nc",
+        "out_file": "oce.nc",
+        "model": "croco",
+        "vars": ["CROCO_SSH", "CROCO_EOCE", "CROCO_NOCE"],
+      },
+      {
+        "grid_file": "grid_wav.nc",
+        "out_file": "wav.nc",
+        "model": "toy",
+        "vars": ["TOY_T0M1", "TOY___HS", "TOY__DIR"],
+      },
+    ],
+
+    "patches": {},
+    "check_outputs": [],
+    // OW_COUPLING always forces MPI on (see OCEAN/cppdefs_dev.h: "#ifdef
+    // OW_COUPLING # define MPI", same as XIOS) and undefs OPENMP, so
+    // "sequential"/"openmp" (no mpirun at all) can never match the
+    // compiled-in NP_XI*NP_ETA - only "mpi-N" variants are meaningful here.
+    "unsupported": ["sequential", "openmp", "restart", "plotphy"],
+  },
+}

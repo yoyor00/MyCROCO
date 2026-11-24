@@ -74,6 +74,8 @@ gfortran_parallel:
     matrix:
       - { CASES: "@realist_base",  VARIANTS: "sequential,mpi-4", TITLE: "debug_realist_base",  OPTIONS: "--debug" }
       - { CASES: "@agrif_realist", VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist", OPTIONS: "--debug" }
+      - { CASES: "@coupling",      VARIANTS: "mpi-2",            TITLE: "debug_coupling",      OPTIONS: "--debug" }
+      - { CASES: "@coupling",      VARIANTS: "mpi-2",            TITLE: "coupling",      OPTIONS: "" }
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |

@@ -25,6 +25,9 @@ from .helpers import (
     patch_lines,
     copy_tree_with_absolute_symlinks,
     parse_datetime,
+    replace_symlink,
+    substitute_angle_vars,
+    run_shell_command,
 )
 from .hyperfine import run_hyperfine
 from .check import compare_netcdf_files
@@ -243,6 +246,185 @@ class Croco:
                 os.path.join(self.dirname, "AGRIF_FixedGrids.in"),
             )
 
+        # COUPLING
+        if self.croco_build.cppdef_h_is_defined(
+            "OA_COUPLING"
+        ) or self.croco_build.cppdef_h_is_defined("OW_COUPLING"):
+            oasis_dir = self.config.host.get("oasis_dir")
+            if not oasis_dir:
+                raise Exception(
+                    f"Case '{self.case_name}': OASIS coupling is enabled but no "
+                    f"'oasis_dir' was declared for host '{self.config.use_host_config}' "
+                    f"(see hosts.<name>.oasis_dir in libs/schema.json) - point it at "
+                    f"an OASIS3-MCT install (containing lib/libpsmile.*.a etc.)."
+                )
+            self.croco_build.set_oasis_dir(oasis_dir)
+            self.build_components(oasis_dir)
+            self.prepare_coupling_inputs()
+
+    def build_components(self, oasis_dir: str):
+        """
+        Build the extra executable(s) coupled to the ocean component through
+        OASIS (the case's "components" dict). Each entry gets its own build,
+        separate from jobcomp.
+        """
+        for comp_name, comp in self.case.get("components", {}).items():
+            Messaging.step(f"Build coupling component : {comp_name}")
+            kind = comp["kind"]
+            if kind == "toy":
+                self.build_toy_component(comp_name, comp, oasis_dir)
+            else:
+                raise Exception(
+                    f"Case '{self.case_name}': unsupported component kind "
+                    f"'{kind}' for component '{comp_name}'."
+                )
+
+    def build_toy_component(self, comp_name: str, comp: dict, oasis_dir: str):
+        """
+        Build one TOY_IN-based coupling component
+        TOY_IN ships generic read_namelist.F90_<flavor>/toy_model.F90_<flavor> 
+        source pairs per model flavor (atm/oce/wav), symlinked to the plain 
+        names the Makefile rules expect (not called through make_toy_compil.sh, 
+        which unconditionally (re)builds all 3 flavors via 
+        "for toytype in atm oce wav").
+
+        Builds into its own copy of TOY_IN under the run directory
+        """
+        croco_source_dir = self.config.croco_source_dir
+        flavor = comp["toy_flavor"]
+        build_dir = os.path.join(self.dirname, f"TOY_IN_{comp_name}")
+
+        shutil.rmtree(build_dir, ignore_errors=True)
+        shutil.copytree(
+            os.path.join(croco_source_dir, "SCRIPTS/SCRIPTS_COUPLING/TOY_IN"),
+            build_dir,
+        )
+
+        with move_in_dir(build_dir):
+            replace_symlink(f"read_namelist.F90_{flavor}", "read_namelist.F90")
+            replace_symlink(f"toy_model.F90_{flavor}", "toy_model.F90")
+            run_shell_command(
+                "make -f Makefile.Linux clean",
+                logfilename=f"make_{comp_name}_clean.log",
+                capture=self.config.capture,
+            )
+            run_shell_command(
+                f"make -f Makefile.Linux CPL='{oasis_dir}'",
+                logfilename=f"make_{comp_name}.log",
+                capture=self.config.capture,
+            )
+
+        exe_path = os.path.join(self.dirname, comp["exe"])
+        shutil.copyfile(os.path.join(build_dir, "toy_model"), exe_path)
+        shutil.copymode(os.path.join(build_dir, "toy_model"), exe_path)
+
+    def prepare_coupling_inputs(self):
+        """
+        Stage the OASIS-side inputs for a coupled run:
+         - per-component forcing/grid netcdf files, derived from each
+           component's "forcing_file" via OASIS_SCRIPTS/create_oasis_toy_files.sh
+           (needs the NCO tools: ncks/ncap2/ncrename/ncatted);
+         - the zero-valued OASIS restarts declared in "oasis_restarts", in
+           order (a restart's grid_file may be produced by an earlier
+           component's forcing/grid step above, e.g. grid_wav.nc);
+         - the namcouple and each component's namelist, with their "<key>"
+           placeholders substituted from the case's "template_vars".
+        """
+        for tool in ("ncks", "ncap2", "ncrename", "ncatted"):
+            if shutil.which(tool) is None:
+                raise Exception(
+                    f"Case '{self.case_name}': OASIS coupling needs the NCO tools "
+                    f"(ncks/ncap2/ncrename/ncatted) on PATH - '{tool}' not found."
+                )
+
+        scripts_toolbox = os.path.join(
+            self.config.croco_source_dir, "SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX"
+        )
+        oasis_scripts = os.path.join(scripts_toolbox, "OASIS_SCRIPTS")
+        template_vars = self.case.get("template_vars", {})
+
+        # --debug truncates croco's own run to a handful of steps
+        # (apply_debug_patches -> change_nml_end_date), independently of the
+        # namcouple/TOY nml, whose "runtime"/"toytimes" are templated from
+        # the case's full, non-debug duration. Left unpatched, the TOY
+        # component keeps expecting coupling exchanges that croco (already
+        # exited) will never send, and hangs forever in its next OASIS_GET -
+        # observed as croco completing fine while the overall mpirun job
+        # never returns. Override with case["template_vars_debug"] 
+        if self.config.debug:
+            template_vars = {
+                **template_vars,
+                **self.case.get("template_vars_debug", {}),
+            }
+
+        with move_in_dir(self.dirname):
+            # per-component forcing/grid files (must run before
+            # oasis_restarts below, which may depend on a grid file
+            # produced here, e.g. grid_wav.nc)
+            for comp_name, comp in self.case.get("components", {}).items():
+                if "forcing_file" not in comp:
+                    continue
+                Messaging.step(
+                    f"Prepare {comp_name} forcing/grid files from {comp['forcing_file']}"
+                )
+                out_file = f"toy_{comp['toy_flavor']}.nc"
+                run_shell_command(
+                    f"SCRIPTDIR='{scripts_toolbox}' "
+                    f"'{oasis_scripts}/create_oasis_toy_files.sh' "
+                    f"'{comp['forcing_file']}' '{out_file}' "
+                    f"{comp['forcing_model']} {comp['forcing_timerange']}",
+                    logfilename=f"create_oasis_toy_files_{comp_name}.log",
+                    capture=self.config.capture,
+                )
+
+            # zero-valued OASIS restarts
+            for restart in self.case.get("oasis_restarts", []):
+                Messaging.step(
+                    f"Prepare OASIS restart {restart['out_file']} ({restart['model']})"
+                )
+                varlist = " ".join(restart["vars"])
+                run_shell_command(
+                    f"'{oasis_scripts}/create_oasis_restart_from_calm_conditions.sh' "
+                    f"'{restart['grid_file']}' '{restart['out_file']}' "
+                    f"{restart['model']} \"{varlist}\"",
+                    logfilename=f"create_oasis_restart_{restart['out_file']}.log",
+                    capture=self.config.capture,
+                )
+
+            # namcouple
+            if "namcouple" in self.case:
+                namcouple_src = os.path.join(
+                    self.config.croco_source_dir, self.case["namcouple"]
+                )
+                if not os.path.isfile(namcouple_src):
+                    raise Exception(
+                        f"Case '{self.case_name}': namcouple "
+                        f"'{self.case['namcouple']}' not found."
+                    )
+                Messaging.step(f"Use case namcouple : {self.case['namcouple']}")
+                shutil.copyfile(namcouple_src, "namcouple")
+                namcouple_vars = dict(template_vars)
+                if "runtime" in namcouple_vars and "ocedt" in namcouple_vars:
+                    namcouple_vars["runtime"] += namcouple_vars["ocedt"]
+                substitute_angle_vars("namcouple", namcouple_vars)
+
+            # per-component namelist - destination filename is hardcoded in
+            # each TOY_IN flavor's read_namelist.F90_<flavor>
+            # (OPEN(..., FILE='TOYNAMELIST.nam.<flavor>')), not configurable.
+            for comp_name, comp in self.case.get("components", {}).items():
+                if "nml_file" not in comp:
+                    continue
+                nml_src = os.path.join(self.config.croco_source_dir, comp["nml_file"])
+                if not os.path.isfile(nml_src):
+                    raise Exception(
+                        f"Case '{self.case_name}': component '{comp_name}' nml_file "
+                        f"'{comp['nml_file']}' not found."
+                    )
+                nml_dest = f"TOYNAMELIST.nam.{comp['toy_flavor']}"
+                Messaging.step(f"Use {comp_name} namelist : {comp['nml_file']}")
+                shutil.copyfile(nml_src, nml_dest)
+                substitute_angle_vars(nml_dest, template_vars)
+
     def compile(self):
         # display
         Messaging.step("Compile")
@@ -379,18 +561,27 @@ class Croco:
         for var, value in environ.items():
             env_line += f'{var}="{value}" '
 
+        # Coupled components run alongside croco in the same MPI job (MPMD),
+        # one extra "-np <tasks> ./<exe>" group per component.
+        components_suffix = "".join(
+            " : -np %d ./%s" % (comp["tasks"], comp["exe"])
+            for comp in self.case.get("components", {}).values()
+        )
+
         # build command and run
-        command = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
+        command = "%s ../../../scripts/correct_end.sh %s ./croco %s%s" % (
             env_line,
             command_prefix,
             self.croco_nmlfile,
+            components_suffix,
         )
         command = command.rstrip()
         if restart:
-            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
+            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s%s" % (
                 env_line,
                 command_prefix,
                 "%s_rst" % self.croco_nmlfile,
+                components_suffix,
             )
             command_rst = command_rst.rstrip()
             # execute twice one without restart and one with
@@ -599,7 +790,6 @@ class Croco:
         nml.setdefault(nml_section_name, f90nml.Namelist())
         nml[nml_section_name][nml_param_name] = values
         nml.write(full_filename, force=True)
-
 
     def setup_case(self):
         # apply the case paches
