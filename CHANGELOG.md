@@ -247,6 +247,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (was raw floating-point days since origin).
   TOOL_ORIGINDATE error/warning messages now report the affected netCDF
   file and variable (#600).
+  TOOL_DECOMPDATE stops with a clear error instead of crashing with a raw Fortran
+  "Bad value during integer read" in case of non CF-compliant date (#620)
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system

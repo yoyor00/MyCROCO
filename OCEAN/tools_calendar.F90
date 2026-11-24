@@ -584,7 +584,7 @@ CONTAINS
       INTEGER, INTENT(out) :: dd, mm, yyyy, hh, minu, sec
       REAL(kind=rlg), INTENT(out), OPTIONAL :: frac_sec
 
-      INTEGER :: dlen
+      INTEGER :: dlen, ios
       REAL(kind=rlg) :: frac_local
 
       ! Defaults for optional fields
@@ -606,19 +606,36 @@ CONTAINS
          call tool_fatal_stop()
       END IF
 
-      READ (date(1:4),   '(i4)') yyyy
-      IF (dlen >= 7)  READ (date(6:7),   '(i2)') mm
-      IF (dlen >= 10) READ (date(9:10),  '(i2)') dd
-      IF (dlen >= 13) READ (date(12:13), '(i2)') hh
-      IF (dlen >= 16) READ (date(15:16), '(i2)') minu
-      IF (dlen >= 19) READ (date(18:19), '(i2)') sec
+      READ (date(1:4), '(i4)', IOSTAT=ios) yyyy
+      IF (ios /= 0) CALL decompdate_fatal(date, 'year')
+      IF (dlen >= 7) THEN
+         READ (date(6:7), '(i2)', IOSTAT=ios) mm
+         IF (ios /= 0) CALL decompdate_fatal(date, 'month (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 10) THEN
+         READ (date(9:10), '(i2)', IOSTAT=ios) dd
+         IF (ios /= 0) CALL decompdate_fatal(date, 'day (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 13) THEN
+         READ (date(12:13), '(i2)', IOSTAT=ios) hh
+         IF (ios /= 0) CALL decompdate_fatal(date, 'hour (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 16) THEN
+         READ (date(15:16), '(i2)', IOSTAT=ios) minu
+         IF (ios /= 0) CALL decompdate_fatal(date, 'minute (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 19) THEN
+         READ (date(18:19), '(i2)', IOSTAT=ios) sec
+         IF (ios /= 0) CALL decompdate_fatal(date, 'second (must be 2 digits, "06" not "6")')
+      END IF
       IF (dlen > 19) THEN
          IF (date(20:20) /= '.') THEN
             MPI_master_only write (*, '(/1x,3A/)') &
                'TOOL_DECOMPDATE ERROR: invalid trailing characters after seconds in date: "', TRIM(date), '"'
             call tool_fatal_stop()
          END IF
-         READ (date(20:dlen), *) frac_local
+         READ (date(20:dlen), *, IOSTAT=ios) frac_local
+         IF (ios /= 0) CALL decompdate_fatal(date, 'fractional seconds')
       END IF
       IF (PRESENT(frac_sec)) frac_sec = frac_local
 
@@ -627,6 +644,21 @@ CONTAINS
             'TOOL_DECOMPDATE ERROR: invalid month in date: "', TRIM(date), '"'
          call tool_fatal_stop()
       END IF
+
+   CONTAINS
+
+      SUBROUTINE decompdate_fatal(date, field)
+      !! ** Purpose : report a field that failed its guarded READ above
+      !!              (IOSTAT/=0) and abort, the same way every other
+      !!              malformed-date case in this module does.
+         IMPLICIT NONE
+         CHARACTER(len=*), INTENT(in) :: date, field
+
+         MPI_master_only write (*, '(/1x,4A/)') &
+            'TOOL_DECOMPDATE ERROR: cannot parse ', TRIM(field), ' in date: "', TRIM(date)//'"'
+         call tool_fatal_stop()
+
+      END SUBROUTINE decompdate_fatal
 
    END SUBROUTINE tool_decompdate
 
