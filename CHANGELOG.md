@@ -74,6 +74,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   per-rank JSON output), enabled at build time with `jobcomp --timings`
 
 ### Fixed
+- STATIONS : fix compilation error with new namelist  
+
 - RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
   Before the fix, the outputs were zero everywhere (Issue #549) 
 
