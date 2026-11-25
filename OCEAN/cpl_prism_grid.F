@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
 
       SUBROUTINE cpl_prism_grid(id_partition)
 
@@ -20,6 +20,8 @@
 # endif
       use mpi
       IMPLICIT NONE
+
+# include 'mpif.h'
 # include "param.h"
 # include "grid.h"
 # include "scalars.h"

@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
 
       SUBROUTINE cpl_prism_define
 
@@ -115,6 +115,12 @@
       ssnd_clname(5) = 'CROCO_EOCE'//trim(clevel)
 !     NOCE
       ssnd_clname(6) = 'CROCO_NOCE'//trim(clevel)
+!     SSS
+      ssnd_clname(7) = 'CROCO_SSS'//trim(clevel)
+!     Hz
+      ssnd_clname(8) = 'CROCO_HZ'//trim(clevel)
+!     SWDK
+      ssnd_clname(9) = 'CROCO_SWDK'//trim(clevel)
 
 !------------------------------------------------------------------
 !     Received
@@ -176,6 +182,10 @@
       srcv_clname(27) = 'CROCO_ETAW'//trim(rclevel)
 !     wave_tauwy: Net wave-supported stress, northward-component [m2.s-2]
       srcv_clname(28) = 'CROCO_NTAW'//trim(rclevel)
+!     siconc: si ice concentration [0-1]
+      srcv_clname(29) = 'CROCO_ICE'//trim(rclevel)
+!     stflx: salt flux from sea ice freezing/melting
+      srcv_clname(30) = 'CROCO_SFX'//trim(rclevel)
 
       DO ja = 0, nmaxatm
 

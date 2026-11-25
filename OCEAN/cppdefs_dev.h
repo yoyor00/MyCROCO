@@ -94,6 +94,24 @@
 # endif
 #endif
 
+#ifdef OI_COUPLING
+# undef  OPENMP
+# define MPI
+# define MPI_COMM_WORLD ocean_grid_comm
+# undef  OA_GRID_UV
+# undef  BULK_FLUX
+# undef  QCORRECTION
+# undef  SFLX_CORR
+# undef  ANA_DIURNAL_SW
+# undef  SFLUX_CFB
+# undef ANA_STFLUX
+# undef ANA_SRFLUX
+# undef ANA_SMFLUX
+# undef ANA_SSFLUX
+# define NO_FRCFILE
+#endif
+
+
 /*
 ======================================================================
    Set XIOS options:

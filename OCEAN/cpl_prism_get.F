@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
 
       SUBROUTINE cpl_prism_get (rcvtime)
 !     !---------------------------------------------------------------------
@@ -130,8 +130,129 @@
       iok_vtaw = 0
       iok_etaw = 0
       iok_ntaw = 0
+      iok_siconc = 0
+      iok_sflx = 0
 !
       DO i = 1, nmaxfld
+
+# ifdef OI_COUPLING
+!-------------------------------------------------
+!------ OI_COUPLING -  OI VARIABLES -------------
+!-------------------------------------------------
+!
+!  -- Scalar variables --
+!--------------------------------------------------
+!        Solar radiation flux - srflx
+         if (trim(srcv_clname(i))=='CROCO_SRFL'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_srflx)
+            if (iok_srflx /= 0) then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               srflx = (tab_t_tmp / (rho0*Cp)) 
+            endif
+         end if
+!-------------------------------------------------
+!        Non-solar heat flux - stflx(:,:,itemp)
+         if (trim(srcv_clname(i))=='CROCO_STFL'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_itemp)
+            if (iok_itemp /= 0)  then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               stflx(:,:,itemp) = tab_t_tmp / (rho0*Cp)
+            endif
+         end if
+!-------------------------------------------------
+!        Module of wind stress - smstr
+         if (trim(srcv_clname(i))=='CROCO_TAUM'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_taum)
+            if (iok_taum /= 0) then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               smstr = tab_t_tmp / rho0
+!              avoid slight negative values (after interpolation for example)...
+               where ( smstr < 0. )
+                  smstr = 0.
+               end where
+            endif
+         end if
+!--------------------------------------------------
+!        Evaporation - precipitation flux - stflx(:,:,isalt)
+!        Changing Unit from [kg/m^2/s] (<--> [mm/s]) to [PSU m/s]  --> coeff= 1/1000.
+#  ifdef SALINITY
+         if (trim(srcv_clname(i))=='CROCO_EVPR'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_isalt)
+            if (iok_isalt /= 0) then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               stflx(:,:,isalt) = tab_t_tmp * t(:,:,N,nstp,isalt) / 1000.
+            endif
+         end if
+!-------------------------------------------------
+!        Salt flux - stflx
+         if (trim(srcv_clname(i))=='CROCO_SFX'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_sflx)
+            if (iok_sflx /= 0) then
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               sflx = tab_t_tmp * t(:,:,N,nstp,isalt) / 1000 / 1000
+            endif
+         end if
+#  endif
+
+
+!-------------------------------------------------
+!        Surface pressure [Pa] - patm2d
+#  ifdef READ_PATM
+         if (trim(srcv_clname(i))=='CROCO_PSFC'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_psfc)
+            if (iok_psfc /= 0) then
+               call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               patm2d = tab_t_tmp
+            endif
+         end if
+#  endif
+!-------------------------------------------------
+!
+!  -- Vector variables --
+!--------------------------------------------------
+!        U component of wind stress - sustr
+         if (trim(srcv_clname(i))=='CROCO_UTAU'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_utau)
+            if (iok_utau /= 0) then
+               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               sustr  = tab_t_tmp / rho0
+            endif
+         end if
+
+!-------------------------------------------------
+!        V component of wind stress - svstr
+         if (trim(srcv_clname(i))=='CROCO_VTAU'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_vtau)
+            if (iok_vtau /= 0) then
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               svstr = tab_t_tmp / rho0
+            endif
+         end if
+
+!-------------------------------------------------
+!        Sea ice concentration - siconc
+         if (trim(srcv_clname(i))=='CROCO_ICE'//trim(rclevel)) then
+            call cpl_prism_getvar(srcv_nid(:,i), cplmsk, nmaxatm,
+     &  tab_t_tmp, rcvtime, iok_siconc)
+            if (iok_siconc /= 0) then
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               siconc = tab_t_tmp 
+            endif
+         end if
+
+!-------------------------------------------------
+!        Salt flux - stflx
+#endif SI_COUPLING
+
+
 # ifdef OA_COUPLING
 !-------------------------------------------------
 !------ OA_COUPLING -  ATM VARIABLES -------------
@@ -559,6 +680,24 @@
       END DO
 !--------------- end coupled variable exchanges --------
 !
+# ifdef OI_COUPLING
+!-------------------------------------------------
+!     Compute total heat flux
+!-------------------------------------------------
+      if  (iok_itemp /= 0) then
+         !print*,'summing heat fluxes'
+         stflx(:,:,itemp) = stflx(:,:,itemp) + srflx
+      endif
+!-------------------------------------------------
+!     Compute total salt flux
+!-------------------------------------------------
+      if  (iok_isalt /= 0) then
+         !print*,'summing salt fluxes'
+         stflx(:,:,isalt) = stflx(:,:,isalt) + sflx(:,:)
+      endif
+# endif
+
+
 # ifdef OA_COUPLING
 !-------------------------------------------------
 !     Compute total heat flux

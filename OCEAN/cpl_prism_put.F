@@ -10,7 +10,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
 
       SUBROUTINE cpl_prism_put (sndtime)
 !     !---------------------------------------------------------------------
@@ -58,7 +58,30 @@
 !-------------------------------------------------
 !        SST
          if (trim(ssnd_clname(i))=='CROCO_SST'//trim(clevel)) then
+# ifdef OI_COUPLING 
+            snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp)  
+# else 
             snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,itemp) + 273.15
+# endif
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
+
+         endif
+!-------------------------------------------------
+!        SSS
+         if (trim(ssnd_clname(i))=='CROCO_SSS'//trim(clevel)) then
+            snd_field = t(1:Lmmpi,1:Mmmpi,N,nnew,isalt)
 
             DO ja = 0, nmaxatm
                if ( ssnd_nid(ja,i) /= -1 ) then
@@ -96,11 +119,55 @@
 
          endif
 !-------------------------------------------------
+!        HZ(:,:,N)
+         if (trim(ssnd_clname(i))=='CROCO_HZ'//trim(clevel)) then
+            snd_field = HZ(1:Lmmpi,1:Mmmpi,N) 
+
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
+
+         endif
+!-------------------------------------------------
+!        swdk
+         if (trim(ssnd_clname(i))=='CROCO_SWDK'//trim(clevel)) then
+            snd_field = cpl_swdk(1:Lmmpi,1:Mmmpi) 
+
+            DO ja = 0, nmaxatm
+               if ( ssnd_nid(ja,i) /= -1 ) then
+                  call prism_put_proto(ssnd_nid(ja,i), sndtime,
+     &                  snd_field, comp_ierror)
+                  if ( (comp_ierror == OASIS_Sent   ) .or.
+     &                 (comp_ierror == OASIS_ToRest ) .or.
+     &                 (comp_ierror == OASIS_SentOut) .or.
+     &                 (comp_ierror == OASIS_ToRestOut) ) then
+                     MPI_master_only write(*,*) 'CPL-CROCO : ',ja,
+     &                trim(ssnd_clname(i)),' sent at time ',sndtime
+                  endif
+               endif
+            enddo
+
+         endif
+
+!-------------------------------------------------
 !        U component of ocean surface current
 !          at rho point
         if (trim(ssnd_clname(i))=='CROCO_UOCE'//trim(clevel)) then
-           snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
-     &                       +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
+!           snd_field = 0.5 * (u(1:Lmmpi  ,1:Mmmpi,N,nnew)
+!     &                       +u(2:Lmmpi+1,1:Mmmpi,N,nnew))
+! NANUQ expects u velocities at u point . Here we need to send croco u(i+1) to nemo u(i)
+!(because u point of Nemo is located on the rhs edge of the mesh i)
+           snd_field = u(2:Lmmpi+1,1:Mmmpi,N,nnew)
 
             DO ja = 0, nmaxatm
                if ( ssnd_nid(ja,i) /= -1 ) then
@@ -121,8 +188,11 @@
 !        V component of ocean surface current
 !          at rho point
          if (trim(ssnd_clname(i))=='CROCO_VOCE'//trim(clevel)) then
-           snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
-     &                       +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
+!           snd_field = 0.5 * (v(1:Lmmpi,1:Mmmpi  ,N,nnew)
+!     &                       +v(1:Lmmpi,2:Mmmpi+1,N,nnew))
+! NANUQ expects v velocities at v point . Here we need to send croco v(j+1) to nemo v(j)
+!(because v point of Nemo is located on the top edge of the mesh j)
+           snd_field = v(1:Lmmpi,2:Mmmpi+1,N,nnew)
 
             DO ja = 0, nmaxatm
                if ( ssnd_nid(ja,i) /= -1 ) then
@@ -139,6 +209,7 @@
             enddo
 
          endif
+
 !-------------------------------------------------
 !        Eastward component of ocean surface current
 !         proceed rotation from xi/eta croco_grid coordinate

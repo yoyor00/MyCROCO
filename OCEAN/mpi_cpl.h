@@ -20,7 +20,7 @@
       CHARACTER(len = 3) :: cmember
       common /ens_comm/ kmember, cmember
 #endif /* ENSEMBLE */
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
       INTEGER :: comp_id                       ! component identification
       CHARACTER(len=6)   :: comp_name = 'crocox'
 
@@ -45,5 +45,9 @@
       common /exchange_times_oasis3/ oasis_time, oasis_runtime
 
       REAL cplmsk(GLOBAL_2D_ARRAY,0:nmaxatm)
-      common /coupling_mask/cplmsk
+      REAL cpl_swdk(GLOBAL_2D_ARRAY)
+      REAL siconc(GLOBAL_2D_ARRAY)
+      REAL sflx(GLOBAL_2D_ARRAY)
+      real,dimension(GLOBAL_2D_ARRAY) :: tab_evp_tmp
+      common /coupling_mask/cplmsk, cpl_swdk, siconc, sflx
 #endif /* OA_COUPLING */

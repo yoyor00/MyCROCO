@@ -71,7 +71,7 @@
         IF (.Not.MPIisinitialize) THEN
 #  if defined XIOS
            call xios_initialize( "crocox",return_comm=MPI_COMM_WORLD)
-#  elif defined OA_COUPLING || defined OW_COUPLING
+#  elif defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
            call cpl_prism_init
 #  else
            call MPI_Init(ierr)

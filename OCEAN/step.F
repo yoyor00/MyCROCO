@@ -38,7 +38,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef SOLVE3D
 
-# if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
 !--Get phase of OASIS3
       if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)
 #  ifdef AGRIF
@@ -89,7 +89,7 @@ C$OMP END PARALLEL
         iif = -1
         nbstep3d = nbstep3d + 1
       endif
-# if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
 !--Put phase of OASIS3
       if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+2)) then
 #  ifdef AGRIF

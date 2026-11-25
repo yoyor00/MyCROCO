@@ -34,7 +34,7 @@
 #ifdef ABL1D
 # include "abl1d.h"
 #endif
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined SI_COUPLING
 # include "mpi_cpl.h"
 #endif
 #if defined NBQ || defined MORPHODYN || defined WET_DRY

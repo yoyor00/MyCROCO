@@ -126,6 +126,9 @@
 #   define SWITCH !
 #  endif
 !
+# ifdef OI_COUPLING
+# include "mpi_cpl.h"
+# endif
 #  if defined TS_HADV_UP5 || defined TS_HADV_C6 || \
      defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
      defined TS_VADV_WENO5
@@ -470,6 +473,11 @@
           enddo
         enddo
       enddo
+#  ifdef OI_COUPLING
+      !print*,'srflx:',srflx(:,:)
+      cpl_swdk(:,:) = 0
+      cpl_swdk=swdk(:,:,N-1) !XC: Need to be exported to NANUQ
+#  endif
 !$acc wait
 #   undef wrk1
 #   undef wrk2

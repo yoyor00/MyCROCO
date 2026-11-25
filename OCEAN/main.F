@@ -31,7 +31,7 @@
           USE croco_namelist, ONLY : ldefablhis
 #endif
           USE croco_namelist, ONLY : end_date
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
           USE mod_prism
 #endif
 #ifdef XIOS
@@ -139,7 +139,7 @@
 !----------------------------------------------------------------------
 !
 #ifdef MPI
-# if (!defined AGRIF && !defined OA_COUPLING && !defined OW_COUPLING)
+# if (!defined AGRIF && !defined OA_COUPLING && !defined OW_COUPLING && !defined OI_COUPLING)
       call MPI_Init (ierr)
 # endif
 !
@@ -403,7 +403,7 @@ C$OMP BARRIER
         call get_initial (nrrec, 1)   ! Set initial conditions
 #ifdef ANA_INITIAL
       else  ! nrrec.eq.0
-# if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
         call cpl_prism_define
         oasis_time = 0
         MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
@@ -949,7 +949,7 @@ CR      write(*,*) '  0' MYID
 
 #ifdef AGRIF
       iind = -1
-# if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
       it_inside_root = 1
 # endif
       grids_at_level = -1
@@ -1048,11 +1048,11 @@ CR      write(*,*) '  0' MYID
 !!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
 !!!#   endif
 
-#  if !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
+#  if !defined OA_COUPLING && !defined OW_COUPLING  && ! defined OI_COUPLING && !defined AGRIF
        call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed
 #  endif
 
-# elif defined OA_COUPLING || defined OW_COUPLING
+# elif defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
                                           ! case no XIOS + OASIS
       call prism_terminate_proto(ierr)    !   > Finalize OASIS3 (without XIOS)
 !!!      call MPI_Finalize (ierr)         !   > Finalize CROCO (without XIOS)

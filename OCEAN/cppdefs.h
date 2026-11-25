@@ -25,6 +25,7 @@
 #  undef  OA_GRID_UV
 # endif
 # undef  OW_COUPLING
+# define OI_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
 #  undef WAVE_SMFLUX

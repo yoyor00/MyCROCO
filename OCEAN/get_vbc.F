@@ -70,7 +70,9 @@
 # ifndef ANA_SMFLUX
 #  ifndef BULK_FLUX
 #   ifndef WAVE_SMFLUX
+#    ifndef OI_COUPLING 
       call get_smflux
+#    endif 
 #   endif
 #  endif
 # endif
@@ -89,7 +91,7 @@
       ! Load data for OFFLINE bulk forcing
       call get_bulk
 #   endif
-#  elif !defined ANA_STFLUX
+#  elif !defined ANA_STFLUX && !defined OI_COUPLING
 #   if defined TEMPERATURE
       call get_stflux (itemp)
 #   endif
@@ -107,8 +109,8 @@
 ! Kinematic surface freshwater flux (E-P) flux [PSU m/s].
 !---------------------------------------------------------------
 !
-#  ifndef BULK_FLUX
-#   if defined SALINITY && !defined ANA_SSFLUX
+#  ifndef BULK_FLUX 
+#   if defined SALINITY && !defined ANA_SSFLUX && !defined OI_COUPLING
        call get_stflux (isalt)
 #   endif
 #  endif
@@ -125,7 +127,8 @@
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-#  ifndef BULK_FLUX
+!#  ifndef BULK_FLUX 
+#  if !defined BULK_FLUX && !defined OI_COUPLING 
 #   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
 #    if !defined ANA_SRFLUX && defined TEMPERATURE
        call get_srflux
@@ -228,6 +231,7 @@
 #include "compute_auxiliary_bounds.h"
 !
 #ifndef OA_COUPLING
+#ifndef OI_COUPLING
 !
 !---------------------------------------------------------------
 ! Kinematic surface momentum flux (wind stress) components
@@ -416,6 +420,7 @@
       enddo
 #  endif
 # endif /* SOLVE3D */
+#endif /* !OI_COUPLING */
 #endif /* !OA_COUPLING */
 
 #if defined SOLVE3D && defined TRACERS
