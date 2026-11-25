@@ -27,6 +27,7 @@
      &     dianamebio, ldefdiabio_avg, ntsdiabio_avg,
      &     nwrtdiabio_avg, nrpfdiabio_avg, dianamebio_avg
 #endif
+      use tools_calendar, only: tool_check_output_origin
 
 # ifdef NC4PAR
       use mpi
@@ -59,6 +60,7 @@
 #  define wrtGasExc wrtdiabioGasExc
 #  define wrtVSink wrtdiabioVSink
 #  define vidTime diaTimebio
+#  define vidOrigin dia_bio_origin_in_sec
 #  define vidTstep diaTstepbio
 #  define vidFlux diabioFlux
 #  define vidGasExc diabioGasExc
@@ -71,6 +73,7 @@
 #  define wrtGasExc wrtdiabioGasExc_avg
 #  define wrtVSink wrtdiabioVSink_avg
 #  define vidTime diaTimebio_avg
+#  define vidOrigin dia_bio_avg_origin_in_sec
 #  define vidTstep diaTstepbio_avg
 #  define vidFlux diabioFlux_avg
 #  define vidGasExc diabioGasExc_avg
@@ -258,6 +261,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 !
 ! Tracer diagnostics variables.
 !
@@ -481,6 +486,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 !
 ! Tracer flux diagnostics variables.
 !
@@ -589,6 +596,7 @@
 # undef wrtVSink
 # undef wrtGasExc
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 # undef vidFlux
 # undef vidGasExc

@@ -83,6 +83,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - SUBSTANCE/MUSTANG/RAIN_FLUX : fix restart not bit-exact (Issue #610)
 
+- OUTPUTS : fix output time axis inconsistency when appending to an existing
+  restart/history/averages/diagnostics/surf/abl/station file with a different
+  `start_date` than the one used when the file was created (#611)
+
 - PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
   which caused the river discharge Qsrc to be applied twice to u/v in
   step3d_uv2.F (once through PSOURCE_MASS's mass-flux treatment and once
@@ -263,9 +267,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
+  CROCO now stops with an explicit error if the namelist file is missing,
+  instead of silently continuing with default values for every parameter
+  (Issue #580)
   The per-source namelist groups are not printed when there is no source (#608)
   The station nc_sta.h file is updated (#622)
-  (#552, #568, #570, #572, #573)
+  (#552, #568, #570, #572, #573, #578)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
