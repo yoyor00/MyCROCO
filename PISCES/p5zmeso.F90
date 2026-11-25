@@ -621,7 +621,7 @@ CONTAINS
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
          trc3d(ji,jj,jkR,jp_grapoc2) = zgrazing2(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by mesozoo
-         trc3d(ji,jj,jkR,jp_meso2)   = (-o2ut) * ssigma2 * zgrarem(ji,jj,jk) &
+         trc3d(ji,jj,jkR,jp_meso2)   = (-o2ut) * zgrarem(ji,jj,jk) &
             &                          * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Mesozoo
       END_3D
 #endif
