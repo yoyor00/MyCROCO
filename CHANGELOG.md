@@ -73,6 +73,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
   per-rank JSON output), enabled at build time with `jobcomp --timings`
 
+- BENCH : add XIOS I/O server support, no support of runtime named 
+  variables (SUBTANCE,MUSTANG,OBSTRUCTION) for now (#380)
+
 ### Fixed
 - RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
   Before the fix, the outputs were zero everywhere (Issue #549) 
