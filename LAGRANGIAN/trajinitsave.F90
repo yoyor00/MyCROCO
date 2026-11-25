@@ -1161,7 +1161,8 @@ CONTAINS
                   REAL(kind=rsh)                              :: fillval
                   INTEGER, ALLOCATABLE, DIMENSION(:)   :: num_out
                   REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)   :: lat_out, lon_out
-                  REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: xpos_out, ypos_out, spos_out, zpos_out, h0pos_out, flag_out
+                  REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: xpos_out, ypos_out, spos_out, zpos_out
+                  REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: tot_depth_out, flag_out
                   TYPE(type_patch), POINTER                :: patch
                   TYPE(type_particle), POINTER                :: particle
 #ifdef MPI
@@ -1172,7 +1173,7 @@ CONTAINS
                   INTEGER                                     :: nb_part_total
                   INTEGER, ALLOCATABLE, DIMENSION(:)          :: iperm, num_glob
                   REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)   :: lat_glob, lon_glob
-                  REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: zpos_glob, h0pos_glob, flag_glob
+                  REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: zpos_glob, tot_depth_glob, flag_glob
 #endif
 
       !!----------------------------------------------------------------------
@@ -1220,7 +1221,8 @@ CONTAINS
                         CALL ionc4_createvar_traj(file_out, "longitude", "degrees_east", "longitude", &
                                                   fill_value=dg_valmanq_io, l_out_nc4par=l_out_nc4par)
                         CALL ionc4_createvar_traj(file_out, "DEPTH", "m", "depth", fill_value=-fillval, l_out_nc4par=l_out_nc4par)
-                        CALL ionc4_createvar_traj(file_out, "H0", "m", "h0", fill_value=-fillval, l_out_nc4par=l_out_nc4par)
+                        CALL ionc4_createvar_traj(file_out, "TOTAL_DEPTH", "m", "Total depth of the water column", &
+                                                  fill_value=-fillval, l_out_nc4par=l_out_nc4par)
                         CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", &
                                                   fill_value=0, l_out_nc4par=l_out_nc4par)
                         CALL ionc4_createvar_traj(file_out, "flag", "nbr", "flag", fill_value=fillval, l_out_nc4par=l_out_nc4par)
@@ -1230,12 +1232,12 @@ CONTAINS
                      ALLOCATE (lat_out(nb_part), lon_out(nb_part))
                      ALLOCATE (xpos_out(nb_part), ypos_out(nb_part))
                      ALLOCATE (spos_out(nb_part), zpos_out(nb_part))
-                     ALLOCATE (num_out(nb_part), h0pos_out(nb_part))
+                     ALLOCATE (num_out(nb_part), tot_depth_out(nb_part))
                      ALLOCATE (flag_out(nb_part))
 
                      lat_out(:) = dg_valmanq_io; lon_out(:) = dg_valmanq_io
                      xpos_out(:) = fillval; ypos_out(:) = fillval; spos_out(:) = fillval; zpos_out(:) = -fillval
-                     h0pos_out(:) = -fillval; flag_out(:) = fillval; num_out(:) = 0
+                     tot_depth_out(:) = -fillval; flag_out(:) = fillval; num_out(:) = 0
 
                      p = 0
                      DO npart = 1, nb_part
@@ -1248,7 +1250,7 @@ CONTAINS
                         lon_out(p) = tool_ind2lon(particle%xpos, particle%ypos)
                         spos_out(p) = particle%spos
                         zpos_out(p) = particle%zpos ! for output as immersion
-                        h0pos_out(p) = particle%d3
+                        tot_depth_out(p) = particle%d3
                         flag_out(p) = particle%flag
                         num_out(p) = particle%num
                      END DO
@@ -1268,7 +1270,8 @@ CONTAINS
                      CALL MPI_gather_sort_var(nb_part, lat_out(1:nb_part), counts, displs, nb_part_total, iperm, lat_glob)
                      CALL MPI_gather_sort_var(nb_part, lon_out(1:nb_part), counts, displs, nb_part_total, iperm, lon_glob)
                      CALL MPI_gather_sort_var(nb_part, zpos_out(1:nb_part), counts, displs, nb_part_total, iperm, zpos_glob)
-                     CALL MPI_gather_sort_var(nb_part, h0pos_out(1:nb_part), counts, displs, nb_part_total, iperm, h0pos_glob)
+                     CALL MPI_gather_sort_var(nb_part, tot_depth_out(1:nb_part), counts, displs, nb_part_total, iperm, &
+                                             tot_depth_glob) 
                      CALL MPI_gather_sort_var(nb_part, num_out(1:nb_part), counts, displs, nb_part_total, iperm, num_glob)
                      CALL MPI_gather_sort_var(nb_part, flag_out(1:nb_part), counts, displs, nb_part_total, iperm, flag_glob)
 
@@ -1282,18 +1285,18 @@ CONTAINS
                      CALL ionc4_write_trajt(file_out, 'latitude', lat_glob(1:num2), num1, num2, 0, dg_valmanq_io)
                      CALL ionc4_write_trajt(file_out, 'longitude', lon_glob(1:num2), num1, num2, 0, dg_valmanq_io)
                      CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_glob(1:num2), num1, num2, 0, -fillval)
-                     CALL ionc4_write_trajt(file_out, 'H0', h0pos_glob(1:num2), num1, num2, 0, -fillval)
+                     CALL ionc4_write_trajt(file_out, 'TOTAL_DEPTH', tot_depth_glob(1:num2), num1, num2, 0, -fillval)
                      CALL ionc4_write_trajt(file_out, 'NUM', num_glob(1:num2), num1, num2, 0, 0)
                      CALL ionc4_write_trajt(file_out, 'flag', flag_glob(1:num2), num1, num2, 0, fillval)
 
-                     DEALLOCATE (iperm, num_glob, lat_glob, lon_glob, zpos_glob, h0pos_glob, flag_glob)
+                     DEALLOCATE (iperm, num_glob, lat_glob, lon_glob, zpos_glob, tot_depth_glob, flag_glob)
 #else
                      num1 = 1
                      num2 = nb_part
                      CALL ionc4_write_trajt(file_out, 'latitude', lat_out(1:nb_part), num1, num2, 0, dg_valmanq_io)
                      CALL ionc4_write_trajt(file_out, 'longitude', lon_out(1:nb_part), num1, num2, 0, dg_valmanq_io)
                      CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_out(1:nb_part), num1, num2, 0, -fillval)
-                     CALL ionc4_write_trajt(file_out, 'H0', h0pos_out(1:nb_part), num1, num2, 0, -fillval)
+                     CALL ionc4_write_trajt(file_out, 'TOTAL_DEPTH', tot_depth_out(1:nb_part), num1, num2, 0, -fillval)
                      CALL ionc4_write_trajt(file_out, 'NUM', num_out(1:nb_part), num1, num2, 0, 0)
                      CALL ionc4_write_trajt(file_out, 'flag', flag_out(1:nb_part), num1, num2, 0, fillval)
 #endif
@@ -1301,7 +1304,7 @@ CONTAINS
                      ! To write the data on the disk and not loose data in case of run crash
                      CALL ionc4_sync(file_out)
                      DEALLOCATE (xpos_out, ypos_out, zpos_out, spos_out)
-                     DEALLOCATE (lat_out, lon_out, h0pos_out, flag_out, num_out)
+                     DEALLOCATE (lat_out, lon_out, tot_depth_out, flag_out, num_out)
 
                      ! Update of the save date
                      patch%t_save = time + dtsave_traj*3600.0_rlg

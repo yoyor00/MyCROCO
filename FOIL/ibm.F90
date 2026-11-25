@@ -1466,7 +1466,7 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: num_out, stage_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: lat_out, lon_out, dateo_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_out, flag_out, spos_out, zpos_out, xpos_out, ypos_out
-      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_out, size_out, nb_out, dens_out, Drate_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: tot_depth_out, size_out, nb_out, dens_out, Drate_out
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, AgeClass_out
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: hmove_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
@@ -1489,7 +1489,7 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)          :: num_glob, stage_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: lat_glob, lon_glob, dateo_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_glob, flag_glob, zpos_glob
-      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_glob, size_glob, nb_glob, dens_glob, Drate_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: tot_depth_glob, size_glob, nb_glob, dens_glob, Drate_glob
       INTEGER, ALLOCATABLE, DIMENSION(:)          :: age_glob, AgeClass_glob
       INTEGER, ALLOCATABLE, DIMENSION(:)          :: hmove_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_glob, f_glob, Wdeb_glob, Denspawn_glob
@@ -1560,7 +1560,7 @@ CONTAINS
                   fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "DEPTH", "m", "depth as immersion", &
                   fill_value=-fillval, l_out_nc4par=l_out_nc4par)
-               CALL ionc4_createvar_traj(file_out, "H0", "m", "h0", &
+               CALL ionc4_createvar_traj(file_out, "TOTAL_DEPTH", "m", "Total depth of the water column", &
                   fill_value=-fillval, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", &
                   fill_value=0, l_out_nc4par=l_out_nc4par)
@@ -1643,7 +1643,7 @@ CONTAINS
          ALLOCATE (lat_out(nb_part), lon_out(nb_part))
          ALLOCATE (xpos_out(nb_part), ypos_out(nb_part))
          ALLOCATE (spos_out(nb_part), zpos_out(nb_part))
-         ALLOCATE (num_out(nb_part), h0pos_out(nb_part))
+         ALLOCATE (num_out(nb_part), tot_depth_out(nb_part))
          ALLOCATE (flag_out(nb_part), dens_out(nb_part))
          ALLOCATE (temp_out(nb_part), Drate_out(nb_part))
          ALLOCATE (size_out(nb_part), dateo_out(nb_part))
@@ -1653,7 +1653,7 @@ CONTAINS
          lat_out(:) = REAL(dg_valmanq_io, kind=out); lon_out(:) = REAL(dg_valmanq_io, kind=out)
          dateo_out(:) = REAL(dg_valmanq_io, kind=out)
          xpos_out(:) = fillval; ypos_out(:) = fillval; spos_out(:) = fillval; zpos_out(:) = -fillval
-         h0pos_out(:) = -fillval; flag_out(:) = fillval; num_out(:) = 0
+         tot_depth_out(:) = -fillval; flag_out(:) = fillval; num_out(:) = 0
          size_out(:) = fillval; stage_out(:) = -1; dens_out(:) = fillval; Drate_out(:) = fillval
          temp_out(:) = fillval; nb_out(:) = fillval; age_out(:) = -1; AgeClass_out(:) = -1
 
@@ -1692,7 +1692,7 @@ CONTAINS
             dateo_out(p) = REAL(particle%date_orig, kind=out)
             spos_out(p) = REAL(particle%spos, kind=out)
             zpos_out(p) = REAL(particle%zpos, kind=out) ! for output as immersion
-            h0pos_out(p) = REAL(particle%d3, kind=out)
+            tot_depth_out(p) = REAL(particle%d3, kind=out)
             flag_out(p) = REAL(particle%flag, kind=out)
             temp_out(p) = REAL(particle%temp, kind=out)
             size_out(p) = REAL(particle%size, kind=out)
@@ -1740,7 +1740,7 @@ CONTAINS
          CALL MPI_gather_sort_var(nb_part, lat_out(1:nb_part), counts, displs, nb_part_total, iperm, lat_glob)
          CALL MPI_gather_sort_var(nb_part, lon_out(1:nb_part), counts, displs, nb_part_total, iperm, lon_glob)
          CALL MPI_gather_sort_var(nb_part, zpos_out(1:nb_part), counts, displs, nb_part_total, iperm, zpos_glob)
-         CALL MPI_gather_sort_var(nb_part, h0pos_out(1:nb_part), counts, displs, nb_part_total, iperm, h0pos_glob)
+         CALL MPI_gather_sort_var(nb_part, tot_depth_out(1:nb_part), counts, displs, nb_part_total, iperm, tot_depth_glob)
          CALL MPI_gather_sort_var(nb_part, num_out(1:nb_part), counts, displs, nb_part_total, iperm, num_glob)
          CALL MPI_gather_sort_var(nb_part, flag_out(1:nb_part), counts, displs, nb_part_total, iperm, flag_glob)
          CALL MPI_gather_sort_var(nb_part, temp_out(1:nb_part), counts, displs, nb_part_total, iperm, temp_glob)
@@ -1785,7 +1785,7 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'longitude', lon_glob(1:num2), num1, num2, 0, &
             REAL(dg_valmanq_io, kind=out))
          CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_glob(1:num2), num1, num2, 0, -fillval)
-         CALL ionc4_write_trajt(file_out, 'H0', h0pos_glob(1:num2), num1, num2, 0, -fillval)
+         CALL ionc4_write_trajt(file_out, 'TOTAL_DEPTH', tot_depth_glob(1:num2), num1, num2, 0, -fillval)
          CALL ionc4_write_trajt(file_out, 'NUM', num_glob(1:num2), num1, num2, 0, 0)
          CALL ionc4_write_trajt(file_out, 'flag', flag_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'TEMP', temp_glob(1:num2), num1, num2, 0, fillval)
@@ -1821,7 +1821,7 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'Death_NAT', deadnatural_glob(1:num2), num1, num2, 0, fillval)
 
          DEALLOCATE (iperm)
-         DEALLOCATE (lat_glob, lon_glob, zpos_glob, h0pos_glob, num_glob, flag_glob)
+         DEALLOCATE (lat_glob, lon_glob, zpos_glob, tot_depth_glob, num_glob, flag_glob)
          DEALLOCATE (temp_glob, stage_glob, size_glob, nb_glob, dens_glob, Drate_glob)
          DEALLOCATE (dateo_glob, age_glob, AgeClass_glob, hmove_glob)
          DEALLOCATE (food_glob, f_glob, E_glob, H_glob, R_glob, Gam_glob, Wdeb_glob, Neggs_glob, Neggs_tot_glob)
@@ -1837,7 +1837,7 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'longitude', lon_out(1:nb_part), num1, num2, 0, &
             REAL(dg_valmanq_io, kind=out))
          CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_out(1:nb_part), num1, num2, 0, -fillval)
-         CALL ionc4_write_trajt(file_out, 'H0', h0pos_out(1:nb_part), num1, num2, 0, -fillval)
+         CALL ionc4_write_trajt(file_out, 'TOTAL_DEPTH', tot_depth_out(1:nb_part), num1, num2, 0, -fillval)
          CALL ionc4_write_trajt(file_out, 'NUM', num_out(1:nb_part), num1, num2, 0, 0)
          CALL ionc4_write_trajt(file_out, 'flag', flag_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'TEMP', temp_out(1:nb_part), num1, num2, 0, fillval)
@@ -1876,7 +1876,7 @@ CONTAINS
          ! To write the data on the disk and not loose data in case of run crash
          CALL ionc4_sync(file_out)
          DEALLOCATE (lat_out, lon_out, xpos_out, ypos_out, spos_out, zpos_out)
-         DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
+         DEALLOCATE (num_out, tot_depth_out, flag_out, dens_out, temp_out, Drate_out)
          DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, AgeClass_out)
          DEALLOCATE (hmove_out)
          DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out, nbatch_out)
