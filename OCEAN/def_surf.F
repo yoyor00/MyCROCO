@@ -28,8 +28,9 @@
 # ifdef NC4PAR
       use mpi
 # endif
-      use croco_namelist, only: ldefsurf, nrpfsurf, surfname, 
+      use croco_namelist, only: ldefsurf, nrpfsurf, surfname,
      &                         ldefsurf_avg, nrpfsurf_avg, surfname_avg
+      use tools_calendar, only: tool_check_output_origin
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -58,6 +59,7 @@
 #  define rec_per_file nrpfsurf
 #  define wrt wrtsurf
 #  define vidTime surfTime
+#  define vidOrigin surf_origin_in_sec
 #  define vidTstep surfTstep
 
 #  define vidsurft surf_surft
@@ -73,6 +75,7 @@
 #  define rec_per_file nrpfsurf_avg
 #  define wrt wrtsurf_avg
 #  define vidTime surfTime_avg
+#  define vidOrigin surf_avg_origin_in_sec
 #  define vidTstep surfTstep_avg
 
 #  define vidsurft surf_surft_avg
@@ -253,6 +256,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &                        NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 
 ! surface variables.
 ! -------- ----------- --------
@@ -524,6 +529,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
@@ -657,6 +664,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 

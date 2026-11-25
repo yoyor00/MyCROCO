@@ -41,6 +41,7 @@
 # else
       USE croco_namelist, ONLY: ablname_avg, nrpfablavg
 # endif
+      USE tools_calendar, ONLY: tool_check_output_origin
 # ifdef NC4PAR
       use mpi
 # endif
@@ -67,6 +68,7 @@
 #  define rec_per_file nrpfablhis
 #  define wrt wrtabl
 #  define vidTime ablhisTime
+#  define vidOrigin ablhis_origin_in_sec
 #  define vidTstep ablhisTstep
 #  define vidabl_pu_dta ablhis_pu_dta
 #  define vidabl_pv_dta ablhis_pv_dta
@@ -93,6 +95,7 @@
 #  define rec_per_file nrpfablavg
 #  define wrt wrtabl_avg
 #  define vidTime ablavgTime
+#  define vidOrigin ablavg_origin_in_sec
 #  define vidTstep ablavgTstep
 #  define vidabl_pu_dta ablavg_pu_dta
 #  define vidabl_pv_dta ablavg_pv_dta
@@ -277,6 +280,7 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
+        vidOrigin=start_date_in_sec
 !=======================================================================
 !
 ! Define primary variables
@@ -939,6 +943,10 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+
 !
 !-----------------------------------------------------------------------
 ! U-wind
@@ -1275,6 +1283,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 # undef vidabl_pu_dta
 # undef vidabl_pv_dta
