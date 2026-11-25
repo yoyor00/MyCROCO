@@ -267,6 +267,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
+  CROCO now stops with an explicit error if the namelist file is missing,
+  instead of silently continuing with default values for every parameter
+  (Issue #580)
   The per-source namelist groups are not printed when there is no source (#608)
   (#552, #568, #570, #572, #573, #578)
 

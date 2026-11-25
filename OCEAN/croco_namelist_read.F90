@@ -652,8 +652,7 @@ contains
 
       MPI_master_only write (stdout, *) '*** READING NAMELIST ***'
 
-      ! Open the namelist file; if absent, fall back to default values
-      ! for all parameters (non-fatal: the model can still run).
+      ! Open the namelist file; stop with a clear error if absent.
       ! newunit= lets the compiler pick a free unit number automatically.
       ! open (newunit=nmlunit, file=trim(fname_nml), status='old', &
       !       action='read', iostat=ios)
@@ -663,9 +662,9 @@ contains
       open (unit=nmlunit, file=trim(fname_nml), status='old', &
             action='read', iostat=ios)
       if (ios /= 0) then
-         MPI_master_only write (stdout, *) &
-            'WARNING: namelist file not found: ', trim(fname_nml)
-         MPI_master_only write (stdout, *) 'Using default values.'
+         MPI_master_only write (stdout, '(3a)') &
+            'Error - namelist file not found: "', trim(fname_nml), '".'
+         ierr = ierr + 1
          return
       end if
 
