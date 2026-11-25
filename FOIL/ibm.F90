@@ -163,7 +163,7 @@ CONTAINS
       NAMELIST /namibmmove/ w_max, alpha_w, adult_move, active_move_min_depth
       NAMELIST /namibmpop/ repro, dt_spawn, max_part, fish_mort, fishing_strategy, &
          multiplier_tac, density_dependent
-      NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_NBSS, file_food, frac_deb_death
+      NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_food, frac_deb_death
       NAMELIST /namibmfiles/ fileanchovy, filesardine
       NAMELIST /ibm_species/ duration_ibm
       NAMELIST /ibm_external_forcing/ catch, fileprobadistrib, nbSizeClass, sizemin

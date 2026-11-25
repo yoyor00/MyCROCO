@@ -61,7 +61,6 @@
 :                 calculate food availability from file_food
 : ffix          : constant DEB functional response, f = X/(X + K), used when
 :                 F_Fix is true
-: file_NBSS     : NetCDF file containing NBSS slope and intercept fields (from MARS, not linked with CROCO yet)
 : file_food     : NetCDF file containing offline zooplankton food fields
 : frac_deb_death: if true, DEB starvation removes a fraction of the individuals
 :                 represented by a particle; if false, it removes the entire particle
@@ -72,7 +71,6 @@
       debuse    =.true.
       F_Fix     =.true.
       ffix      = 0.8
-      file_NBSS =''
       file_food ='' 
       frac_deb_death = .false./
 :
