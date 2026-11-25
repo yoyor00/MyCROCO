@@ -31,7 +31,7 @@
      &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg, nrpfdiags_eddy_avg,
      &     diags_eddyname_avg
 #endif
-
+      use tools_calendar, only: tool_check_output_origin
 # ifdef NC4PAR
       use mpi
 # endif
@@ -62,6 +62,7 @@
 #  define rec_per_file nrpfdiags_eddy
 #  define wrt wrtdiags_eddy
 #  define vidTime diags_eddyTime
+#  define vidOrigin dia_eddy_origin_in_sec
 #  define vidTstep diags_eddyTstep
 #  define viddiags_zz diags_eddyzz
 #  define viddiags_uu diags_eddyuu
@@ -85,6 +86,7 @@
 #  define rec_per_file nrpfdiags_eddy_avg
 #  define wrt wrtdiags_eddy_avg
 #  define vidTime diags_eddyTime_avg
+#  define vidOrigin dia_eddy_avg_origin_in_sec
 #  define vidTstep diags_eddyTstep_avg
 #  define viddiags_zz diags_eddyzz_avg
 #  define viddiags_uu diags_eddyuu_avg
@@ -276,6 +278,8 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
+        vidOrigin=start_date_in_sec
+
 ! eddy diagnostics variables.
 ! -------- ----------- --------
 
@@ -311,6 +315,7 @@
 
            call nf_add_attribute(ncid,viddiags_zz(itrc)
      &            ,vname(:,indxeddyzz+itrc-1),5,NF_FOUT, ierr)
+
 
 !------------------------------
 ! indxeddyuu
@@ -826,6 +831,9 @@
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
 
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+
 
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
@@ -1103,6 +1111,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 # undef viddiags_zz

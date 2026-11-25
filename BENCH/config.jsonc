@@ -92,6 +92,7 @@
       "OVERFLOW",
       "RIVER_PSOURCE_MASS",
       "RIVER",
+      "SOLITON",
       "UPWELLING",
     ],
     "@realist_base": [

@@ -30,6 +30,7 @@
      &     ntsdiags_vrt_avg, nwrtdiags_vrt_avg, nrpfdiags_vrt_avg,
      &     diags_vrtname_avg
 #endif
+      use tools_calendar, only: tool_check_output_origin
 
 # ifdef NC4PAR
       use mpi
@@ -65,6 +66,7 @@
 #  define rec_per_file nrpfdiags_vrt
 #  define wrt wrtdiags_vrt
 #  define vidTime diags_vrtTime
+#  define vidOrigin dia_vrt_origin_in_sec
 #  define vidTstep diags_vrtTstep
 
 #  define viddiags_vrtXadv diags_vrtXadv
@@ -90,6 +92,7 @@
 #  define rec_per_file nrpfdiags_vrt_avg
 #  define wrt wrtdiags_vrt_avg
 #  define vidTime diags_vrtTime_avg
+#  define vidOrigin dia_vrt_avg_origin_in_sec
 #  define vidTstep diags_vrtTstep_avg
 
 #  define viddiags_vrtXadv diags_vrtXadv_avg
@@ -283,6 +286,8 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
+        vidOrigin=start_date_in_sec
+!
 ! Momentum diagnostics variables.
 ! -------- ----------- --------
 
@@ -768,7 +773,9 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
-
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+!
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
 !
@@ -1031,6 +1038,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 # undef viddiags_vrtXadv
