@@ -191,6 +191,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
              in the case of offline reading (#563) - online calculation of 
              daily mean of qsr needed by PISCES must be implemented
            - Fix no update of POC/GOC prod by diazotropy - minor effect (#583)
+           - Fix micro and meso zooplankton o2 consumption with and without XIOS (#619)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.

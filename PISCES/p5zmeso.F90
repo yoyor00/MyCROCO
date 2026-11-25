@@ -592,7 +592,11 @@ CONTAINS
                zw3d(ji,jj,jkR) =  zgrazing2(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
             END_3D
             CALL iom_put( "GRAZ2" , zw3d )  ! Total grazing of phyto by zooplankton
-            CALL iom_put( "MesoZo2" , zw3d * ( 1. - epsher2 - unass2c ) * (-o2ut) * ssigma2 ) ! o2 consumption by Microzoo
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jkR) =  (-o2ut) * zgrarem(ji,jj,jk) &
+            &                     * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+            END_3D
+            CALL iom_put( "MesoZo2" , zw3d ) ! o2 consumption by Microzoo
             !
             DO_3D( 0, 0, 0, 0, 1, jpk)
                zw3d(ji,jj,jkR) =  zgraref(ji,jj,jk) * 1e9 * 1.e+3 * rfact2r * tmask(ji,jj,jk)
@@ -617,8 +621,8 @@ CONTAINS
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
          trc3d(ji,jj,jkR,jp_grapoc2) = zgrazing2(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by mesozoo
-         trc3d(ji,jj,jkR,jp_meso2)   = zgrazing2(ji,jj,jk) * ( 1. - epsher2 - unass2c ) &
-            &             * (-o2ut) * ssigma2 * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Mesozoo
+         trc3d(ji,jj,jkR,jp_meso2)   = (-o2ut) * zgrarem(ji,jj,jk) &
+            &                          * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Mesozoo
       END_3D
 #endif
      IF( l_dia_graz ) DEALLOCATE( zgrazing2 )
