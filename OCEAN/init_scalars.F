@@ -97,6 +97,10 @@ C$OMP END PARALLEL
       knew=1
 
       ntstart=1
+! Safe default forward-start step, in case get_initial is never called, 
+! e.g. ANA_INITIAL cold starts (nrrec==0): mirrors get_initial's own fallback
+! "if (forw_start.eq.0) forw_start=ntstart".
+      forw_start=ntstart
 #ifdef SOLVE3D
       nstp=1
       nrhs=1
@@ -2050,7 +2054,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
 #endif /* SOLVE3D */
 
 
-#ifdef EXACT_RESTART
 
 CR      write(stdout,'(1x,A,I3)') 'indxrufrc =',indxrufrc
       vname(1,indxrufrc)='rufrc                                   '
@@ -2171,8 +2174,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxdRde =',indxdRde
       vname(6,indxvmaskwet)='lat_v lon_v                            '
       vname(7,indxvmaskwet)='                                       '
 # endif
-
-#endif /* EXACT_RESTART */
 
 CR      write(stdout,'(1x,A,I3)') 'indxSSH =',indxSSH
       vname(1,indxSSH)='SSH                                       '

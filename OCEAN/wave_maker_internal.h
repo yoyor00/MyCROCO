@@ -96,7 +96,7 @@
 !--------------------------------------------------------------------
 !
 #ifdef W_FRC_BRY
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           do k=1,N-1
             do j=JstrR,JendR
               bvf0bry_west(j,k)=bvf(0,j,k) ! init. stratif.
@@ -129,7 +129,7 @@
 !--------------------------------------------------------------------
 !
 #ifdef T_FRC_BRY
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           do k=1,N
             do j=JstrR,JendR
               do itrc=1,NT
@@ -140,7 +140,7 @@
         endif
 # if !defined NONLIN_EOS && !defined SALINITY \
                             &&  defined TEMPERATURE
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
           do k=1,N
             do j=JstrR,JendR
               t0bry_west(j,k)=t(0,j,k,1,itemp) ! save initial

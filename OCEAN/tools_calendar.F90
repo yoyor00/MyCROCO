@@ -63,7 +63,7 @@ MODULE tools_calendar
 
    PUBLIC :: tool_sectodat, tool_datosec, tool_datetosec, &
              tool_decompdate, tool_origindate, init_tools_calendar, &
-             tool_xios_calendar_type
+             tool_xios_calendar_type, tool_check_output_origin
 
    ! Module-level copies of namelist calendar settings.
    ! Set once via init_tools_calendar (called from init_calendar).
@@ -584,7 +584,7 @@ CONTAINS
       INTEGER, INTENT(out) :: dd, mm, yyyy, hh, minu, sec
       REAL(kind=rlg), INTENT(out), OPTIONAL :: frac_sec
 
-      INTEGER :: dlen
+      INTEGER :: dlen, ios
       REAL(kind=rlg) :: frac_local
 
       ! Defaults for optional fields
@@ -606,19 +606,36 @@ CONTAINS
          call tool_fatal_stop()
       END IF
 
-      READ (date(1:4),   '(i4)') yyyy
-      IF (dlen >= 7)  READ (date(6:7),   '(i2)') mm
-      IF (dlen >= 10) READ (date(9:10),  '(i2)') dd
-      IF (dlen >= 13) READ (date(12:13), '(i2)') hh
-      IF (dlen >= 16) READ (date(15:16), '(i2)') minu
-      IF (dlen >= 19) READ (date(18:19), '(i2)') sec
+      READ (date(1:4), '(i4)', IOSTAT=ios) yyyy
+      IF (ios /= 0) CALL decompdate_fatal(date, 'year')
+      IF (dlen >= 7) THEN
+         READ (date(6:7), '(i2)', IOSTAT=ios) mm
+         IF (ios /= 0) CALL decompdate_fatal(date, 'month (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 10) THEN
+         READ (date(9:10), '(i2)', IOSTAT=ios) dd
+         IF (ios /= 0) CALL decompdate_fatal(date, 'day (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 13) THEN
+         READ (date(12:13), '(i2)', IOSTAT=ios) hh
+         IF (ios /= 0) CALL decompdate_fatal(date, 'hour (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 16) THEN
+         READ (date(15:16), '(i2)', IOSTAT=ios) minu
+         IF (ios /= 0) CALL decompdate_fatal(date, 'minute (must be 2 digits, "06" not "6")')
+      END IF
+      IF (dlen >= 19) THEN
+         READ (date(18:19), '(i2)', IOSTAT=ios) sec
+         IF (ios /= 0) CALL decompdate_fatal(date, 'second (must be 2 digits, "06" not "6")')
+      END IF
       IF (dlen > 19) THEN
          IF (date(20:20) /= '.') THEN
             MPI_master_only write (*, '(/1x,3A/)') &
                'TOOL_DECOMPDATE ERROR: invalid trailing characters after seconds in date: "', TRIM(date), '"'
             call tool_fatal_stop()
          END IF
-         READ (date(20:dlen), *) frac_local
+         READ (date(20:dlen), *, IOSTAT=ios) frac_local
+         IF (ios /= 0) CALL decompdate_fatal(date, 'fractional seconds')
       END IF
       IF (PRESENT(frac_sec)) frac_sec = frac_local
 
@@ -627,6 +644,21 @@ CONTAINS
             'TOOL_DECOMPDATE ERROR: invalid month in date: "', TRIM(date), '"'
          call tool_fatal_stop()
       END IF
+
+   CONTAINS
+
+      SUBROUTINE decompdate_fatal(date, field)
+      !! ** Purpose : report a field that failed its guarded READ above
+      !!              (IOSTAT/=0) and abort, the same way every other
+      !!              malformed-date case in this module does.
+         IMPLICIT NONE
+         CHARACTER(len=*), INTENT(in) :: date, field
+
+         MPI_master_only write (*, '(/1x,4A/)') &
+            'TOOL_DECOMPDATE ERROR: cannot parse ', TRIM(field), ' in date: "', TRIM(date)//'"'
+         call tool_fatal_stop()
+
+      END SUBROUTINE decompdate_fatal
 
    END SUBROUTINE tool_decompdate
 
@@ -913,6 +945,52 @@ CONTAINS
       IF (PRESENT(secs_per_unit)) secs_per_unit = unit_factor
 
    END SUBROUTINE tool_origindate
+
+   !====================================================================
+   SUBROUTINE tool_check_output_origin(netcdfid, varid, start_date_in_sec, &
+                                        origin_in_sec)
+   !! ** Purpose : called when an output file (restart, history, averages,
+   !!              diagnostics, surf...) already exists and is being
+   !!              reopened to append new records. Reads back the origin
+   !!              date already embedded in its time variable (the 'units'
+   !!              attribute) and returns it as origin_in_sec, so that the
+   !!              caller writes new records against the SAME epoch as the
+   !!              records already in the file, instead of silently
+   !!              recomputing a new reference from the current run's
+   !!              start_date. Warns (does not abort) if the two differ,
+   !!              since this normally means start_date was changed
+   !!              between two legs of the same restarted run.
+#if defined MPI
+      USE scalars, ONLY: mynode
+#endif
+      USE netcdf
+      IMPLICIT NONE
+
+      INTEGER, INTENT(in)         :: netcdfid, varid
+      REAL(kind=rlg), INTENT(in)  :: start_date_in_sec
+      REAL(kind=rlg), INTENT(out) :: origin_in_sec
+
+      CHARACTER*40  :: varname
+      CHARACTER*250 :: ncfile
+      INTEGER       :: ierr3, ierr4, pathlen
+
+      CALL tool_origindate(netcdfid, varid, origin_in_sec)
+
+      IF (ABS(origin_in_sec - start_date_in_sec) .GT. 0.001_rlg) THEN
+         varname = 'time'
+         ierr3 = nf90_inquire_variable(netcdfid, varid, name=varname)
+         ncfile = '(unknown file)'
+         ierr4 = nf90_inq_path(netcdfid, path=ncfile, pathlen=pathlen)
+         MPI_master_only write (*, '(/1x,2A/6x,2A/6x,2A/6x,2A/6x,A/)') &
+            'TOOL_CHECK_OUTPUT_ORIGIN WARNING: this file already holds ', &
+            'records written with a different start_date than the current run.', &
+            'Affected file   : ', TRIM(ncfile), &
+            'File origin     : ', tool_sectodat(origin_in_sec), &
+            'Current start_date: ', tool_sectodat(start_date_in_sec), &
+            'New records keep the file''s original origin, so its time axis stays consistent.'
+      END IF
+
+   END SUBROUTINE tool_check_output_origin
 
    !====================================================================
    SUBROUTINE init_tools_calendar(cal_type, s_date)

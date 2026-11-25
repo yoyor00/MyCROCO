@@ -118,7 +118,9 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !-----------------------------------------------------------------------
 !     Time
 !-----------------------------------------------------------------------
-      ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime, record, time)
+      ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime, record, time
+     &  - ablhis_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
@@ -194,7 +196,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    u_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_u_abl)) then
-        work3dabl=u_abl(:,:,:,nt_a)
+        work3dabl=u_abl(:,:,:,nt_n)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_u_abl,
      &                   vname_abl1d(1,indxabl_u_abl),
      &                   record,abl3dvar,type)
@@ -203,7 +205,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    v_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_v_abl)) then
-        work3dabl=v_abl(:,:,:,nt_a)
+        work3dabl=v_abl(:,:,:,nt_n)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_v_abl,
      &                   vname_abl1d(1,indxabl_v_abl),
      &                   record,abl3dvar,type)
@@ -212,7 +214,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    t_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_t_abl)) then
-        work3dabl=tq_abl(:,:,:,nt_a,jp_ta)
+        work3dabl=tq_abl(:,:,:,nt_n,jp_ta)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_t_abl,
      &                   vname_abl1d(1,indxabl_t_abl),
      &                   record,abl3dvar,type)
@@ -221,7 +223,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    q_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_q_abl)) then
-        work3dabl=tq_abl(:,:,:,nt_a,jp_qa)
+        work3dabl=tq_abl(:,:,:,nt_n,jp_qa)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_q_abl,
      &                   vname_abl1d(1,indxabl_q_abl),
      &                   record,abl3dvar,type)
@@ -230,7 +232,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    tke_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_tke_abl)) then
-        work3dabl=tke_abl(:,:,:,nt_a)
+        work3dabl=tke_abl(:,:,:,nt_n)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_tke_abl,
      &                   vname_abl1d(1,indxabl_tke_abl),
      &                   record,abl3dvar,type)
@@ -239,7 +241,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    mxlm_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_mxlm_abl)) then
-        work3dabl=mxlm_abl(:,:,:,nt_a)
+        work3dabl=mxlm_abl(:,:,:,nt_n)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_mxlm_abl,
      &                   vname_abl1d(1,indxabl_mxlm_abl),
      &                   record,abl3dvar,type)
@@ -248,7 +250,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    mxld_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_mxld_abl)) then
-        work3dabl=mxld_abl(:,:,:,nt_a)
+        work3dabl=mxld_abl(:,:,:,nt_n)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_mxld_abl,
      &                   vname_abl1d(1,indxabl_mxld_abl),
      &                   record,abl3dvar,type)
@@ -257,7 +259,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    avm_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_avm_abl)) then
-        work3dabl=avm_abl(:,:,:,nt_a)
+        work3dabl=avm_abl(:,:,:,nt_n)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_avm_abl,
      &                   vname_abl1d(1,indxabl_avm_abl),
      &                   record,abl3dvar,type)
@@ -266,7 +268,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    avt_abl
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_avt_abl)) then
-        work3dabl=avt_abl(:,:,:,nt_a)
+        work3dabl=avt_abl(:,:,:,nt_n)
         call fillvalue3d(work3dabl,ncidablhis,ablhis_avt_abl,
      &                   vname_abl1d(1,indxabl_avt_abl),
      &                   record,abl3dvar,type)
@@ -275,7 +277,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !    ablh
 !-----------------------------------------------------------------------
       if (wrtabl(indxabl_ablh_abl)) then
-        work2d=ablh(:,:,nt_a)
+        work2d=ablh(:,:,nt_n)
         call fillvalue2d(work2d,ncidablhis,ablhis_ablh_abl,
      &                   vname_abl1d(1,indxabl_ablh_abl),
      &                   record,r2dvar,type)

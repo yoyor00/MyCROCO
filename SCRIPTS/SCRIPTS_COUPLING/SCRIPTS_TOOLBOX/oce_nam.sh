@@ -91,19 +91,18 @@ do
     echo "date end is : "
     echo  $DATE_END_JOB
 
+    ini_times=$(ncdump -v time "croco_ini.nc${agrif_ext}" | grep '^[[:space:]]*time =' | cut -d '=' -f 2 | tr -d ' ;')
+
+    idx_ini=1
+    idx_rst=-1
+    scrumt=${times%%,*}
+
     if [[ ${EXACT_RESTART} == "TRUE" ]]; then
         idx_rst=0
-	if [[ ${RESTART_FLAG} == "TRUE" ]]; then
-	    idx_ini=2
-            scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ',' -f 2 | cut -d ';' -f 1)
-	else
-            idx_ini=1
-	    scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-	fi
-    else
-        scrumt=$( ncdump -v time croco_ini.nc${agrif_ext}| grep "time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-	idx_ini=1
-	idx_rst=-1
+        if [[ ${RESTART_FLAG} == "TRUE" ]]; then
+            idx_ini=2
+            scrumt=${times##*,}
+        fi
     fi
 
     printf "Find vertical streching values from croco_ini.nc\n"

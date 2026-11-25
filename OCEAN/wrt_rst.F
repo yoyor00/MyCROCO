@@ -35,14 +35,12 @@
 #if defined GLS_MIXING || defined LMD_MIXING
 # include "mixing.h"
 #endif
+#include "coupling.h"
+#if defined M3FAST
+# include "nbq.h"
+#endif
 #ifdef DIAGNOSTICS_TS_MLD
 # include "diagnostics.h"
-#endif
-#if defined EXACT_RESTART
-# include "coupling.h"
-# if defined M3FAST
-#  include "nbq.h"
-# endif
 #endif
 #ifdef SEDIMENT
 # include "sediment.h"
@@ -228,7 +226,7 @@
 ! Time.
 !
       ierr=nf_put_var1_FTYPE (ncidrst, rstTime, record, time
-     &  - start_date_in_sec
+     &  - rst_origin_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -279,7 +277,7 @@
 !
 ! 3D U ABL
 !
-      ierr=nf_fwrite(u_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblU,
+      ierr=nf_fwrite(u_abl(START_2D_ARRAY,1,nt_n), ncidrst, rstAblU,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
@@ -290,7 +288,7 @@
 !
 ! 3D V ABL
 !
-      ierr=nf_fwrite(v_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblV,
+      ierr=nf_fwrite(v_abl(START_2D_ARRAY,1,nt_n), ncidrst, rstAblV,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
@@ -301,7 +299,7 @@
 !
 ! 3D T ABL
 !
-      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_a,jp_ta), ncidrst, rstAblT,
+      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_n,jp_ta), ncidrst, rstAblT,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
@@ -312,7 +310,7 @@
 !
 ! 3D Q ABL
 !
-      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_a,jp_qa), ncidrst, rstAblQ,
+      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_n,jp_qa), ncidrst, rstAblQ,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
@@ -323,7 +321,7 @@
 !
 ! 3D TKE ABL
 !
-      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblTke,
+      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nt_n), ncidrst, rstAblTke,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
@@ -334,7 +332,7 @@
 !
 ! 3D AVM ABL
 !
-      ierr=nf_fwrite(avm_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblAvm,
+      ierr=nf_fwrite(avm_abl(START_2D_ARRAY,1,nt_n), ncidrst, rstAblAvm,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
@@ -345,7 +343,7 @@
 !
 ! 3D AVT ABL
 !
-      ierr=nf_fwrite(avt_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblAvt,
+      ierr=nf_fwrite(avt_abl(START_2D_ARRAY,1,nt_n), ncidrst, rstAblAvt,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
@@ -356,7 +354,7 @@
 !
 ! 3D MXLD ABL
 !
-      ierr=nf_fwrite(mxld_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblMxld,
+      ierr=nf_fwrite(mxld_abl(START_2D_ARRAY,1,nt_n), ncidrst, rstAblMxld,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
@@ -367,7 +365,7 @@
 !
 ! 3D MXLM ABL
 !
-      ierr=nf_fwrite(mxlm_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblMxlm,
+      ierr=nf_fwrite(mxlm_abl(START_2D_ARRAY,1,nt_n), ncidrst, rstAblMxlm,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
@@ -378,7 +376,7 @@
 !
 ! 2D ABLH
 !
-      ierr=nf_fwrite(ablh(START_2D_ARRAY,nt_a), ncidrst, rstAblAblh,
+      ierr=nf_fwrite(ablh(START_2D_ARRAY,nt_n), ncidrst, rstAblAblh,
      &                                        record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
@@ -580,7 +578,6 @@
 #  endif
 # endif
 
-# ifdef EXACT_RESTART
 !
 ! Write out forcing for barotropic equations in XI-direction.
 !
@@ -741,7 +738,6 @@
           goto 99                                         !--> ERROR
       endif
 #  endif /* WET_DRY */
-# endif /* EXACT_RESTART */
 
 # ifdef SEDIMENT
 !

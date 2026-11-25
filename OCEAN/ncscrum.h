@@ -640,7 +640,6 @@
       parameter (indxbvfLast=indxSSH)
 #endif
 
-#ifdef EXACT_RESTART
       integer indxrufrc
       parameter (indxrufrc=indxbvfLast+1)
       integer indxrvfrc
@@ -688,12 +687,6 @@
       integer indxSUSTRLast
       parameter (indxSUSTRLast=indxSVSTR)
 # endif
-#else
-      integer indxSUSTR, indxSVSTR
-      parameter (indxSUSTR=indxbvfLast+1, indxSVSTR=indxSUSTR+1)
-      integer indxSUSTRLast
-      parameter (indxSUSTRLast=indxSVSTR)
-#endif
 
 #ifdef SOLVE3D
       integer indxShflx, indxShflx_rsw
@@ -1132,7 +1125,6 @@
       integer rstSed(NST+2)
 # endif
 #endif
-#ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
 # ifdef M3FAST
       integer rstru_nbq,rstrv_nbq
@@ -1145,7 +1137,6 @@
 # ifdef WET_DRY
       integer rstumaskwet,rstvmaskwet
 # endif
-#endif
 #ifdef MORPHODYN
       integer rstHm
 #endif
@@ -1689,7 +1680,6 @@
      &      , rstBustr,rstBvstr
 #  endif
 # endif
-# ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
 #  ifdef M3FAST
      &      , rstru_nbq,rstrv_nbq
@@ -1702,7 +1692,6 @@
 #  ifdef WET_DRY
      &      , rstumaskwet,rstvmaskwet
 #  endif
-# endif
 
 # ifdef SEDIMENT
      &                         , rstSed
@@ -2118,6 +2107,25 @@
 
       REAL(kind=8) :: origin_date_in_sec, origin_secinunit
       REAL(kind=8) :: start_date_in_sec
+!
+! Per-output-file time-axis origin (seconds). Set to start_date_in_sec
+! when a file is (re)created, or to the origin already embedded in the
+! file's time variable when reopening an existing file to append new
+! records (see tool_check_output_origin), so that every record written
+! to a given file stays expressed against the same epoch.
+!
+      REAL(kind=8) :: rst_origin_in_sec, his_origin_in_sec
+     &              , avg_origin_in_sec
+     &              , sta_origin_in_sec
+     &              , dia_origin_in_sec, dia_avg_origin_in_sec
+     &              , dia_pv_origin_in_sec, dia_pv_avg_origin_in_sec
+     &              , dia_vrt_origin_in_sec, dia_vrt_avg_origin_in_sec
+     &              , dia_ek_origin_in_sec, dia_ek_avg_origin_in_sec
+     &              , dia_eddy_origin_in_sec, dia_eddy_avg_origin_in_sec
+     &              , diaM_origin_in_sec, diaM_avg_origin_in_sec
+     &              , dia_bio_origin_in_sec, dia_bio_avg_origin_in_sec
+     &              , ablhis_origin_in_sec, ablavg_origin_in_sec
+     &              , surf_origin_in_sec, surf_avg_origin_in_sec
 
       character*180 usrname
      &         ,   qbarname, tsrcname
@@ -2178,6 +2186,18 @@
      &             origin_date
      &         ,   origin_date_in_sec
      &         ,   start_date_in_sec
+     &         ,   rst_origin_in_sec, his_origin_in_sec
+     &         ,   avg_origin_in_sec
+     &         ,   sta_origin_in_sec
+     &         ,   dia_origin_in_sec, dia_avg_origin_in_sec
+     &         ,   dia_pv_origin_in_sec, dia_pv_avg_origin_in_sec
+     &         ,   dia_vrt_origin_in_sec, dia_vrt_avg_origin_in_sec
+     &         ,   dia_ek_origin_in_sec, dia_ek_avg_origin_in_sec
+     &         ,   dia_eddy_origin_in_sec, dia_eddy_avg_origin_in_sec
+     &         ,   diaM_origin_in_sec, diaM_avg_origin_in_sec
+     &         ,   dia_bio_origin_in_sec, dia_bio_avg_origin_in_sec
+     &         ,   ablhis_origin_in_sec, ablavg_origin_in_sec
+     &         ,   surf_origin_in_sec, surf_avg_origin_in_sec
      &         ,   origin_secinunit
      &         ,   usrname
      &         ,   qbarname, tsrcname

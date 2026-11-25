@@ -98,9 +98,12 @@ MODULE croco_namelist
    !! time step that is not a multiple of `nrpf*`.
 
    ! &croco_restart
-   integer :: nrst = 720
-   !! Number of time-steps between writing of restart fields
-   integer :: nrpfrst = -1
+   integer :: nrst = -1
+   !! Number of time-steps between writing of restart fields.
+   !! If `nrst = -1`, it is forced to the number of time-steps of the
+   !! current run (`ntimes-ntstart+1`), so that a restart file is
+   !! written only once, at the end of the simulation.
+   integer :: nrpfrst = 0
    !! Restart file cycling switch:
    !!
    !!  - 0: write several records every NRST time steps
@@ -1046,18 +1049,19 @@ MODULE croco_namelist
 # endif
 #endif
 
-# if defined SOLVE3D || defined RIP
-   ! &croco_auxiliary_history_fields  (SOLVE3D basics + surface stress)
-   logical :: out_his_rho = .false.
-   logical :: out_his_omega = .false.
-   logical :: out_his_w = .false.
-   logical :: out_his_akv = .false.
+! &croco_auxiliary_history_fields  (surface/bottom stress, always available)
    logical :: out_his_bostr = .false.
    logical :: out_his_bustr = .false.
    logical :: out_his_bvstr = .false.
    logical :: out_his_wstr = .false.
    logical :: out_his_ustr = .false.
    logical :: out_his_vstr = .false.
+# if defined SOLVE3D
+   ! &croco_auxiliary_history_3d_fields
+   logical :: out_his_rho = .false.
+   logical :: out_his_omega = .false.
+   logical :: out_his_w = .false.
+   logical :: out_his_akv = .false.
    logical :: out_his_z_r = .false.
    logical :: out_his_z_w = .false.
 # endif
@@ -1129,20 +1133,23 @@ MODULE croco_namelist
    ! &croco_morphodyn_history_fields
    logical :: out_his_hm = .true.
 # endif
-# if defined AVERAGES && defined SOLVE3D
-   ! &croco_auxiliary_averages_fields  (SOLVE3D basics + surface stress)
-   logical :: out_avg_rho = .false.
-   logical :: out_avg_omega = .false.
-   logical :: out_avg_w = .false.
-   logical :: out_avg_akv = .false.
+# if defined AVERAGES
+   ! &croco_auxiliary_averages_fields  (surface/bottom stress, always available when AVERAGES)
    logical :: out_avg_bostr = .false.
    logical :: out_avg_bustr = .false.
    logical :: out_avg_bvstr = .false.
    logical :: out_avg_wstr = .false.
    logical :: out_avg_ustr = .false.
    logical :: out_avg_vstr = .false.
+#  if defined SOLVE3D
+   ! &croco_auxiliary_averages_3d_fields
+   logical :: out_avg_rho = .false.
+   logical :: out_avg_omega = .false.
+   logical :: out_avg_w = .false.
+   logical :: out_avg_akv = .false.
    logical :: out_avg_z_r = .false.
    logical :: out_avg_z_w = .false.
+#  endif
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_averages_fields

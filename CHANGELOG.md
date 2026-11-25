@@ -86,6 +86,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - SUBSTANCE/MUSTANG/RAIN_FLUX : fix restart not bit-exact (Issue #610)
 
+- OUTPUTS : fix output time axis inconsistency when appending to an existing
+  restart/history/averages/diagnostics/surf/abl/station file with a different
+  `start_date` than the one used when the file was created (#611)
+
 - PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
   which caused the river discharge Qsrc to be applied twice to u/v in
   step3d_uv2.F (once through PSOURCE_MASS's mass-flux treatment and once
@@ -115,7 +119,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   re-exporting `param.h` constants and a module array named `omega`
   colliding with the `omega` subroutine (#605)
 
-- ANA_GRID : fix AGRIF `conv` failure, 72-column fixed-form rewrap (#613)
+- AGRIF `conv` failure, 72-column fixed-form rewrap in ana_grid.F and ana_initial.F (#613 #612)
 
 - DIAGNOSTICS : tracer budget fixes (Issue #320)
 	- Taver\_mld averages were not accumulated, and Taver\_mld was not computed without t3dmix routines
@@ -167,6 +171,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
 - COUPLING : Fix missing restart file update for OASIS (#501). 
 - COUPLING : Fix PSMILE_INCDIR definition in jobcomp to support all OASIS3-MCT versions (#480)
+- ABL1D : Fix ABL1D exact restart and dates in ABL his/avg files (#553)
 
 - OBC_PATM : fix wrong i-index in get_bry.F, zetabry_west atmospheric pressure correction used Istr instead of IstrR (#530)
 
@@ -207,6 +212,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NH : Fix rhs typo (#538)
 
 ### Changed
+- Default namelist values changed following EXACT_RESTART removal: `nrst`
+  now defaults to -1 (restart file written once, at the end of the run,
+  instead of every 720 time steps) and `nrpfrst` now defaults to 0 (#553)
+
 - OUTPUTS : output variable indices in ncscrum.h no longer differ between
   2D and 3D configurations (#500)
 
@@ -250,6 +259,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (was raw floating-point days since origin).
   TOOL_ORIGINDATE error/warning messages now report the affected netCDF
   file and variable (#600).
+  TOOL_DECOMPDATE stops with a clear error instead of crashing with a raw Fortran
+  "Bad value during integer read" in case of non CF-compliant date (#620)
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
@@ -259,8 +270,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
+  CROCO now stops with an explicit error if the namelist file is missing,
+  instead of silently continuing with default values for every parameter
+  (Issue #580)
   The per-source namelist groups are not printed when there is no source (#608)
-  (#552, #568, #570, #572, #573)
+  (#552, #568, #570, #572, #573, #578)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -328,6 +342,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
+- EXACT_RESTART cpp key has been removed, exact bit-reproducible restart
+  is now always active by default (#553)
+
 - AVERAGES_K cpp key has been removed (Issue #374). 
    If deactivated, averaged vertical mixing coefficients AKv, AKt and AKs were not saved.
    Removed because redundant with booleans out_avg_akv, out_avg_akt and out_avg_aks in namelist. 

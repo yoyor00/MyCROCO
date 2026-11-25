@@ -29,7 +29,7 @@
 # ifdef SOLVE3D
       call ana_initial_3d_tile (Istr,Iend,Jstr,Jend)
 # endif
-# ifdef ANA_INITIAL
+# if defined ANA_INITIAL && defined SOLVE3D
       if (trim(testcase_name) == 'ANA_JET') then
         call ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
       endif
@@ -78,10 +78,6 @@
 
 #ifdef ANA_INITIAL
 
-# ifdef EXACT_RESTART
-       if (nrrec.eq.0) forw_start=1
-# endif
-      
 !$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
@@ -482,8 +478,10 @@
           cmax = 0.D0
           do j=JstrV,Jend-1
             do i=IstrU,Iend-1
-              cx = dt*( MAX(u(i+1,j,N,1),0.)-MIN(u(i,j,N,1),0.) )*pm(i,j)
-              cy = dt*( MAX(v(i,j+1,N,1),0.)-MIN(v(i,j,N,1),0.) )*pn(i,j)
+              cx = dt*( MAX(u(i+1,j,N,1),0.)
+     &                -MIN(u(i,j,N,1),0.) )*pm(i,j)
+              cy = dt*( MAX(v(i,j+1,N,1),0.)
+     &                -MIN(v(i,j,N,1),0.) )*pn(i,j)
               cmax = MAX( cx+cy, cmax )
             enddo
           enddo
@@ -544,9 +542,9 @@
                 v(i,j,k,2)  = 0.
 #   ifdef NBQ
                 wz(i,j,k,1) = -0.01*du*hup0*
-     &                                (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                    *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
-     &                                    *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+     &                        (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
+     &                        *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                        *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
                 wz(i,j,k,2) = wz(i,j,k,1)
 #   endif
               enddo
@@ -1138,7 +1136,8 @@
             do j=JR_RANGE
               do i=IR_RANGE
 # ifdef TEMPERATURE
-                t(i,j,k,1,itemp)=(288.95-273.16)+1.5*TANH(xr(i,j)/100.E+3)
+                t(i,j,k,1,itemp)=(288.95-273.16)
+     &                          +1.5*TANH(xr(i,j)/100.E+3)
                 t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 # endif /* TEMPERATURE */
 # ifdef SALINITY
@@ -1738,6 +1737,7 @@
       end
 #endif /* SOLVE3D */
 
+#ifdef SOLVE3D
 !======================================================================
 !
       subroutine ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
@@ -2291,4 +2291,4 @@ C$OMP BARRIER
 !$acc end kernels
       return
       end
-
+#endif /* SOLVE3D */
