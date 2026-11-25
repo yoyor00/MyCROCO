@@ -114,6 +114,9 @@ RSTFLAG=0
 NY_COLDSTART=2005
 NM_COLDSTART=1
 
+# Flag to deal with PISCES or not
+PISCES=0
+
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited
@@ -140,6 +143,7 @@ CLMFILE=${MODEL}_clm
 BRYFILE=${MODEL}_bry
 RNFFILE=${MODEL}_runoff
 TIDEFILE=${MODEL}_frc
+PISFILE=${MODEL}_frcbio
 #
 if [ ! -e $MSSOUT ] ; then
   mkdir $MSSOUT
@@ -160,6 +164,9 @@ if [[ $RSTFLAG != 0 ]]; then
     TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
   fi
   RSTFILE=${MODEL}_rst_${TIME}
+  if [[ $PISCES != 0 ]]; then
+     PISRSTFILE=${MODEL}_rst_pisces_${TIME}
+  fi
 fi
 #
 if [[ $TIME_SCHED == 0 ]]; then
@@ -203,6 +210,11 @@ while [ $LEVEL != $NLEVEL ]; do
     echo "Getting ${RSTFILE}.nc${ENDF} from $MSSOUT"
     $CP -f $MSSOUT/${RSTFILE}.nc${ENDF} $SCRATCHDIR
     $CP -f ${RSTFILE}.nc${ENDF} ${INIFILE}.nc${ENDF}
+    if [[ $PISCES != 0 ]]; then
+       echo "Getting ${PISRSTFILE}.nc${ENDF} from $MSSOUT"
+       $CP -f $MSSOUT/${PISRSTFILE}.nc${ENDF} $SCRATCHDIR
+       $CP -f ${PISRSTFILE}.nc${ENDF} croco_rst_pisces_ini.nc${ENDF}
+     fi
   fi
   LEVEL=$((LEVEL + 1))
 done
@@ -264,6 +276,10 @@ while [ $NY != $NY_END ]; do
       if [[ ${TIDE_FILES} == 1 ]]; then
         echo "Getting ${TIDEFILE}_${TIDE_FRC}.nc${ENDF} from $MSSDIR"
         $LN -sf $MSSDIR/${TIDEFILE}_${TIDE_FRC}.nc${ENDF} ${TIDEFILE}.nc${ENDF}
+      fi
+      if [[ ${PISCES} != 0 ]]; then
+         echo "Getting ${PISFILE}.nc${ENDF} from $MSSDIR"
+         $LN -sf $MSSDIR/${PISFILE}.nc${ENDF} ${PISFILE}.nc${ENDF}
       fi
 
       LEVEL=$((LEVEL + 1))
@@ -451,6 +467,9 @@ while [ $NY != $NY_END ]; do
       $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}.nc${ENDF}
       $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
+      if [[ $PISCES != 0 ]]; then
+         $MV -f croco_pisces_rst.nc${ENDF} ${MSSOUT}/${MODEL}_pisces_rst_${TIME}.nc${ENDF}
+      fi
       [ -f ${MODEL}_avg.nc${ENDF} ] && $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
       [ -f ${MODEL}_dia.nc${ENDF} ] && $MV -f ${MODEL}_dia.nc${ENDF} ${MSSOUT}/${MODEL}_dia_${TIME}.nc${ENDF}
       [ -f ${MODEL}_dia_avg.nc${ENDF} ] && $MV -f ${MODEL}_dia_avg.nc${ENDF} ${MSSOUT}/${MODEL}_dia_avg_${TIME}.nc${ENDF}

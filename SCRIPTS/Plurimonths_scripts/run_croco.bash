@@ -80,6 +80,9 @@ ND_HIS=-1
 #   restart (if = -1 set equal to NUMTIMES)
 ND_RST=-1
 
+# Flag to deal with PISCES or not
+PISCES=0
+
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited
@@ -105,6 +108,7 @@ BRYFILE=${MODEL}_bry.nc
 CLMFILE=${MODEL}_clm.nc
 INIFILE=${MODEL}_ini.nc
 RNFFILE=${MODEL}_runoff.nc
+PISFILE=${MODEL}_frcbio.nc
 #
 #  Restart file - RSTFLAG=0 --> No Restart
 #                 RSTFLAG=1 --> Restart
@@ -130,6 +134,9 @@ if [[ $RSTFLAG != 0 ]]; then
     TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
   fi
   RSTFILE=${MODEL}_rst_${TIME}.nc
+  if [[ $PISCES != 0 ]]; then
+     PISRSTFILE=${MODEL}_rst_pisces_${TIME}.nc
+  fi
 fi
 #
 # Get the code
@@ -174,6 +181,15 @@ while [[ $LEVEL != $NLEVEL ]]; do
     echo "Getting ${RSTFILE}${ENDF} from $MSSOUT"
     $CP -f $MSSOUT/${RSTFILE}${ENDF} $SCRATCHDIR
     $CP -f ${RSTFILE}${ENDF} ${MODEL}_ini.nc${ENDF}
+  fi
+  if [[ $PISCES != 0 ]]; then
+     echo "Getting ${PISFILE}${ENDF} from $MSSDIR"
+     $LN -sf $MSSDIR/${PISFILE}${ENDF} $SCRATCHDIR
+     if [[ $RSTFLAG != 0 ]]; then
+       echo "Getting ${PISRSTFILE}${ENDF} from $MSSOUT"
+       $CP -f $MSSOUT/${PISRSTFILE}${ENDF} $SCRATCHDIR
+       $CP -f ${PISRSTFILE}${ENDF} croco_rst_pisces_ini.nc${ENDF}
+     fi
   fi
   echo "Getting ${MODEL}_inter.nml${ENDF} from $INPUTDIR"
   $CP -f $INPUTDIR/${MODEL}_inter.nml${ENDF} ${MODEL}_inter.nml${ENDF}
@@ -325,6 +341,9 @@ while [[ $NY != $NY_END ]]; do
       $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}${ENDF}
       $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
+      if [[ $PISCES != 0 ]]; then
+         $MV -f croco_pisces_rst.nc${ENDF} ${MSSOUT}/${MODEL}_pisces_rst_${TIME}.nc${ENDF}
+      fi
       [ -f ${MODEL}_avg.nc${ENDF} ] && $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
       [ -f ${MODEL}_dia.nc${ENDF} ] && $MV -f ${MODEL}_dia.nc${ENDF} ${MSSOUT}/${MODEL}_dia_${TIME}.nc${ENDF}
       [ -f ${MODEL}_dia_avg.nc${ENDF} ] && $MV -f ${MODEL}_dia_avg.nc${ENDF} ${MSSOUT}/${MODEL}_dia_avg_${TIME}.nc${ENDF}
