@@ -102,7 +102,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Averaged time
 !
       ierr=nf_put_var1_FTYPE (ncidavg, avgTime, record, time_avg
-     &  - start_date_in_sec
+     &  - avg_origin_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime))
