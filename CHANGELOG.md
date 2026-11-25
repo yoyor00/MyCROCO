@@ -73,6 +73,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
   per-rank JSON output), enabled at build time with `jobcomp --timings`
 
+- BENCH : add OASIS ocean/wave coupling support (TOY model stand-in for WW3) (#381)
+
 ### Fixed
 - RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
   Before the fix, the outputs were zero everywhere (Issue #549) 
