@@ -593,7 +593,7 @@ CONTAINS
             END_3D
             CALL iom_put( "GRAZ2" , zw3d )  ! Total grazing of phyto by zooplankton
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jkR) =  (-o2ut) * ssigma2 * zgrarem(ji,jj,jk) &
+               zw3d(ji,jj,jkR) =  (-o2ut) * zgrarem(ji,jj,jk) &
             &                     * 1.e+3 * rfact2r * tmask(ji,jj,jk)
             END_3D
             CALL iom_put( "MesoZo2" , zw3d ) ! o2 consumption by Microzoo
