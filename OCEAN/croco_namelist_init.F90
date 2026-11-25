@@ -2203,8 +2203,8 @@ contains
 #ifdef AGRIF
       use Agrif_Util
 #endif
-#include "nc_sta.h"
       implicit none
+#include "nc_sta.h"
 #ifdef AGRIF
       if (.not. Agrif_Root()) return
 #endif

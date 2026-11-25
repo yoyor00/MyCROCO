@@ -271,6 +271,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   instead of silently continuing with default values for every parameter
   (Issue #580)
   The per-source namelist groups are not printed when there is no source (#608)
+  The station nc_sta.h file is updated (#622)
   (#552, #568, #570, #572, #573, #578)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
