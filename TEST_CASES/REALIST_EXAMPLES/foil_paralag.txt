@@ -12,7 +12,7 @@
 :               2=rectangle, 3=NetCDF positions) as the first field of its
 :               block. When FOIL is active, every patch (of any type) also
 :               carries the FOIL/DEB initial conditions (species, stage,
-:               size, ...) as trailing fields, e.g. foil_ibm_patch.dat.
+:               size, ...) as trailing fields, e.g. foil_patch.dat.
 : dir_pathout : optional base directory for trajectory output, and restart files
 :               used by FOIL configuration
 : dtsave_traj : time step of LAGRANGIAN outputs
@@ -20,7 +20,7 @@
 :-----------------------------------------------------------------------------
 :
  &namtraj
- 	file_trajec = "TEST_CASES/REALIST_EXAMPLES/foil_ibm_patch.dat"
+ 	file_trajec = "TEST_CASES/REALIST_EXAMPLES/foil_patch.dat"
 	dir_pathout = "./"
 	dtsave_traj = 1.d0 /
 :
