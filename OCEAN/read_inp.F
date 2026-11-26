@@ -11,7 +11,9 @@
 !
 #include "cppdefs.h"
                                        
-      subroutine read_inp (ierr)       
+      subroutine read_inp (ierr)
+      implicit none
+      integer ierr
 !
 ! Check CPP-switches for consistency. This operation is split into
 ! two stages because the first subroutine, "check_switches1", is
