@@ -71,18 +71,22 @@ gfortran:
 # transformation script) and PSyclone's output is what gets compiled, run and
 # checked (see CROCO_PSYCLONE in OCEAN/Makedefs.generic). A source PSyclone
 # cannot process fails the build, and the job's log shows the PSyclone error.
+# PSyclone is a development version, pinned to a commit of its master branch
+# (PSYCLONE_SHA): bump it deliberately, so that a failure of this job comes
+# from CROCO and not from an upstream change.
 psyclone:
   <<: *gfortran
   allow_failure: true
   variables:
     CROCO_PSYCLONE: "psyclone"
+    PSYCLONE_SHA: "45a94e9f7af47a2bcc0427a8ce3e38461a7d7c91"  # master, 2026-11-26
   parallel:
     matrix:
       - { CASES: "BASIN",   VARIANTS: "sequential,openmp-4,mpi-4", TITLE: "psyclone_basin",   OPTIONS: "" }
       - { CASES: "SOLITON", VARIANTS: "sequential,openmp-4,mpi-4", TITLE: "psyclone_soliton", OPTIONS: "" }
   script:
     - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
-    - pip install psyclone==3.3.1 && psyclone --version
+    - pip install https://github.com/stfc/PSyclone/archive/$PSYCLONE_SHA.tar.gz && psyclone --version
     - |
       ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
       --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
