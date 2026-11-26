@@ -14,41 +14,38 @@ MODULE sed_MUSTANG
    !&E ** Purpose : concerns subroutines related to sediment dynamics 
    !&E 
    !&E ** Description :
-   !&E     subroutine MUSTANG_update      ! updates forcings and remoddeling sediment  
-   !&E     subroutine MUSTANG_deposition     ! sedimentation  sediment
-   !&E     subroutine MUSTANG_morpho         ! update bathymetry with sediment thickness (morphodynamic)
+   !&E     subroutine mustang_update      ! updates forcings and remoddeling sediment  
+   !&E     subroutine mustang_deposition     ! sedimentation  sediment
+   !&E     subroutine mustang_morpho         ! update bathymetry with sediment thickness (morphodynamic)
    !&E 
-   !&E     subroutine sed_MUSTANG_comp_z0sed     ! computation of sediment roughness length (based on mean diameter)
-   !&E     subroutine sed_MUSTANG_comp_z0hydro   ! computation of hydrodynamic roughness length (based on mean diameter)
-   !&E     subroutine sed_MUSTANG_depflx         ! computation of deposition tendancy
-   !&E     subroutine sed_MUSTANG_sandconcextrap ! extrapolation of sand concentration
-   !&E     subroutine sed_MUSTANG_erosion        ! computes erosion thickness
-   !&E     subroutine sed_MUSTANG_comp_tocr_mixsed    ! critical shear stress for erosion (Pa)
-   !&E     subroutine sed_MUSTANG_comp_eros_flx ! comp_eros_flx : erosion flux (kg/m2/s)
-   !&E     subroutine sed_MUSTANG_effdep         ! effective deposition
-   !&E     subroutine sed_MUSTANG_fusion         ! fusion of two first bottom layers
-   !&E     subroutine sed_MUSTANG_slipdepo       ! slip lateral deposit
-   !&E     subroutine sed_MUSTANG_split_surflayer ! splitting surface layer when too thick si key_splitlayersurf
-   !&E     subroutine sed_MUSTANG_consol_diff_bioturb   
-   !&E     subroutine sed_MUSTANG_coefbioturb_part        ! estimating bioturbation  coefficients in the sediment
-   !&E     subroutine sed_MUSTANG_coefbioturb_diss        ! estimating  biodiffusion coefficients in the sediment
-   !&E     subroutine sed_MUSTANG_constitutivrel  !
-   !&E     subroutine sed_MUSTANG_outres        ! preparation of the tables of results to be written according to the choice of the user
-   !&E     subroutine sed_MUSTANG_interpout_dzs ! interpolation of  output layer thickness 
-   !&E     subroutine sed_MUSTANG_interpout_cvs ! interpolation of sediment concentrations in output layers
-   !&E
-   !&E  ---for new version MUSTANG V2 ----
-   !&E     subroutine MUSTANGV2_manage_active_layer  ! thickness et composition of active layer 
-   !&E     subroutine MUSTANGV2_fusion_with_poro    ! fusion of two surficial sediment layers + poro 
-   !&E     subroutine MUSTANGV2_comp_eros_flx_indep  ! erosion flux but independant between sediment classes
-   !&E     subroutine MUSTANGV2_borne_and_apply_erosion_tot
-   !&E     subroutine MUSTANGV2_manage_small_mass_in_ksmax
-   !&E     subroutine MUSTANGV2_comp_poro_mixsed  ! porosity estimation in case of non-cohesive/cohesive sediment mixtures
-   !&E     subroutine MUSTANGV2_eval_bedload            ! bedload transport
-   !&E     subroutine MUSTANGV2_eval_dissvar_IWSflux            ! dissolved variables in interstitial waters and fluxes at interface water-sed
+   !&E     subroutine sed_mustang_comp_z0sed     ! computation of sediment roughness length (based on mean diameter)
+   !&E     subroutine sed_mustang_comp_z0hydro   ! computation of hydrodynamic roughness length (based on mean diameter)
+   !&E     subroutine sed_mustang_depflx         ! computation of deposition tendancy
+   !&E     subroutine sed_mustang_sandconcextrap ! extrapolation of sand concentration
+   !&E     subroutine sed_mustang_erosion        ! computes erosion thickness
+   !&E     subroutine sed_mustang_comp_tocr_mixsed    ! critical shear stress for erosion (Pa)
+   !&E     subroutine sed_mustang_comp_eros_flx ! comp_eros_flx : erosion flux (kg/m2/s)
+   !&E     subroutine sed_mustang_effdep         ! effective deposition
+   !&E     subroutine mustang_merge_bottomlayers         ! fusion of two first bottom layers
+   !&E     subroutine sed_mustang_slipdepo       ! slip lateral deposit
+   !&E     subroutine sed_mustang_split_surflayer ! splitting surface layer when too thick if l_splitlayersurf
+   !&E     subroutine sed_mustang_consol_diff_bioturb
+   !&E     subroutine sed_mustang_coefbioturb_part        ! estimating bioturbation  coefficients in the sediment
+   !&E     subroutine sed_mustang_coefbioturb_diss        ! estimating  biodiffusion coefficients in the sediment
+   !&E     subroutine sed_mustang_constitutivrel  !
+   !&E     subroutine sed_mustang_outres        ! preparation of the tables of results to be written according to the choice of the user
+   !&E     subroutine sed_mustang_interpout_dzs ! interpolation of  output layer thickness
+   !&E     subroutine sed_mustang_interpout_cvs ! interpolation of sediment concentrations in output layers
+   !&E     subroutine mustang_manage_active_layer  ! thickness et composition of active layer
+   !&E     subroutine mustang_merge_surflayers    ! fusion of two surficial sediment layers + poro
+   !&E     subroutine mustang_comp_eros_flx_indep  ! erosion flux but independant between sediment classes
+   !&E     subroutine mustang_borne_and_apply_erosion_tot
+   !&E     subroutine mustang_manage_small_mass_in_ksmax
+   !&E     subroutine mustang_comp_poro_mixsed  ! porosity estimation in case of non-cohesive/cohesive sediment mixtures
+   !&E     subroutine mustang_eval_bedload            ! bedload transport
+   !&E     subroutine mustang_eval_dissvar_IWSflux            ! dissolved variables in interstitial waters and fluxes at interface water-sed
    !&E     FUNCTION isitcohesive                ! function which return TRUE if sediment is cohesif (.F. if not)
-   !&E     FUNCTION dzsminvar                   ! function which return dzsmin
-   !&E     FUNCTION MUSTANG_E0sand              ! function to compute E0 sand
+   !&E     FUNCTION mustang_E0sand              ! function to compute E0 sand
 
    !&E  **********************************************************************
    !&E  *** requires to have advected substances in a specific order       ***
@@ -64,14 +61,14 @@ MODULE sed_MUSTANG
    !&E  ***                                                                ***
    !&E  **********************************************************************
    !&E
-   !&E     Used with specific date issued for hydrodynamic module : conversion in coupleur_MUSTANG.F90
+   !&E     Used with specific date issued for hydrodynamic module : conversion in coupleur_mustang.F90
    !&E       kmax : number of layers in water column
    !&E       h0fond : residual water thickness (in m). This thickness is added to the computed water level (xe)
    !&E                to avoid possible mass loss during drying (due to the fact that the scheme for water continuity is not positive)
    !&E       rho0 : reference sea water density (in kg/m3)
    !&E       dt : time step 
    !&E
-   !&E     Used with specific date issued for substances module : 
+   !&E     Used with specific data issued for substances module : 
    !&E       nv_adv : number of advected (transported) state variables
    !&E       nv_tot : total number of  variables (state+intermediate+driving..)
    !&E       nv_mud : total number of  variables type MUDS
@@ -92,45 +89,41 @@ MODULE sed_MUSTANG
    !&E       irkm_var_assoc : number of the constitutive particulate variable associated with a non constitutive particulate variable (both have same settling velocity)
    !&E                        If = 0, particulate variable with its own settling velocity (or dissolved variable)
    !&E
-   !&E
    !&E===================================================================================================================
 
    !! variables  SUBSTANCE and variable from croco known via 
    USE comsubstance
    USE module_substance
 
-   USE comMUSTANG
-   USE coupler_MUSTANG
+   USE commustang
+   USE coupler_mustang
    USE croco_namelist, ONLY : rho0
 
    IMPLICIT NONE
    
    !! * Accessibility
    ! functions & routines of this module, called outside :
-   PUBLIC MUSTANG_update, MUSTANG_deposition, sed_MUSTANG_outres
-   PUBLIC MUSTANG_reconstruct_rouse2D_profile
-   PUBLIC sed_MUSTANG_comp_z0hydro, MUSTANG_E0sand
+   PUBLIC mustang_update, mustang_deposition, sed_mustang_outres
+   PUBLIC mustang_reconstruct_rouse2D_profile
+   PUBLIC sed_mustang_comp_z0hydro, mustang_E0sand
 #if defined MORPHODYN
-   PUBLIC MUSTANG_morpho
+   PUBLIC mustang_morpho
 #endif
-#if defined key_MUSTANG_V2
-   PUBLIC MUSTANGV2_comp_poro_mixsed
-#endif
-   PUBLIC sed_MUSTANG_split_surflayer
+   PUBLIC mustang_comp_poro_mixsed
+   PUBLIC sed_mustang_split_surflayer
 
    PRIVATE
    
  CONTAINS
  
 !!==============================================================================
- 
-  SUBROUTINE MUSTANG_update(ifirst, ilast, jfirst, jlast,     &
+  SUBROUTINE mustang_update(ifirst, ilast, jfirst, jlast,     &
                WATER_CONCENTRATION, z0hydro,                  &
                ubar, vbar,             &
                saliref_lin, temperef_lin, dt_true)
 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANG_update ***
+   !&E                 ***  ROUTINE mustang_update ***
    !&E
    !&E ** Purpose : update forcings (bottom stress, u* , settling velocities..)
    !&E               + remodelling (erosion, consolidation, diffusion, bioturbation
@@ -153,21 +146,19 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_MUSTANG_settlveloc
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_skinstress
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_gradvit
-#ifdef key_MUSTANG_V2
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_bottom_slope
+    USE sed_mustang_CROCO,    ONLY :  sed_mustang_settlveloc
+    USE sed_mustang_CROCO,    ONLY :  sed_skinstress
+    USE sed_mustang_CROCO,    ONLY :  sed_gradvit
+    USE sed_mustang_CROCO,    ONLY :  sed_bottom_slope
 #if defined MPI
-      USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_flxbedload
-      USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_maskbedload
-#endif
+      USE sed_mustang_CROCO,    ONLY :  sed_exchange_flxbedload
+      USE sed_mustang_CROCO,    ONLY :  sed_exchange_maskbedload
 #endif
 
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_obc_corflu
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_meshedges_corflu
+    USE sed_mustang_CROCO,    ONLY :  sed_obc_corflu
+    USE sed_mustang_CROCO,    ONLY :  sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_corflu
+      USE sed_mustang_CROCO,    ONLY :  sed_exchange_corflu
 #endif
 
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
@@ -184,12 +175,11 @@ MODULE sed_MUSTANG
    !! * Arguments
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rsh),INTENT(IN)                                 :: saliref_lin, temperef_lin 
-   REAL(KIND=rlg),INTENT(IN)                                 :: dt_true  ! !  (dt_true=halfdt in MARS)
+   REAL(KIND=rlg),INTENT(IN)                                 :: dt_true
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT) :: z0hydro                                             
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN) :: ubar                        
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN) :: vbar                  
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(INOUT) :: WATER_CONCENTRATION         
-
 
    !! * Local declarations
    INTEGER        ::  i,j,k,iv,ivp,ksmin,ksmax,iappel
@@ -201,8 +191,7 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!     COUPLING Z0 hydro : update z0hydro  if l_z0_coupl      !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      IF(l_z0hydro_coupl)CALL sed_MUSTANG_comp_z0hydro(ifirst,ilast,jfirst,jlast,z0hydro)
-
+      IF(l_z0hydro_coupl)CALL sed_mustang_comp_z0hydro(ifirst,ilast,jfirst,jlast,z0hydro)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! PRELIMINARY EVALUATIONS FOR COUPLING !!!!!!!!!!!!!!!!!!!!!!!!
@@ -211,7 +200,7 @@ MODULE sed_MUSTANG
     ! coupler for some calculations specific to each model ==> htot, alt_cw1, epn_bottom
     ! + computation of bottom concentrations..
     iappel=1
-    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,&
+    CALL coupl_conv2mustang(ifirst,ilast,jfirst,jlast,iappel,&
                        WATER_CONCENTRATION)
             
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -221,7 +210,7 @@ MODULE sed_MUSTANG
     ! Update sediment roughness length
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (.not. l_z0seduni) then
-      call sed_MUSTANG_comp_z0sed(ifirst, ilast, jfirst, jlast)
+      call sed_mustang_comp_z0sed(ifirst, ilast, jfirst, jlast)
     endif
 
 #ifdef OBSTRUCTION
@@ -238,14 +227,14 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FORCING : G dU/dz (taux de cisaillement : shear rate)   !!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! computing  gradvit - depending on hydro code ==> in MUSTANG_HYDROCODE.F90
-      ! out : gradvit in common comMUSTANG
+     ! computing  gradvit - depending on hydro code ==> in mustang_HYDROCODE.F90
+      ! out : gradvit in common commustang
     call sed_gradvit(ifirst, ilast, jfirst, jlast)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! vitesse de chute : settling rate     !!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
+    call sed_mustang_settlveloc(ifirst, ilast, jfirst, jlast,   &
                            WATER_CONCENTRATION)
 
 IF (l_flocmod) THEN
@@ -270,16 +259,15 @@ ENDIF
 !!!!!!!!!! tendance au depot : deposit tendency   flx_w2s (m.s-1) !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          
-    CALL sed_MUSTANG_depflx(ifirst, ilast, jfirst, jlast)
+    CALL sed_mustang_depflx(ifirst, ilast, jfirst, jlast)
     
     
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!! Correction for sand horizontal transport  corflux,corfluy ,flx_w2s(sand)  !!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    CALL sed_MUSTANG_sandconcextrap(ifirst, ilast, jfirst, jlast)
+    CALL sed_mustang_sandconcextrap(ifirst, ilast, jfirst, jlast)
 
-   
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!! interpolation of corflux,corfluy at mesh edges  and                               !!
 !!!!!! treatment of corflux,corfluy at grid corners and exchange between MPI processors  !!
@@ -290,7 +278,7 @@ ENDIF
         CALL sed_exchange_corflu(ifirst, ilast, jfirst, jlast, 0)
 #endif
         ! corflux are interpolated on mesh edges (in u & v) 
-        ! depends on model mesh (ARAKAWA grid), coded in sed_MUSTANG_CROCO
+        ! depends on model mesh (ARAKAWA grid), coded in sed_mustang_CROCO
         CALL sed_meshedges_corflu(ifirst, ilast, jfirst, jlast)
         CALL sed_obc_corflu(ifirst, ilast, jfirst, jlast)
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -311,7 +299,7 @@ ENDIF
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! TEMERATURE in SEDIMENT                             !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     CALL sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast,dt_true, dtinv)
+     CALL sed_mustang_Temperatur_in_sed(ifirst, ilast, jfirst, jlast,dt_true, dtinv)
    ENDIF
                            
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
@@ -330,11 +318,10 @@ ENDIF
 
 #endif
 
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! CONSOLIDATION & DIFFUSION   !!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   IF(l_dyn_insed)CALL sed_MUSTANG_consol_diff_bioturb(ifirst, ilast, jfirst, jlast,  &
+   IF(l_dyn_insed)CALL sed_mustang_consol_diff_bioturb(ifirst, ilast, jfirst, jlast,  &
                 saliref_lin, temperef_lin, dt_true)
     
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -342,8 +329,7 @@ ENDIF
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    IF (l_erolat) CALL lateral_erosion_reset()
-   
-#ifdef key_MUSTANG_V2
+
    IF (l_bedload) THEN
 ! initialization BEDLOAD fluxes and masks
    flx_bx(:,:,:)=0.0_rsh
@@ -361,7 +347,6 @@ ENDIF
    CALL sed_exchange_maskbedload(ifirst, ilast, jfirst, jlast)
 #endif
 
-
 #if defined MORPHODYN
      IF (l_slope_effect_bedload .AND. it_morphoYes==1 ) THEN
         CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, h)
@@ -369,35 +354,35 @@ ENDIF
      ENDIF
 #endif
    ENDIF
-#endif  /* key_MUSTANG_V2 */
 
-   CALL sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,     &
+   CALL sed_mustang_erosion(ifirst, ilast, jfirst, jlast, dtinv,     &
                            ubar, vbar, dt_true)
-
-#ifdef key_MUSTANG_V2
    IF (l_bedload) THEN
 #if defined MPI
-       if (float(ifirst+ii*Lm) .EQ. 1) then
+       if (Lm .GT. 1 .AND. float(ifirst+ii*Lm) .EQ. 1) then
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
        endif
-       if (float(jfirst+jj*Mm) .EQ. 1) then
+       if (Mm .GT. 1 .AND. float(jfirst+jj*Mm) .EQ. 1) then
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
        endif
 #else
+       IF (Lm .GT. 1) THEN
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
+       ENDIF
+       IF (Mm .GT. 1) THEN
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
+       ENDIF
 #endif
 
 #if defined MPI
     call sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
 #endif
    ENDIF
-#endif  /* key_MUSTANG_V2 */
-                           
+
   IF (l_erolat) CALL lateral_erosion_apply(ifirst, ilast, jfirst, jlast, dtinv)
 
   IF (l_dredging) THEN
@@ -436,7 +421,7 @@ ENDIF
 ! + conversion of erosion flux                                                                         !!!!
 ! + water flux at interface sediment/water resulting from deposit at previous time step and of erosion  !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL coupl_MUSTANG2hydro(ifirst,ilast,jfirst,jlast)
+    CALL coupl_mustang2hydro(ifirst,ilast,jfirst,jlast)
 
 !!  not taking into account water fluxes threw sediment-water interface, unless
 !!  l_fluxwat_IWS .and. l_diss_insed (not available yet in CROCO, has to be
@@ -449,15 +434,15 @@ ENDIF
     !phieau_CROCO(:,:,1)=phieau_CROCO(:,:,1)+phieau_s2w(:,:)/dt_true
     !phieau_s2w(:,:)=0.0_rlg
 
-  END SUBROUTINE MUSTANG_update
+  END SUBROUTINE mustang_update
   
   !!==============================================================================
   
-  SUBROUTINE MUSTANG_deposition(ifirst, ilast, jfirst, jlast,  &
+  SUBROUTINE mustang_deposition(ifirst, ilast, jfirst, jlast,  &
                         WATER_CONCENTRATION)
               
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANG_deposition  ***
+   !&E                 ***  ROUTINE mustang_deposition  ***
    !&E
    !&E ** Purpose : settling from water to sediment, sliding processes 
    !&E                    and sediment sedimentation 
@@ -476,13 +461,12 @@ ENDIF
    !&E         the sediment has been remodelled
    !&E          cv_sed, dzs, ksma, poro have changed
    !&E         
-   !&E
    !&E ** Called by :  step after transport equations
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #if defined MPI
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_w2s
+    USE sed_mustang_CROCO,    ONLY :  sed_exchange_w2s
 #endif
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast 
@@ -491,28 +475,28 @@ ENDIF
 #else
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN)  :: WATER_CONCENTRATION   
 #endif
-
-
    !! * Local declarations
    INTEGER        :: iappel,iexchge_MPI_cvwat
    INTEGER        :: iv,ivr,i,j,k
    !! * Executable part
 
-   !deposit if strong bottom slope   
-     flx_w2s_corim1(:,:,:)=0.0_rsh   
+   !deposit if strong bottom slope
+   IF (l_slipdeposit) THEN
+     flx_w2s_corim1(:,:,:)=0.0_rsh
      flx_w2s_corip1(:,:,:)=0.0_rsh
      flx_w2s_corjm1(:,:,:)=0.0_rsh
      flx_w2s_corjp1(:,:,:)=0.0_rsh
-     flx_w2s_corin(:,:,:)=0.0_rsh 
+     flx_w2s_corin(:,:,:)=0.0_rsh
+   ENDIF
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!! coupler for some calculations specific to each model                  !!!!!!
 !!!!! ==> htot, alt_cw1, epn_bottom and new bottom concentrations           !!!!!!
-!!!!! and conversion of effectif deposit flux from hydro code to MUSTANG    !!!!!!
+!!!!! and conversion of effectif deposit flux from hydro code to mustang    !!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     iappel=2
-    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,    &
+    CALL coupl_conv2mustang(ifirst,ilast,jfirst,jlast,iappel,    &
                             WATER_CONCENTRATION )        
         
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -527,7 +511,7 @@ ENDIF
 !!!! deposit slip if steep slope (slidepo)        !!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    IF(l_slipdeposit) THEN
-     CALL sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
+     CALL sed_mustang_slipdepo(ifirst, ilast, jfirst, jlast)
 #if defined MPI
     CALL sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
 #endif
@@ -537,7 +521,7 @@ ENDIF
 !!!! effective deposit after variables transport and settling =>  sedimentation   !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   call sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
+   call sed_mustang_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
 
    IF (l_diss_insed) THEN
 ! T90 mortality/decay in sediment porewater 
@@ -555,22 +539,19 @@ ENDIF
     ENDDO
    ENDIF
 
-    !**TODO** code sed_exchange_cvwat CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION,iexchge_MPI_cvwat)
-
-  END SUBROUTINE MUSTANG_deposition
+  END SUBROUTINE mustang_deposition
  
 !!===========================================================================
 #if defined MORPHODYN
-    SUBROUTINE MUSTANG_morpho(ifirst, ilast, jfirst, jlast, dhsed )
+    SUBROUTINE mustang_morpho(ifirst, ilast, jfirst, jlast, dhsed )
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_morpho  ***
+    !&E                 ***  ROUTINE mustang_morpho  ***
     !&E
     !&E ** Purpose : compute bathymetry variation dhsed (morphodynamic)
     !&E
     !&E ** Called by :  step, at the end
     !&E
     !&E--------------------------------------------------------------------------
-
     !! * Arguments
     INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
     REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT) :: dhsed                        
@@ -578,18 +559,6 @@ ENDIF
     INTEGER                  :: i,j,k
     !!--------------------------------------------------------------------------
     !! * Executable part
-
-! **TODO** keep these lines commented?? create a specific subroutine for zero gradient boundaries??
- ! if l_bedload : choice of zero gradient at boundaries or no flux
- ! if zero gradient at one open boundary : remove comment at this boundary
-   ! south boundary
-   !    IF (jfirst == 1) hsed(:,jfirst)=hsed(:,jfirst+1)
-   ! north boundary
-   !    IF (jlast == Mm) hsed(:,jlast)=hsed(:,jlast-1)
-   ! West boundary
-   !    IF (ifirst == 1) hsed(ifirst,:)=hsed(ifirst+1,:)
-   ! East boundary
-   !    IF (ilast == Lm) hsed(ilast,:)=hsed(ilast-1,:)
 
     DO j=jfirst,jlast
         DO i=ifirst,ilast
@@ -608,19 +577,17 @@ ENDIF
 
     t_morpho = t_morpho + dt_morpho
 
-#ifdef key_MUSTANG_V2
 !   bottom slope must be updated for bedload
     it_morphoYes = 1
-#endif
 
-  END SUBROUTINE MUSTANG_morpho      
+  END SUBROUTINE mustang_morpho
 #endif /* if defined MORPHODYN */
 !=========================================================================== 
   
-  SUBROUTINE sed_MUSTANG_outres(ifirst,ilast,jfirst,jlast,nv_out,h0_out)
+  SUBROUTINE sed_mustang_outres(ifirst,ilast,jfirst,jlast,nv_out,h0_out)
                     
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_outres  ***
+   !&E                 ***  ROUTINE sed_mustang_outres  ***
    !&E
    !&E ** Purpose : preparation of output sediment variables before writing
    !&E
@@ -637,12 +604,9 @@ ENDIF
 #endif
 
    !! * Arguments
-
    INTEGER, INTENT(IN)                                     :: ifirst,ilast,jfirst,jlast,nv_out
    REAL(KIND=riosh),DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN)   :: h0_out
    LOGICAL, DIMENSION(GLOBAL_2D_ARRAY)        :: mask_h0
-
-
    !! * Local declarations
    INTEGER        :: i,j,k,l
    REAL(KIND=rsh) :: eptmp,eptmp1,cstmp,epintbottom,dzs_estim,unitmudbinv,sumdzs
@@ -656,7 +620,6 @@ ENDIF
          IF ( h0_out(i,j) .NE. -valmanq .AND. ksma(i,j) > 0 ) mask_h0(i,j) = .FALSE.
        END DO
      END DO  
-
 
      ! preparation of hsed
      IF (l_outsed_hsed) var2D_hsed(GLOBAL_2D_ARRAY) = -rg_valmanq_io
@@ -691,110 +654,89 @@ ENDIF
         ENDIF
      END DO
      END DO
-
-        
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!! preparation of 3D arrays - interpolation according to the user's choice
-!!!! var3D_dzs : thickness of sediment layers
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   
+!preparation of 3D arrays - interpolation according to the user's choice
+!var3D_dzs : thickness of sediment layers
      IF(l_outsed_dzs) THEN
       var3D_dzs(:,:,:) = 0.0_rsh
-      CALL sed_MUSTANG_interpout_dzs(ifirst,ilast,jfirst,jlast,mask_h0)
+      CALL sed_mustang_interpout_dzs(ifirst,ilast,jfirst,jlast,mask_h0)
      ENDIF
  
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!! preparation of 3D arrays - interpolation according to the user's choice
-!!!! var3D_TEMP, var3D_SAL : temperature and salinity
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!preparation of 3D arrays - interpolation according to the user's choice
+!var3D_TEMP, var3D_SAL : temperature and salinity
      IF(l_outsed_temp_sed) THEN
        var3D_TEMP(:,:,:) = 0.0_rsh
        unitmudbinv = 1._rsh
-       CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv, &
+       CALL sed_mustang_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv, &
                                       mask_h0,cv_sed(-1,:,:,:),var3D_TEMP)
      ENDIF
      IF(l_outsed_salt_sed) THEN
        var3D_SAL(:,:,:) = 0.0_rsh
        unitmudbinv = 1._rsh
-       CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,  &
+       CALL sed_mustang_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,  &
                                        mask_h0,cv_sed(0,:,:,:),var3D_SAL)
      ENDIF
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!! preparation of 3D arrays - interpolation according to the user's choice
-!!!! var3D_cvsed : substance concentrations in sediment
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!preparation of 3D arrays - interpolation according to the user's choice
+!var3D_cvsed : substance concentrations in sediment
      IF(l_outsed_cv_sed) THEN
       DO l = 1, nv_out
           unitmudbinv = 1._rsh/unit_modif_mudbio_N2dw(irk_fil(l))
           var3D_cvsed(:,:,:,l) = 0.0_rsh
-          CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,mask_h0,  &
+          CALL sed_mustang_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,mask_h0,  &
                                           cv_sed(l,:,:,:),var3D_cvsed(:,:,:,l))
       ENDDO
      ENDIF
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!! preparation of 3D arrays - interpolation according to the user's choice
-!!!! var3D_poro : porosity in sediment
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!preparation of 3D arrays - interpolation according to the user's choice
+!var3D_poro : porosity in sediment
      IF(l_outsed_poro) THEN
           unitmudbinv = 1._rsh
           var3D_poro(:,:,:) = 0.0_rsh
-          CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,mask_h0,  &
+          CALL sed_mustang_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,mask_h0,  &
                                           poro(:,:,:),var3D_poro(:,:,:))
      ENDIF
 
 
 #ifdef key_BLOOM_insed
      IF (l_out_subs_diag_sed) THEN
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!! preparation of 3D arrays - interpolation according to the user's choice
-!!!! var3D_diagsed : diagnostics variables 3D in sediment
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+!preparation of 3D arrays - interpolation according to the user's choice
+!var3D_diagsed : diagnostics variables 3D in sediment
        DO l = ndiag_tot-ndiag_3d_sed+1, ndiag_tot
          var3D_diagsed(:,:,:,l) = 0.0_rsh
          unitmudbinv = 1._rsh
-
-         CALL sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,mask_h0,  &
+         CALL sed_mustang_interpout_cvs(ifirst,ilast,jfirst,jlast,unitmudbinv,mask_h0,  &
                                         diag_3d_sed(l,:,:,:),var3D_diagsed(:,:,:,l))
-
        ENDDO
      ENDIF
 #endif
 
-  END SUBROUTINE sed_MUSTANG_outres
+  END SUBROUTINE sed_mustang_outres
   
 !=========================================================================== 
   
-  SUBROUTINE sed_MUSTANG_interpout_dzs(ifirst,ilast,jfirst,jlast,mask_h0)
+  SUBROUTINE sed_mustang_interpout_dzs(ifirst,ilast,jfirst,jlast,mask_h0)
               
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_interpout_dzs  ***
+   !&E                 ***  ROUTINE sed_mustang_interpout_dzs  ***
    !&E
    !&E ** Purpose : interpolation sediment thickness for output
-   !&E
    !&E
    !&E ** Description : 
    !&E  arguments IN : 
    !&E         loops  :ifirst,ilast,jfirst,jlast
    !&E         mask_h0 : mask for writing
    !&E
-   !&E ** Called by :  sed_MUSTANG_outres
+   !&E ** Called by :  sed_mustang_outres
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-
    !! * Arguments
    INTEGER, INTENT(IN)                              :: ifirst,ilast,jfirst,jlast
    LOGICAL,DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN)     :: mask_h0
-
-
    !! * Local declarations
    INTEGER              :: i,j,k,kniv,finkniv
    REAL(KIND=rsh)       :: eptmp
 
-   
    !! * Executable part 
      DO j = jfirst,jlast
        DO i = ifirst,ilast
@@ -825,7 +767,7 @@ ENDIF
               END IF
               
           ELSE IF ( choice_nivsed_out == 3) THEN
-              ! all layers till a max thickness given in paraMUSTANG.txt - k=1 : surface layer
+              ! all layers till a max thickness given in paramustang.txt - k=1 : surface layer
               ! last layer is the layer in which the bottom level exceeds the maximum thickness 
               IF(ksma(i,j) >= 1 .AND. ksma(i,j) /= INT(rg_valmanq_io)) THEN
                 eptmp=0.0_rsh
@@ -849,7 +791,7 @@ ENDIF
               END IF
               
             ELSE IF ( choice_nivsed_out == 4) THEN
-              ! a fixed number af layers is saved whith constant and fixed thickness given in paraMUSTANG.txt - k=1 : surface layer
+              ! a fixed number af layers is saved whith constant and fixed thickness given in paramustang.txt - k=1 : surface layer
               ! the last layer in addition integrates the results till the bottom sediment
               IF(ksma(i,j) >= 1 .AND. ksma(i,j) /= INT(rg_valmanq_io)) THEN
                 eptmp=0.0_rsh
@@ -898,18 +840,17 @@ ENDIF
          END DO 
        END DO
    
-  END SUBROUTINE sed_MUSTANG_interpout_dzs
+  END SUBROUTINE sed_mustang_interpout_dzs
   
 !=========================================================================== 
   
-  SUBROUTINE sed_MUSTANG_interpout_cvs(ifirst,ilast,jfirst,jlast, &
+  SUBROUTINE sed_mustang_interpout_cvs(ifirst,ilast,jfirst,jlast, &
                                         unitmudbinv,mask_h0,var3D,var3D_cvs)
               
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_interpout_cvs  ***
+   !&E                 ***  ROUTINE sed_mustang_interpout_cvs  ***
    !&E
    !&E ** Purpose : interpolation sediment concentration for output
-   !&E
    !&E
    !&E ** Description : 
    !&E  arguments IN : 
@@ -921,13 +862,9 @@ ENDIF
    !&E  arguments OUT:
    !&E         var3D_cvs   : interpolated 3D variables to write
    !&E
-   !&E         
-   !&E
-   !&E ** Called by  :  sed_MUSTANG_outres
+   !&E ** Called by  :  sed_mustang_outres
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
    !! * Arguments
    INTEGER, INTENT(IN)                                                 :: ifirst,ilast,jfirst,jlast
    LOGICAL,DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN)                        :: mask_h0
@@ -972,7 +909,7 @@ ENDIF
                   var3D_cvs(:,i,j)=-rg_valmanq_io
                 END IF
               ELSE IF (choice_nivsed_out == 3) THEN
-              ! all layers till a max thickness given in paraMUSTANG.txt
+              ! all layers till a max thickness given in paramustang.txt
               ! last layer is the layer which the bottom level exceeds the maximum thickness 
                 IF(ksma(i,j) >= 1 .AND. ksma(i,j) /= INT(rg_valmanq_io)) THEN
                   eptmp=0.0_rsh
@@ -998,7 +935,7 @@ ENDIF
                   var3D_cvs(:,i,j)=-rg_valmanq_io
                 END IF
               ELSE IF (choice_nivsed_out == 4) THEN
-              ! a fixed number af layers is saved whith constant et fixed thickness given in paraMUSTANG.txt
+              ! a fixed number af layers is saved whith constant et fixed thickness given in paramustang.txt
               ! the last layer in addition integrates the results till the bottom sediment
                 IF(ksma(i,j) >= 1 .AND. ksma(i,j) /= INT(rg_valmanq_io)) THEN
                   eptmp1=0.0_rsh
@@ -1057,23 +994,20 @@ ENDIF
            END DO 
          END DO
   
-  END SUBROUTINE sed_MUSTANG_interpout_cvs
-  
+  END SUBROUTINE sed_mustang_interpout_cvs
    !!==============================================================================
 
-   SUBROUTINE sed_MUSTANG_comp_z0sed(ifirst,ilast,jfirst,jlast)
+   SUBROUTINE sed_mustang_comp_z0sed(ifirst,ilast,jfirst,jlast)
 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_comp_z0sed ***
+   !&E                 ***  ROUTINE sed_mustang_comp_z0sed ***
    !&E
    !&E ** Purpose : computes sediment roughness length z0sed in meter
    !&E               depending on sediment diameter
    !&E
-   !&E ** Called by :  MUSTANG_update
+   !&E ** Called by :  mustang_update
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
    !! * Arguments
    INTEGER, INTENT(IN)                                  :: ifirst,ilast,jfirst,jlast
 
@@ -1116,14 +1050,14 @@ ENDIF
      endif
 #endif
 
-   END SUBROUTINE sed_MUSTANG_comp_z0sed
+   END SUBROUTINE sed_mustang_comp_z0sed
 
    !!==============================================================================
 
-   SUBROUTINE sed_MUSTANG_comp_z0hydro(ifirst,ilast,jfirst,jlast,z0hydro)
+   SUBROUTINE sed_mustang_comp_z0hydro(ifirst,ilast,jfirst,jlast,z0hydro)
 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_comp_z0hydro ***
+   !&E                 ***  ROUTINE sed_mustang_comp_z0hydro ***
    !&E
    !&E ** Purpose : computes hydrodynamical roughness length depending on sediment diameter
    !&E
@@ -1136,7 +1070,7 @@ ENDIF
    !&E         z0hydro : roughness length (m)
    !&E
    !&E
-   !&E ** Called by :  initMUSTANG and MUSTANG_update
+   !&E ** Called by :  initmustang and mustang_update
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1171,8 +1105,8 @@ ENDIF
                 hsedz0=hsedz0+dzs(k,i,j)
                 k=k-1
               END DO
-              IF (sommud/(somsan+sommud+epsilon_MUSTANG) .LT. 0.3_rsh)  THEN
-                 diamsan=MAX(diamsan/(somsan+epsilon_MUSTANG),diam_sed(isand2))
+              IF (sommud/(somsan+sommud+epsilon_mustang) .LT. 0.3_rsh)  THEN
+                 diamsan=MAX(diamsan/(somsan+epsilon_mustang),diam_sed(isand2))
                  z0hydro(i,j)=coef_z0_coupl*diamsan  
               ELSE
                  z0hydro(i,j)=z0_hydro_mud
@@ -1184,14 +1118,14 @@ ENDIF
        ENDDO
      ENDDO
 
-   END SUBROUTINE sed_MUSTANG_comp_z0hydro
+   END SUBROUTINE sed_mustang_comp_z0hydro
 
    !!==============================================================================
 
-  SUBROUTINE sed_MUSTANG_depflx(ifirst, ilast, jfirst, jlast)
+  SUBROUTINE sed_mustang_depflx(ifirst, ilast, jfirst, jlast)
  
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_depflx  ***
+   !&E                 ***  ROUTINE sed_mustang_depflx  ***
    !&E
    !&E ** Purpose : computes deposition flux trends  before advection computations
    !&E
@@ -1201,7 +1135,7 @@ ENDIF
    !&E         loops  :ifirst,ilast,jfirst,jlast
    !&E          
    !&E  variables OUT:
-   !&E         flx_w2s : deposit trends (m/s) ranged in comMUSTANG
+   !&E         flx_w2s : deposit trends (m/s) ranged in commustang
    !&E         
    !&E  need to be know by hydrodynamic code:
    !&E         kmax=N  (known from module_substance)
@@ -1211,7 +1145,7 @@ ENDIF
    !&E         irkm_var_assoc (ivp)
    !&E         tocd(iv)  
    !&E
-   !&E ** Called by :  MUSTANG_update
+   !&E ** Called by :  mustang_update
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -1235,10 +1169,10 @@ ENDIF
        DO ivp = igrav2+1, nvpc
          IF(ivp .LE. isand2) THEN 
             ! Sanford et Halka (1993), Winterwerp (2004), Dufois (2008)
-            flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)
+            flx_w2s(ivp, i, j) = ws3_bottom_mustang(ivp, i, j)
          ELSE
             tocdpe = tocd(ivp) + 0.00001_rsh
-            flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)  &
+            flx_w2s(ivp, i, j) = ws3_bottom_mustang(ivp, i, j)  &
                           * MAX(0.0_rsh, 1.0_rsh - (tauskin(i, j) / tocdpe)) &
                           * tocd(ivp) / tocdpe
          ENDIF
@@ -1246,10 +1180,10 @@ ENDIF
        DO ivp = nvpc+1, nvp
          IF(irkm_var_assoc(ivp) > 0 .AND. irkm_var_assoc(ivp) < imud1) THEN
            ! substance sorbed on sand
-           flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)
+           flx_w2s(ivp, i, j) = ws3_bottom_mustang(ivp, i, j)
          ELSE
            tocdpe = tocd(ivp) + 0.00001_rsh
-           flx_w2s(ivp, i, j) = ws3_bottom_MUSTANG(ivp, i, j)  &
+           flx_w2s(ivp, i, j) = ws3_bottom_mustang(ivp, i, j)  &
                           * MAX(0.0_rsh,1.0_rsh - (tauskin(i, j) / tocdpe)) &
                           * tocd(ivp) / tocdpe
          ENDIF
@@ -1261,14 +1195,14 @@ ENDIF
        ENDDO
        ENDDO
          
-  END SUBROUTINE sed_MUSTANG_depflx
+  END SUBROUTINE sed_mustang_depflx
 
 !!==============================================================================
 
-  SUBROUTINE sed_MUSTANG_sandconcextrap(ifirst, ilast, jfirst, jlast)
+  SUBROUTINE sed_mustang_sandconcextrap(ifirst, ilast, jfirst, jlast)
     ! Correct settling flux (flx_w2s) and horizontal flux factors (corflux,
     ! corfluy) for sand fractions, assuming a Rouse concentration profile.
-    ! Called by : MUSTANG_update
+    ! Called by : mustang_update
  
     INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
  
@@ -1293,11 +1227,11 @@ ENDIF
             altc1 > z0sed(i,j)) THEN       ! prevents alog_z = 0
 
           alogaltc1sz0 = LOG(altc1 / z0sed(i,j))
-          CALL build_rouse_grid(nbcche, epn_bottom_MUSTANG(i,j), aref_sand, hzi)
+          CALL build_rouse_grid(nbcche, epn_bottom_mustang(i,j), aref_sand, hzi)
           CALL build_rouse_grid(nbcche, htot(i,j), aref_sand, hzi_2d)
 
           DO ivp = isand1, isand2
-             rouse = compute_rouse_number(ws3_bottom_MUSTANG(ivp,i,j), ustarbot(i,j))
+             rouse = compute_rouse_number(ws3_bottom_mustang(ivp,i,j), ustarbot(i,j))
 
              IF (l_subs2D(ivp)) THEN
                 CALL integrate_rouse_profile(nbcche, rouse, hzi_2d, htot(i,j), z0sed(i,j), som, einstein)
@@ -1323,13 +1257,13 @@ ENDIF
     ENDDO ! j
     ENDDO ! i
  
- END SUBROUTINE sed_MUSTANG_sandconcextrap
+ END SUBROUTINE sed_mustang_sandconcextrap
  
  
  PURE SUBROUTINE build_rouse_grid(nbcche, z_top, aref, hzi)
     ! Geometrically-refined grid from z_top down to aref.
     ! Spacing halves at each step; last point snapped to aref.
-    ! z_top = epn_bottom_MUSTANG(i,j) for 3D,  htot(i,j) for 2D.
+    ! z_top = epn_bottom_mustang(i,j) for 3D,  htot(i,j) for 2D.
  
     INTEGER,        INTENT(IN)  :: nbcche
     REAL(KIND=rsh), INTENT(IN)  :: z_top
@@ -1427,7 +1361,7 @@ ENDIF
  
  END SUBROUTINE compute_rouse_correction
 
- PURE SUBROUTINE MUSTANG_reconstruct_rouse2D_profile(istr, iend, jstr, jend, N, &
+ PURE SUBROUTINE mustang_reconstruct_rouse2D_profile(istr, iend, jstr, jend, N, &
                                              rouse, integral,            &
                                              t_bottom, z_w, z_r, workr)
    ! Reconstruct the vertical Rouse concentration profile from the
@@ -1463,65 +1397,103 @@ ENDIF
    ENDDO
    ENDDO
 
-END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
- 
+END SUBROUTINE mustang_reconstruct_rouse2D_profile
+
 !!==============================================================================
-      
-#ifdef key_MUSTANG_V2
-  SUBROUTINE sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv, &
-                                    ubar, vbar, dt_true) 
+
+  SUBROUTINE mustang_comp_diamgravsan(cv_sed_kij, diamgravsan, somgravsan)
+
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_erosion version V2  ***
+   !&E                 ***  SUBROUTINE mustang_comp_diamgravsan  ***
    !&E
-   !&E ** Purpose : computes erosion fluxes (version B. Mengual et P. Le Hir)
+   !&E ** Purpose : mean diameter of the gravel+sand fraction present in a
+   !&E              layer, weighted by concentration - factored out of 3
+   !&E              identical (or near-identical) copies
    !&E
-   !&E ** Description : 
-   !&E       arguments IN :
-   !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          dtinv, dt_true : 1/dt  and dt
-   !&E          u,v :   ubar, vbar
-   !&E      
-   !&E     variables OUT : 
-   !&E          flx_s2w : concentration flux sediment to water
-   !&E          phieau_s2w : water flux  sediment to water
-   !&E          the sediment has been remodelled
-   !&E          cv_sed, dzs, ksma, poro have changed
-   !&E          flx_bx, flx_by : bedload fluxes
+   !&E--------------------------------------------------------------------------
+
+    REAL(KIND=rsh),DIMENSION(-1:nv_tot),INTENT(IN) :: cv_sed_kij
+    REAL(KIND=rsh),INTENT(OUT) :: diamgravsan,somgravsan
+
+    INTEGER :: iv
+
+    diamgravsan=0.0_rsh
+    somgravsan=0.0_rsh
+    DO iv=igrav1,isand2
+      diamgravsan=diamgravsan+diam_sed(iv)*cv_sed_kij(iv)
+      somgravsan=somgravsan+cv_sed_kij(iv)
+    ENDDO
+
+    IF (isand2>0 .AND. somgravsan>0.0_rsh) THEN
+      diamgravsan=MAX(diamgravsan/(somgravsan+epsilon_mustang),diam_sed(isand2))
+    END IF
+
+  END SUBROUTINE mustang_comp_diamgravsan
+
+!!==============================================================================
+
+  REAL(KIND=rsh) FUNCTION mustang_comp_frmudcr1(diam, mult) RESULT(frmudcr)
+
+   !&E--------------------------------------------------------------------------
+   !&E                 ***  FUNCTION mustang_comp_frmudcr1  ***
    !&E
+   !&E ** Purpose : critical mud fraction under which the behaviour is purely
+   !&E              sandy, from a representative gravel/sand diameter - factored
+   !&E              out of 4 near-identical copies (frmudcr1, frmudcr_dep,
+   !&E              frmudcr_fusion x2)
    !&E
-   !&E ** Called by :  MUSTANG_update
+   !&E ** Description : mult (default 1.0) is applied before the final MIN
+   !&E              against frmudcr2, matching how the fusion variant already
+   !&E              applies fusion_para_activlayer
    !&E
+   !&E--------------------------------------------------------------------------
+
+    REAL(KIND=rsh),INTENT(IN)           :: diam
+    REAL(KIND=rsh),INTENT(IN),OPTIONAL  :: mult
+    REAL(KIND=rsh) :: mult_
+
+    mult_=1.0_rsh
+    IF (PRESENT(mult)) mult_=mult
+
+    IF (l_frmudcr1_uni) THEN
+      frmudcr=MIN(mult_*frmudcr1_uni,frmudcr2)
+    ELSE
+      frmudcr=MIN(mult_*coef_frmudcr1*diam,frmudcr2)
+    ENDIF
+
+  END FUNCTION mustang_comp_frmudcr1
+
+!!==============================================================================
+
+  SUBROUTINE sed_mustang_erosion(ifirst, ilast, jfirst, jlast, dtinv, &
+                                    ubar, vbar, dt_true)
+   !&E--------------------------------------------------------------------------
+   !&E                 ***  ROUTINE sed_mustang_erosion ***
+   !&E
+   !&E ** Purpose : per-cell setup shared by both erosion algorithms (crel_mud,
+   !&E              output-diagnostic zeroing, lateral erosion), then dispatches
+   !&E              each retry pass, by l_erosion_by_class (namsedim_erosion)
+   !&E              and - when l_erosion_by_class - a fresh per-pass cohesion
+   !&E              test, to one of two peer algorithms:
+   !&E              sed_mustang_erosion_byclass (non-cohesive, class by class)
+   !&E              or sed_mustang_erosion_mixture (cohesive, or whenever
+   !&E              .NOT. l_erosion_by_class - erodes the layer as one mixture)
    !&E--------------------------------------------------------------------------
    !! * Modules used
-
-    USE lateral_erosion, ONLY : lateral_erosion_get, lateral_erosion_compute, &
-                                lateral_erosion_saveflx,lateral_erosion_saveflx_IWS, &
-                                lateral_erosion_type
-
+    USE lateral_erosion, ONLY : lateral_erosion_get, lateral_erosion_type
 
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: ubar
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar 
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar
 
    !! * Local declarations
-   INTEGER        ::  i,j,k,iv,ksmax,ksup,ksmaxa,isplit
-   REAL(KIND=rsh) ::  dt1,toce,cvolgrv,csanmud,phieau_ero_ij,             &
-                      erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w,  &
-                      cvolp,volerod,poroa,poroam1,dflusve,        &
-                      xeros, sed_eros_flx,excespowr
+   INTEGER        :: i,j,k,iv,ksmax,isplit
+   REAL(KIND=rsh) :: sommud,cvolgrvsan,niter_ero_noncoh,niter_ero_coh,dt1
+   REAL(KIND=rsh) :: diamgravsan,somgravsan,frmudcr1
+   LOGICAL        :: l_continue_erod
    TYPE(lateral_erosion_type) :: erolat_res
-   REAL(KIND=rsh) :: diamgravsan,somgravsan,frmudcr1,cv_sed_tot,dzs_activelayer_ij, &
-                     dt_ero_max,dts2,mass_tot,cvolgrvsan,sommud,  &
-                     niter_ero_noncoh,niter_ero_coh,isthere_erosion
-   REAL(KIND=rsh) :: dzs_ini,poro_ini
-   REAL(KIND=rsh),DIMENSION(1:nvpc) :: frac_sed
-   REAL(KIND=rsh),DIMENSION(1:nvp) :: mass_sed,sed_eros_flx_class_by_class,dt_ero
-   REAL(KIND=rsh),DIMENSION(1:nvp) :: flx_bxij,flx_byij
-   REAL(KIND=rsh),DIMENSION(-1:nv_tot) :: cv_sed_ini
-   REAL(KIND=rsh),DIMENSION(-1:nv_adv)  ::  flx_s2w_eroij
-   REAL(KIND=rsh) :: porowater1,porowater_new
 
    !!---------------------------------------------------------------------------
    !! * Executable part
@@ -1530,8 +1502,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
       DO i=ifirst,ilast
 
         flx_s2w(-1:nv_adv,i,j)=0.0_rsh
-        
- 
+
         DO k=ksmi(i,j),ksma(i,j)
           sommud=0.0_rsh
           DO iv=imud1,imud2
@@ -1544,83 +1515,241 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
           crel_mud(k,i,j)=sommud/(1.0_rsh-cvolgrvsan)
         END DO
 
-        IF (l_outsed_toce) var2D_toce(:,i,j) = 0.0_rsh 
-        IF (l_outsed_dzs_ksmax) var2D_dzs_ksmax(i,j) = 0.0_rsh 
+        IF (l_outsed_toce) var2D_toce(:,i,j) = 0.0_rsh
+        IF (l_outsed_dzs_ksmax) var2D_dzs_ksmax(i,j) = 0.0_rsh
         IF (l_outsed_theoric_active_layer) var2D_theoric_active_layer(i,j) = 0.0_rsh
-        IF (l_outsed_pephm_fcor) var2D_pephm_fcor(:,i,j) = 0.0_rsh 
-        IF (l_outsed_frmudsup) var2D_frmudsup(i,j)=sommud/(c_sedtot(ksma(i,j),i,j)+epsi30_MUSTANG) ! frmudsup last sommud computed in k=ksma(i,j)
+        IF (l_outsed_pephm_fcor) var2D_pephm_fcor(:,i,j) = 0.0_rsh
+        IF (l_outsed_frmudsup) var2D_frmudsup(i,j)=sommud/(c_sedtot(ksma(i,j),i,j)+epsi30_mustang) ! frmudsup last sommud computed in k=ksma(i,j)
         IF (l_outsed_fsusp) var2D_fsusp(:,i,j) = 0.0_rsh
 
+        IF (l_erolat) THEN
+          ! compute needed variables for erolat outside the retry loop
+          CALL lateral_erosion_get( htot(i, j), &
+                                    htot(i+1,j),htot(i-1,j), &
+                                    htot(i,j-1),htot(i,j+1), &
+                                    surf_cell(i,j), &
+                                    surf_cell(i+1,j), surf_cell(i-1,j), &
+                                    surf_cell(i,j-1), surf_cell(i,j+1), &
+                                    (vbar(i+1,j,knew) + vbar(i+1,j+1,knew))/2.0_rsh,&
+                                    (vbar(i-1,j,knew) + vbar(i-1,j+1,knew))/2.0_rsh,&
+                                    (ubar(i,j-1,knew) + ubar(i+1,j-1,knew))/2.0_rsh,&
+                                    (ubar(i,j+1,knew) + ubar(i+1,j+1,knew))/2.0_rsh,&
+                                    erolat_res)
+        ENDIF
+
         ksmax=ksma(i,j)
-        
-        ! niter put in real beacause of ratio to estimate statistics 
+
         niter_ero_noncoh=0.0_rsh
         niter_ero_coh=0.0_rsh
 
-        IF(ksmax > ksmi(i,j))THEN  ! this means that the ksmi layer is never eroded
+        IF(ksmax .GE. ksmi(i,j))THEN  ! the ksmi layer is erodable too (see the per-call
+                                       ! ksmax.GT.ksmi guards below for the active-layer-
+                                       ! fusion / small-mass-fusion helpers, which need a
+                                       ! layer below ksmax and are skipped once ksmax=ksmi)
 
-            dt1=REAL(dt_true,rsh)
-            k=ksmax
+          dt1=REAL(dt_true,rsh)
 
-            IF (l_erolat) THEN
-              ! compute needed variables for erolat outside the 2 continue loop
-              CALL lateral_erosion_get( htot(i, j), &
-                                        htot(i+1,j),htot(i-1,j), &
-                                        htot(i,j-1),htot(i,j+1), &
-                                        surf_cell(i,j), &
-                                        surf_cell(i+1,j), surf_cell(i-1,j), &
-                                        surf_cell(i,j-1), surf_cell(i,j+1), &
-                                        (vbar(i+1,j,knew) + vbar(i+1,j+1,knew))/2.0_rsh,&
-                                        (vbar(i-1,j,knew) + vbar(i-1,j+1,knew))/2.0_rsh,&
-                                        (ubar(i,j-1,knew) + ubar(i+1,j-1,knew))/2.0_rsh,&
-                                        (ubar(i,j+1,knew) + ubar(i+1,j+1,knew))/2.0_rsh,&
-                                        erolat_res)
+          l_continue_erod=.TRUE.
+          DO WHILE (l_continue_erod)
+
+            IF (l_erosion_by_class) THEN
+              ! cohesion depends on the current ksmax composition, which
+              ! erosion changes every pass, so this is re-tested fresh here
+              ! each time rather than once before the loop
+              CALL mustang_comp_diamgravsan(cv_sed(:,ksmax,i,j), diamgravsan, somgravsan)
+              frmudcr1=mustang_comp_frmudcr1(diamgravsan)
+              l_isitcohesive(i,j)=isitcohesive(cv_sed(:,ksmax,i,j),frmudcr1)
             ENDIF
 
-                       
-      2     CONTINUE
+            IF (l_erosion_by_class .AND. .NOT. l_isitcohesive(i,j)) THEN
+              CALL sed_mustang_erosion_byclass(i, j, erolat_res, dtinv, ubar, vbar, &
+                                                ksmax, dt1, l_continue_erod, &
+                                                niter_ero_noncoh)
+            ELSE
+              CALL sed_mustang_erosion_mixture(i, j, erolat_res, dtinv, &
+                                                ksmax, dt1, l_continue_erod, niter_ero_coh)
+            ENDIF
+
+          ENDDO  ! end of l_continue_erod retry loop
+
+        ENDIF       ! fin test ksmax > ksmi(i,j)
+
+          ! to find an erosion flux in .../m2/s (for particulates only):
+        DO iv=1,nv_use ! nv_use=nvp
+            flx_s2w(iv,i,j)=flx_s2w(iv,i,j)*dtinv
+        ENDDO
+
+          !==============================================
+
+        IF (l_diss_insed) THEN
+          ! for dissolved variable in pore waters
+          ! add water-to-sediment flux explicitly treated with the sediment-to-water flux also explicitly treated
+          !   for dissolved variables, we add the diffusive flux to the interface
+          !    and the flux which results from the expulsion of interstitial water by consolidation:
+        DO iv=nvp+1,nv_adv
+            flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
+          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
+          !                for dissolved subs
+          !  => removal of all substances fluxes linked to erosion and consolidation,
+          !     we keep only diffusion
+            IF(htot(i,j) .GT. h0fond) THEN
+              flx_s2w(iv,i,j)=-fludif(iv,i,j)*dtinv
+            ELSE
+              flx_s2w(iv,i,j)=0.0_rsh
+            ENDIF
+        ENDDO
+
+        DO iv=-1,0
+            flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
+          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
+            flx_s2w(iv,i,j)=0.0_rsh
+        ENDDO
+        ENDIF
+
+        ! surface-layer thickness control: unified from the 3 near-identical
+        ! copies this used to have (BYCLASS non-cohesive/cohesive, BYMIXTURE),
+        ! which differed in threshold (5 vs 2*dzsmin), whether poro_mud/crel_mud
+        ! were propagated to ksmax+1, and whether split/adjust were mutually
+        ! exclusive - all resolved explicitly, not just merged as-is
+        IF (l_splitlayersurf) THEN
+          !! Splitting surface layers if too thick
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          isplit=0
+          DO k=ksmax,ksmax-nlayer_surf_sed+1,-1
+            IF(k > ksmi(i,j)) THEN
+              IF(dzs(k,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) isplit=1
+            ENDIF
+          ENDDO
+          IF(isplit==1 ) then
+            CALL sed_mustang_split_surflayer(i,j,ksmax)
+          ENDIF
+        ELSE
+          ! to avoid increasing the thickness of the surface layer
+          IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
+            IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
+              dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))
+              dzs(ksmax,i,j)=dzs(ksmax,i,j)-dzs(ksmax+1,i,j)
+              poro(ksmax+1,i,j)=poro(ksmax,i,j)
+              poro_mud(ksmax+1,i,j)=poro_mud(ksmax,i,j)
+              crel_mud(ksmax+1,i,j)=crel_mud(ksmax,i,j)
+              cv_sed(:,ksmax+1,i,j)=cv_sed(:,ksmax,i,j)
+              c_sedtot(ksmax+1,i,j)=c_sedtot(ksmax,i,j)
+              ksmax=ksmax+1
+            ENDIF
+          ENDIF
+        ENDIF
+
+        ksma(i,j)=ksmax
+        dzs(ksmax+1:ksdmax,i,j)=0.0_rsh
+        poro(ksmax+1:ksdmax,i,j)=0.0_rsh
+
+          ! Stats on non-coh/coh erosion iterations during halfdt
+        IF (l_outsed_ero_details) THEN
+            var2D_niter_ero(i,j)=niter_ero_noncoh+niter_ero_coh           ! niter_ero
+            var2D_pct_iter_noncoh(i,j)=niter_ero_noncoh/(var2D_niter_ero(i,j)+epsilon_mustang) ! pct_iter_noncoh
+            var2D_pct_iter_coh(i,j)=niter_ero_coh/(var2D_niter_ero(i,j)+epsilon_mustang)    !pct_iter_coh
+        ENDIF
+
+      END DO
+    END DO
+
+  END SUBROUTINE sed_mustang_erosion
+
+!!==============================================================================
+
+  SUBROUTINE sed_mustang_erosion_byclass(i, j, erolat_res, dtinv, ubar, vbar, &
+                                          ksmax, dt1, l_continue_erod, &
+                                          niter_ero_noncoh)
+   !&E--------------------------------------------------------------------------
+   !&E                 ***  ROUTINE sed_mustang_erosion_byclass (former "V2")  ***
+   !&E
+   !&E ** Purpose : computes one erosion retry-pass for cell (i,j), eroding the
+   !&E              ksmax layer class by class (+ bedload, not operational)
+   !&E              (version B. Mengual et P. Le Hir). Only called by the
+   !&E              dispatcher, sed_mustang_erosion, when l_erosion_by_class
+   !&E              and the layer just tested non-cohesive; the cohesive case
+   !&E              is its peer, sed_mustang_erosion_mixture, not this routine
+   !&E              - the retry loop itself lives in the caller
+   !&E
+   !&E ** Description :
+   !&E       arguments IN :
+   !&E          i,j : cell location
+   !&E          erolat_res : lateral erosion result, precomputed by the caller
+   !&E          dtinv : 1/dt
+   !&E          u,v :   ubar, vbar
+   !&E       arguments INOUT :
+   !&E          ksmax, dt1 : retry-pass state, persists across passes in the caller
+   !&E          niter_ero_noncoh : non-cohesive-regime iteration counter,
+   !&E                          accumulated across passes in the caller
+   !&E       arguments OUT :
+   !&E          l_continue_erod : set .true. if another pass is needed
+   !&E
+   !&E     variables OUT :
+   !&E          flx_s2w : concentration flux sediment to water
+   !&E          phieau_s2w : water flux  sediment to water
+   !&E          the sediment has been remodelled
+   !&E          cv_sed, dzs, ksma, poro have changed
+   !&E          flx_bx, flx_by : bedload fluxes
+   !&E
+   !&E
+   !&E ** Called by :  sed_mustang_erosion
+   !&E
+   !&E--------------------------------------------------------------------------
+   !! * Modules used
+
+    USE lateral_erosion, ONLY : lateral_erosion_compute, &
+                                lateral_erosion_saveflx,lateral_erosion_saveflx_IWS, &
+                                lateral_erosion_type
+
+
+   INTEGER, INTENT(IN)                        :: i, j
+   TYPE(lateral_erosion_type),INTENT(INOUT)      :: erolat_res
+   REAL(KIND=rsh),INTENT(IN)                  :: dtinv
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: ubar
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar
+   INTEGER,INTENT(INOUT)                      :: ksmax
+   REAL(KIND=rsh),INTENT(INOUT)               :: dt1
+   LOGICAL,INTENT(OUT)                        :: l_continue_erod
+   REAL(KIND=rsh),INTENT(INOUT)                :: niter_ero_noncoh
+
+   !! * Local declarations
+   INTEGER        ::  iv,ksup,ksmaxa
+   REAL(KIND=rsh) ::  toce,phieau_ero_ij,xeros,excespowr
+   REAL(KIND=rsh) :: cv_sed_tot,dzs_activelayer_ij, &
+                     dt_ero_max,dts2,isthere_erosion
+   REAL(KIND=rsh) :: dzs_ini,poro_ini
+   REAL(KIND=rsh),DIMENSION(1:nvp) :: sed_eros_flx_class_by_class,dt_ero
+   REAL(KIND=rsh),DIMENSION(1:nvp) :: flx_bxij,flx_byij
+   REAL(KIND=rsh),DIMENSION(-1:nv_tot) :: cv_sed_ini
+   REAL(KIND=rsh),DIMENSION(-1:nv_adv)  ::  flx_s2w_eroij
+
+   !!---------------------------------------------------------------------------
+   !! * Executable part
+
+          l_continue_erod=.FALSE.
 
           phieau_ero_ij=0.0_rsh
           flx_s2w_eroij(:)=0.0_rsh
 
-          IF (.NOT. l_eroindep_noncoh) THEN 
-            frmudcr1=0.0_rsh ! sediment always eroded as a mixture
-            diamgravsan=0.0_rsh
-          ELSE
-            diamgravsan=0.0_rsh
-            somgravsan=0.0_rsh
-            DO iv=igrav1,isand2
-              diamgravsan=diamgravsan+diam_sed(iv)*cv_sed(iv,ksmax,i,j)
-              somgravsan=somgravsan+cv_sed(iv,ksmax,i,j)
-            ENDDO
-            IF (isand2>0 .AND. somgravsan>0.0_rsh) THEN
-              diamgravsan=MAX(diamgravsan/(somgravsan+epsi30_MUSTANG),diam_sed(isand2))
-            END IF
-            frmudcr1=MIN(coef_frmudcr1*diamgravsan,frmudcr2)
-          END IF
+          niter_ero_noncoh=niter_ero_noncoh+1.0_rsh
 
-          !!! Test if sediment ksmax is cohesif or not
-          !!! ===========================================
-          l_isitcohesive(i,j)=isitcohesive(cv_sed(:,ksmax,i,j),frmudcr1)
+          CALL sed_mustang_comp_tocr_mixsed(ksmax, i, j, xeros, excespowr, toce)
 
-          IF  (.NOT. l_isitcohesive(i,j)) THEN
+          IF(tauskin(i, j) .GT. toce)THEN
 
-              !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-              !!! CASE 1: NON COHESIVE SEDIMENT --> EROSION CLASS BY CLASS (+ BEDLOAD, not operational) !!!
-              !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!           
-              niter_ero_noncoh=niter_ero_noncoh+1.0_rsh
+               ! active-layer fusion needs a layer below ksmax to merge into;
+               ! when ksmax has already been eroded down to the floor layer
+               ! ksmi, there is nothing below it to fuse with, so skip fusion
+               ! and erode the ksmi layer itself directly below
+               IF (ksmax .GT. ksmi(i,j)) THEN
+                 ! IN : i,j,ksmax / OUT : active layer: updates of ksmax, dzs, cv_sed, c_sedtot, poro
+                 CALL mustang_manage_active_layer(i,j,ksmax  &
+                          ,flx_s2w_eroij                                &
+                          ,phieau_ero_ij                                &
+                          )
+               ENDIF
 
-              CALL sed_MUSTANG_comp_tocr_mixsed(ksmax, i, j, xeros, excespowr, toce)
-
-              IF(tauskin(i, j) .GT. toce)THEN
-
-               ! IN : i,j,ksmax / OUT : active layer: updates of ksmax, dzs, cv_sed, c_sedtot, poro
-               CALL MUSTANGV2_manage_active_layer(i,j,ksmax  &
-                        ,flx_s2w_eroij                                &
-                        ,phieau_ero_ij                                &
-                        )
-
-              END IF  
+              END IF
 
               ksmaxa=ksmax ! needs to be memorised
               poro_ini=poro(ksmax,i,j)
@@ -1629,7 +1758,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
               IF (l_bedload) THEN
                 ! IN : i,j,ksmax / OUT : flx_bxij,flx_byij (bedload Flux in kg/m/s)
-                CALL MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
+                CALL mustang_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
               ELSE
                 flx_bxij(:) = 0.0_rsh
                 flx_byij(:) = 0.0_rsh
@@ -1638,7 +1767,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               ! On calcule un flux derosion pour chaque classe (en kg/m2/s)
               ! IN : i,j,ksmax / OUT : sed_eros_flx_class_by_class(iv)
 
-              CALL MUSTANGV2_comp_eros_flx_indep(i,j,ksmax,        &
+              CALL mustang_comp_eros_flx_indep(i,j,ksmax,        &
                                         om_r,on_r,flx_bxij,flx_byij,       &
                                         ubar,vbar, &
                                         sed_eros_flx_class_by_class)
@@ -1665,7 +1794,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!?????????????????????????????????
               isthere_erosion=sum(flx_bxij(1:nvpc))+sum(flx_byij(1:nvpc))+sum(sed_eros_flx_class_by_class(1:nvpc))
               IF(isthere_erosion .NE. 0._rsh) THEN
-                CALL MUSTANGV2_borne_and_apply_erosion_tot(i,j,ksmax,flx_bxij,flx_byij, &
+                CALL mustang_borne_and_apply_erosion_tot(i,j,ksmax,flx_bxij,flx_byij, &
                         flx_s2w_eroij,                                &
                         phieau_ero_ij,                                &
                         sed_eros_flx_class_by_class,dt1,dt_ero)
@@ -1674,7 +1803,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                 DO iv=1,nvp
                   flx_s2w_eroij(iv)=(sed_eros_flx_class_by_class(iv)/surf_cell(i,j))/MF 
-                  !! warning, unit of sed_eros_flx_class_by_class change in MUSTANGV2_borne_and_apply_erosion_tot !!!
+                  !! warning, unit of sed_eros_flx_class_by_class change in mustang_borne_and_apply_erosion_tot !!!
                 ENDDO
 
                 ! memorisation of lateral erosion for dry cell
@@ -1723,518 +1852,109 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                 dt1=dt1-dt_ero_max
 
-                IF (dt1 .GT. 0.0_rsh .AND. dt_ero_max .GT. 0.0_rsh .AND. ksmax .GT. ksmi(i,j)) THEN
+                IF (dt1 .GT. 0.0_rsh .AND. dt_ero_max .GT. 0.0_rsh .AND. ksmax .GE. ksmi(i,j)) THEN
                   ! Time is not consumed CONTINUE EROSION
-                  GOTO 2
+                  l_continue_erod=.TRUE.
                 END IF
 
 
                 !END IF ! IF(tauskin(i,j).GT.toce)
 
-                IF (l_splitlayersurf) THEN
-                !! Splitting surface layers if too thick
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                isplit=0
-                DO k=ksmax,ksmax-nlayer_surf_sed+1,-1
-                  IF(k > ksmi(i,j)) THEN
-                    IF(dzs(k,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) isplit=1
-                  ENDIF
-                ENDDO
-                IF(isplit==1 ) then
-                 CALL sed_MUSTANG_split_surflayer(i,j,ksmax)
-                ENDIF
-                ELSE
-                ! to avoid increasing the thickness of the surface layer
-                IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
-                    IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
-                       dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))
-                       dzs(ksmax,i,j)=dzs(ksmax,i,j)-dzs(ksmax+1,i,j)
-                       poro(ksmax+1,i,j)=poro(ksmax,i,j)
-                       poro_mud(ksmax+1,i,j)=poro_mud(ksmax,i,j)
-                       crel_mud(ksmax+1,i,j)=crel_mud(ksmax,i,j)
-                       cv_sed(:,ksmax+1,i,j)=cv_sed(:,ksmax,i,j)
-                       c_sedtot(ksmax+1,i,j)=c_sedtot(ksmax,i,j)
-                       ksmax=ksmax+1
-                    ENDIF
-                ENDIF
-                ENDIF
-
               ENDIF  ! no erosion (non cohesive sediment)
 
-            ELSE              ! l_isitcohesive(i,j)==.TRUE.
-
-              !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-              !!!              CASE 2: COHESIVE SEDIMENT --> SEDIMENT ERODED AS A MIXTURE               !!!
-              !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-              !print *,''
-              !print *,'CASE 2: COHESIVE SEDIMENT --> SEDIMENT ERODED AS A MIXTURE'
-
-              k=ksmax
-                    
-              CALL sed_MUSTANG_comp_tocr_mixsed(k, i, j, xeros, excespowr, toce)
-
-              IF (l_outsed_toce) var2D_toce(:,i,j) = toce
-
-              cvolgrv=0.0_rsh
-              DO iv=igrav1,igrav2
-                cvolgrv=cvolgrv+cv_sed(iv,k,i,j)/ros(iv)
-              ENDDO
-              csanmud=0.0_rsh
-              DO iv=igrav2+1,nvpc
-                csanmud=csanmud+cv_sed(iv,k,i,j)
-              ENDDO
-              erodab=csanmud*dzs(k,i,j)
-              ero=0.0_rsh
-
-              IF(htot(i,j) .GT. h0fond) THEN
-                IF(tauskin(i, j) .GT. toce)THEN
-                  CALL sed_MUSTANG_comp_eros_flx(tauskin(i, j), toce, excespowr, xeros, sed_eros_flx)
-                  ero = sed_eros_flx
-                ENDIF ! tauskin(i, j) .GT. toce
-              ENDIF
-              IF (l_erolat) THEN
-                CALL lateral_erosion_compute(toce, erolat_res)
-                ero = ero + erolat_res%ero
-              ENDIF
-
-              erosi=MF*dt1*ero
-
-              IF(erosi >  0.0_rsh)THEN
-              
-                 niter_ero_coh=niter_ero_coh+1.0_rsh
-                 dzsa=dzs(k,i,j)
-                 poroa=poro(k,i,j)
-                           
-                 IF(erosi.LE.erodab)THEN
-       
-                          
-                      ! Output: cumulated time (in hours) elapsed in cohesive regime
-                      ! --> in this case, all sand/mud sediments can be eroded within dt1
-                   IF (l_outsed_ero_details) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1/3600.0_rsh)  ! tero_coh
-
-                   ddzs=erosi/csanmud
-                
-                   DO iv=igrav1,igrav2
-                     mass_sed(iv)=cv_sed(iv,k,i,j)*dzsa
-                   END DO
-
-                   DO iv=igrav2+1,nv_use ! nv_use=nvp
-                     dflx_s2w=ddzs*cv_sed(iv,k,i,j)
-                     !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+dflx_s2w/MF 
-                     flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+dflx_s2w/MF
-                     !cv_sed(iv,k,i,j)=(cv_sed(iv,k,i,j)*dzsa-dflx_s2w)*dzsisu
-                     mass_sed(iv)=(cv_sed(iv,k,i,j)*dzsa)-dflx_s2w
-                   ENDDO
-             
-                   mass_tot=0.0_rsh
-                   DO iv=1,nvpc
-                     mass_tot=mass_tot+mass_sed(iv)
-                   END DO
-
-                   IF (mass_tot .GT. 0.0_rsh) THEN
- 
-                     DO iv=1,imud2
-                      frac_sed(iv)=mass_sed(iv)/mass_tot
-                     END DO
-
-                     CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud(k,i,j), &
-                                crel_mud(k,i,j), poro(k,i,j)) 
-                             ! poro_mud is unchanged here
-
-                     !IF (crel_mud(k,i,j) .GT. 1500.0_rsh) THEN
-                     !  print *,'in sed_erosion_mixsed 2'
-                     !  print *,' > crel_mud(k,i,j) = ',crel_mud(k,i,j)
-                     !  print *,' > sommud = ',sommud
-                     !  print *,' > cvolgrvsan = ',cvolgrvsan
-                     !  print *,' > cv_sed(:,k,i,j) = ',cv_sed(:,k,i,j)
-                     !END IF
-
-
-                     dzs(k,i,j)=mass_tot/((1.0_rsh-poro(k,i,j))*ros(1))
-
-                     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-                     ! dissolved variable in pore waters and water fluxes at the interface
-                     !--------------------------------------------------------------------
-                     !  ==> flx_s2w and cv_sed and phieau_s2w
-                     ! layer modified by erosion  ==> code 3
-                     ! dissolved concentrations in this layer unchanged by erosion
-                       porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
-                       porowater1=dzsa*poroa
-                       CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,3,  &
-                                    phieau_ero_ij=phieau_ero_ij,           &
-                                    flx_s2w_eroij=flx_s2w_eroij,           &
-                                    porowater1=porowater1,                 &
-                                    cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j),   &
-                                    porowater_new=porowater_new)
-                     ENDIF
-
-                     !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + coeff_dzsmin*SUM( (cv_sed(1:nvpc,k,i,j)/c_sedtot(k,i,j))*diam_sed(1:nvpc) )
-                     !dzsmin=dzsminuni + coeff_dzsmin*SUM( (cv_sed(1:isand2,k,i,j)/c_sedtot(k,i,j))*diam_sed(1:isand2) ) ??
-                     !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + coeff_dzsmin*SUM( frac_sed(1:nvpc)*diam_sed(1:nvpc) )
-                     dzsmin=dzsminvar(frac_sed)
-
-
-                     IF (dzs(k,i,j) .GT. dzsmin) THEN
-
-                       DO iv=1,nvp
-                         cv_sed(iv,k,i,j)=mass_sed(iv)/dzs(k,i,j)
-                       END DO
-                       c_sedtot(k,i,j)=mass_tot/dzs(k,i,j)
-
-                     ELSE  ! dzs<=dzsmin
-
-                      CALL MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax, &
-                                  phieau_ero_ij,flx_s2w_eroij,   &
-                                                        mass_sed)
-                      ! dissolved concentrations and fluxes are updated during fusion in routine MUSTANGV2_manage_small_mass_in_ksmax
-
-                     END IF
-
-                   ELSE  ! mass_tot<=0
- 
-                     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-                      ! dissolved variable in pore waters and water fluxes at the interface
-                      !--------------------------------------------------------------------
-                      !  ==> flx_s2w and phieau_s2w
-                      ! layer elimination ==> code 1
-                     porowater1=dzsa*poroa
-                     CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,1,  &
-                            phieau_ero_ij=phieau_ero_ij,           &
-                            flx_s2w_eroij=flx_s2w_eroij,           &
-                            porowater1=porowater1,                   &
-                            cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j))
-                     ENDIF
-                     dzs(ksmax,i,j)=0.0_rsh
-                     cv_sed(:,ksmax,i,j)=0.0_rsh
-                     c_sedtot(ksmax,i,j)=0.0_rsh
-                     poro(ksmax,i,j)=0.0_rsh
-                     poro_mud(ksmax,i,j)=0.0_rsh
-                     crel_mud(ksmax,i,j)=0.0_rsh
-
-                     ksmax=ksmax-1
-
-                   END IF
-
-
-                   IF (l_erolat) THEN
-                    CALL lateral_erosion_saveflx( erolat_res, flx_s2w_eroij(:) &
-                      , flx_s2w_corip1(:,i,j), flx_s2w_corim1(:,i,j) &
-                      , flx_s2w_corjm1(:,i,j), flx_s2w_corjp1(:,i,j) &
-                      )
-                    IF (l_fluxwat_IWS) THEN
-                      CALL lateral_erosion_saveflx_IWS( erolat_res, phieau_ero_ij &
-                        , phieau_s2w_corip1(i,j) &
-                        , phieau_s2w_corim1(i,j) &
-                        , phieau_s2w_corjm1(i,j) &
-                        , phieau_s2w_corjp1(i,j) &
-                        )
-                    ENDIF
-                   ENDIF
-
-
-                   phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
-                   flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
-
-                 ELSE IF(csanmud /= 0.0_rsh) THEN  !erosi/erodab
-                  ! ELSE ! --> suffisant car probablement inutile etant donne que l_isit_cohesive = TRUE
-
-                    ! Output: cumulated time (in hours) elapsed in cohesive regime
-                    IF (l_outsed_ero_details) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1*(erodab/erosi)/3600.0_rsh)   ! tero_coh
-                
-                    DO iv=igrav2+1,nv_use ! nv_use=nvp
-                       !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+volerod*cv_sed(iv,k,i,j)/MF
-                       !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+dzs(k,i,j)*cv_sed(iv,k,i,j)/MF
-                       flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+dzs(k,i,j)*cv_sed(iv,k,i,j)/MF
-                       cv_sed(iv,k,i,j)=0.0_rsh
-                    ENDDO
-
-                
-                    !IF(cvolgrv.LE.0.0_rsh)THEN
-                    IF(cvolgrv.LE.epsilon_MUSTANG)THEN ! Attention, a la base cvolgrv.LE.0.0_rsh, conservativite ?
-                    
-                       IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-                       ! dissolved variable in pore waters and water fluxes at the interface
-                       !--------------------------------------------------------------------
-                       !  ==> flx_s2w and phieau_s2w
-                       ! layer elimination ==> code 1
-                       porowater1=dzsa*poroa
-                       CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,1, &
-                            phieau_ero_ij=phieau_ero_ij,           &
-                            flx_s2w_eroij=flx_s2w_eroij,           &
-                            porowater1=porowater1, &
-                            cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j))
-                       ENDIF
-
-                       ! reset  dzs and poro
-                       dzs(ksmax,i,j)=0.0_rsh
-                       poro(ksmax,i,j)=0.0_rsh
-                       poro_mud(ksmax,i,j)=0.0_rsh
-                       cv_sed(:,ksmax,i,j)=0.0_rsh
-                       c_sedtot(ksmax,i,j)=0.0_rsh
-                       crel_mud(ksmax,i,j)=0.0_rsh
-                  
-                       ksmax=ksmax-1
-                  
-                    ELSE
-
-                       mass_sed(:)=0.0_rsh
-                       mass_tot=0.0_rsh
-                       DO iv=igrav1,igrav2
-                         mass_sed(iv)=cv_sed(iv,k,i,j)*dzsa
-                         mass_tot=mass_tot+mass_sed(iv)
-                       END DO
-
-                       frac_sed(:)=0.0_rsh
-                       DO iv=igrav1,igrav2
-                         frac_sed(iv)=mass_sed(iv)/mass_tot
-                       END DO
-
-                       
-                       !  crel_mud(k,i,j) = 0.0_rsh ????
-                       CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud(k,i,j), &
-                                crel_mud(k,i,j),poro(k,i,j)) 
-
-
-                       !IF (crel_mud(k,i,j) .GT. 1500.0_rsh) THEN
-                       !  print *,'in sed_erosion_mixsed 2'
-                       !  print *,' > crel_mud(k,i,j) = ',crel_mud(k,i,j)
-                       !  print *,' > sommud = ',sommud
-                       !  print *,' > cvolgrvsan = ',cvolgrvsan
-                       !  print *,' > cv_sed(:,k,i,j) = ',cv_sed(:,k,i,j)
-                       !END IF
-
-                       dzs(k,i,j)=mass_tot/((1.0_rsh-poro(k,i,j))*ros(1))
-
-                        IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-                        ! dissolved variable in pore waters and water fluxes at the interface
-                        !--------------------------------------------------------------------
-                        !  ==> flx_s2w and cv_sed and phieau_s2w
-                        ! dissolved concentrations in this layer unchanged by erosion
-                        porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
-                        porowater1=dzsa*poroa
-                        CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,3,  &
-                                    phieau_ero_ij=phieau_ero_ij,           &
-                                    flx_s2w_eroij=flx_s2w_eroij,           &
-                                    porowater1=porowater1,                &
-                                    cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j),  &
-                                    porowater_new=porowater_new)
-                        ENDIF
-
-                       ! BM: In case of very small remaining masses of gravel(s), the new dzs(k,i,j) can be 0
-                       ! To prevent this, a test is done on dzs to determine if the layer characteristics
-                       ! can be updated or if these small sediment quantities have to be put in the underlying
-                       ! layer. The criterion is dzsmin here
-
-                       !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + coeff_dzsmin*SUM( (cv_sed(igrav1:igrav2,k,i,j)/c_sedtot(k,i,j))*diam_sed(igrav1:igrav2) ) ! NON 
-                       !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + coeff_dzsmin* &
-                       !        SUM(frac_sed(igrav1:igrav2)*diam_sed(igrav1:igrav2))                    
-                       dzsmin=dzsminvar(frac_sed)
-
-                       IF (dzs(k,i,j) .GT. dzsmin) THEN
-
-                         c_sedtot(k,i,j)=0.0_rsh
-                         DO iv=igrav1,igrav2
-                           cv_sed(iv,k,i,j)=mass_sed(iv)/dzs(k,i,j)
-                           c_sedtot(k,i,j)=c_sedtot(k,i,j)+cv_sed(iv,k,i,j)
-                         END DO
-                         
-
-                       ELSE   ! dzs<=dzsmin
-
-                        CALL MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,   &
-                                       phieau_ero_ij,flx_s2w_eroij,  &
-                                                   mass_sed)
-                         ! dissolved concentrations IWS fluxes updated in MUSTANGV2_manage_small_mass_in_ksmax
-                   
-                       ENDIF
-                   ENDIF  ! en loop on cvolgrv
-              
-                   IF (l_erolat) THEN
-                    CALL lateral_erosion_saveflx( erolat_res, flx_s2w_eroij(:) &
-                      , flx_s2w_corip1(:,i,j), flx_s2w_corim1(:,i,j) &
-                      , flx_s2w_corjm1(:,i,j), flx_s2w_corjp1(:,i,j) &
-                      )
-                    IF (l_fluxwat_IWS) THEN
-                      CALL lateral_erosion_saveflx_IWS( erolat_res, phieau_ero_ij &
-                        , phieau_s2w_corip1(i,j) &
-                        , phieau_s2w_corim1(i,j) &
-                        , phieau_s2w_corjm1(i,j) &
-                        , phieau_s2w_corjp1(i,j) &
-                        )
-                    ENDIF
-                   ENDIF
-                   phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
-                   flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
-
-                   IF (ksmax .GT. ksmi(i,j)) THEN
-                    dt1=dt1*(1.0_rsh-erodab/erosi) !  erosi=MF*dt1*ero
-                    ! Time is not consumed CONTINUE EROSION
-                    GOTO 2
-                  ENDIF 
-
-              ENDIF   ! fin test erosi > erodab
-          
-              ! in order to avoid increasing thickness of the surface layer
-              ! if after manage_small dzs(ksmax) > dzsmax+2*dzsmin ==> split surface layer
-              IF(ksmax .LT. ksdmax .AND. dzs(ksmax,i,j) > dzsmax(i,j) + 2* dzsmin) THEN
-                dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))   
-                dzs(ksmax,i,j)=dzs(ksmax,i,j)-dzs(ksmax+1,i,j)
-                poro(ksmax+1,i,j)=poro(ksmax,i,j)
-                poro_mud(ksmax+1,i,j)=poro_mud(ksmax,i,j)
-                cv_sed(:,ksmax+1,i,j)=cv_sed(:,ksmax,i,j)
-                crel_mud(ksmax+1,i,j)=crel_mud(ksmax,i,j)
-                c_sedtot(ksmax+1,i,j)=c_sedtot(ksmax,i,j)
-                ksmax=ksmax+1
-              ENDIF
-          
-             ENDIF    ! fin test erosi=0
-            ENDIF     ! fin test l_isit_cohesive
-            
-        ENDIF       ! fin test ksmax > ksmi(i,j) 
-
-          ! to find an erosion flux in .../m2/s (for particulates only):
-        DO iv=1,nv_use ! nv_use=nvp
-            flx_s2w(iv,i,j)=flx_s2w(iv,i,j)*dtinv
-        ENDDO
-        
-          !==============================================
-          
-        IF (l_diss_insed) THEN
-          ! for dissolved variable in pore waters
-          ! add water-to-sediment flux explicitly treated with the sediment-to-water flux also explicitly treated
-          !   for dissolved variables, we add the diffusive flux to the interface
-          !    and the flux which results from the expulsion of interstitial water by consolidation:
-        DO iv=nvp+1,nv_adv
-            flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
-        ENDDO
-
-        DO iv=-1,0
-            flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
-        ENDDO
-        ENDIF
-
-        ksma(i,j)=ksmax
-
-          ! no correction of water column height (could be !)
-          
-
-          ! Stats on non-coh/coh erosion iterations during halfdt
-        IF (l_outsed_ero_details) THEN
-            var2D_niter_ero(i,j)=niter_ero_noncoh+niter_ero_coh           ! niter_ero
-            var2D_pct_iter_noncoh(i,j)=niter_ero_noncoh/(var2D_niter_ero(i,j)+epsilon_MUSTANG) ! pct_iter_noncoh
-            var2D_pct_iter_coh(i,j)=niter_ero_coh/(var2D_niter_ero(i,j)+epsilon_MUSTANG)    !pct_iter_coh
-        ENDIF
-
-     END DO
-   END DO
-
    ! version V2
-  END SUBROUTINE sed_MUSTANG_erosion
+  END SUBROUTINE sed_mustang_erosion_byclass
 
-
-#else
-!  version V1
    !!==============================================================================
-  SUBROUTINE sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,  &
-                                 ubar, vbar, dt_true) 
+  SUBROUTINE sed_mustang_erosion_mixture(i, j, erolat_res, dtinv, &
+                                          ksmax, dt1, l_continue_erod, niter_ero_coh)
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_erosion  version V1 ***
+   !&E                 ***  ROUTINE sed_mustang_erosion_mixture ***
    !&E
-   !&E ** Purpose : computes erosion fluxes
+   !&E ** Purpose : computes one erosion retry-pass for cell (i,j), eroding the
+   !&E              ksmax layer as a single sand/mud/gravel mixture rather than
+   !&E              class by class; the retry loop itself lives in the caller.
+   !&E              Shared by the two contexts that used to duplicate this
+   !&E              logic: sed_mustang_erosion_byclass's cohesive case (CASE 2)
+   !&E              and the whole of what used to be the separate
+   !&E              sed_mustang_erosion_BYMIXTURE (former "V1") subroutine,
+   !&E              called directly by sed_mustang_erosion when
+   !&E              .NOT. l_erosion_by_class
    !&E
-   !&E ** Description : 
+   !&E ** Description :
    !&E       arguments IN :
-   !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          dtinv, dt_true : 1/dt  and dt
-   !&E          surf_cell : cells surface
-   !&E          u,v :   ubar, vbar
-   !&E      
-   !&E     variables OUT : 
+   !&E          i,j : cell location
+   !&E          erolat_res : lateral erosion result, precomputed by the caller
+   !&E          dtinv : 1/dt
+   !&E       arguments INOUT :
+   !&E          ksmax, dt1 : retry-pass state, persists across passes in the caller
+   !&E          niter_ero_coh : cohesive-regime iteration counter, accumulated
+   !&E                          across passes in the caller
+   !&E       arguments OUT :
+   !&E          l_continue_erod : set .true. if another pass is needed
+   !&E
+   !&E     variables OUT :
    !&E          flx_s2w : concentration flux sediment to water
    !&E          phieau_s2w : water flux  sediment to water
    !&E          the sediment has been remodelled
    !&E          cv_sed, dzs, ksma, poro have changed
    !&E
    !&E
-   !&E ** Called by :  MUSTANG_update
-  !&E
+   !&E ** Called by :  sed_mustang_erosion, sed_mustang_erosion_byclass
+   !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-   USE lateral_erosion, ONLY : lateral_erosion_get, lateral_erosion_compute, &
+   USE lateral_erosion, ONLY : lateral_erosion_compute, &
                                lateral_erosion_saveflx,lateral_erosion_saveflx_IWS, &
                                lateral_erosion_type
 
-   INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
+   INTEGER, INTENT(IN)                        :: i, j
+   TYPE(lateral_erosion_type),INTENT(INOUT)      :: erolat_res
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv
-   REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: ubar
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar 
+   INTEGER,INTENT(INOUT)                      :: ksmax
+   REAL(KIND=rsh),INTENT(INOUT)               :: dt1
+   LOGICAL,INTENT(OUT)                        :: l_continue_erod
+   REAL(KIND=rsh),INTENT(INOUT)                :: niter_ero_coh
 
    !! * Local declarations
-   INTEGER        ::  i,j,k,iv,ksmax,ksup,ksmaxa,isplit
+   INTEGER        ::  iv,ksup
    LOGICAL        ::  fusion
-   REAL(KIND=rsh) ::  dt1,toce,cvolgrv,csanmud,phieau_ero_ij,                  &
-                      erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w,       &
-                      cvolp,volerod,poroa,poroam1,dflusve,      &
-                      xeros, sed_eros_flx,excespowr,dzpoi
-   TYPE(lateral_erosion_type) :: erolat_res
+   REAL(KIND=rsh) ::  toce,cvolgrv,csanmud,phieau_ero_ij,                  &
+                      erodab,ero,erosi,ddzs,dzsa,dflx_s2w,       &
+                      volerod,poroa,      &
+                      xeros, sed_eros_flx,excespowr
+   REAL(KIND=rsh) :: mass_tot,porowater1,porowater_new
+   REAL(KIND=rsh),DIMENSION(1:nvpc) :: frac_sed
+   REAL(KIND=rsh),DIMENSION(1:nvp)  :: mass_sed
 ! because of lateral erosion, it is necessary to keep in memory the accumulated eroded fluxes
    REAL(KIND=rsh),DIMENSION(-1:nv_adv)  ::  flx_s2w_eroij
 
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-      DO j=jfirst,jlast
-        DO i=ifirst,ilast
-
-          flx_s2w(-1:nv_adv,i,j)=0.0_rsh
-
-          ksmax=ksma(i,j)
-
-          IF(ksmax.GE.ksmi(i,j))THEN
-
-            dt1=REAL(dt_true,rsh)
-            k=ksmax
-
-            IF (l_erolat) THEN
-              ! compute needed variables for erolat outside the 2 continue loop
-              CALL lateral_erosion_get( htot(i, j), &
-                                        htot(i+1,j),htot(i-1,j), &
-                                        htot(i,j-1),htot(i,j+1), &
-                                        surf_cell(i,j), &
-                                        surf_cell(i+1,j), surf_cell(i-1,j), &
-                                        surf_cell(i,j-1), surf_cell(i,j+1), &
-                                        (vbar(i+1,j,knew) + vbar(i+1,j+1,knew))/2.0_rsh,&
-                                        (vbar(i-1,j,knew) + vbar(i-1,j+1,knew))/2.0_rsh,&
-                                        (ubar(i,j-1,knew) + ubar(i+1,j-1,knew))/2.0_rsh,&
-                                        (ubar(i,j+1,knew) + ubar(i+1,j+1,knew))/2.0_rsh,&
-                                        erolat_res)
-            ENDIF
-                       
-        2   CONTINUE
+            l_continue_erod=.FALSE.
 
             phieau_ero_ij=0.0_rsh
             flx_s2w_eroij(:)=0.0_rsh
 
-            CALL sed_MUSTANG_comp_tocr_mixsed(k, i, j, xeros, excespowr, toce)
-            
+            CALL sed_mustang_comp_tocr_mixsed(ksmax, i, j, xeros, excespowr, toce)
+
             IF (l_outsed_toce) var2D_toce(:,i,j) = toce
 
             cvolgrv=0.0_rsh
             DO iv=igrav1,igrav2
-              cvolgrv=cvolgrv+cv_sed(iv,k,i,j)/ros(iv)
+              cvolgrv=cvolgrv+cv_sed(iv,ksmax,i,j)/ros(iv)
             ENDDO
             csanmud=0.0_rsh
             DO iv=igrav2+1,nvpc
-              csanmud=csanmud+cv_sed(iv,k,i,j)
+              csanmud=csanmud+cv_sed(iv,ksmax,i,j)
             ENDDO
-            erodab=csanmud*dzs(k,i,j)
+            erodab=csanmud*dzs(ksmax,i,j)
             ero=0.0_rsh
 
             IF(htot(i,j) .GT. h0fond) THEN
               IF(tauskin(i,j) .GT. toce)THEN
-                CALL sed_MUSTANG_comp_eros_flx(tauskin(i,j), toce, excespowr, xeros, sed_eros_flx)
+                CALL sed_mustang_comp_eros_flx(tauskin(i,j), toce, excespowr, xeros, sed_eros_flx)
                 ero=sed_eros_flx
               ENDIF ! tauskin(i, j) .GT. toce
             ENDIF
@@ -2247,55 +1967,93 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             erosi = MF * dt1 * ero
 
             IF(erosi >  0.0_rsh)THEN
+
+              niter_ero_coh=niter_ero_coh+1.0_rsh
+              dzsa=dzs(ksmax,i,j)
+              poroa=poro(ksmax,i,j)
               IF(erosi.LE.erodab)THEN
+
+                ! Output: cumulated time (in hours) elapsed in cohesive regime
+                ! --> in this case, all sand/mud sediments can be eroded within dt1
+                IF (l_outsed_ero_details) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1/3600.0_rsh)  ! tero_coh
+
                 ddzs=erosi/csanmud
-                dzsa=dzs(k,i,j)
-                dzs(k,i,j)=MAX(dzsa-ddzs,dzsa*cvolgrv/cvolmaxsort)
-                IF(dzs(k,i,j).LE.0.0_rsh)THEN
-                  !WRITE(*,*)'en kij:',k,i,j,dzs(k,i,j),dzsa,ddzs,csanmud,cvolgrv
-                  dzs(k,i,j)=epsilon_MUSTANG
-                ENDIF
-                dzsisu=1.0_rsh/dzs(k,i,j)
+
                 DO iv=igrav1,igrav2
-                  cv_sed(iv,k,i,j)=cv_sed(iv,k,i,j)*dzsa*dzsisu
-                ENDDO
+                  mass_sed(iv)=cv_sed(iv,ksmax,i,j)*dzsa
+                END DO
+
                 DO iv=igrav2+1,nv_use ! nv_use=nvp
-                  dflx_s2w=ddzs*cv_sed(iv,k,i,j)
-                  !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+dflx_s2w/MF 
+                  dflx_s2w=ddzs*cv_sed(iv,ksmax,i,j)
                   flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+dflx_s2w/MF
-                  cv_sed(iv,k,i,j)=(cv_sed(iv,k,i,j)*dzsa-dflx_s2w)*dzsisu
+                  mass_sed(iv)=(cv_sed(iv,ksmax,i,j)*dzsa)-dflx_s2w
                 ENDDO
-                c_sedtot(k,i,j)=0.0_rsh
-                cvolp=0.0_rsh
+
+                mass_tot=0.0_rsh
                 DO iv=1,nvpc
-                  c_sedtot(k,i,j)=c_sedtot(k,i,j)+cv_sed(iv,k,i,j)
-                  cvolp=cvolp+cv_sed(iv,k,i,j)/ros(iv)
-                ENDDO
-                poroa=poro(k,i,j)
-                poro(k,i,j)=1.0_rsh-cvolp
+                  mass_tot=mass_tot+mass_sed(iv)
+                END DO
 
-                IF (l_diss_insed) THEN
-                ! dissolved variable in pore waters
-                DO iv=nvp+1,nv_adv
-                  dflusve=ddzs*poroa*cv_sed(iv,k,i,j)
-                  flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+dflusve/MF
-                  ! Fev2017 BT : qd il y a erosion, pourquoi conc dissouste changerait elle dans les eaux intertertitielles ?
-                  ! cv_sed(iv,k,i,j)=(cv_sed(iv,k,i,j)*dzsa*poroa-dflusve)*dzsisu/poro(k,i,j)
-                ENDDO
+                IF (mass_tot .GT. 0.0_rsh) THEN
 
-                ! Temperature and salinity
-                DO iv=-1,0
-                  dflusve=ddzs*poroa*cv_sed(iv,k,i,j)
-                  flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+dflusve/MF
-                  ! Fev2017 BT : qd il y a erosion, pourquoi conc dissouste changerait elle dans les eaux intertertitielles ?
-                  ! cv_sed(iv,k,i,j)=(cv_sed(iv,k,i,j)*dzsa*poroa-dflusve)*dzsisu/poro(k,i,j)
-                ENDDO
-                ENDIF
+                  DO iv=1,imud2
+                   frac_sed(iv)=mass_sed(iv)/mass_tot
+                  END DO
 
-                IF (l_fluxwat_IWS) THEN
-                ! flux d eau du a l erosion
-                phieau_ero_ij=phieau_ero_ij+REAL(ddzs*poroa*surf_cell(i,j),rlg)/MF
-                ENDIF
+                  CALL mustang_porosity(frac_sed, poro_mud(ksmax,i,j), crel_mud(ksmax,i,j), &
+                             mass_tot, dzsa, ddzs, cvolgrv, mass_sed(1:nvpc), &
+                             poro(ksmax,i,j), dzs(ksmax,i,j))
+
+                  IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
+                    porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
+                    porowater1=dzsa*poroa
+                    CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,3,  &
+                                 phieau_ero_ij=phieau_ero_ij,           &
+                                 flx_s2w_eroij=flx_s2w_eroij,           &
+                                 porowater1=porowater1,                 &
+                                 cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j),   &
+                                 porowater_new=porowater_new)
+                  ENDIF
+
+                  ! when ksmax is the floor layer ksmi, there is no layer below
+                  ! to merge the small residual mass into - accept the
+                  ! thin layer as-is instead of calling the small-mass fusion
+                  IF (dzs(ksmax,i,j) .GT. dzsmin .OR. ksmax .EQ. ksmi(i,j)) THEN
+
+                    DO iv=1,nvp
+                      cv_sed(iv,ksmax,i,j)=mass_sed(iv)/dzs(ksmax,i,j)
+                    END DO
+                    c_sedtot(ksmax,i,j)=mass_tot/dzs(ksmax,i,j)
+
+                  ELSE  ! dzs<=dzsmin
+
+                   CALL mustang_manage_small_mass_in_ksmax(i,j,ksmax, &
+                               phieau_ero_ij,flx_s2w_eroij,   &
+                                                     mass_sed)
+                   ! dissolved concentrations and fluxes are updated during fusion in routine mustang_manage_small_mass_in_ksmax
+
+                  END IF
+
+                ELSE  ! mass_tot<=0
+
+                  IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
+                   porowater1=dzsa*poroa
+                   CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,1,  &
+                          phieau_ero_ij=phieau_ero_ij,           &
+                          flx_s2w_eroij=flx_s2w_eroij,           &
+                          porowater1=porowater1,                   &
+                          cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j))
+                  ENDIF
+                  dzs(ksmax,i,j)=0.0_rsh
+                  cv_sed(:,ksmax,i,j)=0.0_rsh
+                  c_sedtot(ksmax,i,j)=0.0_rsh
+                  poro(ksmax,i,j)=0.0_rsh
+                  poro_mud(ksmax,i,j)=0.0_rsh
+                  crel_mud(ksmax,i,j)=0.0_rsh
+
+                  ksmax=ksmax-1
+
+                END IF
 
                 ! memorisation of lateral erosion for dry cell
                 IF (l_erolat) THEN
@@ -2313,74 +2071,88 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   ENDIF
                 ENDIF
 
+                IF (l_fluxwat_IWS) THEN
                 phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
+                ENDIF
                 flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
 
               ELSE IF(csanmud /= 0.0_rsh) THEN  !erosi/erodab
+
+                ! Output: cumulated time (in hours) elapsed in cohesive regime
+                IF (l_outsed_ero_details) var2D_tero_coh(i,j)=var2D_tero_coh(i,j)+(dt1*(erodab/erosi)/3600.0_rsh)   ! tero_coh
+
                 volerod=erodab/csanmud
                 DO iv=igrav2+1,nv_use ! nv_use=nvp
-                  !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+volerod*cv_sed(iv,k,i,j)/MF
-                  flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+volerod*cv_sed(iv,k,i,j)/MF
-                  cv_sed(iv,k,i,j)=0.0_rsh
+                  flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+volerod*cv_sed(iv,ksmax,i,j)/MF
+                  cv_sed(iv,ksmax,i,j)=0.0_rsh
                 ENDDO
-                IF (l_diss_insed) THEN
-                ! dissolved variable in pore waters
-                DO iv=nvp+1,nv_adv
-                  flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+volerod*poro(k,i,j)*cv_sed(iv,k,i,j)/MF
-                  cv_sed(iv,k,i,j)=0.0_rsh
-                ENDDO
-                ! Temperature and salinity
-                DO iv=-1,0
-                  flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+volerod*poro(k,i,j)*cv_sed(iv,k,i,j)/MF
-                  cv_sed(iv,k,i,j)=0.0_rsh
-                ENDDO
-                ENDIF
-                IF (l_fluxwat_IWS) THEN
-               ! water flux due to erosion
-                phieau_ero_ij=phieau_ero_ij+ REAL(volerod*poro(k,i,j)*surf_cell(i,j),rlg)/MF
-                ENDIF
                 IF(cvolgrv.LE.0.0_rsh)THEN
-                  ! reset  dzs, poro, and the now-inactive layer's concentrations
+                  ! reset dzs, poro, and the now-inactive layer's concentrations
+                  IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
+                   porowater1=dzsa*poroa
+                   CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,1, &
+                        phieau_ero_ij=phieau_ero_ij,           &
+                        flx_s2w_eroij=flx_s2w_eroij,           &
+                        porowater1=porowater1, &
+                        cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j))
+                  ENDIF
                   dzs(ksmax,i,j)=0.0_rsh
                   poro(ksmax,i,j)=0.0_rsh
+                  poro_mud(ksmax,i,j)=0.0_rsh
                   cv_sed(:,ksmax,i,j)=0.0_rsh
                   c_sedtot(ksmax,i,j)=0.0_rsh
+                  crel_mud(ksmax,i,j)=0.0_rsh
                   ksmax=ksmax-1
                 ELSE
-                  dzsa=dzs(k,i,j)
-                  dzs(k,i,j)=dzsa*cvolgrv/cvolmaxsort
-                  !??? dzs(k,i,j)=dzsa*cvolgrv/cvolmaxmel
-                  c_sedtot(k,i,j)=0.0_rsh
-                  DO iv=igrav1,igrav2
-                      cv_sed(iv,k,i,j)=cv_sed(iv,k,i,j)*dzsa/dzs(k,i,j)
-                      c_sedtot(k,i,j)=c_sedtot(k,i,j)+cv_sed(iv,k,i,j)
-                  ENDDO
-                  poroa=poro(k,i,j)
-                  poro(k,i,j)=1.0_rsh-cvolmaxsort
-                  !??? poro(k,i,j)=1.0_rsh-cvolmaxmel
-                  IF (l_diss_insed) THEN
-                  ! dissolved variable in pore waters
-                  DO iv=nvp+1,nv_adv
-                    !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+cv_sed(iv,k,i,j)*(dzsa*poroa   &
-                    flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+cv_sed(iv,k,i,j)*(dzsa*poroa   &
-                                   -dzs(k,i,j)*poro(k,i,j))
-                  ENDDO
 
-                  ! Temperature and salinity
-                  DO iv=-1,0
-                    !flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+cv_sed(iv,k,i,j)*(dzsa*poroa   &
-                    flx_s2w_eroij(iv)=flx_s2w_eroij(iv)+cv_sed(iv,k,i,j)*(dzsa*poroa   &
-                                   -dzs(k,i,j)*poro(k,i,j))
-                  ENDDO
+                  mass_sed(:)=0.0_rsh
+                  mass_tot=0.0_rsh
+                  DO iv=igrav1,igrav2
+                    mass_sed(iv)=cv_sed(iv,ksmax,i,j)*dzsa
+                    mass_tot=mass_tot+mass_sed(iv)
+                  END DO
+
+                  frac_sed(:)=0.0_rsh
+                  DO iv=igrav1,igrav2
+                    frac_sed(iv)=mass_sed(iv)/mass_tot
+                  END DO
+
+                  CALL mustang_comp_poro_mixsed(frac_sed, poro_mud(ksmax,i,j), &
+                           crel_mud(ksmax,i,j),poro(ksmax,i,j))
+
+                  dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1))
+
+                  IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
+                    porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
+                    porowater1=dzsa*poroa
+                    CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,3,  &
+                                phieau_ero_ij=phieau_ero_ij,           &
+                                flx_s2w_eroij=flx_s2w_eroij,           &
+                                porowater1=porowater1,                &
+                                cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j),  &
+                                porowater_new=porowater_new)
                   ENDIF
-                  IF (l_fluxwat_IWS) THEN
-               ! water flux due to erosion
-                  !phieau_s2w(i,j)=phieau_s2w(i,j)+                         &
-                  phieau_ero_ij=phieau_ero_ij + &
-                                 REAL((dzsa*poroa-dzs(k,i,j)*poro(k,i,j))*surf_cell(i,j),rlg)
+
+                  IF (dzs(ksmax,i,j) .GT. dzsmin .OR. ksmax .EQ. ksmi(i,j)) THEN
+
+                    c_sedtot(ksmax,i,j)=0.0_rsh
+                    DO iv=igrav1,igrav2
+                      cv_sed(iv,ksmax,i,j)=mass_sed(iv)/dzs(ksmax,i,j)
+                      c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)+cv_sed(iv,ksmax,i,j)
+                    END DO
+
+                  ELSE   ! dzs<=dzsmin
+
+                   CALL mustang_manage_small_mass_in_ksmax(i,j,ksmax,   &
+                                  phieau_ero_ij,flx_s2w_eroij,  &
+                                              mass_sed)
+
                   ENDIF
+                ! note: when cvolgrv>0 (gravel lag kept, ELSE branch above),
+                ! ksmax is deliberately NOT decremented here: next pass
+                ! re-tests this same now gravel-armored layer
                 ENDIF  ! end loop on cvolgrv
-              
+
                 IF (l_erolat) THEN
                   CALL lateral_erosion_saveflx( erolat_res, flx_s2w_eroij(:) &
                 , flx_s2w_corip1(:,i,j), flx_s2w_corim1(:,i,j) &
@@ -2396,64 +2168,51 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   ENDIF
                 ENDIF
 
+                IF (l_fluxwat_IWS) THEN
                 phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
+                ENDIF
                 flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
 
-                k=k-1
-                IF(k.GE.ksmi(i,j))THEN
+                IF(ksmax.GE.ksmi(i,j))THEN
                   dt1=dt1-erodab/(MF*ero)
                   ! Time is not consumed CONTINUE EROSION
-                  GOTO 2
+                  l_continue_erod=.TRUE.
                 ENDIF
 
               ENDIF   ! end test erosi > erodab
             ENDIF    ! end test erosi=0
-          ENDIF       ! end test ksmax > ksmi(i,j) 
- 
+
           ! fusion of the two superficial layers, as long as dzs (ksmax) <dzsmin
           !        et si l_consolid=TRUE et couche diminuee par erosion
-          !        dans ce cas, il faudrait rajouter un test 
+          !        dans ce cas, il faudrait rajouter un test
           !        sur la difference entre les concentrations des 2 couches superficielles
           !        pas encore fait
           ! ----------------------------------------------------------
+          ! runs every pass, before looping back to retry erosion (not just
+          ! once at the end), so a layer that just became too thin gets fused
+          ! before the next pass operates on it. Uses the same shared
+          ! small-mass fusion helper as the erosion branches above (proper
+          ! poro_mud/crel_mud blending via mustang_comp_poro_mixsed, and
+          ! mass-conservative dissolved-variable fusion with water-flux
+          ! correction, instead of the old assume-no-net-flux blend), so its
+          ! own phieau_ero_ij/flx_s2w_eroij accumulators have to be reset and
+          ! re-flushed here, separately from the erosion branches' own flush.
           IF(ero > 0.0_rsh) THEN
+            phieau_ero_ij=0.0_rsh
+            flx_s2w_eroij(:)=0.0_rsh
             fusion = .true.
             DO WHILE (fusion)
                 IF (ksmax.GT.ksmi(i,j)) THEN
                     IF (dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid)) THEN
-                        ksmaxa=ksmax
-                        dzsa=dzs(ksmax,i,j)
-                        dzsam1=dzs(ksmax-1,i,j)
-                        poroa=poro(ksmax,i,j)
-                        poroam1=poro(ksmax-1,i,j)
-                        ksmax=ksmax-1
-                        dzs(ksmax,i,j)=dzsa+dzsam1
-                        dzsisu=1.0_rsh/dzs(ksmax,i,j)
-                        c_sedtot(ksmax,i,j)=0.0_rsh
-                        cvolp=0.0_rsh
-                        DO iv=1,nv_use ! nv_use=nvp
-                        cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*dzsa             &
-                                            +cv_sed(iv,ksmax,i,j)*dzsam1)*dzsisu
-                        c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)                      &
-                                            +cv_sed(iv,ksmax,i,j)*typart(iv)
-                        cvolp=cvolp+cv_sed(iv,ksmax,i,j)*typart(iv)/ros(iv)
-                        ENDDO
-                        poro(ksmax,i,j)=1.0_rsh-cvolp
-                        dzpoi=dzsisu/poro(ksmax,i,j)
-                        IF (l_diss_insed) THEN
-                        ! dissolved variable in pore waters
-                        DO iv=nvp+1,nv_adv
-                            ! in .../m3 of interstial waters
-                        cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*poroa*dzsa+        &
-                                            cv_sed(iv,ksmax,i,j)*poroam1*dzsam1)*dzpoi
-                        ENDDO
 
-                        ! Temperature and salinity
-                        DO iv=-1,0
-                        cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*poroa*dzsa+        &
-                                            cv_sed(iv,ksmax,i,j)*poroam1*dzsam1)*dzpoi
-                        ENDDO
-                        ENDIF
+                        DO iv=1,nvp
+                          mass_sed(iv)=cv_sed(iv,ksmax,i,j)*dzs(ksmax,i,j)
+                        END DO
+
+                        CALL mustang_manage_small_mass_in_ksmax(i,j,ksmax, &
+                                    phieau_ero_ij,flx_s2w_eroij,   &
+                                                          mass_sed)
+
                     ELSE
                         fusion = .false.
                     ENDIF ! dzs(ksmax,i,j).LE.dzsmin .AND. (dzs(ksmax-1,i,j)< dzsmax(i,j)  .OR. l_consolid)
@@ -2462,105 +2221,58 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ENDIF ! ksmax.GT.ksmi(i,j)
             ENDDO ! end of do while (ksmax.GT.ksmi(i,j))
 
-           IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
-              IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
-                dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))
-                dzs(ksmax,i,j)=dzs(ksmax,i,j)-dzs(ksmax+1,i,j)
-                poro(ksmax+1,i,j)=poro(ksmax,i,j)
-                cv_sed(:,ksmax+1,i,j)=cv_sed(:,ksmax,i,j)
-                c_sedtot(ksmax+1,i,j)=c_sedtot(ksmax,i,j)
-                ksmax=ksmax+1
-               ENDIF
+            IF (l_fluxwat_IWS) THEN
+              phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
             ENDIF
-           IF (l_splitlayersurf) THEN
-           !! Splitting surface layers if too thick
-           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-           isplit=0
-           DO k=ksmax,ksmax-nlayer_surf_sed+1,-1
-             IF(k > ksmi(i,j)) THEN
-               IF(dzs(k,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) isplit=1
-             ENDIF
-           ENDDO
-           IF(isplit==1 ) then
-             CALL sed_MUSTANG_split_surflayer(i,j,ksmax)
-           ENDIF
-           ENDIF
+            flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
+
           ENDIF  ! ero>0
 
-          ! to find an erosion flux in .../m2/s (for particulates only):
-          DO iv=1,nv_use ! nv_use=nvp
-            flx_s2w(iv,i,j)=flx_s2w(iv,i,j)*dtinv
-          ENDDO
-          !==============================================
-          IF (l_diss_insed) THEN
-          ! for dissolved variable in pore waters
-          ! add water-to-sediment flux explicitly treated with the sediment-to-water flux also explicitly treated
-          !   for dissolved variables, we add the diffusive flux to the interface
-          !    and the flux which results from the expulsion of interstitial water by consolidation:
-          DO iv=nvp+1,nv_adv
-            flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
-          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
-          !                for dissolved subs
-          !  => removal of all substances fluxes linked to erosion and consolidation,
-          !     we keep only diffusion
-            IF(htot(i,j) .GT. h0fond) THEN
-              flx_s2w(iv,i,j)=-fludif(iv,i,j)*dtinv
-            ELSE
-              flx_s2w(iv,i,j)=0.0_rsh
-            ENDIF
-          ENDDO
+  END SUBROUTINE sed_mustang_erosion_mixture
 
-          DO iv=-1,0
-            flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
-          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
-            flx_s2w(iv,i,j)=0.0_rsh
-          ENDDO
-          ENDIF
-          ! updating ksma (as ksmax can be modified in the routine)
-          ksma(i,j)=ksmax
-          dzs(ksma(i,j)+1:ksdmax,i,j)=0.0_rsh
-          poro(ksma(i,j)+1:ksdmax,i,j)=0.0_rsh
-
-          ! no correction of water column height (could be !)
-
-      END DO
-   END DO
-
-  !!  version V1
-  END SUBROUTINE sed_MUSTANG_erosion
-#endif
    !!==============================================================================
 
-  SUBROUTINE sed_MUSTANG_comp_tocr_mixsed(k, i, j, xeros, excespowr, taucr)
+  SUBROUTINE sed_mustang_comp_tocr_mixsed(k, i, j, xeros, excespowr, taucr)
 
   !&E--------------------------------------------------------------------------
-  !&E                 ***  SUBROUTINE sed_MUSTANG_comp_tocr_mixsed  ***
+  !&E                 ***  SUBROUTINE sed_mustang_comp_tocr_mixsed  ***
   !&E
-  !&E ** Purpose : Compute the erosion parameters in sediment layer k : 
+  !&E ** Purpose : Compute the erosion parameters in sediment layer k :
   !&E   - xeros : erosion constant (kg.m-2.s-1)
   !&E   - excespowr : power of the excess shear stress
   !&E   - taucr : critical shear stress (N.m-2)
   !&E
   !&E ** Description : 0D in a cell, variables OUT : xeros,excespowr,taucr
-  !&E          Variables used from module
+  !&E          Behavior is controlled by two independent switches:
+  !&E            - l_erosion_by_class : selects how the sand/gravel mean
+  !&E              diameter/critical stress and the mud concentration
+  !&E              (crel_mud if .true., sommud/frvolsangrv if .false.) are
+  !&E              computed from cv_sed, and which terms of the ero_option=3
+  !&E              formula apply (see below)
+  !&E            - ero_option (0/1/2/3) : selects which sand/mud erosion law
+  !&E              is used once the mixture's mud fraction is known
+  !&E          Variables used from module:
+  !&E                         l_erosion_by_class, ero_option
   !&E                         cv_sed, ros_sand_homogen, ros
   !&E                         diam_sed, stresscri0
   !&E                         E0_sand, n_eros_sand, coef_frmudcr1, frmudcr2
+  !&E                         l_frmudcr1_uni, frmudcr1_uni
+  !&E                         diam_sand_max
   !&E                         E0_sand_option, E0_sand_para, E0_sand_Cst
   !&E                         E0_mud, x1toce_mud, x2toce_mud, n_eros_mud
-  !&E                         l_xexp_ero_cst
-  !&E                         in V2 : crel_mud
-  !&E  
+  !&E                         l_xexp_ero_cst, x1xexp_ero, x2xexp_ero
+  !&E                         crel_mud (only read if l_erosion_by_class=.true.)
+  !&E
   !&E  !**************************************************************!
   !&E  ! WARNING : the proposed formulas for erosion of               !
   !&E  ! sandy-muddy mixtures are questionable                        !
   !&E  ! and must be tested, improved, changed ...                    !
-  !&E  ! Each user can write his law                                  !  
+  !&E  ! Each user can write his law                                  !
   !&E  !**************************************************************!
   !&E
-  !&E ** Called by :  sed_MUSTANG_erosion
-  !&E 
-  !&E ** External calls : none
+  !&E ** Called by :  sed_mustang_erosion_byclass, sed_mustang_erosion_mixture
+  !&E
+  !&E ** External calls : mustang_E0sand
   !&E
   !&E--------------------------------------------------------------------------
 
@@ -2600,85 +2312,74 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
   E0_sand_loc = 0.0_rsh
   rossan = ros_sand_homogen !!! WARNING: EVEN IF SEVERAL SANDS, WE ASSUME THAT THEY HAVE THE SAME DENSITY
 
-#ifdef key_MUSTANG_V2 /* gravel & sands */
+  ! sommud and somgrav/frvolgrv do not depend on l_erosion_by_class: computed once here
   DO iv = imud1, imud2
     sommud = sommud + cv_sed(iv,k,i,j)
-  ENDDO
-  DO iv = isand1, isand2
-    somsan = somsan + cv_sed(iv,k,i,j)
-    frvolsan = frvolsan + cv_sed(iv,k,i,j) / ros(iv)
   ENDDO
   DO iv = igrav1, igrav2
     somgrav = somgrav + cv_sed(iv,k,i,j)
     frvolgrv = frvolgrv + cv_sed(iv,k,i,j) / ros(iv)
   ENDDO
-  frvolsangrv = frvolgrv + frvolsan
-  frmudsup = sommud / (somgrav + sommud + somsan)
 
-  DO iv = igrav1, isand2   
-    diamsan = diamsan + diam_sed(iv) * cv_sed(iv,k,i,j)
-    taucr_sand = taucr_sand + stresscri0(iv) * cv_sed(iv,k,i,j)
-    E0_sand_loc = E0_sand_loc + E0_sand(iv) * cv_sed(iv,k,i,j)
-  ENDDO
-  IF (isand2 > 0 .AND. (somsan + somgrav) > 0.0_rsh) THEN ! if there is at least one sand or gravel defined and in the layer k 
-    diamsan = MAX(diamsan / (somsan + somgrav + epsilon_MUSTANG), diam_sed(isand2))
-    taucr_sand = MAX(taucr_sand / (somsan + somgrav + epsilon_MUSTANG), stresscri0(isand2))
-    E0_sand_loc = MAX(E0_sand_loc / (somsan + somgrav + epsilon_MUSTANG), E0_sand(isand2))
-  ENDIF
-  cmudr = crel_mud(k,i,j)
-
-#else  /*version V1 :  gravel are not taking into account in V1*/     
-  DO iv = imud1, imud2
-    sommud = sommud + cv_sed(iv,k,i,j)
-  ENDDO
   DO iv = isand1, isand2
-    IF (diam_sed(iv) .LT. 0.002) THEN   ! to remove gravels that are declared as sand 
-      ! in our configuration before computing mean parameters 
-      !(i.e. gravels are not working and are declared as sands in Mustang V1)
+    IF (diam_sed(iv) .LT. diam_sand_max) THEN   ! to remove gravels that are declared as sand
+      ! in our configuration before computing mean parameters
         somsan = somsan + cv_sed(iv,k,i,j)
         frvolsan = frvolsan + cv_sed(iv,k,i,j) / ros(iv)
         diamsan = diamsan + diam_sed(iv) * cv_sed(iv,k,i,j)
         taucr_sand = taucr_sand + stresscri0(iv) * cv_sed(iv,k,i,j)
+        E0_sand_loc = E0_sand_loc + E0_sand(iv) * cv_sed(iv,k,i,j)
     ENDIF
   ENDDO
   DO iv = igrav1, igrav2
-    somgrav = somgrav + cv_sed(iv,k,i,j)
-    frvolgrv = frvolgrv + cv_sed(iv,k,i,j) / ros(iv)
+    diamsan = diamsan + diam_sed(iv) * cv_sed(iv,k,i,j)
+    taucr_sand = taucr_sand + stresscri0(iv) * cv_sed(iv,k,i,j)
+    E0_sand_loc = E0_sand_loc + E0_sand(iv) * cv_sed(iv,k,i,j)
   ENDDO
   frvolsangrv = frvolgrv + frvolsan
-  frmudsup = sommud / (somgrav + sommud + somsan + epsilon_MUSTANG)
-  
-   IF (isand2 > 0 .AND. somsan > 0.0_rsh) THEN
-     diamsan = MAX(diamsan / (somsan + epsilon_MUSTANG), diam_sed(isand2))
-     taucr_sand = MAX(taucr_sand / (somsan + epsilon_MUSTANG), stresscri0(isand2))
-     diamsanstar = diamsan * 10000.0_rsh * (g * (rossan / rho0 - 1.0_rsh))**0.33_rsh
-     ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
-     wssand = .000001_rsh * ((107.33_rsh + 1.049_rsh * diamsanstar**3)**0.5_rsh - 10.36_rsh) / diamsan
-     E0_sand_loc = MUSTANG_E0sand(diamsan, taucr_sand, rossan, wssand) 
-   ENDIF
-   cmudr = sommud / (1.0_rsh - frvolsangrv)
-#endif /*version V1/V2 */
+  frmudsup = sommud / (somgrav + sommud + somsan + epsilon_mustang)
 
-
-  IF (sommud + somsan .LE. 0.0_rsh) THEN ! sediment could not pass in suspension : only diam > 0.002, gravels
-#ifdef key_MUSTANG_V2 /*taucr needed for activelayer calculation*/
-    IF (ero_option == 0) THEN ! keep mud constant values
-      xeros = E0_mud
-      taucr = taucr_mud
-      excespowr = n_eros_mud
-    ELSE
-      xeros = E0_sand_loc
-      taucr = taucr_sand
-      excespowr = n_eros_sand
+  IF (isand2 > 0 .AND. (somsan + somgrav) > 0.0_rsh) THEN ! if there is at least one sand or gravel defined and in the layer k
+    diamsan = MAX(diamsan / (somsan + somgrav + epsilon_mustang), diam_sed(isand2))
+    taucr_sand = MAX(taucr_sand / (somsan + somgrav + epsilon_mustang), stresscri0(isand2))
+    IF (l_erosion_by_class) THEN
+      E0_sand_loc = MAX(E0_sand_loc / (somsan + somgrav + epsilon_mustang), E0_sand(isand2))
+    ELSE ! version V1 : E0_sand_loc recomputed from the averaged diamsan/taucr_sand
+         ! via a Van Rijn-style settling-velocity formula, instead of averaging
+         ! the per-class E0_sand(iv) table values as done just above
+      diamsanstar = diamsan * 10000.0_rsh * (g * (rossan / rho0 - 1.0_rsh))**0.33_rsh
+      ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
+      wssand = .000001_rsh * ((107.33_rsh + 1.049_rsh * diamsanstar**3)**0.5_rsh - 10.36_rsh) / diamsan
+      E0_sand_loc = mustang_E0sand(diamsan, taucr_sand, rossan, wssand)
     ENDIF
-#else /*version V1, gravel not in suspension*/
-    xeros = 0.0_rsh
-    taucr = 1000.0_rsh
-    excespowr = 0.0_rsh
-#endif
+  ENDIF
+
+  IF (l_erosion_by_class) THEN
+    cmudr = crel_mud(k,i,j)
+  ELSE ! version V1 : cmudr computed locally instead of read from crel_mud
+    cmudr = sommud / (1.0_rsh - frvolsangrv)
+  ENDIF
+
+
+  IF (sommud + somsan .LE. 0.0_rsh) THEN ! sediment could not pass in suspension : only diam > diam_sand_max, gravels
+    IF (l_erosion_by_class) THEN ! taucr needed for activelayer calculation
+      IF (ero_option == 0) THEN ! keep mud constant values
+        xeros = E0_mud
+        taucr = taucr_mud
+        excespowr = n_eros_mud
+      ELSE
+        xeros = E0_sand_loc
+        taucr = taucr_sand
+        excespowr = n_eros_sand
+      ENDIF
+    ELSE ! version V1, gravel not in suspension
+      xeros = 0.0_rsh
+      taucr = 1000.0_rsh
+      excespowr = 0.0_rsh
+    ENDIF
   ELSE ! there is mud and/or sand
 
-   frmudcr1 = MIN(coef_frmudcr1 * diamsan, frmudcr2)
+   frmudcr1 = mustang_comp_frmudcr1(diamsan)
    taucr_mud = x1toce_mud * cmudr**x2toce_mud
    
     IF (ero_option == 0) THEN ! keep mud constant values
@@ -2725,60 +2426,52 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
         excespowr = n_eros_mud
       ENDIF ! frmudsusp
 
-    ELSE IF (ero_option .EQ. 3) THEN  
+    ELSE IF (ero_option .EQ. 3) THEN
 
         !!! Formulation of Baptiste Mengual (2017)
-        !!! Mengual, B.; Le Hir, P.; Cayocca, F.; Garlan, T. 
+        !!! Mengual, B.; Le Hir, P.; Cayocca, F.; Garlan, T.
         !!! Modelling Fine Sediment Dynamics: Towards a Common Erosion Law for Fine Sand, Mud and Mixtures. Water 2017, 9, 564.
-        !!! Exponential Formulations of Parameters for a Sand/mud Mixture            
-#ifdef key_MUSTANG_V2
+        !!! Exponential Formulations of Parameters for a Sand/mud Mixture
+
       IF(frmudsup  .LE. frmudcr1) THEN ! I) Sandy behavior of the mixture
         xeros = E0_sand_loc
         taucr = taucr_sand
         excespowr = n_eros_sand
-      ELSE ! II) Intermediate sand / mud, no frmudcr2 in V2
-        IF (.NOT. l_xexp_ero_cst) xexp_ero = 78.48_rsh * frmudcr1 - 2.037_rsh !xexp_ero=f(diamsan) with min/max values based on frmudcr1
+      ELSE IF (.NOT. l_erosion_by_class .AND. frmudsup .GT. frmudcr2) THEN ! III) Mud Behavior
+                                                     ! (V1 only: V2 has no frmudcr2 ceiling, see the
+                                                     ! intermediate case below)
+        xeros = E0_mud
+        taucr = taucr_mud
+        excespowr = n_eros_mud
+      ELSE ! II) Intermediate sand / mud (no frmudcr2 ceiling in V2, so this also covers
+           ! what would be "mud behavior" there)
+        IF (.NOT. l_xexp_ero_cst) xexp_ero = x1xexp_ero * frmudcr1 - x2xexp_ero !xexp_ero=f(diamsan) with min/max values based on frmudcr1
                                                                   !Mainly based on Fig 2 in Le Hir et al. CSR (2011) but
                                                                   !consitent with other experiments from the literature
-        coef_tmp = xexp_ero * (frmudcr1 - frmudsup) ! Here, frmudcr2 is just a max prescribed for frmudcr1 
-                                                ! but does not constitute a critical mud fraction 
-        ! the correction of F.Ganthy is not done here for version V2. 
-        !  Should we add it to do as in version V1 ?
-        rapexpcoef = EXP(coef_tmp)
-        taucr = (taucr_sand - taucr_mud) * rapexpcoef + taucr_mud
-        excespowr = (n_eros_sand - n_eros_mud) * rapexpcoef + n_eros_mud
-        xeros = (E0_sand_loc - E0_mud) * rapexpcoef + E0_mud 
-      END IF !frmudsusp
-#else /* V1 */
-      IF(frmudsup  .LE. frmudcr1) THEN ! I) Sandy behavior of the mixture
-        xeros = E0_sand_loc
-        taucr = taucr_sand
-        excespowr = n_eros_sand
-      ELSE IF(frmudsup .LE. frmudcr2) THEN ! II) Intermediate sand / mud 
-        coef_tmp = xexp_ero * (frmudcr2 - frmudsup) / (frmudcr2 - frmudcr1) 
-        ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2, 
+                                                                  !(Mengual et al., 2020)
+        ! coef_tmp and the correction of F.Ganthy below are now applied for both
+        ! l_erosion_by_class=.true. and .false. (previously V1-only; V2 used
+        ! coef_tmp=xexp_ero*(frmudcr1-frmudsup) and a raw EXP(coef_tmp) with no
+        ! correction - merged on explicit request, not just a structural change)
+        coef_tmp = xexp_ero * (frmudcr2 - frmudsup) / (frmudcr2 - frmudcr1)
+        ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2,
         !   and allows to have a linear relation when xexp_ero tends towards 0 (but must remain different from 0)
         rapexpcoef = (EXP(coef_tmp) - 1.0_rsh) / (EXP(xexp_ero) - 1.0_rsh)
         taucr = (taucr_sand - taucr_mud) * rapexpcoef + taucr_mud
         excespowr = (n_eros_sand - n_eros_mud) * rapexpcoef + n_eros_mud
-        xeros = (E0_sand_loc - E0_mud) * rapexpcoef + E0_mud 
-      ELSE ! III) Mud Behavior 
-        xeros = E0_mud
-        taucr = taucr_mud
-        excespowr = n_eros_mud
+        xeros = (E0_sand_loc - E0_mud) * rapexpcoef + E0_mud
       ENDIF ! frmudsusp
-#endif    
 
-    ENDIF ! ero_option = 0/1/2/3 
+    ENDIF ! ero_option = 0/1/2/3
   ENDIF ! sommud + somsand 
 
   taucr = MAX(0.00005_rsh, taucr)
 
   IF (l_outsed_frmudsup) var2D_frmudsup(i,j)=frmudsup
-  END SUBROUTINE sed_MUSTANG_comp_tocr_mixsed
+  END SUBROUTINE sed_mustang_comp_tocr_mixsed
    !!==============================================================================
 
-  SUBROUTINE sed_MUSTANG_comp_eros_flx(tenfo, toce, excespowr, xeros, sed_eros_flx)
+  SUBROUTINE sed_mustang_comp_eros_flx(tenfo, toce, excespowr, xeros, sed_eros_flx)
  
    !&E--------------------------------------------------------------------------
    !&E                 ***  SUBROUTINE sed_erosion_flux  ***
@@ -2806,28 +2499,35 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 !   or choice one other formula 
 !  sed_eros_flx=xeros*corfluero*(tenfo-toce)**excespowr
     
-  END SUBROUTINE sed_MUSTANG_comp_eros_flx
+  END SUBROUTINE sed_mustang_comp_eros_flx
 
    !!==============================================================================
-#ifdef key_MUSTANG_V2
- SUBROUTINE sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
-    
+ SUBROUTINE sed_mustang_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_effdep version V2 ***
+   !&E                 ***  ROUTINE sed_mustang_effdep ***
+   !&E
+   !&E ** Purpose : dispatcher - selects the effective-deposition algorithm at
+   !&E              runtime according to poro_option.
+   !&E--------------------------------------------------------------------------
+   INTEGER, INTENT(IN)     :: ifirst,ilast,jfirst,jlast
+   INTEGER, INTENT(INOUT)  :: iexchge_MPI_cvwat
+
+   IF (poro_option .EQ. 1) THEN
+     CALL sed_mustang_effdep_SEQUENTIAL(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
+   ELSE
+     CALL sed_mustang_effdep_BYMIXTURE(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
+   ENDIF
+
+ END SUBROUTINE sed_mustang_effdep
+
+   !!==============================================================================
+ SUBROUTINE sed_mustang_effdep_BYMIXTURE(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
+
+   !&E--------------------------------------------------------------------------
+   !&E                 ***  ROUTINE sed_mustang_effdep_BYMIXTURE (former "V2") ***
    !&E
    !&E ** Purpose : computes effective deposition
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E       arguments IN :
-   !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          surf_cell
-   !&E          
-   !&E       variables OUT :
-   !&E           phieau_s2w
-   !&E           flx_w2s
-   !&E
-   !&E ** Called by :  MUSTANG_deposition
+   !&E ** Called by :  mustang_deposition
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -2851,7 +2551,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    LOGICAL        :: l_createnewlayer,l_increase_dep,l_isitcohesive_dep
    REAL(KIND=rsh) :: mass_tot_dep, poro_mud_dep, poro_dep, dzs_dep, &
                      mass_tot, poro_muda, poro_mud_new,             &
-                     dzsmin_dep,dzsmina,crel_mud_new,crel_mud_dep,  &
+                     dzsmina,crel_mud_new,crel_mud_dep,  &
                      diamgravsan_dep,frmud_dep,frmudcr_dep,mass_tot_depa
                  
    REAL(KIND=rsh),DIMENSION(nvp) :: mass_sed
@@ -2876,7 +2576,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             IF (l_bedload) THEN
             ! bedload fluxes
             !   ATTENTION : need to know fls_bx in i+1,J+1,i-1,j-1
-            !               have been exchanged with the neighboring processors  in sedim_MUSTANG_update after erosion
+            !               have been exchanged with the neighboring processors  in sedim_mustang_update after erosion
             DO iv=ibedload1,ibedload2
 
                 ! en kg
@@ -2922,9 +2622,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ! In addition the algorithm was written to take into account a deposit of gravel
 
             DO iv=1,nv_use   ! nv_use=nvp
-              flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j)+flx_w2s_corin(iv,i,j)      &
-                           +flx_w2s_corip1(iv,i-1,j)+flx_w2s_corim1(iv,i+1,j)         &
-                           +flx_w2s_corjp1(iv,i,j-1)+flx_w2s_corjm1(iv,i,j+1))
+              IF (l_slipdeposit) THEN
+                flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j)+flx_w2s_corin(iv,i,j)      &
+                             +flx_w2s_corip1(iv,i-1,j)+flx_w2s_corim1(iv,i+1,j)         &
+                             +flx_w2s_corjp1(iv,i,j-1)+flx_w2s_corjm1(iv,i,j+1))
+              ELSE
+                flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j))
+              ENDIF
 
               flx_w2s_sum(iv,i,j)=0.0_rsh
 
@@ -2980,19 +2684,19 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 voldepgrv=voldepgrv+flx_w2s_loc(iv)/ros(iv) ! in m
               ENDDO
               DO iv=igrav1,igrav2
-                frdep(iv)=flx_w2s_loc(iv)/(voldepgrv+epsi30_MUSTANG) ! in kg/m3
+                frdep(iv)=flx_w2s_loc(iv)/(voldepgrv+epsi30_mustang) ! in kg/m3
               ENDDO
               DO iv=isand1,isand2
                 voldepsan=voldepsan+flx_w2s_loc(iv)/ros(iv) ! in m
               ENDDO
               DO iv=isand1,isand2
-                frdep(iv)=flx_w2s_loc(iv)/(voldepsan+epsi30_MUSTANG) ! in kg/m3
+                frdep(iv)=flx_w2s_loc(iv)/(voldepsan+epsi30_mustang) ! in kg/m3
               ENDDO
               DO iv=imud1,imud2
                 masdepmud=masdepmud+flx_w2s_loc(iv) ! in kg/m2
               ENDDO
               DO iv=imud1,imud2
-                frdep(iv)=flx_w2s_loc(iv)/(masdepmud+epsi30_MUSTANG) ! SU
+                frdep(iv)=flx_w2s_loc(iv)/(masdepmud+epsi30_mustang) ! SU
               ENDDO 
 
               mass_tot_dep=0.0_rsh
@@ -3008,14 +2712,10 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
               crel_mud_dep=cfreshmud
 
-              CALL MUSTANGV2_comp_poro_mixsed(frac_sed_dep, poro_mud_dep, &
+              CALL mustang_comp_poro_mixsed(frac_sed_dep, poro_mud_dep, &
                                  crel_mud_dep, poro_dep)
 
               dzs_dep=mass_tot_dep/((1.0_rsh-poro_dep)*ros(1))
-             
-              !dzsmin_dep=(1.0_rsh-coeff_dzsmin)*dzsminuni +   &
-              !            coeff_dzsmin*SUM( frac_sed_dep(1:nvpc)*diam_sed(1:nvpc) )
-              dzsmin_dep=dzsminvar(frac_sed_dep)
 
               l_createnewlayer=.TRUE. ! According to different tests, the booleen will be re-refreshed
 
@@ -3054,9 +2754,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                DO iv=1,nvpc
                  frac_seda(iv)=cv_sed(iv,ksmax,i,j)/c_sedtot(ksmax,i,j)
                END DO
-               !dzsmina=(1.0_rsh-coeff_dzsmin)*dzsminuni +  &
-                !                coeff_dzsmin*SUM( frac_seda(1:nvpc)*diam_sed(1:nvpc) )
-               dzsmina=dzsminvar(frac_seda)
+               dzsmina=dzsmin
 
                      
                !test  (mixing layer)
@@ -3081,7 +2779,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                    ! So we create a layer by asking the question of the physical meaning of the quantities 
                    ! that we are preparing to deposit
                    l_createnewlayer=.TRUE.
-                   IF (dzs_dep .LT. dzsmin_dep) THEN
+                   IF (dzs_dep .LT. dzsmin) THEN
                      ! In this case the quantities to be deposited are very small and considered not sufficient to justify 
                      ! the creation of a new layer.
                      ! So we decide to take some of the existing ksmax layer to increase this deposit
@@ -3098,7 +2796,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                  ! 1- the physical meaning of the quantities that we have to deposit
                  ! 2- the nature of the deposit, cohesive or not
                  ! 3- the thickness of the existing ksmax layer
-                 IF (dzs_dep .LT. dzsmin_dep) THEN
+                 IF (dzs_dep .LT. dzsmin) THEN
                    ! In this case, the quantities to be deposited are very small and are not
                    ! sufficient to justify the creation of a new layer
 
@@ -3106,14 +2804,14 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                    diamgravsan_dep=0.0_rsh
                    DO iv=igrav1,isand2
                      diamgravsan_dep=diamgravsan_dep+diam_sed(iv)*(frac_sed_dep(iv)  &
-                                       /(SUM(frac_sed_dep(igrav1:isand2))+epsilon_MUSTANG))
+                                       /(SUM(frac_sed_dep(igrav1:isand2))+epsilon_mustang))
                    ENDDO
                    IF (isand2>0) THEN
                     diamgravsan_dep=MAX(diamgravsan_dep,diam_sed(isand2))
                    END IF
 
                    frmud_dep=SUM(frac_sed_dep(imud1:imud2))
-                   frmudcr_dep=MIN(coef_frmudcr1*diamgravsan_dep,frmudcr2)
+                   frmudcr_dep=mustang_comp_frmudcr1(diamgravsan_dep)
 
                    IF (frmud_dep .GE. frmudcr_dep) THEN
                      l_isitcohesive_dep=.TRUE.
@@ -3184,7 +2882,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                     frac_sed(iv)=mass_sed(iv)/mass_tot
                   END DO
 
-                  CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud_new,   &
+                  CALL mustang_comp_poro_mixsed(frac_sed, poro_mud_new,   &
                                 crel_mud_new, poro(ksmax,i,j))
 
                   dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1))
@@ -3210,12 +2908,12 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                     ELSE IF (ivp_assoc < imud1) THEN
                       cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa+        &
-                                     flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
+                                     flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*    &
                                      mass_tot_dep*frac_sed_dep(ivp_assoc))*dzsi  
 
                     ELSE 
                       cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa             &
-                                     +flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
+                                     +flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*    &
                                       masdepmud*frdep(ivp_assoc))*dzsi 
 
                     END IF
@@ -3233,7 +2931,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   !print *,''
                   !print *,' CHARACTERISTICS OF THE MIXED SEDIMENT LAYER'
                   !print *,'ksmax=',ksmax,' check: must be equal to ',k
-                  !print *,'poro(ksmax,i,j)=',poro(ksmax,i,j),' (suite au CALL MUSTANGV2_comp_poro_mixsed)'
+                  !print *,'poro(ksmax,i,j)=',poro(ksmax,i,j),' (suite au CALL mustang_comp_poro_mixsed)'
                   !print *,'poro_mud(ksmax,i,j)=poro_mud_new=',poro_mud(ksmax,i,j)
                   !print *,'dzs(ksmax,i,j)=',dzs(k,i,j)
                   !print *,'cv_sed(:,ksmax,i,j)=',cv_sed(:,k,i,j)
@@ -3247,7 +2945,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                  ! deposit mixing in surface layer ==> code 5
                  porewatera=poroa*dzsa
                  porewater=poro(ksmax,i,j)*dzs(ksmax,i,j)
-                 CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,5, &
+                 CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,5, &
                          porowater1=porewatera,                   &
                          cv_sed1=cv_sed(-1:nv_adv,ksmax,i,j),     &
                          porowater_new=porewater)
@@ -3291,7 +2989,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                    frac_sed_dep(iv)=flx_w2s_loc(iv)/mass_tot_dep
                  END DO
 
-                 CALL MUSTANGV2_comp_poro_mixsed(frac_sed_dep, poro_mud_dep,   &
+                 CALL mustang_comp_poro_mixsed(frac_sed_dep, poro_mud_dep,   &
                                             crel_mud_dep, poro_dep)
               
                  dzs_dep=mass_tot_dep/((1.0_rsh-poro_dep)*ros(1))
@@ -3324,7 +3022,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                ! -------------------------------------
 
                IF(ksmax.EQ.ksdmax) THEN
-                 CALL sed_MUSTANG_fusion(i,j,ksmax)
+                 CALL mustang_merge_bottomlayers(i,j,ksmax)
 
                END IF
 
@@ -3344,12 +3042,12 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                       cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax-1,i,j)*dzsmina+flx_w2s_loc(iv))*dzsi
                     ELSE IF (ivp_assoc < imud1) THEN
                      cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax-1,i,j)*dzsmina+        &
-                                     flx_w2s_loc(iv)/(flx_w2s_loca(ivp_assoc)+epsi30_MUSTANG)*    &
+                                     flx_w2s_loc(iv)/(flx_w2s_loca(ivp_assoc)+epsi30_mustang)*    &
                                      mass_tot_depa*frac_sed_depa(ivp_assoc))*dzsi  
 
                     ELSE 
                       cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax-1,i,j)*dzsmina             &
-                                     +flx_w2s_loc(iv)/(flx_w2s_loca(ivp_assoc)+epsi30_MUSTANG)*    &
+                                     +flx_w2s_loc(iv)/(flx_w2s_loca(ivp_assoc)+epsi30_mustang)*    &
                                       masdepmud*frdep(ivp_assoc))*dzsi 
 
                     END IF
@@ -3358,7 +3056,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                  DO iv=nvpc+1,nvp
                    ivp_assoc=irkm_var_assoc(iv)
                    IF (ivp_assoc .NE. 0) THEN
-                     cv_sed(iv,ksmax,i,j)= flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
+                     cv_sed(iv,ksmax,i,j)= flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*    &
                                         cv_sed(ivp_assoc,ksmax,i,j)
                    ELSE
                      cv_sed(iv,ksmax,i,j)=flx_w2s_loc(iv)*dzsi
@@ -3385,7 +3083,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                porewater=poro(ksmax,i,j)*dzs(ksmax,i,j)
                IF (l_increase_dep) THEN
                  ! create a new surface layer with deposit and the old ksmax layer==>  7  (input of pore water from water column)
-                 CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,7, &
+                 CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,7, &
                          porowater1=porewatera,                    &
                          cv_sed1=cv_sed(-1:nv_adv,ksmax-1,i,j),   &
                          porowater2=porewaterdep,                 &
@@ -3393,7 +3091,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                ELSE
                  ! create a new surface layer with deposit ==> code 6 (input of pore water from water column)
-                 CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,6, &
+                 CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,6, &
                          porowater_new=porewater)
                ENDIF
                ENDIF
@@ -3440,11 +3138,11 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                  DO iv=nvpc+1,nvp
 #ifdef key_MARS
 #if defined key_siggen || defined key_gencoord
-                  cw_bottom_MUSTANG(iv,i,j)=cw_bottom_MUSTANG(iv,i,j)                                        &
-                               +flx_w2s_loc(iv)/(epn_bottom_MUSTANG(i,j))
+                  cw_bottom_mustang(iv,i,j)=cw_bottom_mustang(iv,i,j)                                        &
+                               +flx_w2s_loc(iv)/(epn_bottom_mustang(i,j))
 #else
-                  cw_bottom_MUSTANG(iv,i,j)=cw_bottom_MUSTANG(iv,i,j)                                        &
-                               +flx_w2s_loc(iv)/(epn_bottom_MUSTANG(i,j))
+                  cw_bottom_mustang(iv,i,j)=cw_bottom_mustang(iv,i,j)                                        &
+                               +flx_w2s_loc(iv)/(epn_bottom_mustang(i,j))
 #endif
 #else
                 ! To Program  **TODO**
@@ -3466,30 +3164,16 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
         END DO  ! loop on i
     END DO    ! loop on j
 
-  END SUBROUTINE sed_MUSTANG_effdep
-   ! end version V2
-
+  END SUBROUTINE sed_mustang_effdep_BYMIXTURE
    !!==============================================================================
 
-#else
-!! version V1
-  SUBROUTINE sed_MUSTANG_effdep(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
+  SUBROUTINE sed_mustang_effdep_SEQUENTIAL(ifirst, ilast, jfirst, jlast, iexchge_MPI_cvwat)
     
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_effdep version V1 ***
+   !&E                 ***  ROUTINE sed_mustang_effdep_SEQUENTIAL (former "V1") ***
    !&E
    !&E ** Purpose : computes effective deposition
-   !&E
-   !&E ** Description : 
-   !&E
-   !&E       arguments IN :
-   !&E          loops  :ifirst,ilast,jfirst,jlast
-   !&E          
-   !&E       variables OUT :
-   !&E           phieau_s2w
-   !&E           flx_w2s
-   !&E
-   !&E ** Called by :  MUSTANG_deposition
+   !&E ** Called by :  mustang_deposition
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
@@ -3529,9 +3213,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ! updating effective deposition :  (flx_w2s) is implicit in the vertical advection scheme
             ! hence multiplied here by the newly computed concentration at each sub time step and cumulated
             DO iv=igrav2+1,nv_use   ! nv_use=nvp
-              flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j)+flx_w2s_corin(iv,i,j)      &
-                           +flx_w2s_corip1(iv,i-1,j)+flx_w2s_corim1(iv,i+1,j)         &
-                           +flx_w2s_corjp1(iv,i,j-1)+flx_w2s_corjm1(iv,i,j+1))
+              IF (l_slipdeposit) THEN
+                flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j)+flx_w2s_corin(iv,i,j)      &
+                             +flx_w2s_corip1(iv,i-1,j)+flx_w2s_corim1(iv,i+1,j)         &
+                             +flx_w2s_corjp1(iv,i,j-1)+flx_w2s_corjm1(iv,i,j+1))
+              ELSE
+                flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j))
+              ENDIF
 
               flx_w2s_sum(iv,i,j)=0.0_rsh
 
@@ -3574,19 +3262,19 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               voldepgrv=voldepgrv+flx_w2s_loc(iv)/ros(iv)
              ENDDO
              DO iv=igrav1,igrav2
-              frdep(iv)=flx_w2s_loc(iv)/(voldepgrv+epsi30_MUSTANG)
+              frdep(iv)=flx_w2s_loc(iv)/(voldepgrv+epsi30_mustang)
              ENDDO
              DO iv=isand1,isand2
               voldepsan=voldepsan+flx_w2s_loc(iv)/ros(iv)
              ENDDO
              DO iv=isand1,isand2
-              frdep(iv)=flx_w2s_loc(iv)/(voldepsan+epsi30_MUSTANG)
+              frdep(iv)=flx_w2s_loc(iv)/(voldepsan+epsi30_mustang)
              ENDDO
              DO iv=imud1,imud2
               masdepmud=masdepmud+flx_w2s_loc(iv)
              ENDDO
              DO iv=imud1,imud2
-              frdep(iv)=flx_w2s_loc(iv)/(masdepmud+epsi30_MUSTANG)
+              frdep(iv)=flx_w2s_loc(iv)/(masdepmud+epsi30_mustang)
              ENDDO
 
              IF(ksmax.GE.ksmi(i,j))THEN
@@ -3815,15 +3503,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                     flx_w2s_loc(iv)=0.0_rsh
                   ELSE IF (ivp_assoc < isand1) THEN
                     cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa+        &
-                                     flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
+                                     flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*    &
                                      (dvolgrv+ddzs2*cvolmaxsort)*frdep(ivp_assoc))*dzsi
                   ELSE IF (ivp_assoc < imud1) THEN
                     cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa+         &
-                                      flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*   &
+                                      flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*   &
                                     (dvolsan+ddzs4*cvolmaxsort)*frdep(ivp_assoc))*dzsi
                   ELSE 
                     cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa             &
-                                     +flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
+                                     +flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*    &
                                      (dmasmud+ddzs6*cfreshmud)*frdep(ivp_assoc))*dzsi
                   END IF
                 ENDDO
@@ -3846,17 +3534,17 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                    dzpoi=dzsi/poro(ksmax,i,j)
                    IF (l_diss_insed) THEN
                    DO iv=nvp+1,nv_adv
-                     fluxdissous=(porewater-porewatera)*cw_bottom_MUSTANG(iv,i,j)
+                     fluxdissous=(porewater-porewatera)*cw_bottom_mustang(iv,i,j)
                      ! flux dissous ou flx_w2s  sera divise par dt qd pris en compte dans erosion, pour etre en quantite/m2/s
                       ! dissolved flux or flx_w2s will be divided by dt when taken into account in erosion, to be in quantity/m2/s                     cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                      cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                      flx_w2s(iv,i,j)=flx_w2s(iv,i,j)+fluxdissous
                    ENDDO
                    ! temperature and salinity
-                   fluxdissous=(porewater-porewatera)*temp_bottom_MUSTANG(i,j)
+                   fluxdissous=(porewater-porewatera)*temp_bottom_mustang(i,j)
                    cv_sed(-1,ksmax,i,j)=(cv_sed(-1,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                    flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+fluxdissous
-                   fluxdissous=(porewater-porewatera)*sal_bottom_MUSTANG(i,j)
+                   fluxdissous=(porewater-porewatera)*sal_bottom_mustang(i,j)
                    cv_sed(0,ksmax,i,j)=(cv_sed(0,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                    flx_w2s(0,i,j)=flx_w2s(0,i,j)+fluxdissous
                    ENDIF
@@ -3936,7 +3624,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                 ! actual constitution of the new layer:
                 ! -------------------------------------
-                IF(ksmax.EQ.ksdmax)CALL sed_MUSTANG_fusion(i,j,ksmax)
+                IF(ksmax.EQ.ksdmax)CALL mustang_merge_bottomlayers(i,j,ksmax)
                 dzsa=0.0_rsh
                 ksmax=ksmax+1
                 dzs(ksmax,i,j)=dzsnew
@@ -3954,7 +3642,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 DO iv=nvpc+1,nvp
                   ivp_assoc=irkm_var_assoc(iv)
                   IF (ivp_assoc .NE. 0) THEN
-                    cv_sed(iv,ksmax,i,j)= flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
+                    cv_sed(iv,ksmax,i,j)= flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*    &
                                         cv_sed(ivp_assoc,ksmax,i,j)
                   ELSE IF(dzsnew > dzsmin) THEN
                    cv_sed(iv,ksmax,i,j)=flx_w2s_loc(iv)*dzsi
@@ -3979,15 +3667,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 dzpoi=dzsi/poro(ksmax,i,j)
                 IF (l_diss_insed) THEN
                 DO iv=nvp+1,nv_adv
-                  cv_sed(iv,ksmax,i,j)=cw_bottom_MUSTANG(iv,i,j)
-                  flx_w2s(iv,i,j)=flx_w2s(iv,i,j)+porewater*cw_bottom_MUSTANG(iv,i,j)
+                  cv_sed(iv,ksmax,i,j)=cw_bottom_mustang(iv,i,j)
+                  flx_w2s(iv,i,j)=flx_w2s(iv,i,j)+porewater*cw_bottom_mustang(iv,i,j)
                   ! flx_w2s will be divided by dt when taken into account in erosion, to be in quantity/m2/s
                   ! cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                 ENDDO
-                cv_sed(-1,ksmax,i,j)=temp_bottom_MUSTANG(i,j)
-                flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+porewater*temp_bottom_MUSTANG(i,j)
-                cv_sed(0,ksmax,i,j)=sal_bottom_MUSTANG(i,j)
-                flx_w2s(0,i,j)=flx_w2s(0,i,j)+porewater*sal_bottom_MUSTANG(i,j)
+                cv_sed(-1,ksmax,i,j)=temp_bottom_mustang(i,j)
+                flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+porewater*temp_bottom_mustang(i,j)
+                cv_sed(0,ksmax,i,j)=sal_bottom_mustang(i,j)
+                flx_w2s(0,i,j)=flx_w2s(0,i,j)+porewater*sal_bottom_mustang(i,j)
                 ENDIF
                 IF (l_fluxwat_IWS) THEN
                 ! water flux
@@ -4022,15 +3710,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                   ELSE IF (ivp_assoc < isand1) THEN
                    cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa+                    &
-                                       flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*  &
+                                       flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*  &
                                        voldepgrv*frdep(ivp_assoc))*dzsi
                   ELSE IF (ivp_assoc < imud1) THEN
                    cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa+                    &
-                                     flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*   &
+                                     flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*   &
                                      voldepsan*frdep(ivp_assoc))*dzsi
                   ELSE
                    cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*dzsa+                    &
-                                      flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*   &
+                                      flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_mustang)*   &
                                       masdepmud*frdep(ivp_assoc))*dzsi
                   END IF
                 ENDDO
@@ -4056,16 +3744,16 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   dzpoi=dzsi/poro(ksmax,i,j)
                   IF (l_diss_insed) THEN
                   DO iv=nvp+1,nv_adv
-                    fluxdissous=(porewater-porewatera)*cw_bottom_MUSTANG(iv,i,j)
+                    fluxdissous=(porewater-porewatera)*cw_bottom_mustang(iv,i,j)
                     ! will be divided by dt when taken into account in erosion, to be in quantity/m2/s
                     cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                     flx_w2s(iv,i,j)=flx_w2s(iv,i,j)+fluxdissous
                   ENDDO
                   ! salinity and temperature
-                  fluxdissous=(porewater-porewatera)*temp_bottom_MUSTANG(i,j)
+                  fluxdissous=(porewater-porewatera)*temp_bottom_mustang(i,j)
                   cv_sed(-1,ksmax,i,j)=(cv_sed(-1,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                   flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+fluxdissous
-                  fluxdissous=(porewater-porewatera)*sal_bottom_MUSTANG(i,j)
+                  fluxdissous=(porewater-porewatera)*sal_bottom_mustang(i,j)
                   cv_sed(0,ksmax,i,j)=(cv_sed(0,ksmax,i,j)*porewatera +fluxdissous)*dzpoi
                   flx_w2s(0,i,j)=flx_w2s(0,i,j)+fluxdissous
                   ENDIF
@@ -4136,8 +3824,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                   
                   !**TODO** Check if this is to code in CROCO ??
-                  !cw_bottom_MUSTANG(iv,i,j)=cw_bottom_MUSTANG(iv,i,j)                                        &
-                  !             +flx_w2s_loc(iv)/(epn_bottom_MUSTANG(i,j))
+                  !cw_bottom_mustang(iv,i,j)=cw_bottom_mustang(iv,i,j)                                        &
+                  !             +flx_w2s_loc(iv)/(epn_bottom_mustang(i,j))
                   !iexchge_MPI_cvwat=1
 
                  ENDDO
@@ -4154,33 +3842,21 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
         END DO  ! loop on i
     END DO    ! loop on j
 
-  END SUBROUTINE sed_MUSTANG_effdep
-! fin effdep version V1
-#endif
+  END SUBROUTINE sed_mustang_effdep_SEQUENTIAL
 
   !!==============================================================================
-  SUBROUTINE sed_MUSTANG_fusion(i,j,ksmaxhere)
+  SUBROUTINE mustang_merge_bottomlayers(i,j,ksmaxhere)
  
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_fusion  ***
+   !&E                 ***  ROUTINE mustang_merge_bottomlayers  ***
    !&E
    !&E ** Purpose : makes fusion of 2  layers of the sediment (at the bottom)
    !&E              when the max. number of layers is reached
    !&E              and updating of the sediment column
    !&E
-   !&E ** Description : 1DV 
-   !&E  arguments IN : 
-   !&E         i,j : cell 
-   !&E         ksmaxhere : number of sediment layer in this cell i,j 
-   !&E
-   !&E  arguments OUT:
-   !&E         ksmaxhere : new number of sediment layer after fusion 
-   !&E              
    !&E ** Called by :  sed_effdep
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
    !! * Arguments
    INTEGER,INTENT(IN)     ::  i,j
    INTEGER,INTENT(INOUT)  ::  ksmaxhere
@@ -4188,25 +3864,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !! * Local declarations
    INTEGER        ::  k,iv,ksmin,kk
    REAL(KIND=rsh) ::  dzsa,poroa,cvolp,dzsmax_bottloc
-#ifdef key_MUSTANG_V2 
-   REAL(KIND=rsh) ::  sommud,cvolgrvsan,mass_tot,poro_mud_new,crel_mud_new,poro_kij
-   REAL(KIND=rsh),DIMENSION(nvpc) :: frac_sed
-   REAL(KIND=rsh),DIMENSION(1:nvp)  :: mass_sed
-#endif            
+   REAL(KIND=rsh) ::  sommud,cvolgrvsan,poro_mud_new,crel_mud_new
    REAL(KIND=rsh) ::  dzspwi
-
    !!----------------------------------------------------------------------
    !! * Executable part
 
-#ifdef key_MUSTANG_V2 
-   ! fusion is done on ksmin+1 et ksmin+2 layers because ksmin layer cannot be
-   ! eroded, and it enables to prevent the case in which there is a thick layer
-   ! not erodable
-   ksmin=ksmi(i,j)+1
-#else 
-   ksmin=ksmi(i,j) 
-#endif
-   kk=ksmin  
+   ksmin=ksmi(i,j)
+   kk=ksmin
    dzsmax_bottloc=dzsmax_bottom
    DO WHILE (dzs(kk,i,j) .GE. dzsmax_bottloc  .AND. kk <ksmaxhere-nlayer_surf_sed)
       kk=kk+1
@@ -4215,16 +3879,16 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
         dzsmax_bottloc=dzsmax_bottloc+dzsmax_bottom
       ENDIF
    ENDDO
-#ifdef key_MUSTANG_V2
-   ! local evaluation of porosity as V1 in order to stay conservatif
+   ! local evaluation of porosity as V1 in order to stay conservative:
+   ! poroa is recomputed from cv_sed here (not read from the stored poro),
+   ! same as old V2 always did. dzs is always the plain volume sum of the
+   ! two merging layers, regardless of poro_option, and is never re-derived
+   ! from the closure law below.
    cvolp=0.0_rsh
    DO iv=1,nvp
        cvolp=cvolp+cv_sed(iv,kk,i,j)*typart(iv)/ros(iv)
    ENDDO
    poroa=1.0_rsh-cvolp
-#else
-   poroa=poro(kk,i,j)
-#endif
    dzsa=dzs(kk,i,j)
    dzs(kk,i,j)=dzs(kk,i,j)+dzs(kk+1,i,j)
    cvolp=0.0_rsh
@@ -4235,8 +3899,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
        cvolp=cvolp+cv_sed(iv,kk,i,j)*typart(iv)/ros(iv)
    ENDDO
    poro(kk,i,j)=1.0_rsh-cvolp
-   
-#ifdef key_MUSTANG_V2    
+
    sommud=0.0_rsh
    DO iv=imud1,imud2
      sommud=sommud+cv_sed(iv,kk,i,j)
@@ -4252,62 +3915,33 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    else
      poro_mud_new=1.0_rsh-crel_mud(kk,i,j)/ros(1)
    endif
-   
-#endif
+
+   ! poro intentionally stays this composition-derived value for every
+   ! poro_option
+   poro_mud(kk,i,j)=poro_mud_new
+
    IF (l_diss_insed) THEN
      ! dissolved variable in pore waters and water fluxes at the interface
      ! --------------------------------------------------------------------
      !  ==> only cv_sed
-     !  ici on fait comme pour V1 pas d appel a MUSTANGV2_eval_dissvar_IWSflux
-!#ifdef key_MUSTANG_V2
+     !  ici on fait comme pour V1 pas d appel a mustang_eval_dissvar_IWSflux
      ! fusion of 2 layers ==> code 2
-     !porowater_new=poro(kk,i,j)*dzs(kk,i,j)
-     !porowater1=dzsa*poroa
-     !porowater2=dzs(kk+1,i,j)*poro(kk+1,i,j)
-     !CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,2,  &
-     !      porowater1=porowater1,            &
-     !      cv_sed1=cv_sed(iv,kk,i,j),        &
-     !      porowater2=porowater2,            &
-     !      cv_sed2=cv_sed(iv,kk+1,i,j),      &
-     !      porowater_new=porowater_new)
-!#else
-  ! MUSTANG_V1 et ici V2
-   dzspwi=1.0_rsh/(dzs(kk,i,j)*poro(kk,i,j))
-   DO iv=-1,0
-      cv_sed(iv,kk,i,j)=dzspwi*(cv_sed(iv,kk,i,j)*dzsa*poroa &
-                           +cv_sed(iv,kk+1,i,j)*dzs(kk+1,i,j)*poro(kk+1,i,j))
-   ENDDO
-   DO iv=nvp+1,nv_adv
-      cv_sed(iv,kk,i,j)=dzspwi*(cv_sed(iv,kk,i,j)*dzsa*poroa &
-                                +cv_sed(iv,kk+1,i,j)*dzs(kk+1,i,j)*poro(kk+1,i,j))
-   ENDDO
+     dzspwi=1.0_rsh/(dzs(kk,i,j)*poro(kk,i,j))
+     DO iv=-1,0
+        cv_sed(iv,kk,i,j)=dzspwi*(cv_sed(iv,kk,i,j)*dzsa*poroa &
+                             +cv_sed(iv,kk+1,i,j)*dzs(kk+1,i,j)*poro(kk+1,i,j))
+     ENDDO
+     DO iv=nvp+1,nv_adv
+        cv_sed(iv,kk,i,j)=dzspwi*(cv_sed(iv,kk,i,j)*dzsa*poroa &
+                                  +cv_sed(iv,kk+1,i,j)*dzs(kk+1,i,j)*poro(kk+1,i,j))
+     ENDDO
    ENDIF
-
-#ifdef key_MUSTANG_V2
-    ! re-evaluation of poro as V2
-     mass_tot = 0.0_rsh
-     DO iv=igrav1,imud2
-       mass_sed(iv)=cv_sed(iv,kk,i,j)*dzs(kk,i,j)
-       mass_tot=mass_tot+mass_sed(iv)
-     END DO
-
-     DO iv=igrav1,imud2
-       frac_sed(iv)=mass_sed(iv)/mass_tot
-     END DO
-     CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud_new,   &
-                                crel_mud_new, poro_kij) 
-                             !   pi, crel_mud_new, poro_kij) 
-     poro(kk,i,j)=poro_kij
-     poro_mud(kk,i,j)=poro_mud_new
-#endif
 
    DO k=kk+1,ksmaxhere-1
        dzs(k,i,j)=dzs(k+1,i,j)
        poro(k,i,j)=poro(k+1,i,j)
-#ifdef key_MUSTANG_V2    
        poro_mud(k,i,j)=poro_mud(k+1,i,j)
        crel_mud(k,i,j)=crel_mud(k+1,i,j)
-#endif
        c_sedtot(k,i,j)=c_sedtot(k+1,i,j)
        DO iv=-1,nv_adv
            cv_sed(iv,k,i,j)=cv_sed(iv,k+1,i,j)
@@ -4316,15 +3950,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    ksmaxhere=ksmaxhere-1
   
 
-  END SUBROUTINE sed_MUSTANG_fusion
+  END SUBROUTINE mustang_merge_bottomlayers
       
 
  
 !!==============================================================================
-  SUBROUTINE sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
+  SUBROUTINE sed_mustang_slipdepo(ifirst, ilast, jfirst, jlast)
    
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_slipdepo  ***
+   !&E                 ***  ROUTINE sed_mustang_slipdepo  ***
    !&E
    !&E ** Purpose : computes slipping settling if slope bathy
    !&E
@@ -4332,13 +3966,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E  arguments IN : 
    !&E          loops : ifirst,ilast,jfirst,jlast
    !&E          
-   !&E   variables in  (comMUSTANG)      flx_w2s_sum 
+   !&E   variables in  (commustang)      flx_w2s_sum 
    !&E          
-   !&E   variables OUT: (comMUSTANG)
+   !&E   variables OUT: (commustang)
    !&E         flx_w2s_corip1,flx_w2s_corim1,flx_w2s_corjp1,flx_w2s_corjm1
    !&E         flx_w2s_corin
    !&E          
-   !&E ** Called by :  MUSTANG_deposition
+   !&E ** Called by :  mustang_deposition
    !&E
    !&E--------------------------------------------------------------------------
    !! * Arguments
@@ -4383,12 +4017,12 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
       ENDDO
    ENDDO
 
-  END SUBROUTINE sed_MUSTANG_slipdepo
+  END SUBROUTINE sed_mustang_slipdepo
     !!==============================================================================
-   SUBROUTINE sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast, dt_true, dtinv)
+   SUBROUTINE sed_mustang_Temperatur_in_sed(ifirst, ilast, jfirst, jlast, dt_true, dtinv)
 ! 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_Temperatur_in_sed ***
+   !&E                 ***  ROUTINE sed_mustang_Temperatur_in_sed ***
    !&E
    !&E ** Purpose : dynamic in sediment : processes of Temperature diffusion in sediment 
    !&E
@@ -4400,13 +4034,11 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E        variales OUT :
    !&E            fludiff : temperature flux at the water/sediment interface due to diffusion
    !&E
-   !&E ** Called by :  MUSTANG_update
+   !&E ** Called by :  mustang_update
    !&E
    !&E ** External calls : 
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-!    USE cometemp,  ONLY : chp
 
    !! * Arguments
    INTEGER, INTENT(IN)            :: ifirst,ilast,jfirst,jlast                           
@@ -4422,9 +4054,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    REAL(KIND=rsh),DIMENSION(ksdmin  :ksdmax)              :: aa,bb,cc,dd
    REAL(KIND=rsh)                                         :: hcrit,dzssdt
    REAL(KIND=rsh),DIMENSION(ksdmin :ksdmax)               :: disvi,dzsiin
-
-
-
 
    !!----------------------------------------------------------------------
    !! * Executable part
@@ -4447,7 +4076,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
         
          !  IF(l_biodiffs ) THEN
          !     ! calculation of biodiffusion coef for temperature
-         !     CALL sed_MUSTANG_coefbioturb(i,j,difbio) !  To review to differentiate particulate and dissolved
+         !     CALL sed_mustang_coefbioturb(i,j,difbio) !  To review to differentiate particulate and dissolved
          !  ENDIF
 
          hcrit=MAX(0.0_rsh,htot(i,j)-h0fond)
@@ -4471,9 +4100,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ! utiliser diffusivite thermique dans l eau et non dans le sediment
             ! eta : conductivite thermique de l eau = 0.8
             ! chp = capacite calorifique de l eau 
-!         disvi(ksmax)=0.8_rsh/(min(epdifi,htot(i,j))+epsilon_MUSTANG)/(chp*roswat_bot(i,j))
-         disvi(ksmax)=0.8_rsh/(min(epdifi,htot(i,j))+epsilon_MUSTANG)/(Cp*roswat_bot(i,j))
-         disvi(ksmax)=disvi(ksmax)*hcrit/(hcrit+epsilon_MUSTANG)
+!         disvi(ksmax)=0.8_rsh/(min(epdifi,htot(i,j))+epsilon_mustang)/(chp*roswat_bot(i,j))
+         disvi(ksmax)=0.8_rsh/(min(epdifi,htot(i,j))+epsilon_mustang)/(Cp*roswat_bot(i,j))
+         disvi(ksmax)=disvi(ksmax)*hcrit/(hcrit+epsilon_mustang)
          hsedloc=0.0_rsh
          DO k=ksmin,ksmax-1
                hsedloc=hsedloc+dzs(k,i,j)
@@ -4531,7 +4160,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
            aa(k)=-disvi(k-1) 
            bb(k)=dzs(k,i,j)*dtinv+disvi(k-1)+disvi(k)  
            cc(k)=0.0_rsh
-           fludif(iv,i,j)=disvi(k)*temp_bottom_MUSTANG(i,j)
+           fludif(iv,i,j)=disvi(k)*temp_bottom_mustang(i,j)
            dd(k)=cv_sed(iv,k,i,j)*dzs(k,i,j)*dtinv+fludif(iv,i,j)+phi_surfsed
 !
            !resolution du systeme tridiagonal
@@ -4551,7 +4180,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
            fludif(iv,i,j)=  &
                     (fludif(iv,i,j)-disvi(ksmax)*cv_sed(iv,ksmax,i,j))*REAL(dt_true,rsh)
 
-!
          ELSE
 !
                !cas ou il n y a qu une couche (ksmax=ksmin): TEMPERATURE
@@ -4559,7 +4187,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
            k=ksmax  
            IF(dzs(k,i,j) > dzsmin) THEN
-             fludif(iv,i,j)=disvi(k)*temp_bottom_MUSTANG(i,j)   
+             fludif(iv,i,j)=disvi(k)*temp_bottom_mustang(i,j)   
              cv_sed(iv,k,i,j)=  &
                     (cv_sed(iv,k,i,j)*dzs(k,i,j)+fludif(iv,i,j)*REAL(dt_true,rsh)    &
                      +phi_surfsed-phi_bottsed)           &
@@ -4569,7 +4197,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
            ELSE
              fludif(iv,i,j)=0.0_rsh
-             cv_sed(iv,k,i,j)=temp_bottom_MUSTANG(i,j)
+             cv_sed(iv,k,i,j)=temp_bottom_mustang(i,j)
            ENDIF
 
          ENDIF
@@ -4583,16 +4211,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        ! Modif Martin : temperature du sediment = temperature de la maille de fond
-        cv_sed(-1,:,i,j)=temp_bottom_MUSTANG(i,j)
+        cv_sed(-1,:,i,j)=temp_bottom_mustang(i,j)
         fludif(-1,i,j)=0
        ! ---------
       ENDDO
     ENDDO
    
-  END SUBROUTINE sed_MUSTANG_Temperatur_in_sed
-    !!==============================================================================
-
-   SUBROUTINE sed_MUSTANG_consol_diff_bioturb(ifirst, ilast, jfirst, jlast,  &
+  END SUBROUTINE sed_mustang_Temperatur_in_sed
+!!==============================================================================
+   SUBROUTINE sed_mustang_consol_diff_bioturb(ifirst, ilast, jfirst, jlast,  &
                 saliref_lin, temperef_lin, dt_true)
 ! 
    !&E--------------------------------------------------------------------------
@@ -4613,14 +4240,11 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E            fludiff : substance flux de substance at the  interface water/sediment due to diffusion
    !&E            +  sediment changed  (cv_sed, poro, dzs, ksma.. modified)
    !&E
-   !&E ** Called by :  MUSTANG_update
+   !&E ** Called by :  mustang_update
    !&E
    !&E ** External calls : 
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-
    !! * Arguments
    INTEGER, INTENT(IN)            :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rsh),INTENT(IN)      :: saliref_lin, temperef_lin
@@ -4646,14 +4270,10 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    REAL(KIND=rsh)                                         :: Sc,p,mu,nu,D0
    REAL(KIND=rsh),DIMENSION(ksdmin :ksdmax,0:nv_adv-nvp) :: disvi
    REAL(KIND=rsh),DIMENSION(0:nv_adv-nvp)                :: conc_bottom
-#ifdef key_MUSTANG_V2
    REAL(KIND=rsh)                   :: cv_sed_tot,mass_tot,sommud,cvolgrvsan
    REAL(KIND=rsh),DIMENSION(1:nvpc) :: frac_sed
    REAL(KIND=rsh),DIMENSION(1:nvp)  :: mass_sed
-#endif
-
-
-
+   LOGICAL                                                :: l_continue_substep
    !!----------------------------------------------------------------------
    !! * Executable part
    nv_use2=nv_adv
@@ -4669,7 +4289,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
      dt_sed_cor=MAX(dt_dyninsed,dt_true)
      dt_sed_eff=dt_sed_cor+(time-t_dyninsed)
      dt_sed_inv=1.0_rsh/REAL(dt_sed_eff,rsh)
-     phieau_s2w_consol(:,:)=0.0_rsh
+     IF (l_fluxwat_IWS) phieau_s2w_consol(:,:)=0.0_rsh
 
      DO j=jfirst,jlast
       DO i=ifirst,ilast
@@ -4726,26 +4346,24 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
          !dvol_fusion=0.0_rsh
          volak=0.0_rsh
          volakm1=0.0_rsh
-!#if ! defined key_noTSdiss_insed
-!         flu_fusion(:)=0.0_rsh
-!#endif
-         
+
          dtrest=dt_sed_eff
          
          ! test : to avoid to much computation, we do a single call for estimate particulate and dissolved mixing coef 
          ! even if there is consolidation processes with varying concentrations 
          IF(l_bioturb) THEN
            ksmax_turb_part=ksmax 
-           CALL sed_MUSTANG_coefbioturb_part(i,j,difbio) !  To review to differentiate particulate mixing coef
+           CALL sed_mustang_coefbioturb_part(i,j,difbio) !  To review to differentiate particulate mixing coef
          ENDIF
          IF(l_diss_insed .AND. l_biodiffs) THEN
            ksmax_turb_diss=ksmax
-           CALL sed_MUSTANG_coefbioturb_diss(i,j,difbio) !  To review to differentiate dissolved mixing coef
+           CALL sed_mustang_coefbioturb_diss(i,j,difbio) !  To review to differentiate dissolved mixing coef
          ENDIF
 
-  100    CONTINUE
-                   
-         cseda(:)=0.0_rsh     
+         l_continue_substep=.TRUE.
+         DO WHILE (l_continue_substep)
+
+         cseda(:)=0.0_rsh
          DO k=ksmin,ksmax
               cseda(k)=c_sedtot(k,i,j)
          ENDDO
@@ -4765,7 +4383,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
           
           ! computation of permeability, effective stress and hydraulic load
           ! ----------------------------------------------------------------
-            CALL sed_MUSTANG_constitutivrel(i,j,stateconsol,permeab,sigmapsg)      
+            CALL sed_mustang_constitutivrel(i,j,stateconsol,permeab,sigmapsg)      
 
             sigmadjge=0.0_rsh
             DO k=ksmax,ksmin,-1
@@ -4912,24 +4530,18 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               ENDDO
               poro(k,i,j)=1.0_rsh-cvolp
 
-#ifdef key_MUSTANG_V2
 !!! BM :  on verifiera a la fin du dt consol les caracteristiques de notre couche
 !        --> pourra aboutir a un calcul de nouvelle porosite et donc a une actualisation de lepaisseur
-!           de la couche en cas d un resultat juge  non coherent 
+!           de la couche en cas d un resultat juge  non coherent
+              ! poro_min is now the universal consolidation floor, used
+              ! regardless of poro_option (1/2/3) - see its declaration in
+              ! commustang.F90 for why this replaced the old ad hoc
+              ! 1-cvolmaxmel-0.01 threshold that used to apply here
               IF(poro(k,i,j).LT.poro_min)THEN
                 poro(k,i,j)=poro_min
                 !!! CAUTION: we assume that ros is identical regardless of the particles
                 csednew=ros(1)*(1.0_rsh-poro_min)
-#else           
-               ! if(porosity too small (<32%), it is increased until (1.0_rsh-cvolmaxmel):
-               !  dissolved variables concentrations are inchanged
-               !------------------------------------------------------------------------
-              IF(poro(k,i,j).LT.1.0_rsh-cvolmaxmel-0.01_rsh)THEN
-                poro(k,i,j)=1.0_rsh-cvolmaxmel
-                !!! CAUTION: we assume that ros is identical regardless of the particles
-                csednew=ros(1)*cvolmaxmel
-#endif
-            
+
                 rapcsed=csednew/c_sedtot(k,i,j)
                 DO iv=1,nvp
                   cv_sed(iv,k,i,j)=cv_sed(iv,k,i,j)*rapcsed
@@ -4939,9 +4551,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ENDIF
                 c_sedtot(k,i,j)=csednew
                 dzs(k,i,j)=dzs(k,i,j)/rapcsed
-              ENDIF 
-            
-#ifdef key_MUSTANG_V2
+              ENDIF
+
               sommud=0.0_rsh
               DO iv=imud1,imud2
                 sommud=sommud+cv_sed(iv,k,i,j)
@@ -4952,16 +4563,16 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               ENDDO
               crel_mud(k,i,j)=sommud/(1.0_rsh-cvolgrvsan)
               poro_mud(k,i,j)=1.0_rsh-sommud/ros(1)
-#endif
-            
+
             ENDDO
         
             ! again calculation for ksmax because we vary dzs in the surface layer
             ! we lost material but c_sedtot remains constant => dzs change
             k=ksmax
-#if ! defined key_MUSTANG_V2   
+            ! guard against a near-empty surface layer (c_sedtot ~ 0), which
+            ! would otherwise divide dzs down to ~0 below and blow up the
+            ! cv_sed renormalisation that follows - eliminate the layer instead
             IF(c_sedtot(k,i,j) .GT. 1.e-20) THEN
-#endif
                dzsa=dzs(k,i,j)
                dzs(k,i,j)=c_sedtot(k,i,j)*dzsa/cseda(k)
                cvolp=0.0_rsh
@@ -4977,12 +4588,10 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                ! in the case where ros is homogeneous whatever the type of sediment,
                ! poro should remain unchanged too
                 poro(k,i,j)=1.0_rsh-cvolp
-#if ! defined key_MUSTANG_V2   
              ELSE
                 ksmax=MAX(1,ksmax-1)
-             ENDIF 
-#endif
-#ifdef key_MUSTANG_V2
+             ENDIF
+
              sommud=0.0_rsh
              DO iv=imud1,imud2
                sommud=sommud+cv_sed(iv,k,i,j)
@@ -4993,7 +4602,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
              ENDDO
              crel_mud(k,i,j)=sommud/(1.0_rsh-cvolgrvsan)
              poro_mud(k,i,j)=1.0_rsh-sommud/ros(1)
-#endif
           
              ! put in comment because useless
              ! if(porosity too small (<32%), it is increased until (1.0_rsh-cvolmaxmel):
@@ -5015,14 +4623,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                    !!!  FUSION OF 2 LAYERS IF TOO FINE OR TOO LITTLE MATERIAL        !!!!!
                    !!! (HYP : csed_tot of bottom layer is unchanged )                !!!!!
                    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MUSTANG_V2
-                !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni    &
-                !               +coeff_dzsmin*SUM( (cv_sed(1:nvpc,k,i,j)/c_sedtot(k,i,j))*diam_sed(1:nvpc) )
-                frac_sed(1:nvpc)=cv_sed(1:nvpc,k,i,j)/c_sedtot(k,i,j)
-                dzsmin=dzsminvar(frac_sed)
-
-#endif
-
                 IF(c_sedtot(k,i,j) .LE. csedmin .OR. dzs(k,i,j) .LE. dzsmin)THEN
 
                   ! state of the layer before fusion
@@ -5052,7 +4652,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   IF (l_diss_insed) THEN
                   cv_sed(-1,k-1,i,j)=(cv_sed(-1,k,i,j)*dzsa+cv_sed(-1,k-1,i,j)*dzsam1)*dzsisu
                   ENDIF
-#ifdef key_MUSTANG_V2
                   sommud=0.0_rsh
                   DO iv=imud1,imud2
                     sommud=sommud+cv_sed(iv,k-1,i,j)
@@ -5063,7 +4662,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   ENDDO
                   crel_mud(k-1,i,j)=sommud/(1.0_rsh-cvolgrvsan)
                   poro_mud(k-1,i,j)=1.0_rsh-sommud/ros(1)
-#endif
                   volak=poroa*dzsa
                   volakm1=poroam1*dzsam1
                   vola=volak+volakm1
@@ -5088,7 +4686,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   !dvol_fusion=dvol +dvol_fusion            
 
                   IF (l_diss_insed) THEN
-                  !! ici pas d appel a routine MUSTANGV2_eval_dissvar_IWSflux
+                  !! ici pas d appel a routine mustang_eval_dissvar_IWSflux
                   !! on fait pareil qu en V1
                   ! calculation of new concentrations of dissolved variables  in pore water
                   ! in old water volume => mixed in layer k-1
@@ -5116,19 +4714,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                     ENDDO
                     c_sedtot(kp,i,j)=c_sedtot(kp+1,i,j)
                     poro(kp,i,j)=poro(kp+1,i,j)
-#ifdef key_MUSTANG_V2
                     crel_mud(kp,i,j)=crel_mud(kp+1,i,j)
                     poro_mud(kp,i,j)=poro_mud(kp+1,i,j)
-#endif
                    ENDDO
                   dzs(ksmax:ksdmax,i,j)=0.0_rsh
                   c_sedtot(ksmax:ksdmax,i,j)=-valmanq
                   cv_sed(0:nv_use2,ksmax:ksdmax,i,j)=-valmanq
                   poro(ksmax:ksdmax,i,j)=0.0_rsh
-#ifdef key_MUSTANG_V2
                   crel_mud(ksmax:ksdmax,i,j)=0.0_rsh
                   poro_mud(ksmax:ksdmax,i,j)=0.0_rsh
-#endif
                   ksmax=ksmax-1
                 ENDIF  
                 ! end fusion
@@ -5144,14 +4738,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !!!!!!!!!!!  PARTICULATE BIOTURBATION     !!!!!!!!!!!!!
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                                      
+                        
           ! explicit scheme by fractional step :  bioturbation treated as a diffusion mixing
           IF(l_bioturb .AND. ksma(i,j) > ksmi(i,j)) THEN
          
             ! again estimation of bioturb and biodiff coefs if sed layers number has changed during diter
             IF(ksmax .NE. ksmax_turb_part) THEN
-                   CALL sed_MUSTANG_coefbioturb_part(i,j,difbio) 
+                   CALL sed_mustang_coefbioturb_part(i,j,difbio) 
                 ksmax_turb_part=ksmax
             ENDIF
             cvsednew(:,:)=0.0_rsh
@@ -5260,7 +4853,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 cvolp=cvolp+cv_sed(iv,k,i,j)/ros(iv)
               ENDDO
               poro(k,i,j)=1.0_rsh-cvolp
-#ifdef key_MUSTANG_V2
               sommud=0.0_rsh
               DO iv=imud1,imud2
                 sommud=sommud+cv_sed(iv,k,i,j)
@@ -5271,7 +4863,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               ENDDO
               crel_mud(k,i,j)=sommud/(1.0_rsh-cvolgrvsan)
               poro_mud(k,i,j)=1.0_rsh-sommud/ros(1)
-#endif
             ENDDO
              ! mixing of particulate leads to dissolved mixing (taking into account further with winter)
           ENDIF   
@@ -5282,7 +4873,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
          ENDIF
          ! several possible steps of consolidation or bioturbation
          dtrest=dtrest-dtiter
-         IF(dtrest.GE.1.0_rlg)GOTO 100
+         l_continue_substep=(dtrest.GE.1.0_rlg)
+         ENDDO
 
         IF (l_diss_insed .AND. l_fluxwat_IWS) THEN
          IF((l_consolid .OR. l_bioturb)) THEN
@@ -5306,7 +4898,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !!!! water fluxes between water and sediment due to consolidation and fusion (m3/s)
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          phieau_s2w_consol(i,j)=(volpwa_tot-volpwnv_tot)*surf_cell(i,j)
+          IF (l_fluxwat_IWS) phieau_s2w_consol(i,j)=(volpwa_tot-volpwnv_tot)*surf_cell(i,j)
           !  flu_dyninsed is the flux due to consolidation at the interface, >0 upwards (M/m2)
           flu_dyninsed(0,i,j)=winter(ksmax)*cv_sed(0,ksmax,i,j)*REAL(dt_sed_eff,rsh)
           flu_dyninsed(nvp+1:nv_use2,i,j)= &
@@ -5333,7 +4925,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          IF(l_biodiffs .AND. ksmax .NE. ksmax_turb_diss) THEN
             ! calculation of biodiffusion coef to be updated if the number of layers has changed during diter 
-            CALL sed_MUSTANG_coefbioturb_diss(i,j,difbio) 
+            CALL sed_mustang_coefbioturb_diss(i,j,difbio) 
             ksmax_turb_diss=ksmax
          ENDIF
 
@@ -5350,7 +4942,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
               k=ksmax
               IF(choice_flxdiss_diffsed == 1) THEN
-                disvi(k,ivv)=2.0_rsh*xdifsi1/(dzs(k,i,j)+epn_bottom_MUSTANG(i,j))
+                disvi(k,ivv)=2.0_rsh*xdifsi1/(dzs(k,i,j)+epn_bottom_mustang(i,j))
               ELSE IF(choice_flxdiss_diffsed == 2) THEN
                 disvi(k,ivv)=xdifsi1/(dzs(k,i,j)*0.5_rsh+epdifi)
               ELSE 
@@ -5367,16 +4959,16 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ELSE              ! Modif Martin, Schmidt number for all subs excepted T and S : Sc= nu/D (Sideman & Pinczewski,1975)
                   p = 0.0_rsh     ! No impact of pressure (for now)
                   ! mu = dynamic viscosity in centipoise 10-2 g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
-                  mu = 0.01 * ( 1.791_rsh - 6.144e-02_rsh*temp_bottom_MUSTANG(i,j) + 1.451e-03_rsh*temp_bottom_MUSTANG(i,j)**2 &
-                     - 1.6826e-05_rsh*temp_bottom_MUSTANG(i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
-                     + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) &
-                     + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
-                     + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) &
-                     - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
-                     + 7.5986e-08_rsh*temp_bottom_MUSTANG(i,j)**3))
+                  mu = 0.01 * ( 1.791_rsh - 6.144e-02_rsh*temp_bottom_mustang(i,j) + 1.451e-03_rsh*temp_bottom_mustang(i,j)**2 &
+                     - 1.6826e-05_rsh*temp_bottom_mustang(i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
+                     + 2.4727e-03_rsh*sal_bottom_mustang(i,j) &
+                     + temp_bottom_mustang(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
+                     + sal_bottom_mustang(i,j)*(4.8429e-05_rsh*temp_bottom_mustang(i,j) &
+                     - 4.7172e-06_rsh*temp_bottom_mustang(i,j)**2 &
+                     + 7.5986e-08_rsh*temp_bottom_mustang(i,j)**3))
                   nu = mu*rowinv*100                               ! 1/roro or rowinv in cm3/g and nu = cinematic viscosity in cm2/s
                   IF(D0_funcT_opt(iv) == 1) THEN
-                    D0=(D0_m0(iv)+D0_m1(iv)*temp_bottom_MUSTANG(i,j))*1e-06_rsh     ! D0 in cm2/s
+                    D0=(D0_m0(iv)+D0_m1(iv)*temp_bottom_mustang(i,j))*1e-06_rsh     ! D0 in cm2/s
                   ELSEIF(D0_funcT_opt(iv) == 2) THEN
                     D0=(D0_m0(iv)+D0_m1(iv)*(temp_bottom_MUSTANG(i,j)+273.15_rsh)/mu)*1e-05_rsh
                   ELSE
@@ -5391,9 +4983,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 disvi(k,ivv)=0.0889*ustarbot(i,j)*Sc**(-0.704)
                 !write(*,*)'Beta mass transfert coef at the interface =',disvi(k)
               ENDIF
-              disvi(k,ivv)=disvi(k,ivv)*hcrit/(hcrit+epsilon_MUSTANG)
+              disvi(k,ivv)=disvi(k,ivv)*hcrit/(hcrit+epsilon_mustang)
               DO k=ksmax-1,ksmin,-1
-                IF(iv<1) THEN     ! xdifd1 unchanged for Temp and Sal for now (defined in paraMUSTANG)
+                IF(iv<1) THEN     ! xdifd1 unchanged for Temp and Sal for now (defined in paramustang)
                ! formulation according to the tortuosity Dsed=Dpure/Tortuosite^2
                ! tortuosity function of porosity (eq 4.120)
                ! in Boudreau 1997 p 132 ! tortuosity^2=1-log(poro^2)
@@ -5421,23 +5013,20 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               ENDDO
            ENDDO
 
-           conc_bottom(0)=sal_bottom_MUSTANG(i,j)
+           conc_bottom(0)=sal_bottom_mustang(i,j)
            DO ivv=1,nv_use2-nvp
                iv=ivv+nvp
-               conc_bottom(ivv)=cw_bottom_MUSTANG(iv,i,j)
+               conc_bottom(ivv)=cw_bottom_mustang(iv,i,j)
            ENDDO 
 
          ENDIF  !(diffused)
 
-!
               !resolution of the advection / diffusion equation (advection by consolidation)
-!
          IF(ksmax > ksmin)THEN
 !
                 !where there are several layers:
                 !--------------------------------
                 !coefficients of the matrix
-!
            DO ivv=0,nv_use2-nvp
                iv=ivdiss(ivv)
                 k=ksmin
@@ -5462,7 +5051,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 dd(k)=cv_sed(iv,k,i,j)*volpwak(k)*dt_sed_inv+fludif(iv,i,j)
 !
                 ! resolution of the tridiagonal system
-!
                 dd(1)=dd(1)/bb(1)
                 DO k=ksmin+1,ksmax
                   bb(k)=bb(k)-aa(k)*cc(k-1)/bb(k-1)
@@ -5474,9 +5062,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ENDDO
            ENDDO           
 
-!
          ELSE
-!
                !where there is only one layer (ksmax=ksmin):
                !--------------------------------------------       
            DO ivv=0,nv_use2-nvp
@@ -5557,13 +5143,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
     ENDIF
    
-  END SUBROUTINE sed_MUSTANG_consol_diff_bioturb
+  END SUBROUTINE sed_mustang_consol_diff_bioturb
 
 !!==============================================================================
-  SUBROUTINE sed_MUSTANG_split_surflayer(i,j,ksmax)
+  SUBROUTINE sed_mustang_split_surflayer(i,j,ksmax)
 ! 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_split_surflayer  ***
+   !&E                 ***  ROUTINE sed_mustang_split_surflayer  ***
    !&E
    !&E ** Purpose : splitting surface layer if too thick 
    !&E
@@ -5572,12 +5158,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E                  nlayer_surf_sed : numbre of thin layers at sediment surface
    !&E                  dzsmax : max thickness at surface sediment (dzsmax_bottom below) 
    !&E
-   !&E ** Called by :  MUSTANG_update
+   !&E ** Called by :  mustang_update
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-
    !! * Arguments
    INTEGER, INTENT(IN)            :: i,j
    INTEGER, INTENT(INOUT)         :: ksmax   
@@ -5588,7 +5171,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    INTEGER ,DIMENSION(ksdmax)       :: nlayer_splitk
    REAL(KIND=rsh)                   :: dzsa,poroa,cvolp,zz
    REAL(KIND=rsh)                   :: dzspwi
-
 
    !! * executable statement
    !!   --------------------
@@ -5617,13 +5199,12 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
              !  melting at the bottom because not enough layers for split
                 nlayer_a_fusion=nlayer_splitt-(ksdmax-ks_surf)
                 DO k=1,nlayer_a_fusion
-                  CALL sed_MUSTANG_fusion(i,j,ks_surf)
+                  CALL mustang_merge_bottomlayers(i,j,ks_surf)
                 ENDDO
                 ! everything is shifted: ks_surf and ks_split_min go down if merge at the bottom
                 ks_split_min=ks_split_min-nlayer_a_fusion
              ENDIF
-               
-             
+
              ! splitting surface layer first above ks_surf
              k=ks_surf  
              ! first layer at surface , split only if dzs>dzsmax+10 dzsmin
@@ -5651,6 +5232,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                  ! we test the thickness of the layer above to merge it if it is too thin
                  IF( dzs(k+1,i,j) < dzsmin ) THEN
                     ! fusion of above layer (k+1) which was splitting before and layer to be split (k)
+                    ! dzs/poro here always use the simple volume-sum +
+                    ! composition-derived formula, with no closure-law call
+                    ! at all, regardless of poro_option - confirmed against
+                    ! master's compiled sed_MUSTANG_split_surflayer
+                    ! (key_MUSTANG_V2 active), which never calls
+                    ! MUSTANGV2_comp_poro_mixsed in either of its two fusion
+                    ! blocks
                     dzsa=dzs(k,i,j)
                     poroa=poro(k,i,j)
                     dzs(k,i,j)=dzs(k,i,j)+dzs(k+1,i,j)
@@ -5662,24 +5250,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                      cvolp=cvolp+cv_sed(iv,k,i,j)*typart(iv)/ros(iv)
                     ENDDO
                     poro(k,i,j)=1.0_rsh-cvolp
-                    
+
                     IF (l_diss_insed) THEN
                     ! dissolved variable in pore waters and water fluxes at the interface
-     ! --------------------------------------------------------------------
-!#ifdef key_MUSTANG_V2
-  !!! enleve pour eviter d apeler une routine alors que peu de calcul
-                    ! fusion of 2 layers ==> code 2
- !                   porowater_new=poro(k,i,j)*dzs(k,i,j)
- !                   porowater1=dzsa*poroa
- !                   porowater2=dzs(k+1,i,j)*poro(k+1,i,j)
- !                   CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,2,  &
- !                         porowater1=porowater1,                    &
- !                         cv_sed1=cv_sed(-1:nv_adv,k,i,j),          &
- !                         porowater2=porowater2,                    &
- !                         cv_sed2=cv_sed(-1:nv_adv,k+1,i,j),        &
- !                         porowater_new=porowater_new)
-!#else
-  ! MUSTANG_V1  et ici V2
+                    ! --------------------------------------------------------------------
+                    ! deliberately not using mustang_eval_dissvar_IWSflux here (unlike
+                    ! other fusion sites) - not worth the call for this little computation;
+                    ! same simple inline weighted average used for V1 and V2 alike
                     dzspwi=1.0_rsh/(dzs(k,i,j)*poro(k,i,j))
                     DO iv=-1,0
                      cv_sed(iv,k,i,j)=dzspwi*(cv_sed(iv,k,i,j)*dzsa*poroa &
@@ -5698,10 +5275,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                          DO iv=-1,nv_adv
                           cv_sed(iv,kk,i,j)=cv_sed(iv,kk+1,i,j)
                          ENDDO
-#ifdef key_MUSTANG_V2
                          crel_mud(kk,i,j)=crel_mud(kk+1,i,j)
                          poro_mud(kk,i,j)=poro_mud(kk+1,i,j)
-#endif
                     ENDDO
                     ksmax=ksmax-1
                     ! the layer vacated by the shift above (old ksmax,
@@ -5732,10 +5307,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   cv_sed(:,kk,i,j)=cv_sed(:,k,i,j)
                   c_sedtot(kk,i,j)=c_sedtot(k,i,j)
                   poro(kk,i,j)=poro(k,i,j)
-#ifdef key_MUSTANG_V2
                   crel_mud(kk,i,j)=crel_mud(k,i,j)
                   poro_mud(kk,i,j)=poro_mud(k,i,j)
-#endif
                 ENDDO
                 ksmax=ksmax+nlayer_splitk(k)
               
@@ -5749,6 +5322,12 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ! fusion of the last split layer with the layer underneath (elimination of the remainder of the last split layer)
              IF(dzs(ks_split_min,i,j) < dzsmax(i,j)*0.5_rsh .AND. ks_split_min > ksmi(i,j)) THEN
                k=ks_split_min-1
+               ! dzs/poro here always use the simple volume-sum +
+               ! composition-derived formula, with no closure-law call at
+               ! all, regardless of poro_option - confirmed against master's
+               ! compiled sed_MUSTANG_split_surflayer (key_MUSTANG_V2
+               ! active), which never calls MUSTANGV2_comp_poro_mixsed in
+               ! either of its two fusion blocks
                dzsa=dzs(k,i,j)
                poroa=poro(k,i,j)
                dzs(k,i,j)=dzs(k,i,j)+dzs(k+1,i,j)
@@ -5760,7 +5339,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                  cvolp=cvolp+cv_sed(iv,k,i,j)*typart(iv)/ros(iv)
                ENDDO
                poro(k,i,j)=1.0_rsh-cvolp
-               !!  ici on fait pareil en V2, pas d appel a routine MUSTANGV2_eval_dissvar_IWSflux
+
+               !!  ici on fait pareil en V2, pas d appel a routine mustang_eval_dissvar_IWSflux
                IF (l_diss_insed) THEN
                dzspwi=1.0_rsh/(dzs(k,i,j)*poro(k,i,j))
                DO iv=-1,0
@@ -5782,10 +5362,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                cv_sed(:,ksmax+1:ksdmax,i,j)=-valmanq
                c_sedtot(ksmax+1:ksdmax,i,j)=-valmanq
                poro(ksmax+1:ksdmax,i,j)=0.0_rsh
-#ifdef key_MUSTANG_V2
                crel_mud(ksmax+1:ksdmax,i,j)=0.0_rsh
                poro_mud(ksmax+1:ksdmax,i,j)=0.0_rsh
-#endif
 
              ENDIF
              
@@ -5802,25 +5380,19 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 cv_sed(:,ks_split_min+1,i,j)=cv_sed(:,ks_split_min,i,j)
                 c_sedtot(ks_split_min+1,i,j)=c_sedtot(ks_split_min,i,j)
                 poro(ks_split_min+1,i,j)=poro(ks_split_min,i,j)
-                dzs(ks_split_min,i,j)=dzs(ks_split_min,i,j)*0.5_rsh                
-#ifdef key_MUSTANG_V2
+                dzs(ks_split_min,i,j)=dzs(ks_split_min,i,j)*0.5_rsh
                 crel_mud(ks_split_min+1,i,j)=crel_mud(ks_split_min,i,j)
                 poro_mud(ks_split_min+1,i,j)=poro_mud(ks_split_min,i,j)
-#endif
              ENDIF
              
-             ksma(i,j)=ksmax
-            
-
-          
+             ksma(i,j)=ksmax       
            ENDIF   ! if nlayer_splitt > 0                
          ENDIF   ! if ks_surf > 0 
 
-  END SUBROUTINE sed_MUSTANG_split_surflayer
+  END SUBROUTINE sed_mustang_split_surflayer
 !!===========================================================================================
 !
-      SUBROUTINE sed_MUSTANG_coefbioturb_part(i,j,difbio)
-!
+      SUBROUTINE sed_mustang_coefbioturb_part(i,j,difbio)
 !  !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_coefbioturb_part  ***
    !&E
@@ -5830,21 +5402,18 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E  arguments IN : i,j         
    !&E  arguments OUT: difbio bioturbation coefficient (treated as a diffusion coefficient)
    !&E 
-   !&E ** Called by :  sed_MUSTANG_consol_diff_bioturb
-   !&E
-! **********************************************************************
+   !&E ** Called by :  sed_mustang_consol_diff_bioturb
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
 
    !! * Arguments
    INTEGER, INTENT(IN)            :: i,j   
    REAL(KIND=rsh),DIMENSION(ksdmin:ksdmax,-1:nv_adv),INTENT(OUT)  ::difbio                   
    
    !! * Local declarations
-   INTEGER        :: iv,k,ksmib,ksmin,ksmax               
+   INTEGER        :: iv,k,ksmib,ksmin,ksmax
    REAL(KIND=rsh) :: dsurf,somcgravsand,somcmud,coefdifbio,frmud,hsedloc
-
+   LOGICAL        :: l_foundksmib
    !!---------------------------------------------------------------------------
    !! * Executable part
 
@@ -5861,11 +5430,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ksmib=ksmax
           ELSE
             dsurf=-dzs(ksmax,i,j) ! evaluation of Db (k) at the upper limit
+            l_foundksmib=.FALSE.
             DO k=ksmax,ksmin,-1
               dsurf=dsurf+dzs(k,i,j)
               IF(dsurf .GE. dbiotu0_part) THEN
                 ksmib=k
-                GOTO 11
+                l_foundksmib=.TRUE.
+                EXIT
               ENDIF
               coefdifbio=1.0_rsh
               IF(dsurf .GE. dbiotum_part) THEN
@@ -5876,9 +5447,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               difbio(k,-1)=coefdifbio*xbioturbmax_part
               ENDIF
             ENDDO
-            ksmib=1
+            IF (.NOT. l_foundksmib) ksmib=1
           ENDIF
- 11       DO k=ksmin,ksmib
+          DO k=ksmin,ksmib
             difbio(k,1:nvp)=0.0_rsh
             IF (l_diss_insed) THEN
             difbio(k,-1)=0.0_rsh
@@ -5887,12 +5458,11 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
           ENDDO
         ENDIF
 
-  END SUBROUTINE sed_MUSTANG_coefbioturb_part
+  END SUBROUTINE sed_mustang_coefbioturb_part
 !!===========================================================================================
 !
-  SUBROUTINE sed_MUSTANG_coefbioturb_diss(i,j,difbio)
-!
-!  !&E--------------------------------------------------------------------------
+  SUBROUTINE sed_mustang_coefbioturb_diss(i,j,difbio)
+   !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_coefbioturb_diss  ***
    !&E
    !&E ** Purpose :     Bioturbation coefficient in sediment dissolved
@@ -5901,21 +5471,18 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E  arguments IN : i,j                   
    !&E  arguments OUT: difbio bioturbation coefficient (treated as a diffusion coefficient)
    !&E              
-   !&E ** Called by :  sed_MUSTANG_consol_diff_bioturb
-   !&E
-! **********************************************************************
+   !&E ** Called by :  sed_mustang_consol_diff_bioturb
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
 
    !! * Arguments
    INTEGER, INTENT(IN)            :: i,j   
    REAL(KIND=rsh),DIMENSION(ksdmin:ksdmax,-1:nv_adv),INTENT(OUT)  ::difbio                   
    
    !! * Local declarations
-   INTEGER        :: iv,k,ksmib,ksmin,ksmax               
+   INTEGER        :: iv,k,ksmib,ksmin,ksmax
    REAL(KIND=rsh) :: dsurf,somcgravsand,somcmud,coefdifbio,frmud,hsedloc
-
+   LOGICAL        :: l_foundksmib
    !!---------------------------------------------------------------------------
    !! * Executable part
 
@@ -5934,11 +5501,13 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ksmib=ksmax
           ELSE
             dsurf=-dzs(ksmax,i,j) ! evaluation of Db (k) at the upper limit
+            l_foundksmib=.FALSE.
             DO k=ksmax,ksmin,-1
               dsurf=dsurf+dzs(k,i,j)
               IF(dsurf .GE. dbiotu0_diss) THEN
                 ksmib=k
-                GOTO 11
+                l_foundksmib=.TRUE.
+                EXIT
               ENDIF
               !difbio dependent on mud fraction ??
               somcgravsand=0.0_rsh
@@ -5965,22 +5534,22 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                ! difbio same for sand, muds and dissolved variables here - to be changed by user
                 difbio(k,nvp+1:nv_adv)=coefdifbio*xbioturbmax_diss
                 difbio(k,0)=coefdifbio*xbioturbmax_diss
-            ENDDO    
-            ksmib=1
+            ENDDO
+            IF (.NOT. l_foundksmib) ksmib=1
           ENDIF
- 11       DO k=ksmin,ksmib
+          DO k=ksmin,ksmib
             difbio(k,:)=0.0_rsh
             difbio(k,0)=0.0_rsh
           ENDDO
         ENDIF
  
     
-  END SUBROUTINE sed_MUSTANG_coefbioturb_diss
+  END SUBROUTINE sed_mustang_coefbioturb_diss
 !!==============================================================================
-  SUBROUTINE sed_MUSTANG_constitutivrel(i,j,stateconsol,permeab,sigmapsg)
+  SUBROUTINE sed_mustang_constitutivrel(i,j,stateconsol,permeab,sigmapsg)
 ! 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_constitutivrel  ***
+   !&E                 ***  ROUTINE sed_mustang_constitutivrel  ***
    !&E
    !&E ** Purpose : applies constitutive relationships for permeability, 
    !&E              effective stess
@@ -5989,11 +5558,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E
    !&E ** Note : g must be known 
    !&E
-   !&E ** Called by :  sed_MUSTANG_consol_diff_bioturb
+   !&E ** Called by :  sed_mustang_consol_diff_bioturb
    !&E
    !&E--------------------------------------------------------------------------
-   !! * Modules used
-
    !! * Arguments
    INTEGER,INTENT(IN) :: i,j
    REAL(KIND=rsh),DIMENSION(ksdmin:ksdmax),INTENT(out) :: stateconsol,permeab,sigmapsg
@@ -6004,7 +5571,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    REAL(KIND=rsh)                 :: cvolsed,cvolsangrv,fracvolcum,diarepres,       &
                                      voidratio,diamstarrep,wsoulsby,somcmud,crelmud,cvolrelmud, &
                                      permeab_e
-
 
    !! * executable statement
    !!   --------------------
@@ -6059,19 +5625,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
      ENDIF
    ENDDO
 
-  END SUBROUTINE sed_MUSTANG_constitutivrel
-
- !!==============================================================================
-#if defined key_MUSTANG_V2
+  END SUBROUTINE sed_mustang_constitutivrel
  !!==============================================================================
 
-   SUBROUTINE MUSTANGV2_manage_active_layer(i,j,ksmax &
+   SUBROUTINE mustang_manage_active_layer(i,j,ksmax &
                         ,flx_s2w_eroij                                &
                         ,phieau_ero_ij                                &
                         )
-
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANGV2_manage_active_layer  ***
+   !&E                 ***  ROUTINE mustang_manage_active_layer  ***
    !&E
    !&E ** Purpose : compute the active layer thickness and update its composition
    !&E
@@ -6083,19 +5645,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E                         isitcohesive,dzs
    !&E                         c_sedtot,poro,poro_mud,crel_mud,
    !&E 
-   !&E ** Called by :  sed_MUSTANG__erosion
+   !&E ** Called by :  sed_mustang__erosion
    !&E
    !&E--------------------------------------------------------------------------
-
-   !! * Modules used
-
    !! * Arguments
    INTEGER, INTENT(IN) :: i,j
    INTEGER, INTENT(INOUT) :: ksmax
 
    REAL(KIND=rsh),DIMENSION(-1:nv_adv),INTENT(INOUT)  ::  flx_s2w_eroij
    REAL(KIND=rsh),INTENT(INOUT) ::   phieau_ero_ij
-
 
    !! * Local declaration
    INTEGER :: iv,ksmin,ksmaxa,nb_iter_aclay
@@ -6106,15 +5664,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    REAL(KIND=rsh),DIMENSION(nvpc):: frac_sed
    REAL(KIND=rsh),DIMENSION(-1:nv_tot) :: cv_sedr
    LOGICAL :: l_ksmaxm1_cohesive,l_stop_fusion_in_activelayer
-
-
    !!---------------------------------------------------------------------------
    !! * Executable part
-
-   !print *,''
-   !print *,'************************************'
-   !print *,'   > Enter MUSTANGV2_manage_active_layer'
-   !print *,''
 
    ksmin=ksmi(i,j)
 
@@ -6123,7 +5674,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
    l_stop_fusion_in_activelayer=.FALSE.
    nb_iter_aclay=0
-
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!! INITIALISATION !!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -6139,38 +5689,32 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
      ! --> Criterion (1)
 
-   somgravsan=0.0_rsh
-   diamgravsan=0.0_rsh
+   CALL mustang_comp_diamgravsan(cv_sed(:,ksmax,i,j), diamgravsan, somgravsan)
    critstresgravsan=0.0_rsh
    DO iv=igrav1,isand2
-     somgravsan=somgravsan+cv_sed(iv,ksmax,i,j)
-     diamgravsan=diamgravsan+diam_sed(iv)*cv_sed(iv,ksmax,i,j)
      critstresgravsan=critstresgravsan+stresscri0(iv)*cv_sed(iv,ksmax,i,j)
    END DO
+   critstresgravsan=MAX(critstresgravsan/(somgravsan+epsilon_mustang),stresscri0(isand2))
 
-   diamgravsan=MAX(diamgravsan/(somgravsan+epsilon_MUSTANG),diam_sed(isand2))
-   critstresgravsan=MAX(critstresgravsan/(somgravsan+epsilon_MUSTANG),stresscri0(isand2))
-
-   ! With this formulation, the active layer thickness cannot be lower than 6 times the diameter 
+   ! With this formulation, the active layer thickness cannot be lower than 6 times the diameter
    !       of the finest sand (0.6 mm in the SEINE configuration)
          ! tauskin in dy/cm2 and diam in cm in this formula
-   dzs_activelayer_comp = (k1HW97 * 10.0_rsh * MAX(tauskin(i,j) - critstresgravsan, 0.0_rsh)) + (k2HW97 * diamgravsan * 100.0_rsh) 
+   dzs_activelayer_comp = (k1HW97 * 10.0_rsh * MAX(tauskin(i,j) - critstresgravsan, 0.0_rsh)) + (k2HW97 * diamgravsan * 100.0_rsh)
    dzs_activelayer_comp = dzs_activelayer_comp / 100.0_rsh ! .. now dzs in m
 
    IF (dzs(ksmax,i,j) .GE. dzs_activelayer_comp) l_stop_fusion_in_activelayer=.TRUE.
 
-     ! --> Criterion (2) : ne devrait on pas prendre en compte le gravier ?? 
+     ! --> Criterion (2) : ne devrait on pas prendre en compte le gravier ??
    ! FD+PLH 202112 Attention: critère frmudcr_fusion calculé à partir de la couche active (i.e. ksmax)
-   !   
-   frmudcr_fusion=MIN(fusion_para_activlayer*coef_frmudcr1*diamgravsan,frmudcr2)
-   l_ksmaxm1_cohesive=isitcohesive(cv_sed(:,ksmax-1,i,j),frmudcr_fusion) 
+   !
+   frmudcr_fusion=mustang_comp_frmudcr1(diamgravsan, fusion_para_activlayer)
+   l_ksmaxm1_cohesive=isitcohesive(cv_sed(:,ksmax-1,i,j),frmudcr_fusion)
             ! return l_ksmaxm1_cohesive=.TRUE. if frmud(ksmax-1) >= frmudcr_fusion
    IF (l_ksmaxm1_cohesive) l_stop_fusion_in_activelayer=.TRUE.
 
      ! --> Criterion 3
 
    IF (ksmax-1 .EQ. ksmin) l_stop_fusion_in_activelayer=.TRUE.
-
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!! FUSION IN ACTIVE LAYER !!!!!!
@@ -6188,10 +5732,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
      nb_iter_aclay=nb_iter_aclay+1
 
      dzs_excess=dzs(ksmax,i,j)+dzs(ksmax-1,i,j)-dzs_activelayer_comp
-     frac_sed(1:nvpc)=cv_sed(1:nvpc,ksmax-1,i,j)/c_sedtot(ksmax-1,i,j)
-     !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + &
-     !        coeff_dzsmin*SUM( (cv_sed(1:nvpc,ksmax-1,i,j)/c_sedtot(ksmax-1,i,j))*diam_sed(1:nvpc) )
-      dzsmin=dzsminvar(frac_sed)
 
      ! In this case, the fusion process is stopped to prevent the final number of iteration (potentially time consuming)
      IF (dzs(ksmax,i,j)+dzs(ksmax-1,i,j) .GT. dzs_activelayer_comp) THEN
@@ -6213,7 +5753,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
           ! Ksmax layer is fused with this part of ksmax-1 to satisfy the active layer criterion
            !  computing new cv_sed, including  dissolved variables conc, and IWS fluxes and water fluxes
-          CALL MUSTANGV2_fusion_with_poro(i,j,ksmax   &
+          CALL mustang_merge_surflayers(i,j,ksmax   &
                         ,flx_s2w_eroij                                &
                         ,phieau_ero_ij                                &
                         )
@@ -6242,17 +5782,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
            !!! Fusion of the two upper layers
             !  computing new cv_sed, including  dissolved variables conc, and IWS fluxes and water fluxes
-         CALL MUSTANGV2_fusion_with_poro(i,j,ksmax  &
+         CALL mustang_merge_surflayers(i,j,ksmax  &
                         ,flx_s2w_eroij                                &
                         ,phieau_ero_ij                                &
                         )
-
         END IF
      ELSE
-
        !!! Fusion of the two upper layers
            !  computing new cv_sed, including  dissolved variables conc, and IWS fluxes and water fluxes
-       CALL MUSTANGV2_fusion_with_poro(i,j,ksmax   &
+       CALL mustang_merge_surflayers(i,j,ksmax   &
                         ,flx_s2w_eroij                                &
                         ,phieau_ero_ij                                &
                          )
@@ -6265,21 +5803,16 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
      ! --> Criterion (1)
 
-     somgravsan=0.0_rsh
-     diamgravsan=0.0_rsh
+     CALL mustang_comp_diamgravsan(cv_sed(:,ksmax,i,j), diamgravsan, somgravsan)
      critstresgravsan=0.0_rsh
      DO iv=igrav1,isand2
-       somgravsan=somgravsan+cv_sed(iv,ksmax,i,j)
-       diamgravsan=diamgravsan+diam_sed(iv)*cv_sed(iv,ksmax,i,j)
        critstresgravsan=critstresgravsan+stresscri0(iv)*cv_sed(iv,ksmax,i,j)
      END DO
+     critstresgravsan=MAX(critstresgravsan/(somgravsan+epsilon_mustang),stresscri0(isand2))
 
-     diamgravsan=MAX(diamgravsan/(somgravsan+epsilon_MUSTANG),diam_sed(isand2))
-     critstresgravsan=MAX(critstresgravsan/(somgravsan+epsilon_MUSTANG),stresscri0(isand2))
-
-     ! With this formulation, the active layer thickness cannot be lower than 6 times the diameter of the finnest sand 
+     ! With this formulation, the active layer thickness cannot be lower than 6 times the diameter of the finnest sand
      !                          (0.6 mm in the SEINE configuration)
-     dzs_activelayer_comp = (k1HW97*10.0_rsh*MAX(tauskin(i,j)-critstresgravsan,0.0_rsh)) + (k2HW97*diamgravsan*100.0_rsh) 
+     dzs_activelayer_comp = (k1HW97*10.0_rsh*MAX(tauskin(i,j)-critstresgravsan,0.0_rsh)) + (k2HW97*diamgravsan*100.0_rsh)
                      ! tauskin in dy/cm2 and diam in cm
      dzs_activelayer_comp = dzs_activelayer_comp/100.0_rsh ! .. now dzs in m
 
@@ -6287,7 +5820,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
      ! --> Criterion (2)
 
-     frmudcr_fusion=MIN(fusion_para_activlayer*coef_frmudcr1*diamgravsan,frmudcr2)
+     frmudcr_fusion=mustang_comp_frmudcr1(diamgravsan, fusion_para_activlayer)
      l_ksmaxm1_cohesive=isitcohesive(cv_sed(:,ksmax-1,i,j),frmudcr_fusion)
                ! return l_ksmaxm1_cohesive=.TRUE. if frmud(ksmax-1) >= frmudcr_fusion
      IF (l_ksmaxm1_cohesive) l_stop_fusion_in_activelayer=.TRUE.
@@ -6296,25 +5829,18 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
      IF (ksmax-1 .EQ. ksmin) l_stop_fusion_in_activelayer=.TRUE.
 
-
    END DO ! while l_stop_fusion_in_activelayer==.FALSE.
 
     IF (l_outsed_theoric_active_layer) var2D_theoric_active_layer(i,j)=dzs_activelayer_comp ! dzs_aclay_comp_save
 
-   !print *,'Exit MUSTANGV2_manage_active_layer'
-   !print *,'************************************'
-   !print *,''
-
-
-END SUBROUTINE MUSTANGV2_manage_active_layer
+END SUBROUTINE mustang_manage_active_layer
   !!==============================================================================
-SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
+SUBROUTINE mustang_merge_surflayers(i,j,ksmax   &
                         ,flx_s2w_eroij                                &
                         ,phieau_ero_ij                                &
                         )
-
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANGV2_fusion_with_poro  ***
+   !&E                 ***  ROUTINE mustang_merge_surflayers  ***
    !&E
    !&E ** Purpose : fusion of two surficial sediment layers accounting for new 
    !&E              computation of porosity
@@ -6323,11 +5849,9 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
    !&E                  variables OUT : ksmax, dzs, poro,poro_mud,crel_mud, cv_sed
    !&E                  variables IN : ksmi,ksmax,dzs, poro,poro_mud,crel_mud,
    !&E
-   !&E ** Called by :  MUSTANGV2_manage_active_layer
+   !&E ** Called by :  mustang_manage_active_layer
    !&E
    !&E--------------------------------------------------------------------------
-
-   !! * Modules used
 
    !! * Arguments
    INTEGER, INTENT(IN)        :: i,j
@@ -6335,7 +5859,6 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
 
    REAL(KIND=rsh),DIMENSION(-1:nv_adv),INTENT(INOUT)  ::  flx_s2w_eroij
    REAL(KIND=rsh),INTENT(INOUT) ::   phieau_ero_ij
-
 
    !! * Local declaration
    INTEGER :: iv,ksmaxa,ivp_assoc
@@ -6348,25 +5871,13 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
    REAL(KIND=rsh),DIMENSION(nvp) :: mass_sed
    REAL(KIND=rsh),DIMENSION(nvpc):: frac_sed
    REAL(KIND=rsh) :: porowater1,porowater2, porowater_new
-
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-   !print *,''
-   !print *,'************************************'
-   !print *,'   > Enter MUSTANGV2_fusion_with_poro'
-   !print *,'************************************'
-   !print *,''
-   
      ! 1- We look at the composition and the porosity of the mud in layers ksmax and ksmax-1
      ! 2- A porosity of the representative mud is calculated (pro rata of the masses)
      ! 3- The sediment masses / fractions of the fused layer are calculated
      ! 4- We calculate the porosity -> ksmax = ksmax-1 -> MAJ dzs, cv_sed ksmax
-          
-     ! 1- On regarde la composition et la porosite de la vase des couches ksmax et ksmax-1
-     ! 2- On calcule une porosite de la vase representative (au prorata des masses) 
-     ! 3- On calcule les masses/fractions sedimentaires de la couche fusionnee
-     ! 4- On calcule la porosite --> ksmax=ksmax-1 --> MAJ dzs, cv_sed ksmax
 
      !1-
      sommud_k=0.0_rsh
@@ -6382,9 +5893,6 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
      massmud_k=sommud_k*dzsa
      massmud_km1=sommud_km1*dzsam1
      massmud_tot=massmud_k+massmud_km1
-
-     !poro_mud_k=1.0_rsh-(sommud_k/ros(1))
-     !poro_mud_km1=1.0_rsh-(sommud_km1/ros(1))
      
      poro_mud_k=poro_mud(ksmax,i,j)
      poro_mud_km1=poro_mud(ksmax-1,i,j)
@@ -6397,21 +5905,6 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
      porowater1=poroa*dzsa
      porowater2=poroam1*dzsam1
      ENDIF
-
-     !print *,'**Couche ksmax**'
-     !print *,'ksmax=',ksmax
-     !print *,'dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-     !print *,'cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-     !print *,'poro_mud en ksmax=',poro_mud_k
-     !print *,'poro(ksmax,i,j)=',poro(ksmax,i,j)
-     !print *,''
-     !print *,'**Couche ksmax-1**'
-     !print *,'ksmax-1=',ksmax-1
-     !print *,'dzs(ksmax-1,i,j)=',dzs(ksmax-1,i,j)
-     !print *,'cv_sed(:,ksmax-1,i,j)=',cv_sed(:,ksmax-1,i,j)
-     !print *,'poro_mud en ksmax-1=',poro_mud_km1
-     !print *,'poro(ksmax-1,i,j)=',poro(ksmax-1,i,j)
-     !print *,''
 
      !2-
      IF (massmud_tot .GT. 0.0_rsh) THEN
@@ -6431,37 +5924,28 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
 
      DO iv=igrav1,imud2
        frac_sed(iv)=mass_sed(iv)/mass_tot
-       !frac_sed(iv)=MAX(mass_sed(iv),0.00000000001_rlg)/mass_tot ! Vraiment utile ?! a priori non suite aux dernieres modifs ==> je commente
      END DO
 
      !4-
-     CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud_new,   &
-                                 crel_mud_new, poro_kij)
-
-     ! Question : faut il prescrire a la toute fin que dzs et cv_sed en ksmax avant fusion
-     ! sont desormais = 0.0 (ou -999.0)
-
      ksmaxa=ksmax
-
      ksmax=ksmax-1
 
-     dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro_kij)*ros(1))
-     dzsi=1.0_rsh/dzs(ksmax,i,j)
+     ! fusion of two known layers: thickness is just dzsa+dzsam1 (exact,
+     ! no erosion-style skeleton clamp needed), expressed here by reusing
+     ! mustang_porosity with ddzs=-dzsam1 (negative = growing/merging
+     ! instead of thinning) and cvolgrv=0.0 (disables the gravel-skeleton
+     ! floor, irrelevant when merging) - see mustang_porosity docstring
+     CALL mustang_porosity(frac_sed, poro_mud_new, crel_mud_new, mass_tot, &
+                           dzsa, -dzsam1, 0.0_rsh, mass_sed(1:nvpc),       &
+                           poro_kij, dzs(ksmax,i,j))
 
+     dzsi=1.0_rsh/dzs(ksmax,i,j)
      crel_mud(ksmax,i,j)=crel_mud_new
      poro(ksmax,i,j)=poro_kij     
-     poro_mud(ksmax,i,j)=poro_mud_new ! Actualisation de poro_mud liee au melange !
-
+     poro_mud(ksmax,i,j)=poro_mud_new 
      DO iv=1,nvpc
        cv_sed(iv,ksmax,i,j)=mass_sed(iv)*dzsi
      END DO
-
-     !IF (crel_mud(ksmax,i,j) .GT. 1500.0_rsh) THEN
-     !  print *,'in sed_fusion_with_poro'
-     !  print *,' > crel_mud(ksmax,i,j) = ',crel_mud(ksmax,i,j)
-     !  print *,' > cv_sed(:,ksmax,i,j) = ',cv_sed(:,ksmax,i,j)
-     !END IF
-
 
       ! non constitutive particulate variables
      DO iv=nvpc+1,nvp
@@ -6475,7 +5959,7 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
      ! fusion in active layer ==> mixing with water conscentrations ==> cv_sed=cw_bottom
      ! code=4
        porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
-       CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,4,    &
+       CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,4,    &
            phieau_ero_ij=phieau_ero_ij,          &
            flx_s2w_eroij=flx_s2w_eroij,          &
            porowater1=porowater1, &
@@ -6500,29 +5984,15 @@ SUBROUTINE MUSTANGV2_fusion_with_poro(i,j,ksmax   &
      cv_sed(:,ksmaxa,i,j)=0.0_rsh
      c_sedtot(ksmaxa,i,j)=0.0_rsh
 
-     !print *,'Apres fusion'
-     !print *,'ksmax=',ksmax
-     !print *,'dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-     !print *,'cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-     !print *,'poro_mud_new en ksmax=',poro_mud_new
-     !print *,'poro(ksmax,i,j)=',poro(ksmax,i,j)
-     !print *,''
-
-   !print *,'Exit sed_fusion_with_poro'
-   !print *,'************************************'
-   !print *,''
-
-
-END SUBROUTINE MUSTANGV2_fusion_with_poro
+END SUBROUTINE mustang_merge_surflayers
   !!==============================================================================
   
-  SUBROUTINE MUSTANGV2_comp_eros_flx_indep(i, j, ksmax,                            &
+  SUBROUTINE mustang_comp_eros_flx_indep(i, j, ksmax,                            &
                                       om_r, on_r, flx_bxij, flx_byij,         &
                                       ubar, vbar,   &
                                       sed_eros_flx_class_by_class)
-
    !&E--------------------------------------------------------------------------
-   !&E                 *** MUSTANGV2_comp_eros_flx_indep  ***
+   !&E                 *** mustang_comp_eros_flx_indep  ***
    !&E
    !&E ** Purpose : Non-cohesive class independent erosion
    !&E
@@ -6539,9 +6009,6 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
    !&E ** Called by :  sed_erosion
    !&E
    !&E--------------------------------------------------------------------------
-
-   !! * Modules used
-
    !! * Arguments
    INTEGER, INTENT(IN) :: i, j, ksmax
    REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(OUT) :: sed_eros_flx_class_by_class
@@ -6564,12 +6031,6 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
 
    !!---------------------------------------------------------------------------
    !! * Executable part
-
-   !print *,''
-   !print *,'************************************'
-   !print *,'   > Enter sed_comp_eros_flx_indep'
-   !print *,''
-
    ! Needs to be initialised here
    sed_eros_flx_class_by_class(:)=0.0_rsh
 
@@ -6595,9 +6056,9 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
        ! Hindering / exposure coefficients for sediment class iv, ph and pe, respectively
        DO jiv=1,isand2 ! imud2 ou isand2 --> reflechir --> preference pour isand2
          ph = ph + (diam_sed(jiv)/(diam_sed(jiv)+diam_sed(iv)))*  &
-                     ( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_MUSTANG,c_sedtot(ksmax,i,j))) )
+                     ( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_mustang,c_sedtot(ksmax,i,j))) )
          pe = pe + (diam_sed(iv) /(diam_sed(jiv)+diam_sed(iv)))*  &
-                     ( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_MUSTANG,c_sedtot(ksmax,i,j))) )
+                     ( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_mustang,c_sedtot(ksmax,i,j))) )
        END DO
        pephm_fcor = (pe / ph)**(-m)
        toce_loc(iv) = stresscri0(iv) * pephm_fcor 
@@ -6627,22 +6088,19 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
        END IF
 
        !!! Compute of erosion flux sed_eros_flx_class_by_class in kg/m2/s
-       ! As already mentioned in paraMUSTANG, if E0_sand_option == 3, 
+       ! As already mentioned in paramustang, if E0_sand_option == 3, 
        !  n_eros_sand should be equal to 1.7 (to be consistent with Wu and Lin formulation)
 
        sed_eros_flx_class_by_class(iv)=MF*frac_sed(iv)*E0_sand_loc(iv) &
                        *((tauskin(i,j)/toce_loc(iv))-1.0_rsh)**n_eros_sand
 
-
      END IF
 
    END DO
-
       
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!! MUDDY SEDIMENTS    !!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
    IF( .NOT. l_eroindep_mud) THEN
      !! mud erosion is proportional to total sand erosion
@@ -6665,20 +6123,6 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
      !! depend of tau_cri and choised options
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!      sommud=0.0_rsh
-!      DO iv=imud1,imud2
-!        sommud=sommud+cv_sed(iv,ksmax,i,j)
-!      ENDDO
-!      cvolinigrv=0.0_rsh
-!      DO iv=igrav1,igrav2
-!        cvolinigrv=cvolinigrv+cv_sed(iv,ksmax,i,j)/ros(iv)
-!      ENDDO
-!      cvolinisan=0.0_rsh
-!      DO iv=isand1,isand2
-!        cvolinisan=cvolinisan+cv_sed(iv,ksmax,i,j)/ros(iv)
-!      ENDDO
-
-!      cmudr=sommud/(1.0_rsh-cvolinisan-cvolinigrv)
        cmudr=crel_mud(ksmax,i,j)
 
         !!!! *** Critical shear stress *** !!!!
@@ -6700,7 +6144,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
              toce_meansan=toce_meansan+toce_loc(iv)*cv_sed(iv,ksmax,i,j)
            END DO
 
-           IF (somsan .GT. epsilon_MUSTANG) THEN
+           IF (somsan .GT. epsilon_mustang) THEN
              tauc_mud=toce_meansan/somsan
            ELSE
              tauc_mud=(x1toce_mud*cmudr**x2toce_mud) + 0.00005_rsh
@@ -6712,7 +6156,7 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
         IF (tau_cri_mud_option_eroindep .EQ. 2) THEN
           toce_sand(:)=0.0_rsh
           DO iv=isand1,isand2
-           toce_sand(iv)=(toce_loc(iv)*cv_sed(iv,ksmax,i,j))/(cv_sed(iv,ksmax,i,j)+epsilon_MUSTANG)
+           toce_sand(iv)=(toce_loc(iv)*cv_sed(iv,ksmax,i,j))/(cv_sed(iv,ksmax,i,j)+epsilon_mustang)
           END DO
           toce_minsan=minval(toce_sand)
           IF (toce_minsan .NE. 0.0_rsh) THEN
@@ -6728,7 +6172,6 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
         END IF
 
         !!!! *** Erodibility parameter *** !!!!
-
         E0_mud_loc=E0_mud_para_indep*E0_mud
 
         DO iv=imud1,imud2
@@ -6740,21 +6183,18 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
         END DO
 
     ENDIF
-    
-   !print *,'Exit MUSTANGV2_comp_eros_flx_indep'
-   !print *,'************************************'
-   !print *,''
 
-END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
+
+END SUBROUTINE mustang_comp_eros_flx_indep
   !!==============================================================================
   
-  SUBROUTINE  MUSTANGV2_borne_and_apply_erosion_tot(i,j,ksmax,flx_bxij,flx_byij, &
+  SUBROUTINE  mustang_borne_and_apply_erosion_tot(i,j,ksmax,flx_bxij,flx_byij, &
                         flx_s2w_eroij,                                &
                         phieau_ero_ij,                                &
                        sed_eros_flx_class_by_class,dt1,dt_ero)
 
    !&E--------------------------------------------------------------------------
-   !&E                 *** MUSTANGV2_borne_and_apply_erosion_tot  ***
+   !&E                 *** mustang_borne_and_apply_erosion_tot  ***
    !&E
    !&E ** Purpose : limitation of erosion and bedload extraction fluxes 
    !&E              that can not exceed the mass available in the surface layer
@@ -6762,10 +6202,7 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
    !&E ** Description : 0D
    !&E         variables IN : ksmax,dt1, dzs, cv_sed, crel_mud
    !&E                        ros 
-   !&E                        
-   !&E                        
-   !&E                        
-   !&E
+
    !&E         variables OUT : flx_bxij,flx_byij,sed_eros_flx_class_by_class
    !&E                          dt_ero, crel_mud, poro, dzs, cv_sed, dzsmin,
    !&E                          c_sedtot, poro_mud, ksmax
@@ -6783,9 +6220,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
       REAL(KIND=rsh),DIMENSION(-1:nv_adv),INTENT(INOUT)   :: flx_s2w_eroij
       REAL(KIND=rsh),INTENT(INOUT)                         :: phieau_ero_ij
 
-
-
-
       !! * Local declarations
       INTEGER:: iv,ivp_assoc
       REAL(KIND=rsh) :: flx_tot,dzsa,mass_tot
@@ -6793,14 +6227,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
       REAL(KIND=rsh),DIMENSION(1:nvpc) :: frac_sed
       LOGICAL,DIMENSION(1:nvp) :: l_empty
       REAL(KIND=rsh) :: poroa,porowater_new,porowater1
-
-   !!----------------------------------------------------------------------
-
-
-     !print *,''
-     !print *,'************************************'
-     !print *,'   > Enter MUSTANGV2_borne_and_apply_erosion_tot'
-     !print *,''
 
      dzsa=dzs(ksmax,i,j)
      IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
@@ -6818,16 +6244,14 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
      DO iv=1,nvpc
 
-
-       IF (cv_sed(iv,ksmax,i,j) .LT. 10e-3) THEN ! Bof ?
+       IF (cv_sed(iv,ksmax,i,j) .LE. 0.0_rsh) THEN ! no mass to erode (or numerical noise <= 0) : avoid division by zero below
 
          flx_bxij(iv)=0.0_rsh
          flx_byij(iv)=0.0_rsh
          sed_eros_flx_class_by_class(iv)=0.0_rsh
 
          dt_ero(iv)=0.0_rsh
-         !dt_ero(iv)=dt1 
-
+         massinactivlayer(iv)=0.0_rsh
 
        ELSE
  
@@ -6844,7 +6268,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
            dt_ero(iv)=dt1
          END IF
 
-
          ! Updating erosion/bedload fluxes according to available sediment masses in active layer !!
          ! Unit changes (kg/m2/s or kg/m/s --> kg)
 
@@ -6855,7 +6278,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
 
          ! Updating masses in active layer according to divergence of actual (limited or not) erosion/bedload fluxes
-
            ero_tot(iv)=sed_eros_flx_class_by_class(iv)
            ero_tot(iv)=ero_tot(iv)+ABS(flx_bxij(iv))+ABS(flx_byij(iv))
          IF (.NOT. l_empty(iv)) THEN
@@ -6879,46 +6301,35 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
          massinactivlayer(iv)=massinactivlayer_ini(iv)-(sed_eros_flx_class_by_class(iv)/surf_cell(i,j))
        ELSE
          sed_eros_flx_class_by_class(iv)=massinactivlayer_ini(iv)*surf_cell(i,j)  &
-             *(1.0_rsh - (massinactivlayer(ivp_assoc)/(massinactivlayer_ini(ivp_assoc)+epsi30_MUSTANG))) &
-                *(sed_eros_flx_class_by_class(ivp_assoc)/(ero_tot(ivp_assoc)+epsi30_MUSTANG))
+             *(1.0_rsh - (massinactivlayer(ivp_assoc)/(massinactivlayer_ini(ivp_assoc)+epsi30_mustang))) &
+                *(sed_eros_flx_class_by_class(ivp_assoc)/(ero_tot(ivp_assoc)+epsi30_mustang))
          flx_bxij(iv)=massinactivlayer_ini(iv)*surf_cell(i,j)*(1.0_rsh - &
-                 (massinactivlayer(ivp_assoc)/(massinactivlayer_ini(ivp_assoc)+epsi30_MUSTANG))) &
-                  *(flx_bxij(ivp_assoc)/(ero_tot(ivp_assoc)+epsi30_MUSTANG))
+                 (massinactivlayer(ivp_assoc)/(massinactivlayer_ini(ivp_assoc)+epsi30_mustang))) &
+                  *(flx_bxij(ivp_assoc)/(ero_tot(ivp_assoc)+epsi30_mustang))
          flx_byij(iv)=massinactivlayer_ini(iv)*surf_cell(i,j)*(1.0_rsh - &
-                 (massinactivlayer(ivp_assoc)/(massinactivlayer_ini(ivp_assoc)+epsi30_MUSTANG))) &
-                  *(flx_byij(ivp_assoc)/(ero_tot(ivp_assoc)+epsi30_MUSTANG))
+                 (massinactivlayer(ivp_assoc)/(massinactivlayer_ini(ivp_assoc)+epsi30_mustang))) &
+                  *(flx_byij(ivp_assoc)/(ero_tot(ivp_assoc)+epsi30_mustang))
          massinactivlayer(iv)=massinactivlayer_ini(iv)*(massinactivlayer(ivp_assoc) &
-                               /(massinactivlayer_ini(ivp_assoc)+epsi30_MUSTANG))
+                               /(massinactivlayer_ini(ivp_assoc)+epsi30_mustang))
        END IF
      END DO
-
-
-     !print *,'Masses remaining in activelayer after erosion = ',massinactivlayer(:)
 
      mass_tot=0.0_rsh
      DO iv=1,imud2
        mass_tot=mass_tot+massinactivlayer(iv)
      END DO
 
-
      IF (mass_tot .GT. 0.0_rsh) THEN
-       !print *,'Remaining masses, update of the ksmax layer composition and thickness'
 
        DO iv=1,imud2
          frac_sed(iv)=massinactivlayer(iv)/mass_tot
        END DO
 
-       CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud(ksmax,i,j),  &
+       CALL mustang_comp_poro_mixsed(frac_sed, poro_mud(ksmax,i,j),  &
                                 crel_mud(ksmax,i,j), poro(ksmax,i,j))
 
 
        dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1))
-
-!       dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + coeff_dzsmin*SUM( (cv_sed(1:nvpc,ksmax,i,j)/c_sedtot(ksmax,i,j))*diam_sed(1:nvpc) ) ! NON
-       !dzsmin=dzsminuni + coeff_dzsmin*SUM( (cv_sed(1:isand2,k,i,j)/c_sedtot(k,i,j))*diam_sed(1:isand2) ) ??
-       !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + coeff_dzsmin*SUM( frac_sed(1:nvpc)*diam_sed(1:nvpc) )
-       dzsmin=dzsminvar(frac_sed)
-
 
          IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
          ! dissolved variable in pore waters and water fluxes at the interface
@@ -6929,7 +6340,7 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
          !  because concentrations in activelayer have been already mixed and = cw_bottom during fusion
           porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
           porowater1=dzsa*poroa
-          CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,3,   &
+          CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,3,   &
               phieau_ero_ij=phieau_ero_ij,          &
               flx_s2w_eroij=flx_s2w_eroij,          &
               porowater1=porowater1,                &
@@ -6937,7 +6348,10 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
               porowater_new=porowater_new)
          ENDIF
 
-       IF (dzs(ksmax,i,j) .GT. dzsmin) THEN
+       ! when ksmax is the floor layer ksmi, there is no layer below to merge
+       ! the small residual mass into - accept the thin layer as-is instead
+       ! of calling the small-mass fusion
+       IF (dzs(ksmax,i,j) .GT. dzsmin .OR. ksmax .EQ. ksmi(i,j)) THEN
 
          DO iv=1,nvp
            cv_sed(iv,ksmax,i,j)=massinactivlayer(iv)/dzs(ksmax,i,j)
@@ -6947,7 +6361,7 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
        ELSE
 
-         CALL MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,   &
+         CALL mustang_manage_small_mass_in_ksmax(i,j,ksmax,   &
                                 phieau_ero_ij,flx_s2w_eroij,   &
                                 massinactivlayer)
 
@@ -6964,7 +6378,7 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
          !  ==> flx_s2w and phieau_s2w
          ! layer elimination ==> code 1
           porowater1=dzsa*poroa
-          CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,1,   &
+          CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,1,   &
                            phieau_ero_ij=phieau_ero_ij,          &
                            flx_s2w_eroij=flx_s2w_eroij,          &
                            porowater1=porowater1,                 &
@@ -6979,9 +6393,7 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
        ksmax=ksmax-1
 
-
      END IF
-
 
 ! To see later
 !     DO iv=imud2+1,nvp
@@ -6991,21 +6403,15 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 !       sed_eros_flx_class_by_class(iv)=sed_eros_flx_class_by_class(ivp_assoc)*cv_sed(iv,ksmax,i,j)/cv_sed(ivp_assoc,ksmax,i,j)
 !     END DO
 
-
-    !print *,''
-    !print *,'Exit sed_borne_and_apply_erosion_tot'
-    !print *,'************************************'
-    !print *,''
-
-END SUBROUTINE MUSTANGV2_borne_and_apply_erosion_tot
+END SUBROUTINE mustang_borne_and_apply_erosion_tot
 
   !!==============================================================================
-SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
+SUBROUTINE mustang_manage_small_mass_in_ksmax(i,j,ksmax,      &
                                 phieau_ero_ij,flx_s2w_eroij,   &
                                 mass_sed_ijksmax)
 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANGV2_manage_small_mass_in_ksmax  ***
+   !&E                 ***  ROUTINE mustang_manage_small_mass_in_ksmax  ***
    !&E
    !&E ** Purpose : when sediment masses remaining in ksmax become too small,
    !&E              they are integrated in ksmax-1 layer
@@ -7017,11 +6423,9 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
    !&E              variables OUT : ksmax,dzs, cv_sed, poro, poro_mud, crel_mud
    !&E                             c_sedtot
    !&E
-   !&E ** Called by :  MUSTANGV2_comp_poro_mixsed
+   !&E ** Called by :  sed_mustang_erosion_mixture, mustang_merge_surflayers
    !&E
    !&E--------------------------------------------------------------------------
-
-   !! * Modules used
 
    !! * Arguments
    INTEGER, INTENT(IN) :: i,j
@@ -7044,21 +6448,10 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-   !print *,''
-   !print *,'*****************************************************'
-   !print *,'   > Enter MUSTANGV2_manage_small_mass_in_ksmax'
-   !print *,'*****************************************************'
-   !print *,''
-
      ! 1- We look at the composition and the porosity of the mud layers ksmax and ksmax-1
      ! 2- A porosity of the representative mud is calculated (pro rata of the masses)
      ! 3- The sediment masses / fractions of the fused layer are calculated
      ! 4- We calculate the porosity -> ksmax = ksmax-1 -> MAJ dzs, cv_sed ksmax
-     
-     ! 1- On regarde la composition et la porosite de la vase des couches ksmax et ksmax-1
-     ! 2- On calcule une porosite de la vase representative (au prorata des masses) 
-     ! 3- On calcule les masses/fractions sedimentaires de la couche fusionnee
-     ! 4- On calcule la porosite --> ksmax=ksmax-1 --> MAJ dzs, cv_sed ksmax
 
      !1-
      massmud_k=0.0_rsh
@@ -7077,24 +6470,11 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
      poroam1=poro(ksmax-1,i,j)
 
      dzsam1=dzs(ksmax-1,i,j)
-     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
      dzsa=dzs(ksmax,i,j)
+     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
      porowater1=dzsa*poroa
      porowater2=dzsam1*poroam1
      ENDIF
-     !print *,'**Couche ksmax**'
-     !print *,'ksmax=',ksmax
-     !print *,'mass_sed_ijksmax(:)=',mass_sed_ijksmax(:)
-     !print *,'poro_mud en ksmax=',poro_mud_k
-     !print *,'poro(ksmax,i,j)=',poroa
-     !print *,''
-     !print *,'**Couche ksmax-1**'
-     !print *,'ksmax-1=',ksmax-1
-     !print *,'dzs(ksmax-1,i,j)=',dzs(ksmax-1,i,j)
-     !print *,'cv_sed(:,ksmax-1,i,j)=',cv_sed(:,ksmax-1,i,j)
-     !print *,'poro_mud en ksmax-1=',poro_mud_km1
-     !print *,'poro(ksmax-1,i,j)=',poroam1
-     !print *,''
 
      !2-
      IF (massmud_tot .GT. 0.0_rsh) THEN
@@ -7117,15 +6497,17 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
      END DO
 
      !4-
-     CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud_new,    &
-                                   crel_mud_new, poro_kij)
-
-     ! Question : faut il prescrire a la toute fin que dzs et cv_sed en ksmax avant fusion
-     ! sont desormais = 0.0 (ou -999.0)
-
      ksmax=ksmax-1
 
-     dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro_kij)*ros(1))
+     ! fusion of two known layers: thickness is just dzsa+dzsam1 (exact, no
+     ! erosion-style skeleton clamp needed), expressed here by reusing
+     ! mustang_porosity with ddzs=-dzsam1 (negative = growing/merging
+     ! instead of thinning) and cvolgrv=0.0 (disables the gravel-skeleton
+     ! floor, irrelevant when merging) - same pattern as
+     ! mustang_merge_surflayers, which this subroutine otherwise duplicates
+     CALL mustang_porosity(frac_sed, poro_mud_new, crel_mud_new, mass_tot, &
+                           dzsa, -dzsam1, 0.0_rsh, mass_sed(1:nvpc),       &
+                           poro_kij, dzs(ksmax,i,j))
      dzsi=1.0_rsh/dzs(ksmax,i,j)
 
      crel_mud(ksmax,i,j)=crel_mud_new
@@ -7138,13 +6520,6 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
        c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)+cv_sed(iv,ksmax,i,j)
      END DO
 
-     !IF (crel_mud(ksmax,i,j) .GT. 1500.0_rsh) THEN
-     !  print *,'in sed_fusion_with_poro'
-     !  print *,' > crel_mud(ksmax,i,j) = ',crel_mud(ksmax,i,j)
-     !  print *,' > cv_sed(:,ksmax,i,j) = ',cv_sed(:,ksmax,i,j)
-     !END IF
-
-
      DO iv=nvpc+1,nvp
        cv_sed(iv,ksmax,i,j)=(mass_sed_ijksmax(iv)+cv_sed(iv,ksmax,i,j)*dzsam1)*dzsi
      ENDDO
@@ -7155,7 +6530,7 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
      ! --------------------------------------------------------------------
      ! fusion of 2 layers at surface ==> code 8  new poro could introduce water inputs or output
      porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
-     CALL MUSTANGV2_eval_dissvar_IWSflux(i,j,ksmax,8,  &
+     CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,8,  &
            phieau_ero_ij=phieau_ero_ij,           &
            flx_s2w_eroij=flx_s2w_eroij,           &
            porowater1=porowater1,                      &
@@ -7172,38 +6547,41 @@ SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,      &
      cv_sed(:,ksmax+1,i,j)=0.0_rsh
      c_sedtot(ksmax+1,i,j)=0.0_rsh
 
-     !print *,'Apres fusion'
-     !print *,'ksmax=',ksmax
-     !print *,'dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-     !print *,'cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-     !print *,'poro_mud_new en ksmax=',poro_mud_new
-     !print *,'poro(ksmax,i,j)=',poro(ksmax,i,j)
-     !print *,''
-
-   !print *,'Exit MUSTANGV2_manage_small_mass_in_ksmax'
-   !print *,'************************************'
-   !print *,''
-
-
-END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
+END SUBROUTINE mustang_manage_small_mass_in_ksmax
 
    !!==============================================================================
-  SUBROUTINE MUSTANGV2_comp_poro_mixsed(frac_sed_kij, poro_mud_kij, &
+  SUBROUTINE mustang_comp_poro_mixsed(frac_sed_kij, poro_mud_kij, &
                                 crel_mud_kij, poro_kij)
 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  SUBROUTINE MUSTANGV2_comp_poro_mixsed  ***
+   !&E                 ***  SUBROUTINE mustang_comp_poro_mixsed  ***
    !&E
    !&E ** Purpose : compute porosity in case of non-cohesive/cohesive sediment mixtures
    !&E
    !&E ** Description : Wooster et al. (2008) and Wu and Li (2017)
+   !&E                  poro_option=1 : constant, V1-equivalent (incompatible
+   !&E                                  with l_erosion_by_class). This
+   !&E                                  routine's own formula for it ignores
+   !&E                                  poro_mud/crel_mud state entirely, but
+   !&E                                  it is only called directly for a full
+   !&E                                  reconfiguration event (e.g. a gravel
+   !&E                                  lag), where that flat constant is
+   !&E                                  correct; for a partially eroded,
+   !&E                                  persisting mixture, mustang_porosity
+   !&E                                  bypasses this routine for
+   !&E                                  poro_option=1 and derives poro
+   !&E                                  directly from the remaining
+   !&E                                  composition instead (old V1 behavior,
+   !&E                                  compatible with consolidation)
+   !&E                  poro_option=2 : Wu and Li (2017) (default, incompatible
+   !&E                                  with consolidation)
+   !&E                  poro_option=3 : ideal coarse/fine packing mix (always
+   !&E                                  compatible with consolidation)
    !&E                  variables OUT : poro,crel_mud
-   !&E                  variables IN : frac_sed,psi_sed,Awooster,Bwooster,Bmax_wu      
+   !&E                  variables IN : frac_sed,psi_sed,Awooster,Bwooster,Bmax_wu
    !&E                                  poro_option,diam_sed,poro_mud,crel_mud,
    !&E
    !&E ** Note : pi must be known 
-   !&E
-   !&E
    !&E ** Called by :  fusion_with_poro, manage_small_mass__in_ksmax
    !&E                 borne_and_apply_erosion_tot, effdep, erosion
    !&E
@@ -7225,15 +6603,7 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
 
     REAL(KIND=rsh),DIMENSION(igrav1:isand2) :: frac_noncoh
 
-   !!---------------------------------------------------------------------------
    !! * Executable part
-
-
-    !print *,''
-    !print *,' --> enter MUSTANGV2_comp_poro_mixsed'
-    !print *,''
-
-
     !!!!!! Step I - Computation of the porosity associated to the non-cohesive sediment
     !               fraction (i.e. igrav1 --> isand2), using the experimental relation derived
     !               by Wooster et al. (2008) between geometric standard deviation and porosity
@@ -7246,16 +6616,30 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
     !                         - Awooster = 0.621 and Bwooster = -0.659 in the original paper of Wooster et al. (2008)
     !                         - Representative diameter of muddy particles is set at 31.5 microns (considering a %mud = %<63 microns)
 
+    IF (poro_option .EQ. 1) THEN
+
+      ! V1-equivalent : a single constant porosity, independent of mixture
+      ! composition (grain size, mud content) in every regime - matches
+      ! old V1 erosion code, which always used this one global packing
+      ! constant rather than any composition-dependent formula.
+      ! INCOMPATIBLE with l_erosion_by_class (see mustang_compatibility):
+      ! per-class erosion needs a composition-dependent law it can
+      ! recompute consistently after each class empties out over its own
+      ! sub-timestep, which a fixed constant cannot represent.
+      poro_kij = 1.0_rsh - cvolmaxsort
+
+    ELSE
+
     frac_gravsan=0.0_rsh
     DO iv=igrav1,isand2
       frac_gravsan=frac_gravsan+frac_sed_kij(iv)
-    END DO 
+    END DO
 
-    IF (frac_gravsan .GT. epsilon_MUSTANG) THEN
+    IF (frac_gravsan .GT. epsilon_mustang) THEN
 
       frac_noncoh(:)=0.0_rsh
       DO iv=igrav1,isand2
-        IF (frac_sed_kij(iv) .GT. 0.0001_rsh*epsilon_MUSTANG) THEN
+        IF (frac_sed_kij(iv) .GT. 0.0001_rsh*epsilon_mustang) THEN
           frac_noncoh(iv)=frac_sed_kij(iv)/frac_gravsan
         END IF
       END DO
@@ -7288,7 +6672,7 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
       frac_mud_cr=crel_mud_kij/ros(1)/(crel_mud_kij/ros(1)+(1-poro_gravsan)/poro_gravsan)
       IF(frac_mud .GT. frac_mud_cr) THEN
 
-        IF (poro_option .EQ. 1) THEN
+        IF (poro_option .EQ. 2) THEN
 
           !!!!!! Step II - Computation of the porosity representative of the non-cohesive / cohesive mixture
     
@@ -7312,13 +6696,11 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
           ! n : Minimum number of layers of fine particles required to fill up 
           !     the voids of coarse particles
           n = 0.1124_rsh*(diam_gravsan/diam_mud)
-          !print *,'n',n
 
           ! Rn : The number of fine particles available to cover a coarse
           !      particle, which is equal to the ratio of the numbers of
           !      fine and coarse particles in the sediment mixture
           Rn = (frac_mud*diam_gravsan**3.)/(frac_gravsan*diam_mud**3.)
-          !print *,'Rn',Rn
   
           ! P2 : The probability of a coarse particle contacting with a
           !      fine particle
@@ -7337,7 +6719,7 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
           poro_kij = 1.0_rsh - (1.0_rsh/SumTerm)
 
 
-        ELSE IF (poro_option .EQ. 2) THEN
+        ELSE IF (poro_option .EQ. 3) THEN
 
           ! modif plehir automn 2019
           !crel_mud_kij=MIN( crel_mud_kij, ros(1)* ( (1.0_rsh-poro_gravsan)/poro_gravsan )* ( (1.0_rsh/frac_gravsan)-1.0_rsh ) )
@@ -7347,10 +6729,6 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
         END IF
 
       ELSE
-
-        ! if no mud, only gravel and sand ==> poro_kij=poro_gravsan
-        !poro_kij=poro_gravsan
-        !crel_mud_kij=0.0_rsh
 
         ! modif plehir automn 2019
         ! faible fraction vaseuse, on reste en ideal coarse packing
@@ -7362,7 +6740,7 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
     ELSE 
 
       ! if mud only, poro=poro_mud
-      IF (poro_option .EQ. 2) THEN
+      IF (poro_option .EQ. 3) THEN
         poro_kij = MIN(1.0_rsh-(crel_mud_kij/ros(1)), 1.0_rsh-(cfreshmud/ros(1)))
       ELSE
         poro_kij = poro_mud_kij
@@ -7370,10 +6748,12 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
 
     END IF
 
-    IF (poro_option .EQ. 2) poro_kij = MAX(poro_kij, poro_min)
+    END IF ! poro_option .EQ. 1
 
-    IF (poro_option .EQ. 2 .AND. poro_kij == 1.0_rsh) THEN
-      print *,'in MUSTANGV2_comp_poro_mixsed poro=1'
+    IF (poro_option .EQ. 3) poro_kij = MAX(poro_kij, poro_min)
+
+    IF (poro_option .EQ. 3 .AND. poro_kij == 1.0_rsh) THEN
+      print *,'in mustang_comp_poro_mixsed poro=1'
       print *,'  > frac_gravsan=',frac_gravsan
       print *,'  > poro_gravsan=',poro_gravsan
       print *,'  > frac_mud=',frac_mud
@@ -7384,21 +6764,74 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
       print *,'  > poro_kij=',poro_kij      
     END IF
 
-    !print *,''
-    !print *,' --> exit MUSTANGV2_comp_poro_mixsed'
-    !print *,''
+  END SUBROUTINE mustang_comp_poro_mixsed
 
+  !!==============================================================================
 
-  END SUBROUTINE MUSTANGV2_comp_poro_mixsed
+  SUBROUTINE mustang_porosity(frac_sed, poro_mud_kij, crel_mud_kij, mass_tot, &
+                               dzsa, ddzs, cvolgrv, mass_sed_nvpc, &
+                               poro_kij, dzs_kij)
 
-  !!============================================================================== 
- 
-  SUBROUTINE MUSTANGV2_eval_dissvar_IWSflux(i,j,k,code,phieau_ero_ij,    &
+   !&E--------------------------------------------------------------------------
+   !&E                 ***  SUBROUTINE mustang_porosity  ***
+   !&E
+   !&E ** Purpose : update porosity and thickness of a layer that is being
+   !&E              partially eroded while its mixture persists (as opposed to
+   !&E              a full reconfiguration event, e.g. a gravel lag after
+   !&E              complete sand/mud winnowing, which calls
+   !&E              mustang_comp_poro_mixsed directly instead - its existing
+   !&E              poro_option=1 flat constant is already correct there)
+   !&E
+   !&E ** Description : poro_option=2/3 use the composition-dependent closure
+   !&E              law (mustang_comp_poro_mixsed).
+   !&E              poro_option=1 instead reinstates old V1's own formula for
+   !&E              this case. This is what keeps poro_option=1 usable 
+   !&E              together with consolidation, as old V1 was.
+   !&E
+   !&E ** Called by :  sed_mustang_erosion_byclass, sed_mustang_erosion_mixture,
+   !&E                 mustang_merge_surflayers, mustang_manage_small_mass_in_ksmax
+   !&E
+   !&E--------------------------------------------------------------------------
+    !! * Arguments
+    REAL(KIND=rsh),DIMENSION(1:imud2), INTENT(IN)    :: frac_sed
+    REAL(KIND=rsh),                    INTENT(INOUT) :: poro_mud_kij
+    REAL(KIND=rsh),                    INTENT(INOUT) :: crel_mud_kij
+    REAL(KIND=rsh),                    INTENT(IN)    :: mass_tot,dzsa,ddzs,cvolgrv
+    REAL(KIND=rsh),DIMENSION(1:nvpc),  INTENT(IN)    :: mass_sed_nvpc
+    REAL(KIND=rsh),                    INTENT(OUT)   :: poro_kij,dzs_kij
+    !! * Local declarations
+    INTEGER        :: iv
+    REAL(KIND=rsh) :: cvolp
+
+   !! * Executable part
+    IF (poro_option .EQ. 1) THEN
+
+      dzs_kij=MAX(dzsa-ddzs, dzsa*cvolgrv/cvolmaxsort)
+      IF (dzs_kij .LE. 0.0_rsh) dzs_kij=epsilon_mustang
+
+      cvolp=0.0_rsh
+      DO iv=1,nvpc
+        cvolp=cvolp+(mass_sed_nvpc(iv)/dzs_kij)/ros(iv)
+      END DO
+      poro_kij=1.0_rsh-cvolp
+
+    ELSE
+
+      CALL mustang_comp_poro_mixsed(frac_sed, poro_mud_kij, crel_mud_kij, poro_kij)
+      dzs_kij=mass_tot/((1.0_rsh-poro_kij)*ros(1))
+
+    ENDIF
+
+  END SUBROUTINE mustang_porosity
+
+  !!==============================================================================
+
+  SUBROUTINE mustang_eval_dissvar_IWSflux(i,j,k,code,phieau_ero_ij,    &
                                             flx_s2w_eroij,porowater1,cv_sed1, &
                                             porowater2,cv_sed2,porowater_new)
 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANGV2_eval_dissvar_IWSflux  ***
+   !&E                 ***  ROUTINE mustang_eval_dissvar_IWSflux  ***
    !&E
    !&E ** Purpose : Compute concentrations of dissolved variables in interstitial waters
    !&E              with water fluxes and variables fluxes at the interface
@@ -7415,10 +6848,6 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
    !&E ** Called by :  sed_erosion,..
    !&E
    !&E--------------------------------------------------------------------------
-
-
-   !! * Modules used  
-
    !! * Arguments
    INTEGER,INTENT(IN)                                         :: i,j,k,code
    REAL(KIND=rsh),INTENT(INOUT), OPTIONAL                     :: phieau_ero_ij
@@ -7435,10 +6864,8 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
    IF(code==1) THEN
      !! case where suppression of layer k
      IF (l_diss_insed) THEN
-        !flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)+  &
         flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)+  &
                                    cv_sed1(nvp+1:nv_adv)*porowater1
-        !flx_s2w(-1:0,i,j)=flx_s2w(-1:0,i,j)+  &
         flx_s2w_eroij(-1:0)=flx_s2w_eroij(-1:0)+  &
                                    cv_sed1(-1:0)*porowater1
      ENDIF
@@ -7464,35 +6891,28 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
           ! output of porewater in sediment
 
      IF (l_diss_insed) THEN
-         !flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)+  &
          flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)+  &
                                 cv_sed1(nvp+1:nv_adv)*dporow
-         !flx_s2w(-1:0,i,j)=flx_s2w(-1:0,i,j)+ cv_sed1(-1:0)*dporow
          flx_s2w_eroij(-1:0)=flx_s2w_eroij(-1:0)+ cv_sed1(-1:0)*dporow
      ENDIF
      IF (l_fluxwat_IWS) THEN
-         !phieau_s2w(i,j)=phieau_s2w(i,j)+REAL(dporow*surf_cell(i,j),rlg)
          phieau_ero_ij=phieau_ero_ij+REAL(dporow*surf_cell(i,j),rlg)
      ENDIF
       ELSE
           ! input of porewater in sediment dporow <0
      IF (l_diss_insed) THEN
         cv_sed(nvp+1:nv_adv,k,i,j)=(cv_sed1(nvp+1:nv_adv)*porowater1  &
-                                   -cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*dporow) /porowater_new
-        !flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)+ dporow*cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
-        flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)+ dporow*cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
+                                   -cw_bottom_mustang(nvp+1:nv_adv,i,j)*dporow) /porowater_new
+        flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)+ dporow*cw_bottom_mustang(nvp+1:nv_adv,i,j)
 
         cv_sed(-1,k,i,j)=(cv_sed1(-1)*porowater1  &
-                                   -temp_bottom_MUSTANG(i,j)*dporow) /porowater_new
+                                   -temp_bottom_mustang(i,j)*dporow) /porowater_new
         cv_sed(0,k,i,j)=(cv_sed1(0)*porowater1  &
-                                   -sal_bottom_MUSTANG(i,j)*dporow) /porowater_new
-        !flx_s2w(-1,i,j)=flx_s2w(-1,i,j)+ temp_bottom_MUSTANG(i,j)*dporow
-        flx_s2w_eroij(-1)=flx_s2w_eroij(-1)+ temp_bottom_MUSTANG(i,j)*dporow
-        !flx_s2w(0,i,j)=flx_s2w(0,i,j)+ sal_bottom_MUSTANG(i,j)*dporow
-        flx_s2w_eroij(0)=flx_s2w_eroij(0)+ sal_bottom_MUSTANG(i,j)*dporow
+                                   -sal_bottom_mustang(i,j)*dporow) /porowater_new
+        flx_s2w_eroij(-1)=flx_s2w_eroij(-1)+ temp_bottom_mustang(i,j)*dporow
+        flx_s2w_eroij(0)=flx_s2w_eroij(0)+ sal_bottom_mustang(i,j)*dporow
      ENDIF
      IF (l_fluxwat_IWS) THEN
-        !phieau_s2w(i,j)=phieau_s2w(i,j)+REAL(dporow*surf_cell(i,j),rlg)
         phieau_ero_ij=phieau_ero_ij+REAL(dporow*surf_cell(i,j),rlg)
      ENDIF
       ENDIF
@@ -7500,19 +6920,16 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
    ELSE IF (code==4) THEN
       !! case where 2 layers are melted in the case of active layer formation
      IF (l_diss_insed) THEN
-        cv_sed(nvp+1:nv_adv,k,i,j)=cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
-        !flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)+  &
+        cv_sed(nvp+1:nv_adv,k,i,j)=cw_bottom_mustang(nvp+1:nv_adv,i,j)
         flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)+  &
              cv_sed1(nvp+1:nv_adv)*porowater1+cv_sed2(nvp+1:nv_adv)*porowater2  &
-             -cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*porowater_new
-        cv_sed(0,k,i,j)=sal_bottom_MUSTANG(i,j)
-        cv_sed(-1,k,i,j)=temp_bottom_MUSTANG(i,j)
-        !flx_s2w(0,i,j)=flx_s2w(0,i,j)+cv_sed1(0)*porowater1+cv_sed2(0)*porowater2 &
+             -cw_bottom_mustang(nvp+1:nv_adv,i,j)*porowater_new
+        cv_sed(0,k,i,j)=sal_bottom_mustang(i,j)
+        cv_sed(-1,k,i,j)=temp_bottom_mustang(i,j)
         flx_s2w_eroij(0)=flx_s2w_eroij(0)+cv_sed1(0)*porowater1+cv_sed2(0)*porowater2 &
-                            -sal_bottom_MUSTANG(i,j)*porowater_new
-        !flx_s2w(-1,i,j)=flx_s2w(-1,i,j)+cv_sed1(-1)*porowater1+cv_sed2(-1)*porowater2  &
+                            -sal_bottom_mustang(i,j)*porowater_new
         flx_s2w_eroij(-1)=flx_s2w_eroij(-1)+cv_sed1(-1)*porowater1+cv_sed2(-1)*porowater2  &
-                             -temp_bottom_MUSTANG(i,j)*porowater_new
+                             -temp_bottom_mustang(i,j)*porowater_new
      ENDIF
      IF (l_fluxwat_IWS) THEN
         !phieau_s2w(i,j)=phieau_s2w(i,j)+REAL((porowater1+porowater2-porowater_new)*surf_cell(i,j),rlg)
@@ -7527,12 +6944,12 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
           
      IF (l_diss_insed) THEN
         cv_sed(nvp+1:nv_adv,k,i,j)=(cv_sed1(nvp+1:nv_adv)*porowater1  &
-                                   +cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*dporow) /porowater_new
-        flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)+ dporow*cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
-        cv_sed(0,k,i,j)=(porowater1*cv_sed1(0)+dporow*sal_bottom_MUSTANG(i,j))/porowater_new
-        flx_w2s(0,i,j)=flx_w2s(0,i,j)+ dporow*sal_bottom_MUSTANG(i,j)
-        cv_sed(-1,k,i,j)=(porowater1*cv_sed1(-1)+dporow*temp_bottom_MUSTANG(i,j))/porowater_new
-        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+ dporow*temp_bottom_MUSTANG(i,j)
+                                   +cw_bottom_mustang(nvp+1:nv_adv,i,j)*dporow) /porowater_new
+        flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)+ dporow*cw_bottom_mustang(nvp+1:nv_adv,i,j)
+        cv_sed(0,k,i,j)=(porowater1*cv_sed1(0)+dporow*sal_bottom_mustang(i,j))/porowater_new
+        flx_w2s(0,i,j)=flx_w2s(0,i,j)+ dporow*sal_bottom_mustang(i,j)
+        cv_sed(-1,k,i,j)=(porowater1*cv_sed1(-1)+dporow*temp_bottom_mustang(i,j))/porowater_new
+        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+ dporow*temp_bottom_mustang(i,j)
      ENDIF
      IF (l_fluxwat_IWS) THEN
         phieau_s2w(i,j)=phieau_s2w(i,j)-REAL(dporow*surf_cell(i,j),rlg)
@@ -7542,9 +6959,9 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
           ! output of porewater in sediment (cv_sed unchanged)
 
      IF (l_diss_insed) THEN
-        flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)+ dporow*cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
-        flx_w2s(0,i,j)=flx_w2s(0,i,j)+ dporow*sal_bottom_MUSTANG(i,j)
-        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+ dporow*temp_bottom_MUSTANG(i,j)
+        flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)+ dporow*cw_bottom_mustang(nvp+1:nv_adv,i,j)
+        flx_w2s(0,i,j)=flx_w2s(0,i,j)+ dporow*sal_bottom_mustang(i,j)
+        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+ dporow*temp_bottom_mustang(i,j)
      ENDIF
      IF (l_fluxwat_IWS) THEN
         phieau_s2w(i,j)=phieau_s2w(i,j)-REAL(dporow*surf_cell(i,j),rlg)
@@ -7555,21 +6972,17 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
       !! case where there is a deposit and a new surface layer is created
       !! l_increase_dep=False
      IF (l_diss_insed) THEN
-        cv_sed(nvp+1:nv_adv,k,i,j)=cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
+        cv_sed(nvp+1:nv_adv,k,i,j)=cw_bottom_mustang(nvp+1:nv_adv,i,j)
         flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)+  &
-             cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*porowater_new
-        cv_sed(0,k,i,j)=sal_bottom_MUSTANG(i,j)
-        cv_sed(-1,k,i,j)=temp_bottom_MUSTANG(i,j)
-        flx_w2s(0,i,j)=flx_w2s(0,i,j)+sal_bottom_MUSTANG(i,j)*porowater_new
-        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+temp_bottom_MUSTANG(i,j)*porowater_new
+             cw_bottom_mustang(nvp+1:nv_adv,i,j)*porowater_new
+        cv_sed(0,k,i,j)=sal_bottom_mustang(i,j)
+        cv_sed(-1,k,i,j)=temp_bottom_mustang(i,j)
+        flx_w2s(0,i,j)=flx_w2s(0,i,j)+sal_bottom_mustang(i,j)*porowater_new
+        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+temp_bottom_mustang(i,j)*porowater_new
      ENDIF
      IF (l_fluxwat_IWS) THEN
         phieau_s2w(i,j)=phieau_s2w(i,j)-REAL(porowater_new*surf_cell(i,j),rlg)
      ENDIF
-
-     !  if(cv_sed(nv_adv,k,i,j) < 9.999999999_rsh)then
-     !     write(*,*)t,k,i,j,code,cw_bottom_MUSTANG(nv_adv,i,j),porowater_new
-     !  endif
 
     ELSE IF (code==7) THEN
       !! case where there is a deposit and a new surface layer is created
@@ -7582,13 +6995,11 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
 
      IF (l_diss_insed) THEN
         cv_sed(nvp+1:nv_adv,k,i,j)=(cv_sed1(nvp+1:nv_adv)*porowater1  &
-                                   +cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*porowater2) /(porowater_new+dporow)
+                                   +cw_bottom_mustang(nvp+1:nv_adv,i,j)*porowater2) /(porowater_new+dporow)
         flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)- cv_sed(nvp+1:nv_adv,k,i,j)*dporow
-        cv_sed(0,k,i,j)=(porowater1*cv_sed1(0)+porowater2*sal_bottom_MUSTANG(i,j))/(porowater_new+dporow)
-        !flx_w2s(0,i,j)=flx_w2s(0,i,j)+ porowater2*sal_bottom_MUSTANG(i,j)
+        cv_sed(0,k,i,j)=(porowater1*cv_sed1(0)+porowater2*sal_bottom_mustang(i,j))/(porowater_new+dporow)
         flx_w2s(0,i,j)=flx_w2s(0,i,j)- cv_sed(0,k,i,j)*dporow
-        cv_sed(-1,k,i,j)=(porowater1*cv_sed1(-1)+porowater2*temp_bottom_MUSTANG(i,j))/(porowater_new+dporow)
-        !flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+ porowater2*temp_bottom_MUSTANG(i,j)
+        cv_sed(-1,k,i,j)=(porowater1*cv_sed1(-1)+porowater2*temp_bottom_mustang(i,j))/(porowater_new+dporow)
         flx_w2s(-1,i,j)=flx_w2s(-1,i,j)+ - cv_sed(-1,k,i,j)*dporow
      ENDIF
      IF (l_fluxwat_IWS) THEN
@@ -7599,20 +7010,16 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
           ! input of porewater in sediment  dporow <0
      IF (l_diss_insed) THEN
         cv_sed(nvp+1:nv_adv,k,i,j)=(cv_sed1(nvp+1:nv_adv)*porowater1+ &
-                                    cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*(porowater2-dporow)) /porowater_new
-        flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)- cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*(porowater2-dporow)
-        !flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)- cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*dporow
+                                    cw_bottom_mustang(nvp+1:nv_adv,i,j)*(porowater2-dporow)) /porowater_new
+        flx_w2s(nvp+1:nv_adv,i,j)=flx_w2s(nvp+1:nv_adv,i,j)- cw_bottom_mustang(nvp+1:nv_adv,i,j)*(porowater2-dporow)
         cv_sed(-1,k,i,j)=(cv_sed1(-1)*porowater1+   &
-                                   temp_bottom_MUSTANG(i,j)*(porowater2-dporow)) /porowater_new
+                                   temp_bottom_mustang(i,j)*(porowater2-dporow)) /porowater_new
         cv_sed(0,k,i,j)=(cv_sed1(0)*porowater1     &
-                                   -sal_bottom_MUSTANG(i,j)*(porowater2-dporow)) /porowater_new
-       ! flx_w2s(-1,i,j)=flx_w2s(-1,i,j)- temp_bottom_MUSTANG(i,j)*dporow
-       ! flx_w2s(0,i,j)=flx_w2s(0,i,j)- sal_bottom_MUSTANG(i,j)*dporow
-        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)- temp_bottom_MUSTANG(i,j)*(porowater2-dporow)
-        flx_w2s(0,i,j)=flx_w2s(0,i,j)- sal_bottom_MUSTANG(i,j)*(porowater2-dporow)
+                                   -sal_bottom_mustang(i,j)*(porowater2-dporow)) /porowater_new
+        flx_w2s(-1,i,j)=flx_w2s(-1,i,j)- temp_bottom_mustang(i,j)*(porowater2-dporow)
+        flx_w2s(0,i,j)=flx_w2s(0,i,j)- sal_bottom_mustang(i,j)*(porowater2-dporow)
      ENDIF
      IF (l_fluxwat_IWS) THEN
-         !phieau_s2w(i,j)=phieau_s2w(i,j)+REAL(dporow*surf_cell(i,j),rlg)
          phieau_s2w(i,j)=phieau_s2w(i,j)+REAL((porowater2-dporow)*surf_cell(i,j),rlg)
      ENDIF
       ENDIF
@@ -7628,17 +7035,14 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
          cv_sed(nvp+1:nv_adv,k,i,j)=(cv_sed1(nvp+1:nv_adv)*porowater1+ &
                                     cv_sed2(nvp+1:nv_adv)*porowater2) &
                                       /(porowater_new+dporow)
-         !flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)+  &
          flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)+  &
                                 cv_sed(nvp+1:nv_adv,k,i,j)*dporow
          cv_sed(-1:0,k,i,j)=(cv_sed1(-1:0)*porowater1+ &
                                     cv_sed2(-1:0)*porowater2) &
                                       /(porowater_new+dporow)
-         !flx_s2w(-1:0,i,j)=flx_s2w(-1:0,i,j)+ cv_sed(-1:0,k,i,j)*dporow
          flx_s2w_eroij(-1:0)=flx_s2w_eroij(-1:0)+ cv_sed(-1:0,k,i,j)*dporow
      ENDIF
      IF (l_fluxwat_IWS) THEN
-         !phieau_s2w(i,j)=phieau_s2w(i,j)+REAL(dporow*surf_cell(i,j),rlg)
          phieau_ero_ij=phieau_ero_ij+REAL(dporow*surf_cell(i,j),rlg)
      ENDIF
       ELSE
@@ -7646,18 +7050,15 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
      IF (l_diss_insed) THEN
         cv_sed(nvp+1:nv_adv,k,i,j)=(cv_sed1(nvp+1:nv_adv)*porowater1+ &
                                     cv_sed2(nvp+1:nv_adv)*porowater2  &
-                                   -cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)*dporow) /porowater_new
-        !flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)-dporow*cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
-        flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)-dporow*cw_bottom_MUSTANG(nvp+1:nv_adv,i,j)
+                                   -cw_bottom_mustang(nvp+1:nv_adv,i,j)*dporow) /porowater_new
+        flx_s2w_eroij(nvp+1:nv_adv)=flx_s2w_eroij(nvp+1:nv_adv)-dporow*cw_bottom_mustang(nvp+1:nv_adv,i,j)
 
         cv_sed(-1,k,i,j)=(cv_sed1(-1)*porowater1+ cv_sed2(-1)*porowater2  &
-                                   -temp_bottom_MUSTANG(i,j)*dporow) /porowater_new
+                                   -temp_bottom_mustang(i,j)*dporow) /porowater_new
         cv_sed(0,k,i,j)=(cv_sed1(0)*porowater1+ cv_sed2(0)*porowater2     &
-                                   -sal_bottom_MUSTANG(i,j)*dporow) /porowater_new
-        !flx_s2w(-1,i,j)=flx_s2w(-1,i,j)+ temp_bottom_MUSTANG(i,j)*dporow
-        flx_s2w_eroij(-1)=flx_s2w_eroij(-1)+ temp_bottom_MUSTANG(i,j)*dporow
-        !flx_s2w(0,i,j)=flx_s2w(0,i,j)+ sal_bottom_MUSTANG(i,j)*dporow
-        flx_s2w_eroij(0)=flx_s2w_eroij(0)+ sal_bottom_MUSTANG(i,j)*dporow
+                                   -sal_bottom_mustang(i,j)*dporow) /porowater_new
+        flx_s2w_eroij(-1)=flx_s2w_eroij(-1)+ temp_bottom_mustang(i,j)*dporow
+        flx_s2w_eroij(0)=flx_s2w_eroij(0)+ sal_bottom_mustang(i,j)*dporow
      ENDIF
      IF (l_fluxwat_IWS) THEN
          !phieau_s2w(i,j)=phieau_s2w(i,j)+REAL(dporow*surf_cell(i,j),rlg)
@@ -7665,25 +7066,15 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
      ENDIF
       ENDIF
 
- 
      ENDIF
   
-END SUBROUTINE MUSTANGV2_eval_dissvar_IWSflux
+END SUBROUTINE mustang_eval_dissvar_IWSflux
 
-   !!==============================================================================
-
-! end MUSTANG_V2
-#endif
-                                
-   !!===========================================================================
- 
-
-#if defined key_MUSTANG_V2
   !!==============================================================================
-SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
+SUBROUTINE mustang_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
    !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE MUSTANGV2_eval_bedload  ***
+   !&E                 ***  ROUTINE mustang_eval_bedload  ***
    !&E
    !&E ** Purpose : Compute bedload transport from the formulation of Wu and Lin (2014)
    !&E              with hinding/exposure processes
@@ -7705,7 +7096,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
    !! * Modules used
 # if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
     USE mustang_vandera, ONLY: vandera_qbw
-    USE sed_MUSTANG_CROCO, ONLY: wave_height, wave_period, wave_direction
+    USE sed_mustang_CROCO, ONLY: wave_height, wave_period, wave_direction
 # endif
 
    !! * Arguments
@@ -7756,9 +7147,9 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
        ! Hindering / exposure coefficients for sediment class iv, ph and pe, respectively
        DO jiv=1,isand2 ! imud2 ou isand2 --> reflechir --> preference pour isand2
          ph=ph+(diam_sed(jiv)/(diam_sed(jiv)+diam_sed(iv)))  &
-                    *( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_MUSTANG,c_sedtot(ksmax,i,j))) )
+                    *( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_mustang,c_sedtot(ksmax,i,j))) )
          pe=pe+(diam_sed(iv) /(diam_sed(jiv)+diam_sed(iv)))  &
-                    *( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_MUSTANG,c_sedtot(ksmax,i,j))) )
+                    *( max(0.0_rsh,cv_sed(jiv,ksmax,i,j))/(max(epsilon_mustang,c_sedtot(ksmax,i,j))) )
        END DO
        pephm_fcor=(pe/ph)**(-m)
    
@@ -7774,27 +7165,27 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 # if defined key_ANA_bedload
      phi_bed=0.001*ubar(i,j,knew)**3.0_rsh
      qb=phi_bed & !  m2/s
-                  *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_MUSTANG) ! kg/m/s
+                  *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_mustang) ! kg/m/s
 # else
      phi_bed=0.0053_rsh*(max((tauskin(i,j)/toce_loc(iv))-1.0_rsh,0.0_rsh))**2.2_rsh
 
      ! Calculation of the rate of transport by bedload for class iv.
      ! We multiply by ros (iv) so we choose to have qb in kg/m/ s and not in m2/s     
      qb=phi_bed*sqrt((ros(iv)/rho0-1.0_rsh)*g*diam_sed(iv)**3.0_rsh)  &
-                    *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_MUSTANG) ! kg/m/s
+                    *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_mustang) ! kg/m/s
 # endif
      !qb_ini(iv,i,j)=qb !pour ecriture en sortie
 
      !============Projection sur x et y en fonction de la direction de la tension sur le fond ==============
 
-     flx_bxij(iv) = qb * tauskin_x(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
-     flx_byij(iv) = qb * tauskin_y(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
+     flx_bxij(iv) = qb * tauskin_x(i, j) / (tauskin_c(i, j) + epsilon_mustang)
+     flx_byij(iv) = qb * tauskin_y(i, j) / (tauskin_c(i, j) + epsilon_mustang)
 
      IF (l_slope_effect_bedload) THEN
             
            !============Accounting for slope effects in computations of bedload fluxes============
 
-           ! parametres Lesser : alphabs and alphabn are defined in paraMUSTANGV2.txt
+           ! parametres Lesser : alphabs and alphabn are defined in paramustang.txt
            !============Preparation parametres Lesser===
            IF(htot(i+1,j) .GT. h0fond .AND. htot(i-1,j) .GT. h0fond ) THEN
               dhdx=slope_dhdx(i,j)
@@ -7806,13 +7197,13 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
            ELSE
               dhdy=0.0_rsh
            ENDIF
-           betas=MIN(ATAN(dhdx*flx_bxij(iv)/(qb+epsilon_MUSTANG)           &
-                 +dhdy*flx_byij(iv)/(qb+epsilon_MUSTANG))          &
+           betas=MIN(ATAN(dhdx*flx_bxij(iv)/(qb+epsilon_mustang)           &
+                 +dhdy*flx_byij(iv)/(qb+epsilon_mustang))          &
                                ,0.9_rsh*30.0_rsh/180.0_rsh*pi)
-           betan=ATAN(-dhdx*flx_byij(iv)/(qb+epsilon_MUSTANG)+dhdy*flx_bxij(iv)/(qb+epsilon_MUSTANG))
+           betan=ATAN(-dhdx*flx_byij(iv)/(qb+epsilon_mustang)+dhdy*flx_bxij(iv)/(qb+epsilon_mustang))
 
-           alphas=1.0_rsh+alphabs*(tand30/(COS(betas)*(tand30-TAN(betas))+epsilon_MUSTANG)-1)
-           alphan=alphabn*(toce_loc(iv)/(tauskin(i,j)+epsilon_MUSTANG))**0.5_rsh*TAN(betan)
+           alphas=1.0_rsh+alphabs*(tand30/(COS(betas)*(tand30-TAN(betas))+epsilon_mustang)-1)
+           alphan=alphabn*(toce_loc(iv)/(tauskin(i,j)+epsilon_mustang))**0.5_rsh*TAN(betan)
 
            !============Application Lesser==============
            flx_bxij_star= alphas*flx_bxij(iv)
@@ -7836,7 +7227,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
      ! sedimask_h0plusxe : = 1 si h+ssh .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre
-     !TODO : put this in subroutine in sed_MUSTANG_CROCO because it is host dependant (raphbx&raphby)
+     !TODO : put this in subroutine in sed_mustang_CROCO because it is host dependant (raphbx&raphby)
 
      flx_bxij(iv) = (flx_bxij(iv) + abs(flx_bxij(iv))) * 0.5_rsh * raphbx(i+1, j) * sedimask_h0plusxe(i+1, j)+ &
                     (flx_bxij(iv) - abs(flx_bxij(iv))) * 0.5_rsh * raphbx(  i, j) * sedimask_h0plusxe(i-1, j)
@@ -7858,19 +7249,14 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
      ! So we have at the output the bedload fluxes coming out of the mesh i,j en kg/m/s
 
-
    END DO
 
-
-END SUBROUTINE MUSTANGV2_eval_bedload
-
-! end key_MUSTANG_V2
-#endif
+END SUBROUTINE mustang_eval_bedload
 
 !!===========================================================================
-real function MUSTANG_E0sand(diamsan, taucr, rossan, ws_sand)
+pure real function mustang_E0sand(diamsan, taucr, rossan, ws_sand)
 !&E--------------------------------------------------------------------------
-!&E                 *** FUNCTION MUSTANG_E0sand  ***
+!&E                 *** FUNCTION mustang_E0sand  ***
 !&E Compute the sand erosion constant in kg.m-2.s-1 given e0_sand_option. 
 !&E * If e0_sand_option = 0 : use of  e0_sand read in namelist
 !&E * If e0_sand_option = 1 : sand erosion constant computed from Van Rijn (1984) 
@@ -7891,25 +7277,24 @@ real, intent(in) :: ws_sand ! sediment settling velocity (m/s)
 real             :: diamsan_star, ws_diamsan
 
 if (E0_sand_option==0) then 
-  ! use of E0_sand read in namelist (E0_sand_para read in paraMUSTANG)
-  MUSTANG_E0sand = E0_sand_Cst
+  ! use of E0_sand read in namelist (E0_sand_para read in paramustang)
+  mustang_E0sand = E0_sand_Cst
 elseif (E0_sand_option == 1 .and. rossan .gt. 1000_rsh) then
   ! E0_sand computed from Van Rijn (1984) formulation
-  MUSTANG_E0sand = 0.00033_rsh * rossan*((rossan / 1000.0_rsh - 1.0_rsh) * 9.81 * diamsan)**0.5_rsh &
+  mustang_E0sand = 0.00033_rsh * rossan*((rossan / 1000.0_rsh - 1.0_rsh) * 9.81 * diamsan)**0.5_rsh &
     * (diamsan * ((rossan / 1000.0_rsh - 1) * 9.81_rsh/(0.000001_rsh)**2)**(1.0_rsh/3.0_rsh))**(0.3_rsh)
 elseif (E0_sand_option == 2) then
   ! E0_sand computed by an erodimetry formulation (function of mean sand diameter)
-  MUSTANG_E0sand = taucr**n_eros_sand * min(0.27, 1000. * diamsan - 0.01)
+  mustang_E0sand = taucr**n_eros_sand * min(0.27, 1000. * diamsan - 0.01)
 elseif (E0_sand_option == 3) then
   ! E0_sand computed from WU and Lin (2014) concentration at reference level and Van Rijn pick-up function
-  MUSTANG_E0sand = ws_sand * rossan * 0.0032 * diamsan / aref_sand 
+  mustang_E0sand = ws_sand * rossan * 0.0032 * diamsan / aref_sand 
 endif
 
-MUSTANG_E0sand = E0_sand_para * MUSTANG_E0sand
+mustang_E0sand = E0_sand_para * mustang_E0sand
 
-end function ! MUSTANG_E0sand
+end function ! mustang_E0sand
 
-#if defined key_MUSTANG_V2
 !!==============================================================================
    FUNCTION isitcohesive(cvsed_sup_i_j, criterion_cohesive)
    !&E--------------------------------------------------------------------------
@@ -7945,21 +7330,6 @@ end function ! MUSTANG_E0sand
 
    END FUNCTION isitcohesive
 !!==============================================================================
-   FUNCTION dzsminvar(frac_sediv)
-   !&E--------------------------------------------------------------------------
-   !&E                 *** FUNCTION dzsminvar  ***
-   !&E           returns dzsmin from sediment composition
-   !&E--------------------------------------------------------------------------
-
-      REAL(KIND=rsh), DIMENSION(1:nvpc)    :: frac_sediv
-      REAL(KIND=rsh)                      :: dzsminvar
-
-       dzsminvar = (1.0_rsh - coeff_dzsmin) * dzsminuni + &
-                  coeff_dzsmin * SUM( frac_sediv(1:nvpc) * diam_sed(1:nvpc) )
-
-   END FUNCTION dzsminvar
-!!==============================================================================
-#endif /* end if define key_MUSTANG_V2 */
 #endif  /* end if define MUSTANG */
 
 END MODULE sed_MUSTANG

@@ -10,9 +10,9 @@
 : namsedim_deposition      : relative to sediment deposition
 : namsedim_erosion         : relative to sediment erosion
 : namsedim_poro            : relative to porosity
-:                            (only if key_MUSTANG_V2)
 : namsedim_bedload         : relative to sediment bedload
-:                            (only if key_MUSTANG_V2)
+:                            (only used if l_erosion_by_class=.TRUE. in
+:                            namsedim_erosion)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_morpho          : relative to morphodynamic
@@ -62,8 +62,7 @@
    cvolmaxmel=0.67
 /
 &namsedim_erosion
-   activlayer=0.02  
-   frmudcr2=0.7 
+   frmudcr2=0.7
    coef_frmudcr1=1000.
    x1toce_mud=0.3   
    x2toce_mud=0.
@@ -100,8 +99,10 @@
 /   
 &namdredging
 /
-: Only read if key_MUSTANG_V2 is defined (VILAINE_VANDERA case in BENCH);
-: ignored otherwise (VILAINE case).
+: namsedim_bedload is always read, but l_vandera has no effect unless
+: l_bedload ends up TRUE, which itself requires l_erosion_by_class=.TRUE.
+: (namsedim_erosion). That is patched in for the VILAINE_VANDERA BENCH
+: case only, so it stays inert here for the plain VILAINE case.
 &namsedim_bedload
    l_vandera = .TRUE.
 /

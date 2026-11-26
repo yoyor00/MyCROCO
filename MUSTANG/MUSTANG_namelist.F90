@@ -16,8 +16,8 @@ MODULE MUSTANG_namelist
 !&E              concerns reading and logging of the user namelist
 !&E
 !&E ** Description :
-!&E     subroutine MUSTANG_readnml        ! read namelist
-!&E     subroutine MUSTANG_param_log      ! write parameters for information
+!&E     subroutine mustang_readnml        ! read namelist
+!&E     subroutine mustang_param_log      ! write parameters for information
 !&E
 !&E============================================================================
     !! * Modules used
@@ -30,7 +30,7 @@ MODULE MUSTANG_namelist
     IMPLICIT NONE
 
     !! * Accessibility
-    PUBLIC MUSTANG_readnml, MUSTANG_param_log
+    PUBLIC mustang_readnml, mustang_param_log
 
     PRIVATE
 
@@ -44,14 +44,15 @@ MODULE MUSTANG_namelist
 
     namelist /namsedim_diss/ l_diss_insed, l_fluxwat_IWS
 
-    namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
-                              l_dzsmaxuni, dzsmaxuni,                         &
+    namelist /namsedim_layer/ l_dzsmaxuni, dzsmaxuni,                         &
                               dzsmax_bottom, dzsmin,                          &
                               nlayer_surf_sed, l_splitlayersurf,              &
                               k1HW97, k2HW97,                                 &
                               fusion_para_activlayer
 
-    namelist /namsedim_erosion/ activlayer, frmudcr2, coef_frmudcr1,          &
+    namelist /namsedim_erosion/ frmudcr2, coef_frmudcr1,                      &
+                                l_frmudcr1_uni, frmudcr1_uni,                 &
+                                diam_sand_max,                                &
                                 x1toce_mud, x2toce_mud,                       &
                                 E0_sand_option, E0_sand_para, n_eros_sand,    &
                                 E0_mud, n_eros_mud,                           &
@@ -60,8 +61,9 @@ MODULE MUSTANG_namelist
                                 tau_cri_option,                               &
                                 tau_cri_mud_option_eroindep,                  &
                                 l_peph_suspension, l_xexp_ero_cst,            &
-                                l_eroindep_mud, l_eroindep_noncoh,            &
-                                E0_mud_para_indep
+                                x1xexp_ero, x2xexp_ero,                       &
+                                l_eroindep_mud,                               &
+                                E0_mud_para_indep, l_erosion_by_class
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
                                      z0seduni, z0sedmin, z0sedbedrock,        &
@@ -130,11 +132,9 @@ MODULE MUSTANG_namelist
 
     namelist /namsedim_poro/ poro_option, poro_min,                           &
                              Awooster, Bwooster, Bmax_wu
-#ifdef key_MUSTANG_V2
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
                                 alphabs, alphabn, hmin_bedload, l_fsusp,      &
                                 l_vandera
-#endif
 
     namelist /namflocmod/ l_flocmod, l_ADS, l_ASH, l_COLLFRAG,                &
                           f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
@@ -148,15 +148,15 @@ MODULE MUSTANG_namelist
 CONTAINS
 
 !!=============================================================================
-    SUBROUTINE MUSTANG_readnml(filein)
+    SUBROUTINE mustang_readnml(filein)
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_readnml  ***
+    !&E                 ***  ROUTINE mustang_readnml  ***
     !&E
     !&E ** Purpose : reads namelist file from filein
     !&E
     !&E ** Description : read namelist file paraMUSTANG
     !&E
-    !&E ** Called by :  MUSTANG_init
+    !&E ** Called by :  mustang_init
     !&E
     !&E--------------------------------------------------------------------------
     !! * Arguments
@@ -177,9 +177,7 @@ CONTAINS
     READ(50, namsedim_deposition); rewind(50)
     READ(50, namsedim_erosion); rewind(50)
     READ(50, namsedim_poro); rewind(50)
-#ifdef key_MUSTANG_V2
     READ(50, namsedim_bedload); rewind(50)
-#endif
     READ(50, namsedim_lateral_erosion); rewind(50)
     READ(50, namsedim_consolidation); rewind(50)
     READ(50, namsedim_diffusion); rewind(50)
@@ -193,18 +191,18 @@ CONTAINS
 
     CLOSE(50)
 
-    END SUBROUTINE MUSTANG_readnml
+    END SUBROUTINE mustang_readnml
 !!===========================================================================
 
-    SUBROUTINE MUSTANG_param_log(iscreenlog)
+    SUBROUTINE mustang_param_log(iscreenlog)
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_param_log  ***
+    !&E                 ***  ROUTINE mustang_param_log  ***
     !&E
     !&E ** Purpose : write parameters in log file
     !&E
     !&E ** Description : namelists writing for information
     !&E
-    !&E ** Called by :  MUSTANG_init
+    !&E ** Called by :  mustang_init
     !&E
     !&E--------------------------------------------------------------------------
     !! * Arguments
@@ -219,14 +217,11 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_bottomstress)
     MPI_master_only WRITE(iscreenlog, namsedim_deposition)
     MPI_master_only WRITE(iscreenlog, namsedim_poro)
-#ifdef key_MUSTANG_V2
-    MPI_master_only WRITE(iscreenlog, namsedim_bedload)
-#else
     MPI_master_only WRITE(iscreenlog, namsedim_erosion)
-#endif
+    MPI_master_only WRITE(iscreenlog, namsedim_bedload)
     MPI_master_only WRITE(iscreenlog, namsedim_lateral_erosion)
     MPI_master_only WRITE(iscreenlog, namsedim_consolidation)
-    MPI_master_only write(iscreenlog, *) 'MUSTANG_param_log dt_consolid=', dt_consolid
+    MPI_master_only write(iscreenlog, *) 'mustang_param_log dt_consolid=', dt_consolid
     MPI_master_only WRITE(iscreenlog, namsedim_diffusion)
     MPI_master_only WRITE(iscreenlog, namsedim_bioturb)
     MPI_master_only WRITE(iscreenlog, namsedim_morpho)
@@ -277,9 +272,9 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, *) '*** END FLOCMOD INIT *** '
     ENDIF
 
-    END SUBROUTINE MUSTANG_param_log
+    END SUBROUTINE mustang_param_log
 !!===========================================================================
 
 #endif /* ifdef MUSTANG */
 
-END MODULE MUSTANG_namelist
+END MODULE mustang_namelist

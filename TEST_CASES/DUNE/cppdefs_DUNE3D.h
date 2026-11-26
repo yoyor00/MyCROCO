@@ -30,9 +30,6 @@
 #  define BEDLOAD_WULIN
 #  define TAU_CRIT_WULIN
 # endif
-# ifdef MUSTANG
-#  define key_MUSTANG_V2
-# endif
 # define GLS_MIXING
 # define NO_FRCFILE
 # define OBC_COM_ZCHAPMAN

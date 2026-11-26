@@ -8,13 +8,13 @@
 #if defined MUSTANG 
 
 !&E=========================================================================
-!&E                   ***  MODULE  sed_MUSTANG_CROCO  ***
+!&E                   ***  MODULE  sed_mustang_CROCO  ***
 !&E
 !&E ** Purpose : concerns subroutines related to sediment dynamics link to 
 !&E              hydrodynamic model to be used in CROCO system
 !&E 
 !&E ** Description :
-!&E     subroutine sed_MUSTANG_settlveloc ! settling velocity in the water 
+!&E     subroutine sed_mustang_settlveloc ! settling velocity in the water 
 !&E                                         column
 !&E     subroutine sed_gradvit            ! calcul gradient de vitesse, u*
 !&E     subroutine sed_skinstress         ! computes the skin stress
@@ -41,8 +41,7 @@
     !! * Accessibility
     PUBLIC sed_skinstress
     PUBLIC sed_gradvit
-    PUBLIC sed_MUSTANG_settlveloc
-#ifdef key_MUSTANG_V2
+    PUBLIC sed_mustang_settlveloc
     PUBLIC sed_bottom_slope
 #if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
     PUBLIC wave_height
@@ -52,7 +51,6 @@
 #if defined MPI
     PUBLIC sed_exchange_flxbedload
     PUBLIC sed_exchange_maskbedload
-#endif
 #endif
 #if defined MPI
     PUBLIC sed_exchange_w2s
@@ -69,10 +67,10 @@ PRIVATE
 CONTAINS
  
 !!=============================================================================
-SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
+SUBROUTINE sed_mustang_settlveloc(ifirst, ilast, jfirst, jlast,   &
                                     WATER_CONCENTRATION) 
 !&E----------------------------------------------------------------------------
-!&E                 ***  ROUTINE sed_MUSTANG_settlveloc  ***
+!&E                 ***  ROUTINE sed_mustang_settlveloc  ***
 !&E
 !&E ** Purpose : settling velocity computation
 !&E
@@ -98,7 +96,7 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 !&E         ros(iv)
 !&E         ws_sand(iv)
 !&E        
-!&E ** Called by :  MUSTANG_update
+!&E ** Called by :  mustang_update
 !&E
 !&E----------------------------------------------------------------------------
 
@@ -210,7 +208,7 @@ DO i = ifirst, ilast
 ENDDO
 ENDDO
 
-END SUBROUTINE sed_MUSTANG_settlveloc     
+END SUBROUTINE sed_mustang_settlveloc     
 
 !!=============================================================================
 SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
@@ -225,7 +223,7 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E     output : gradvit (in comMUSTANG)
 !&E
-!&E ** Called by :  MUSTANG_update
+!&E ** Called by :  mustang_update
 !&E
 !&E--------------------------------------------------------------------------
 !! * Modules used
@@ -296,7 +294,7 @@ SUBROUTINE sed_skinstress(ifirst, ilast, jfirst, jlast)
 !&E                        l_tauskin_* flags do not apply in this branch.
 !&E   - WAVE_OFFLINE     : add wave contribution via Soulsby (1995) formula
 !&E
-!&E ** Called by : MUSTANG_update
+!&E ** Called by : mustang_update
 !&E
 !&E--------------------------------------------------------------------------
 #  ifdef BBL
@@ -814,9 +812,26 @@ LOGICAL, INTENT(IN)  :: l_fricwave
 REAL(KIND=rsh), INTENT(OUT) :: tauskin
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_w
 
-    tauskin_w = (rho + rho0_val) &
-                * compute_fws2(Uwave, Pwave, z0sed, l_fricwave, fws2_default) &
-                * Uwave**2
+LOGICAL :: l_wave_ok
+
+    ! Sanity-check the wave forcing before using it: an offline wave
+    ! product's own "no data" points (outside its coverage/resolution,
+    ! e.g. a narrow channel) need not align with CROCO's own land/sea
+    ! mask, so a CROCO-wet point can still read back a raw fill value
+    ! here with nothing upstream to catch it. Rather than trust rmask,
+    ! treat any physically implausible orbital velocity/period as "no
+    ! wave" directly at the point of use (direction, Dwave, is left
+    ! alone - it only ever rotates a stress that is forced to 0 anyway).
+    l_wave_ok = (Uwave .GE. 0.0_rsh) .AND. (Uwave .LE. 500.0_rsh) .AND. &
+                (Pwave .GT. 0.0_rsh) .AND. (Pwave .LE. 100.0_rsh)
+
+    IF (l_wave_ok) THEN
+      tauskin_w = (rho + rho0_val) &
+                  * compute_fws2(Uwave, Pwave, z0sed, l_fricwave, fws2_default) &
+                  * Uwave**2
+    ELSE
+      tauskin_w = 0.0_rsh
+    ENDIF
 
     tauskin = compute_tauskin_wc(tauskin_c, tauskin_w, ubar, vbar, Dwave)
 END SUBROUTINE combine_wave_current
@@ -824,7 +839,6 @@ END SUBROUTINE combine_wave_current
 
 
 !!==============================================================================
-#ifdef key_MUSTANG_V2
   SUBROUTINE sed_bottom_slope(ifirst, ilast, jfirst, jlast, bathy)
    !&E--------------------------------------------------------------------------                         
    !&E                 ***  ROUTINE sed_bottom_slope  ***
@@ -834,7 +848,7 @@ END SUBROUTINE combine_wave_current
    !&E ** Description : depend on host model grid, compute slope_dhdx and 
    !&E    slope_dhdy from bathy of neigbour cells if they are not masked
    !&E
-   !&E ** Called by :  MUSTANG_update, MUSTANG_morpho 
+   !&E ** Called by :  mustang_update, mustang_morpho 
    !&E      om_r = cell dx 
    !&E      on_r = cell dy
    !&E
@@ -872,7 +886,7 @@ END SUBROUTINE combine_wave_current
     !&E
     !&E ** Description : MPI exchange between processors
     !&E
-    !&E ** Called by :  MUSTANG_update
+    !&E ** Called by :  mustang_update
     !&E
     !&E--------------------------------------------------------------------------
     ! * Arguments
@@ -896,11 +910,10 @@ END SUBROUTINE combine_wave_current
 
   END SUBROUTINE sed_exchange_flxbedload
 #endif /* MPI */
-#endif /* key_MUSTANG_V2 */
 
 !!=============================================================================
 
-#if defined MPI && defined key_MUSTANG_V2
+#if defined MPI
     SUBROUTINE sed_exchange_maskbedload(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_maskbedload ***
@@ -909,7 +922,7 @@ END SUBROUTINE combine_wave_current
     !&E
     !&E ** Description : exchange MPI mask for bedload
     !&E
-    !&E ** Called by : MUSTANG_update
+    !&E ** Called by : mustang_update
     !&E-------------------------------------------------------------------------
 
     !! * Arguments
@@ -922,7 +935,7 @@ END SUBROUTINE combine_wave_current
     sedimask_h0plusxe(:,:) = workexch(:,:)
 
     END SUBROUTINE sed_exchange_maskbedload
-#endif /* defined MPI && defined key_MUSTANG_V2 */
+#endif /* defined MPI */
 
 !!=============================================================================
 
@@ -936,7 +949,7 @@ END SUBROUTINE combine_wave_current
     !&E ** Description : MPI exchange between processors
     !&E      used only if l_slipdeposit (slip deposit if steep slope)
     !&E
-    !&E ** Called by : MUSTANG_update
+    !&E ** Called by : mustang_update
     !&E-------------------------------------------------------------------------
 
     !! * Arguments
@@ -986,7 +999,7 @@ END SUBROUTINE combine_wave_current
    !&E
    !&E ** Description : periodic borders and MPI exchange between processors
    !&E
-   !&E ** Called by : MUSTANG_update
+   !&E ** Called by : mustang_update
    !&E-------------------------------------------------------------------------
 
     !! * Arguments
@@ -1038,7 +1051,7 @@ END SUBROUTINE combine_wave_current
     !&E   in OCEAN/set_global_definitions.h using 
     !&E   variables istr, iend, jstr, jend
     !&E
-    !&E ** Called by : MUSTANG_update
+    !&E ** Called by : mustang_update
     !&E--------------------------------------------------------------------------
  
     !! * Arguments
@@ -1103,7 +1116,7 @@ END SUBROUTINE combine_wave_current
         !&E
         !&E ** Description :  make interpolation from rho point to u,v points
         !&E
-        !&E ** Called by : MUSTANG_update
+        !&E ** Called by : mustang_update
         !&E--------------------------------------------------------------------------
         !! * Arguments
         INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast

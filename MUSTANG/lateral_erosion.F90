@@ -68,7 +68,7 @@ CONTAINS
       !!
       !! ** Purpose : Reset LATERAL EROSION arrays to zero at begining of
       !!              time step
-      !! ** Called by : MUSTANG_update
+      !! ** Called by : mustang_update
       !!
       !!------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ CONTAINS
       !! ** Purpose : prepare variable from htot and current values at
       !!              the begining of erosion computation to avoid to redo it
       !!              at each sub time step
-      !! ** Called by : MUSTANG_erosion
+      !! ** Called by : mustang_erosion
       !!
       !!------------------------------------------------------------------------
 
@@ -157,7 +157,7 @@ CONTAINS
       !!       *** SUBROUTINE lateral_erosion_compute ***
       !!
       !! ** Purpose : compute erolat fluxes
-      !! ** Called by : MUSTANG_erosion
+      !! ** Called by : mustang_erosion
       !!
       !!------------------------------------------------------------------------
 
@@ -225,7 +225,7 @@ CONTAINS
       !!                ***  ROUTINE lateral_erosion_saveflx ***
       !!
       !! ** Purpose : memorisation of lateral erosion fluxes from dry cell
-      !! ** Called by : MUSTANG_erosion
+      !! ** Called by : mustang_erosion
       !!------------------------------------------------------------------------
 
       implicit none
@@ -268,7 +268,7 @@ CONTAINS
       !!
       !! ** Purpose : memorisation of lateral erosion porewater (IWS) fluxes
       !!              from dry cell. Only to be called when l_fluxwat_IWS.
-      !! ** Called by : MUSTANG_erosion
+      !! ** Called by : mustang_erosion
       !!------------------------------------------------------------------------
 
       implicit none
@@ -301,7 +301,7 @@ CONTAINS
       !!                ***  ROUTINE lateral_erosion_apply ***
       !!
       !! ** Purpose : Apply fluxes correction if LATERAL EROSION
-      !! ** Called by : MUSTANG_update
+      !! ** Called by : mustang_update
       !!------------------------------------------------------------------------
 
       implicit none

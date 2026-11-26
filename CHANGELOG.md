@@ -67,7 +67,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   
 - MUSTANG : add Van der A et al. (2013) wave skewness/asymmetry bedload
   formulation (zero-current case), activated with l\_vandera in
-  namsedim\_bedload (key\_MUSTANG\_V2 only); add VILAINE\_VANDERA test
+  namsedim\_bedload (effective only if l\_bedload ends up TRUE, which
+  itself requires l\_erosion\_by\_class=.TRUE. in namsedim\_erosion - see
+  key\_MUSTANG\_V2 removal below); add VILAINE\_VANDERA test
   case in BENCH (#589)
 
 - TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
@@ -380,11 +382,19 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove key_MUSTANG_slipdeposit replace by boolean l_slipdeposit in
     namelist (Issue #350)
   - remove key_MUSTANG_bedload, bedload transport (l_bedload_n()) now only
-    conditioned by key_MUSTANG_V2 (Issue #385)
+    conditioned by key_MUSTANG_V2 (Issue #385) [see key_MUSTANG_V2 removal
+    below: this is now conditioned by l_erosion_by_class instead]
   - remove key_MUSTANG_splitlayersurf replace by boolean l_splitlayersurf
     in namelist (Issue #350)
   - remove key_MUSTANG_flocmod replace by boolean l_flocmod in namelist
     (Issue #350)
+  - Merge MUSTANG V1/V2 sediment algorithms into one runtime-switchable codebase
+    Replace the key_MUSTANG_V2 compile-time flag with runtime namelist flags
+    (l_erosion_by_class, poro_option) so V1 and V2 behavior coexist in one
+    binary instead of two separately compiled variants. Unifies erosion
+    (by-class vs mixture), deposition (sequential vs by-mixture), and
+    porosity (V1 constant vs Wu & Li vs ideal packing) dispatch, removing
+    duplicated/dead CPP-gated code throughout MUSTANG. (#355)
 
 - Test cases CPP keys replace by namelist parameter (#497)
   Remove all test-case CPP guards from the solver. Test-case selection is

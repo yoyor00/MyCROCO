@@ -116,6 +116,18 @@ CONTAINS
 ! Wave and sediment parameters
 !
 
+      ! No (or negligible) waves: avoid dividing by Td/depth below (both
+      ! appear as bare divisors further down, with no epsilon guard) and
+      ! just report no wave-driven bedload contribution. Covers both a
+      ! genuinely calm sea and an unmasked/out-of-coverage wave-forcing
+      ! point (which would otherwise read in a garbage Td/Hs/depth).
+      IF (Td <= vandera_epsilon .OR. Hs <= vandera_epsilon .OR. &
+          depth <= vandera_epsilon) THEN
+        qbw_x = 0.0_rsh
+        qbw_y = 0.0_rsh
+        RETURN
+      ENDIF
+
       k_wn = kh_calc(Td, depth)/depth ! Wave number
       c_w = twopi/(k_wn*Td)          ! Wave speed
       d50_mix = d50                  ! (m)

@@ -10,9 +10,9 @@
 : namsedim_deposition      : relative to sediment deposition
 : namsedim_erosion         : relative to sediment erosion
 : namsedim_poro            : relative to porosity
-:                            (only if key_MUSTANG_V2)
 : namsedim_bedload         : relative to sediment bedload
-:                            (only if key_MUSTANG_V2)
+:                            (only used if l_erosion_by_class=.TRUE. in
+:                            namsedim_erosion)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_morpho          : relative to morphodynamic
@@ -42,9 +42,8 @@
 &namsedim_diss
 /
 &namsedim_layer
-   l_dzsminuni=.FALSE.
-   dzsminuni=1.0e-3  
-   dzsmax_bottom=0.3   
+   dzsmin=1.0e-3
+   dzsmax_bottom=0.3
    l_dzsmaxuni=.TRUE. 
    dzsmaxuni= 0.3
    nlayer_surf_sed=5  
@@ -57,12 +56,13 @@
 &namsedim_deposition
 /
 &namsedim_erosion
+   l_erosion_by_class=.TRUE.
    E0_sand_option=0
-   E0_sand_Cst=0.0000 
+   E0_sand_Cst=0.0000
    tau_cri_option = 1
 /
 &namsedim_poro
-   poro_option=2    
+   poro_option=3
    poro_min = 0.4    
    Awooster = 0.4
    Bwooster = 0. 

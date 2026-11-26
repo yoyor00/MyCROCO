@@ -349,9 +349,9 @@
 # endif
                       /*   MUSTANG Sediment model     */
 # ifdef MUSTANG
-#  undef  key_MUSTANG_V2
 #  undef  MORPHODYN
 #  undef  WAVE_OFFLINE
+#  undef  SED_DENS
 # endif
 
 #include "cppdefs_dev.h"

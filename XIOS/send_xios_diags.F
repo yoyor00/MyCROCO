@@ -2266,9 +2266,7 @@ C 				  endif
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
-#if defined key_MUSTANG_V2
       USE comsubstance, ONLY : l_bedload
-#endif
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
       USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
      &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
@@ -3924,7 +3922,6 @@ c !$acc wait
               call xios_send_field(TRIM(nametrc),var2D_flx_w2s(itrc,:,:))
             endif
          ENDIF
-#ifdef  key_MUSTANG_V2
          IF (l_outsed_pephm_fcor) then
             write (nametrc, '(a,"_pephm_fcor")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
@@ -3956,7 +3953,6 @@ c !$acc wait
      &                             var2D_fsusp(itrc,:,:))
             endif
          ENDIF
-#endif /* key_MUSTANG_V2 */
       ENDDO
 
       IF (l_outsed_frmudsup) then
@@ -3989,7 +3985,6 @@ c !$acc wait
             call xios_send_field("flx_w2s_coh",var2D_flx_w2s_coh)
             endif
       ENDIF
-#ifdef  key_MUSTANG_V2
       IF (l_outsed_theoric_active_layer) then
             if (xios_field_is_active("theoric_active_layer")) then
             call xios_send_field("theoric_active_layer",
@@ -4032,7 +4027,6 @@ c !$acc wait
      &                        var2D_bil_bedload_int)
             endif
       ENDIF
-#endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN
             IF (l_outsed_consolidation) then

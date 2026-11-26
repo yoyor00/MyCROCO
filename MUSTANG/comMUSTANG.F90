@@ -66,22 +66,22 @@ MODULE comMUSTANG
     LOGICAL  :: l_dzsmaxuni = .true. ! set to .true. dzsmax = dzsmaxuni ,
         ! if set to .false. then linearly computed in MUSTANG_sedinit
         ! from dzsmaxuni to dzsmaxuni/100 depending on water depth
-    LOGICAL  :: l_dzsminuni = .false. !only if key_MUSTANG_V2, set to .false.
-        ! if dzsmin vary with sediment bed composition, else dzsmin =  dzsminuni
-    REAL(KIND=rsh) :: dzsminuni = 1.0e-3_rsh !only if key_MUSTANG_V2, minimum sediment
-        ! layer thickness (m)
     REAL(KIND=rsh) :: dzsmin = 0.5e-2_rsh ! minimum sediment layer thickness (m)
     REAL(KIND=rsh) :: dzsmaxuni = 2.0e-2_rsh ! uniform maximum thickness for the superficial
         ! sediment layer (m), must be >0
     REAL(KIND=rsh) :: dzsmax_bottom = 2.0_rsh ! maximum thickness of bottom layers
         ! which result from the fusion when ksdmax is exceeded (m)
-    REAL(KIND=rsh) :: k1HW97 = 0.07_rsh !only if key_MUSTANG_V2,
+    REAL(KIND=rsh) :: k1HW97 = 0.07_rsh ! only used if l_erosion_by_class=.true.
+        ! (active-layer management, mustang_manage_active_layer),
         ! ref value k1HW97 = 0.07, parameter to compute active layer
         ! thickness (Harris and Wiberg, 1997)
-    REAL(KIND=rsh) :: k2HW97 = 6.0_rsh !only if key_MUSTANG_V2
+    REAL(KIND=rsh) :: k2HW97 = 6.0_rsh ! only used if l_erosion_by_class=.true.
+        ! (active-layer management, mustang_manage_active_layer),
         ! rref value k2HW97 = 6.0,parameter to compute active layer
         ! thickness (Harris and Wiberg, 1997)
-    REAL(KIND=rsh) :: fusion_para_activlayer = 1._rsh !only if key_MUSTANG_V2
+    REAL(KIND=rsh) :: fusion_para_activlayer = 1._rsh ! only used if
+        ! l_erosion_by_class=.true. (active-layer management,
+        ! mustang_manage_active_layer),
         ! criterion cohesiveness for fusion in active layer
         ! 0 : no fusion,
         ! = 1 : frmudcr1,
@@ -144,16 +144,24 @@ MODULE comMUSTANG
         ! deposited sediment on steep slopes
     REAL(KIND=rsh) :: slopefac = 0.01_rsh ! slope effect multiplicative on deposit
         ! (used only if l_slipdeposit)
-
-
     ! namsedim_erosion
-    REAL(KIND=rsh) :: activlayer = 0.02_rsh ! active layer thickness (m)
     REAL(KIND=rsh) :: frmudcr2 = 0.7_rsh ! critical mud fraction under which the
         ! behaviour is intermediate between sand and mud and above which the
         ! behavior is purely muddy
     REAL(KIND=rsh) :: coef_frmudcr1 = 1000._rsh ! to compute critical mud fract. frmudcr1
         ! underwhich the behaviour is purely sandy
         ! (frmudcr1=min(coef_frmudcr1*d50 sand,frmudcr2))
+        ! (not used if l_frmudcr1_uni=.true.)
+    LOGICAL :: l_frmudcr1_uni = .false. ! set to .true. to keep frmudcr1 constant,
+        ! equal to frmudcr1_uni, instead of depending on the mean grain
+        ! diameter of sand/gravel (frmudcr1=min(coef_frmudcr1*d50 sand,frmudcr2))
+    REAL(KIND=rsh) :: frmudcr1_uni = 0.3_rsh ! uniform (constant) critical mud fraction
+        ! under which the behaviour is purely sandy (used only if
+        ! l_frmudcr1_uni=.true., instead of coef_frmudcr1*d50 sand)
+    REAL(KIND=rsh) :: diam_sand_max = 0.002_rsh ! maximum grain diameter (m) taken into
+        ! account as sand when computing E0_sand and taucr_sand (only used if
+        ! l_erosion_by_class=.false. ; coarser grains declared as sand are
+        ! excluded, consistently with the diameter used for frmudcr1)
     REAL(KIND=rsh) :: x1toce_mud = 0.1_rsh ! coef. for the formulation of the critical
         ! erosion stress in mud behavior toce=x1toce*csed**x2toce
     REAL(KIND=rsh) :: x2toce_mud = 0._rsh ! coef. for the formulation of the critical
@@ -174,6 +182,19 @@ MODULE comMUSTANG
         ! ero_option= 2 : formulation derived from that of J.Vareilles (2013)
         ! ero_option= 3 : formulations proposed by B. Mengual (2015) with
         !   exponential coefficients depend on proportions of the mixture
+    LOGICAL        :: l_erosion_by_class = .false. ! choice of erosion algorithm for
+        ! non-cohesive sediment. .false. (default, former "V1"): sediment always
+        ! eroded as a mixture, same algorithm whatever the composition, no
+        ! bedload. .true. (former "V2"): non-cohesive layers (frmudsup<frmudcr1)
+        ! are eroded class by class (needed for bedload transport, l_bedload);
+        ! cohesive layers are still eroded as a mixture either way.
+        ! INCOMPATIBLE with poro_option=1 (constant): it has no composition
+        ! dependence, so it cannot reflect how the mixture's packing changes
+        ! when classes are eroded unevenly. poro_option=2 (Wu and Li 2017) and
+        ! poro_option=3 (ideal coarse/fine packing mix) are both recomputed
+        ! from the remaining composition and are fine -- see
+        ! MUSTANG_compatibility, which forces poro_option=3 if
+        ! l_erosion_by_class=.true. .AND. poro_option=1
     INTEGER        :: E0_sand_option = 0 ! integer, choice of formulation for
         ! E0_sand evaluation :
         ! E0_sand_option = 0 E0_sand = E0_sand_Cst
@@ -185,26 +206,35 @@ MODULE comMUSTANG
         ! exponential variation  (more brutal when xexp_ero high)
     REAL(KIND=rsh) :: E0_sand_Cst = 0.00594_rsh ! constant erosion flux for sand
         ! (used if E0_sand_option= 0)
-    REAL(KIND=rsh) :: E0_mud_para_indep = 1._rsh !only if key_MUSTANG_V2,
+    REAL(KIND=rsh) :: E0_mud_para_indep = 1._rsh ! only used if
+        ! l_erosion_by_class=.true. (mustang_comp_eros_flx_indep),
         ! parameter to correct E0_mud in case of erosion
         ! class by class in non cohesive regime
-    LOGICAL        :: l_peph_suspension = .false. !only if key_MUSTANG_V2,
+    LOGICAL        :: l_peph_suspension = .false. ! only used if
+        ! l_erosion_by_class=.true. (mustang_comp_eros_flx_indep),
         ! set to .true. if hindering / exposure processes in critical
         ! shear stress estimate for suspension
-    LOGICAL        :: l_eroindep_noncoh = .true. !only if key_MUSTANG_V2,
-        ! set to .true. in order to activate independant erosion for
-        ! the different sediment classes sands and muds
-        ! set to .false. to have the mixture mud/sand eroded as in V1
-    LOGICAL        :: l_eroindep_mud = .false. !only if key_MUSTANG_V2,
+    LOGICAL        :: l_eroindep_mud = .false. ! only used if
+        ! l_erosion_by_class=.true. (mustang_comp_eros_flx_indep),
         ! set to .true. if mud erosion independant for sands erosion
         ! set to .false. if mud erosion proportionnal to total sand erosion
-    LOGICAL        :: l_xexp_ero_cst = .false. !only if key_MUSTANG_V2, set to .true.
-        ! if xexp_ero estimated from empirical formulation, depending on
-        ! frmudcr1
-    INTEGER        :: tau_cri_option = 0 !only if key_MUSTANG_V2,
-        ! choice of critical stress formulation ,
+    LOGICAL        :: l_xexp_ero_cst = .false. ! only used if ero_option=3
+        ! (sed_MUSTANG_comp_tocr_mixsed, l_erosion_by_class true or false),
+        ! set to .true. if xexp_ero estimated from empirical formulation,
+        ! depending on frmudcr1
+    REAL(KIND=rsh) :: x1xexp_ero = 78.5_rsh ! only used if ero_option=3 and
+        ! .NOT. l_xexp_ero_cst : slope coefficient in the empirical
+        ! formulation xexp_ero=x1xexp_ero*frmudcr1-x2xexp_ero
+        ! (Mengual et al., 2020)
+    REAL(KIND=rsh) :: x2xexp_ero = 2.0_rsh ! only used if ero_option=3 and
+        ! .NOT. l_xexp_ero_cst : intercept coefficient in the empirical
+        ! formulation xexp_ero=x1xexp_ero*frmudcr1-x2xexp_ero
+        ! (Mengual et al., 2020)
+    INTEGER        :: tau_cri_option = 0 ! choice of critical stress formulation,
+        ! used for both erosion algorithms (l_erosion_by_class true or false)
         ! 0: Shields 1: Wu and Lin (2014)
-    INTEGER        :: tau_cri_mud_option_eroindep = 1 !only if key_MUSTANG_V2
+    INTEGER        :: tau_cri_mud_option_eroindep = 1 ! only used if
+        ! l_erosion_by_class=.true. (mustang_comp_eros_flx_indep),
         ! choice of mud critical stress formulation
         ! 0: x1toce_mud*cmudr**x2toce_mud
         ! 1: toce_meansan if somsan>eps (else->case0)
@@ -213,9 +243,16 @@ MODULE comMUSTANG
 
 
     ! namsedim_poro
-    INTEGER :: poro_option = 2 ! choice of porosity formulation
-        ! 1: Wu and Li (2017) (incompatible with consolidation))
-        ! 2: mix ideal coarse/fine packing
+    INTEGER :: poro_option = 2 ! choice of porosity formulation. Also selects
+        ! the deposition algorithm (sed_MUSTANG_effdep_SEQUENTIAL for 1,
+        ! sed_MUSTANG_effdep_BYMIXTURE for 2/3 - see sed_MUSTANG_effdep)
+        ! 1: constant, V1-equivalent (incompatible with l_erosion_by_class).
+        !    MUSTANG_porosity gives old V1's own formula for a partially
+        !    eroded, persisting mixture (derived from remaining composition,
+        !    not a prescribed closure law), so this option is compatible
+        !    with consolidation
+        ! 2: Wu and Li (2017) (default, incompatible with consolidation)
+        ! 3: mix ideal coarse/fine packing (compatible with consolidation)
     REAL(KIND=rsh) :: Awooster = 0.42_rsh ! parameter of the formulation of
         ! Wooster et al. (2008) for estimating porosity associated to the
         ! non-cohesive sediment see Cui et al. (1996) ref value = 0.42
@@ -225,10 +262,17 @@ MODULE comMUSTANG
     REAL(KIND=rsh) :: Bmax_wu = 0.65_rsh ! maximum portion of the coarse sediment class
         ! participating in filling , ref value = 0.65
     REAL(KIND=rsh) :: poro_min = 0.2_rsh ! minimum porosity below which consolidation
-        ! is stopped
+        ! is stopped. Used as the universal consolidation-porosity floor in
+        ! sed_MUSTANG_consol_diff_bioturb, for every poro_option (1/2/3) alike
+        ! - formerly, the "V1" code path used an unrelated ad hoc threshold
+        ! here instead (1-cvolmaxmel-0.01, i.e. ~0.32 with cvolmaxmel's
+        ! default), which has been retired in favour of this parameter.
+        ! CAUTION when reviewing/updating namelists: any run that relied on
+        ! that old ~0.32 floor without setting poro_min explicitly will now
+        ! get the poro_min default of 0.2 instead - a real, intentional
+        ! change, not a bug.
 
 
-#if defined key_MUSTANG_V2
     ! namsedim_bedload
     LOGICAL :: l_peph_bedload = .false. ! set to .true. if hindering / exposure processes
         ! in critical shear stress estimate for bedload
@@ -247,7 +291,6 @@ MODULE comMUSTANG
         ! can be higher, until 5-10 (Gerald Herling experience))
     REAL(KIND=rsh) :: hmin_bedload = 0.1_rsh ! no bedload in u/v directions if
         ! h0+ssh <= hmin_bedload in neighbouring cells
-#endif
 
     ! namsedim_lateral_erosion
 
@@ -528,9 +571,11 @@ MODULE comMUSTANG
     REAL(KIND=rlg) :: tstart_morpho   ! time beginning morphodynamic
     REAL(KIND=rlg) :: t_morpho        ! time of next morphodynamic step
     REAL(KIND=rsh) :: MF_dhsed
+    INTEGER :: it_morphoYes = 0 ! flag telling sed_bottom_slope needs to be
+        ! recomputed after a morphodynamic update (only read/written when
+        ! MORPHODYN is active, which MUSTANG currently forces off - see
+        ! cppdefs.h; kept initialized regardless)
 
-#ifdef key_MUSTANG_V2
-    REAL(KIND=rsh) :: coeff_dzsmin
     LOGICAL,DIMENSION(:,:),ALLOCATABLE :: l_isitcohesive
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: psi_sed
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: poro_mud
@@ -544,10 +589,6 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
-#if defined MORPHODYN
-            INTEGER :: it_morphoYes
-#endif
-#endif
 
     ! Sedim output
     INTEGER                            :: rstMust_nbvar

@@ -11,7 +11,9 @@
 : namsedim_erosion         : relative to sediment erosion
 : namsedim_poro            : relative to porosity
 : namsedim_bedload         : relative to sediment bedload
-:                            (only if key_MUSTANG_V2)
+:                            (only relevant if l_bedload is activated by a
+:                             substance in parasubstance.txt, and requires
+:                             l_erosion_by_class=.true. in namsedim_erosion)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_morpho          : relative to morphodynamic
@@ -94,11 +96,6 @@
 :  namsedim_layer : Namelist relative to sediment layers characterization and
 :                   active layer
 :------------------------------------------------------------------------------
-:    l_dzsminuni : boolean, set to .false. if dzsmin vary with sediment bed 
-:                  composition, else dzsmin =  dzsminuni
-:                  (used if key_MUSTANG_V2 only)
-:    dzsminuni : real, minimum sediment layer thickness (m) 
-:                (used if key_MUSTANG_V2 only)
 :    dzsmin : real, minimum sediment layer thickness (m)
 :    dzsmax_bottom : real, maximum thickness of bottom layers which result 
 :                    from the fusion when ksdmax is exceeded (m)
@@ -115,22 +112,21 @@
 :                       below the surface) ; if .false., the excess is simply
 :                       moved into one new layer above
 :    k1HW97: real, ref value k1HW97 = 0.07, parameter to compute active layer
-:            thickness (Harris and Wiberg, 1997) 
-:            (key_MUSTANG_V2 only)
-:    k2HW97 : real, ref value k2HW97 = 6.0, parameter to compute active layer 
 :            thickness (Harris and Wiberg, 1997)
-:            (key_MUSTANG_V2 only)
-:    fusion_para_activlayer : real, criterion cohesiveness for fusion in 
+:            (only used if l_erosion_by_class=.TRUE. in namsedim_erosion)
+:    k2HW97 : real, ref value k2HW97 = 6.0, parameter to compute active layer
+:            thickness (Harris and Wiberg, 1997)
+:            (only used if l_erosion_by_class=.TRUE. in namsedim_erosion)
+:    fusion_para_activlayer : real, criterion cohesiveness for fusion in
 :                             active layer
-:                             0 : no fusion, 
-:                             = 1 : frmudcr1, 
+:                             0 : no fusion,
+:                             = 1 : frmudcr1,
 :                             > 1 : between frmudcr1 & frmudcr2
-:                             (key_MUSTANG_V2 only)
+:                             (only used if l_erosion_by_class=.TRUE. in
+:                             namsedim_erosion)
 :------------------------------------------------------------------------------
 &namsedim_layer
-   l_dzsminuni = .FALSE.  
-   dzsminuni = 1.0e-3 
-   dzsmin = 0.5e-2 
+   dzsmin = 0.5e-2
    dzsmax_bottom = 2.0 
    l_dzsmaxuni = .TRUE. 
    dzsmaxuni = 2.0e-2
@@ -226,12 +222,22 @@
 :------------------------------------------------------------------------------
 :  namsedim_erosion : Namelist relative to sediment erosion
 :------------------------------------------------------------------------------
-:    activlayer : real, active layer thickness (m)
-:    frmudcr2 : real, critical mud fraction under which the behaviour is purely 
+:    frmudcr2 : real, critical mud fraction under which the behaviour is purely
 :              sandy
-:    coef_frmudcr1 : real, such that critical mud fraction under which sandy 
+:    coef_frmudcr1 : real, such that critical mud fraction under which sandy
 :                    behaviour (frmudcr1=min(coef_frmudcr1*d50 sand,frmudcr2))
-:    x1toce_mud : real, mud erosion parameter : 
+:                    (not used if l_frmudcr1_uni=.TRUE.)
+:    l_frmudcr1_uni : boolean, set to .TRUE. to keep frmudcr1 constant, equal
+:                     to frmudcr1_uni, instead of depending on the mean grain
+:                     diameter of sand/gravel
+:    frmudcr1_uni : real, uniform (constant) critical mud fraction under which
+:                   the behaviour is purely sandy (used only if
+:                   l_frmudcr1_uni=.TRUE.)
+:    diam_sand_max : real, maximum grain diameter (m) taken into account as
+:                    sand when computing E0_sand and taucr_sand ; coarser
+:                    grains declared as sand are excluded
+:                    (only used if l_erosion_by_class=.FALSE.)
+:    x1toce_mud : real, mud erosion parameter :
 :                 toce = x1_toce_mud*(relative mud concentration)**x2_toce_mud
 :    x2toce_mud : real, mud erosion parameter: 
 :                 toce = x1_toce_mud*(relative mud concentration)**x2_toce_mud 
@@ -253,9 +259,9 @@
 :                  WARNING : choose parameters compatible with E0_sand_option 
 :                  (example : n_eros_sand=1.6 for E0_sand_option=1)
 :    E0_mud : real, parameters for erosion flux for pure mud 
-:    E0_mud_para_indep : real, parameter to correct E0_mud in case of erosion 
-:                        class by class in non cohesive regime 
-:                        (key_MUSTANG_V2 only)
+:    E0_mud_para_indep : real, parameter to correct E0_mud in case of erosion
+:                        class by class in non cohesive regime
+:                        (only used if l_erosion_by_class=.TRUE.)
 :    n_eros_mud : real, E0_mud*(tenfo/toce-1.)**n_eros_mud
 :    ero_option : integer, choice of erosion formulation for mixing sand-mud
 :           **** These formulations are debatable and must be considered ****
@@ -269,11 +275,17 @@
 :           ero_option= 3 : formulations proposed by B. Mengual (2015) with 
 :                           exponential coefficients depend on proportions of 
 :                           the mixture
-:    l_xexp_ero_cst : boolean, set to .true. if xexp_ero estimated from 
-:                     empirical formulation, depending on frmudcr1 
-:                     (key_MUSTANG_V2 only)
-:    xexp_ero : real, used only if ero_option=3 : adjustment on exponential 
+:    l_xexp_ero_cst : boolean, set to .true. if xexp_ero estimated from
+:                     empirical formulation, depending on frmudcr1
+:                     (only used if ero_option=3)
+:    xexp_ero : real, used only if ero_option=3 : adjustment on exponential
 :               variation  (more brutal when xexp_ero high)
+:    x1xexp_ero : real, slope coefficient in the empirical formulation
+:                 xexp_ero=x1xexp_ero*frmudcr1-x2xexp_ero (Mengual et al.,
+:                 2020) (only used if ero_option=3 and l_xexp_ero_cst=.FALSE.)
+:    x2xexp_ero : real, intercept coefficient in the empirical formulation
+:                 xexp_ero=x1xexp_ero*frmudcr1-x2xexp_ero (Mengual et al.,
+:                 2020) (only used if ero_option=3 and l_xexp_ero_cst=.FALSE.)
 :    tau_cri_option : integer, choice of critical stress formulation 
 :                     0: Shields
 :                     1: Wu and Lin (2014)
@@ -285,28 +297,24 @@
 :                                  2: minval(toce_sand*cvsed/cvsed+eps) 
 :                                     if >0 (else->case0)
 :                                  3: min( case 0; toce(isand2) )
-:                                  (key_MUSTANG_V2 only)
-:    l_eroindep_noncoh : boolean, set to .true. in order to activate 
-:                        independant erosion for the different sediment classes
-:                        sands and muds  
-:                        set to .false. to have the mixture mud/sand eroded as 
-:                        in version V1
-:                        (key_MUSTANG_V2 only)
-:    l_eroindep_mud : boolean, set to .true. if mud erosion independant for 
+:                                  (only used if l_erosion_by_class=.TRUE.)
+:    l_eroindep_mud : boolean, set to .true. if mud erosion independant for
 :                     sands erosion
 :                     set to .false. if mud erosion proportionnal to total sand
 :                     erosion
-:                     (key_MUSTANG_V2 only)
-:    l_peph_suspension: boolean, set to .true. if hindering / exposure 
-:                       processes in critical shear stress estimate for 
+:                     (only used if l_erosion_by_class=.TRUE.)
+:    l_peph_suspension: boolean, set to .true. if hindering / exposure
+:                       processes in critical shear stress estimate for
 :                       suspension
-:                       (key_MUSTANG_V2 only)
+:                       (only used if l_erosion_by_class=.TRUE.)
 :------------------------------------------------------------------------------
 &namsedim_erosion
-   activlayer = 0.02 
-   frmudcr2 = 0.7 
+   frmudcr2 = 0.7
    coef_frmudcr1 = 1000.
-   x1toce_mud = 0.1 
+   l_frmudcr1_uni = .FALSE.
+   frmudcr1_uni = 0.3
+   diam_sand_max = 0.002
+   x1toce_mud = 0.1
    x2toce_mud = 0.
    E0_sand_option = 0 
    E0_sand_Cst = 0.00594 
@@ -316,20 +324,22 @@
    E0_mud_para_indep = 1.
    n_eros_mud = 1.
    ero_option = 3
-   l_xexp_ero_cst = .FALSE. 
-   xexp_ero = 40.0 
+   l_xexp_ero_cst = .FALSE.
+   xexp_ero = 40.0
+   x1xexp_ero = 78.5
+   x2xexp_ero = 2.0 
    tau_cri_option = 0  
    tau_cri_mud_option_eroindep = 1 
-   l_eroindep_noncoh = .TRUE.
-   l_eroindep_mud = .FALSE. 
+   l_eroindep_mud = .FALSE.
    l_peph_suspension = .FALSE.  / 
 :
 :------------------------------------------------------------------------------
-:  namsedim_poro : Namelist relative to porosity (key_MUSTANG_V2 only)
+:  namsedim_poro : Namelist relative to porosity
 :------------------------------------------------------------------------------
 :    poro_option : integer, choice of porosity formulation
-:                  1: Wu and Li (2017) (incompatible with consolidation))
-:                  2: mix ideal coarse/fine packing 
+:                  1: constant, V1-equivalent (incompatible with l_erosion_by_class)
+:                  2: Wu and Li (2017) (default, incompatible with consolidation)
+:                  3: mix ideal coarse/fine packing
 :    poro_min : real, minimum porosity below which consolidation is stopped
 :    Awooster : real, parameter of the formulation of  Wooster et al. (2008) 
 :               for estimating porosity associated to the non-cohesive sediment
@@ -351,8 +361,9 @@
    Bmax_wu = 0.65 / 
 :
 :------------------------------------------------------------------------------
-:  namsedim_bedload : Namelist relative to sediment bedload 
-:  (key_MUSTANG_V2 only)
+:  namsedim_bedload : Namelist relative to sediment bedload
+:  (only relevant if l_bedload is activated by a substance in
+:  parasubstance.txt, and requires l_erosion_by_class=.true.)
 :------------------------------------------------------------------------------
 :    l_peph_bedload : boolean, set to .true. if hindering / exposure processes
 :                     in critical shear stress estimate for bedload

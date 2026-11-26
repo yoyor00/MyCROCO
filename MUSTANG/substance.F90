@@ -111,9 +111,7 @@ CONTAINS
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: D0_m0_n,D0_m1_n
 
 
-#if defined key_MUSTANG_V2
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
-#endif
 
    LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
 #endif
@@ -211,7 +209,7 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
-     goto 99
+     return
    END IF
 #else
    IF(nv_dis+nv_ncp+nv_sorb .NE. ntrc_subs) THEN
@@ -224,8 +222,8 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
-     goto 99
-   END IF 
+     return
+   END IF
 #endif
 
  
@@ -237,7 +235,7 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'  nv_fix read in parasubstance.txt ',nv_fix
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
-     goto 99
+     return
    END IF
 #endif
    ivTS=itsubs1-1
@@ -596,7 +594,6 @@ CONTAINS
    isand2 = igrav2 + nv_sand
    imud1 = isand2 + 1
    imud2 = isand2 + nv_mud
-#if defined key_MUSTANG_V2
    ! initialize without any sediment activating bedload
    ibedload1 = isand2 + 1
    ibedload2 = isand2
@@ -619,7 +616,7 @@ CONTAINS
          MPI_master_only  write(stdout,*)'l_bedload should be true for all sediment between ibedload1 and iv'
          MPI_master_only  write(stdout,*)'The simulation is stopped, you should review parasubstance.txt'
          may_day_flag=77
-         goto 99
+         return
       endif
 
       if ((.NOT. l_bedload_r(iv)) .AND. (.NOT. l_ibedload2)) then
@@ -632,7 +629,6 @@ CONTAINS
    ! l_bedload : whether any substance actually activates bedload transport,
    ! derived from l_bedload_n() in parasubstance.txt (nmlgravels/nmlsands)
    l_bedload = (ibedload2 .GE. ibedload1)
-#endif
 #endif
 
    ! initialize the number of variables according to their type
@@ -685,7 +681,7 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'nv_adv read in parasubstance.txt ',nv_adv
      MPI_master_only  WRITE(stdout,*)'The simulation is stopped'
      may_day_flag=77
-     goto 99
+     return
    END IF
 
     !******************************************
@@ -844,7 +840,7 @@ CONTAINS
        MPI_master_only   WRITE(stdout,*)'See parasubstance.txt to give exactly the name of the constitutive associated variable'
        MPI_master_only   WRITE(stdout,*)'otherwise, it is not a SORB variable, but a NoCP variable '
        may_day_flag=78
-       goto 99
+       return
      END IF
    END DO
 #else
@@ -871,7 +867,7 @@ CONTAINS
        MPI_master_only   WRITE(stdout,*)'See parasubstance.txt to give exactly the name of the associated variable'
        MPI_master_only   WRITE(stdout,*)'otherwise, it is not a SORB variable, but a NoCP variable '
        may_day_flag=78
-       goto 99
+       return
      END IF
    END DO
 
@@ -957,9 +953,7 @@ CONTAINS
     MPI_master_only WRITE(stdout,*)'number of MUDS                        : ',nv_mud
     MPI_master_only WRITE(stdout,*)'number of part. var. constitutive     : ',nvpc
     MPI_master_only WRITE(stdout,*)'number of part. var. SORB             : ',nv_sorb
-#if defined key_MUSTANG_V2
     MPI_master_only WRITE(stdout,*)' ibedload1 = ',ibedload1,' ibedload2 = ',ibedload2,' l_bedload = ',l_bedload
-#endif
 #endif
     MPI_master_only WRITE(stdout,*)'number of part. var. NO constitutive  : ',nv_ncp
     MPI_master_only WRITE(stdout,*)'number of part. var. SORB             : ',nv_sorb
@@ -1085,8 +1079,6 @@ CONTAINS
        ENDIF
      END DO
    ENDIF
- 
- 99 CONTINUE
 
   END SUBROUTINE substance_read_alloc
 !!======================================================================

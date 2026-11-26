@@ -15,38 +15,40 @@ MODULE initMUSTANG
 !&E              initialization
 !&E 
 !&E ** Description :
-!&E     subroutine MUSTANG_init           ! initialize the
+!&E     subroutine mustang_init           ! initialize the
 !&E                                         parameters of sediment module
 !&E                                       ! and the sediment layers
-!&E     subroutine MUSTANG_compatibility  ! check compatibility
+!&E     subroutine mustang_compatibility  ! check compatibility
 !&E                                         between the various parameters
-!&E     subroutine MUSTANG_sedinit        ! initialize the sediment if not
+!&E     subroutine mustang_sedinit        ! initialize the sediment if not
 !&E                                         from file
-!&E     subroutine MUSTANG_init_param     ! initialize the settling velocity
+!&E     subroutine mustang_init_param     ! initialize the settling velocity
 !&E                                         of sand variables and erosion 
 !&E                                         parameters
-!&E     subroutine MUSTANG_init_output    ! initialize dimensions of output 
+!&E     subroutine mustang_init_output    ! initialize dimensions of output 
 !&E                                         tables
-!&E     subroutine MUSTANG_morphoinit      ! initialize 
+!&E     subroutine mustang_morphoinit      ! initialize 
 !&E
 !&E============================================================================
     !! * Modules used
     USE comMUSTANG
-    USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
-#if defined key_MUSTANG_V2
-    USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
-#endif
+    USE sed_MUSTANG,  ONLY : mustang_E0sand
+    USE sed_MUSTANG,  ONLY : mustang_comp_poro_mixsed
     USE comsubstance
     USE module_substance
     USE croco_namelist, ONLY : sedname_must, rho0, testcase_name
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
-    USE MUSTANG_namelist, ONLY : MUSTANG_readnml, MUSTANG_param_log
+    USE mustang_namelist, ONLY : mustang_readnml, mustang_param_log
 
     IMPLICIT NONE
 
     !! * Accessibility
-    PUBLIC MUSTANG_init
+    PUBLIC mustang_init
+    PUBLIC mustang_morphoinit
+#if defined MORPHODYN
+    PUBLIC mustang_morphoinit_dh
+#endif
 
     PRIVATE
 
@@ -59,13 +61,10 @@ MODULE initMUSTANG
 CONTAINS
   
 !!=============================================================================
-    SUBROUTINE MUSTANG_init(ifirst, ilast, jfirst, jlast,                     &
-#if defined MORPHODYN  
-            dhsed,                                                            &
-#endif
+    SUBROUTINE mustang_init(ifirst, ilast, jfirst, jlast,                     &
             h0fondin, z0hydro, WATER_CONCENTRATION )
     !&E------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_init  ***
+    !&E                 ***  ROUTINE mustang_init  ***
     !&E
     !&E ** Purpose : initialize the sediment parameters and variables 
     !&E
@@ -77,20 +76,15 @@ CONTAINS
    !! * Modules used
     USE dredging, ONLY : dredging_init_param
     USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
-    USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
-    USE sed_MUSTANG,  ONLY : sed_MUSTANG_split_surflayer
-#ifdef key_MUSTANG_V2
+    USE sed_MUSTANG,  ONLY : sed_mustang_comp_z0hydro
+    USE sed_MUSTANG,  ONLY : sed_mustang_split_surflayer
     USE sed_MUSTANG_CROCO,  ONLY : sed_bottom_slope
-#endif
 
     !! * Arguments
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
     REAL(KIND=rsh),INTENT(IN)              :: h0fondin
     REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT) :: z0hydro                      
-    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION  
-#if defined MORPHODYN 
-    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT)          :: dhsed                       
-#endif
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION
 
    !! * Local declarations
     INTEGER   :: i, j, k, iv, isplit
@@ -99,11 +93,9 @@ CONTAINS
     INTEGER               :: lenstr
     REAL(KIND=rsh)        :: sommud, cvolgrvsan, cvolp
     LOGICAL :: l_0Dcase
-#ifdef key_MUSTANG_V2
     REAL(KIND=rsh)        :: mass_tot, poro_mud_new, crel_mud_new, poro_kij
     REAL(KIND=rsh),DIMENSION(nvpc) :: frac_sed
     REAL(KIND=rsh),DIMENSION(1:nvp) :: mass_sed
-#endif
 
     ierrorlog = stdout
     iwarnlog = stdout
@@ -114,13 +106,13 @@ CONTAINS
     ! Read user namelist (default values are set directly in comMUSTANG)
     lstr = lenstr(sedname_must)
     filepc_user = sedname_must(1:lstr)
-    CALL MUSTANG_readnml(filepc_user)
+    CALL mustang_readnml(filepc_user)
 
     ! Allocate tables 
-    CALL MUSTANG_alloc()
+    CALL mustang_alloc()
 
     ! Initialize MUSTANG parameters from namelist
-    CALL MUSTANG_init_param()
+    CALL mustang_init_param()
 
     ! Floculation module
     IF (l_flocmod) THEN
@@ -138,7 +130,7 @@ CONTAINS
 
 
     ! Information on screen
-    CALL MUSTANG_param_log(iscreenlog)
+    CALL mustang_param_log(iscreenlog)
     
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Recovery of concentrations at the bottom layer
@@ -151,23 +143,21 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Evaluation of slope for bedload
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if defined key_MUSTANG_V2
     IF (l_bedload) THEN
 #if defined MORPHODYN
       it_morphoYes=0
 #endif
       CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, h)
     ENDIF
-#endif
 
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Definition of initial conditions in sediment
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (l_unised) THEN
-        CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, h)
+        CALL mustang_sedinit(ifirst, ilast, jfirst, jlast, h)
     ELSE
-        CALL MUSTANG_init_fromfile
+        CALL mustang_init_fromfile
     END IF
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -188,7 +178,7 @@ CONTAINS
                 ENDIF
             ENDDO
             IF(isplit == 1) THEN
-                CALL sed_MUSTANG_split_surflayer(i,j,ksma(i,j))
+                CALL sed_mustang_split_surflayer(i,j,ksma(i,j))
             ENDIF
             ENDIF
 
@@ -204,7 +194,10 @@ CONTAINS
                     cvolp=cvolp+cv_sed(iv,k,i,j)*typart(iv)/ros(iv)
                 ENDDO
                 poro(k,i,j)=1.0_rsh - cvolp
-#ifdef key_MUSTANG_V2
+
+                ! crel_mud/poro_mud always re-derived too, regardless of
+                ! poro_option: e.g. read directly as cmudr by erosion's
+                ! threshold computation when l_erosion_by_class=.true.
                 sommud=0.0_rsh
                 DO iv=imud1,imud2
                     sommud=sommud+cv_sed(iv,k,i,j)
@@ -219,73 +212,66 @@ CONTAINS
                 ELSE
                     poro_mud_new=1.0_rsh - crel_mud(k,i,j)/ros(1)
                 ENDIF
-                crel_mud_new=crel_mud(k,i,j)
-
-                mass_tot=0.0_rsh
-                DO iv=igrav1,imud2
-                    mass_sed(iv)=cv_sed(iv,k,i,j)*dzs(k,i,j)
-                    mass_tot=mass_tot+mass_sed(iv)
-                ENDDO
-                DO iv=igrav1,imud2
-                    frac_sed(iv)=mass_sed(iv)/mass_tot
-                ENDDO
-                CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud_new, &
-                           crel_mud_new, poro_kij)
-                poro(k,i,j)=poro_kij
                 poro_mud(k,i,j)=poro_mud_new
-#endif
+
+                ! poro itself: for poro_option=1 the simple cvolp-derived
+                ! formula above already matches MUSTANG_porosity's own
+                ! consolidation-safe behavior, so it is left as-is here;
+                ! poro_option=2/3 go through the same closure law used
+                ! everywhere else instead
+                IF (poro_option .NE. 1) THEN
+                    crel_mud_new=crel_mud(k,i,j)
+                    mass_tot=0.0_rsh
+                    DO iv=igrav1,imud2
+                        mass_sed(iv)=cv_sed(iv,k,i,j)*dzs(k,i,j)
+                        mass_tot=mass_tot+mass_sed(iv)
+                    ENDDO
+                    DO iv=igrav1,imud2
+                        frac_sed(iv)=mass_sed(iv)/mass_tot
+                    ENDDO
+                    CALL mustang_comp_poro_mixsed(frac_sed, poro_mud_new, &
+                               crel_mud_new, poro_kij)
+                    poro(k,i,j)=poro_kij
+                ENDIF
             ENDDO
           ELSE
             poro(:,i,j)=0.0_rsh
-#ifdef key_MUSTANG_V2
             crel_mud(:,i,j)=0.0_rsh
             poro_mud(:,i,j)=0.0_rsh
-#endif 
           ENDIF
         ENDDO
       ENDDO
       
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ! Estimation of sediment heights and bathy bedrock for morphodynamic
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-    ! call even if no morpho, initialization of hsed in all cases, 
-    ! even if initfromfile
-    CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast   &
-#if defined MORPHODYN  
-                                                ,dhsed               &
-#endif
-            )
-
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Evaluation of Z0_hydro if l_z0_coupl_init
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
     IF(l_z0hydro_coupl_init) THEN
-        CALL sed_MUSTANG_comp_z0hydro(ifirst, ilast, jfirst, jlast, z0hydro)
+        CALL sed_mustang_comp_z0hydro(ifirst, ilast, jfirst, jlast, z0hydro)
     ENDIF
 
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Initialization of output tables
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-    CALL MUSTANG_init_output
+    CALL mustang_init_output
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Check CPP keys and parameters for compatibility
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-    CALL MUSTANG_compatibility(ifirst, ilast, jfirst, jlast)
+    CALL mustang_compatibility(ifirst, ilast, jfirst, jlast)
 
-    END SUBROUTINE MUSTANG_init
+    END SUBROUTINE mustang_init
 !!===========================================================================
 
-    SUBROUTINE MUSTANG_compatibility(ifirst, ilast, jfirst, jlast)
+    SUBROUTINE mustang_compatibility(ifirst, ilast, jfirst, jlast)
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_compatibility  ***
+    !&E                 ***  ROUTINE mustang_compatibility  ***
     !&E
     !&E ** Purpose : verifies compatibility between the various parameters (sedim)
     !&E
     !&E ** Description :
     !&E
-    !&E ** Called by : MUSTANG_init
+    !&E ** Called by : mustang_init
     !&E
     !&E ** External calls : tool_datosec()
     !&E
@@ -325,7 +311,7 @@ CONTAINS
         MPI_master_only write(ierrorlog, *) 'l_ADS=', l_ADS
         MPI_master_only write(ierrorlog, *) 'l_ASH=', l_ASH
         MPI_master_only write(ierrorlog, *) 'simulation stopped'
-        STOP
+        STOP 1
     ENDIF
 
     ! test compatibility tocd /consolidation
@@ -371,7 +357,7 @@ CONTAINS
             MPI_master_only WRITE(ierrorlog, *) ' It is not the case : (see in substance file) '
             MPI_master_only WRITE(ierrorlog, *) ' ros(1) = ', ros(irk_fil(1))
             MPI_master_only WRITE(ierrorlog, *) ' ros(', irk_fil(iv), ') = ', ros(irk_fil(iv))
-            STOP
+            STOP 1
          ENDIF
        ENDDO
      ELSE
@@ -385,7 +371,7 @@ CONTAINS
             MPI_master_only WRITE(ierrorlog, *) ' It is not the case : (see in substance file) '
             MPI_master_only WRITE(ierrorlog, *) ' ros(1) = ', ros(irk_fil(isand1))
             MPI_master_only WRITE(ierrorlog, *) ' ros(', irk_fil(iv), ') = ', ros(irk_fil(iv))
-            STOP
+            STOP 1
           ENDIF
           DO iv2 = isand1, iv
            IF(diam_sed(irk_fil(iv)) > diam_sed(irk_fil(iv2))) THEN
@@ -394,7 +380,7 @@ CONTAINS
              MPI_master_only WRITE(ierrorlog, *) ' The "SAND" variables should be stored in substance file '
              MPI_master_only WRITE(ierrorlog, *) ' in order of decreasing diameters (the coarsest sand to the finest sand)'
              MPI_master_only WRITE(ierrorlog, *) ' It is not the case : (see in substance file) '
-             STOP
+             STOP 1
            ENDIF
           ENDDO
         ENDDO
@@ -408,28 +394,67 @@ CONTAINS
     MPI_master_only WRITE(ierrorlog, *) '****************************'
     MPI_master_only WRITE(ierrorlog, *) ' It is not possible to use key_BLOOM_insed  without the key_oxygen'
     MPI_master_only WRITE(ierrorlog, *) ' WARNING : use CPP key : key_oxygen in Makefile'
-    STOP
+    STOP 1
 #endif
 
-#ifdef key_MUSTANG_V2
-! test version V2 consolidation/poro_option
-    IF (l_consolid .AND. poro_option .NE. 2) THEN
+! test consolidation/poro_option compatibility : poro_option=2 (Wu and Li
+! 2017) is incompatible with consolidation; must use poro_option=1 (constant -
+! mustang_porosity derives it from the remaining composition for a partially
+! eroded persisting mixture, so it naturally tracks consolidation) or
+! poro_option=3 (ideal coarse/fine packing mix) instead
+    IF (l_consolid .AND. poro_option .EQ. 2) THEN
+        MPI_master_only WRITE(ierrorlog, *) '****************************'
+        MPI_master_only WRITE(ierrorlog, *) ' FATAL ERROR'
+        MPI_master_only WRITE(ierrorlog, *) ' You are taking into account CONSOLIDATION PROCESS'
+        MPI_master_only WRITE(ierrorlog, *) ' with poro_option = ', poro_option
+        MPI_master_only WRITE(ierrorlog, *) ' this combination is not allowed.'
+        MPI_master_only WRITE(ierrorlog, *) ' Please choose poro_option = 1 or 3 in the namelist.'
+        MPI_master_only WRITE(ierrorlog, *)
+        STOP 1
+    ENDIF
+
+! test erosion-by-class/poro_option compatibility : poro_option=1 (constant)
+! has no composition dependence, so it cannot reflect how the mixture's
+! packing changes when classes are eroded unevenly (different amounts/rates
+! per class). poro_option=2 (Wu and Li 2017) and poro_option=3 (ideal
+! coarse/fine packing mix) are both recomputed from the remaining composition
+! and are fine.
+    IF (l_erosion_by_class .AND. poro_option .EQ. 1) THEN
+        MPI_master_only WRITE(ierrorlog, *) '****************************'
+        MPI_master_only WRITE(ierrorlog, *) ' FATAL ERROR'
+        MPI_master_only WRITE(ierrorlog, *) ' You have chosen l_erosion_by_class = .true.'
+        MPI_master_only WRITE(ierrorlog, *) ' with poro_option = 1 (constant porosity)'
+        MPI_master_only WRITE(ierrorlog, *) ' poro_option = 1 cannot reflect how the mixture packing'
+        MPI_master_only WRITE(ierrorlog, *) ' changes as classes erode unevenly: this combination is'
+        MPI_master_only WRITE(ierrorlog, *) ' not allowed.'
+        MPI_master_only WRITE(ierrorlog, *) ' Please choose poro_option = 2 or 3 in the namelist.'
+        MPI_master_only WRITE(ierrorlog, *)
+        STOP 1
+    ENDIF
+
+! test bedload/erosion-by-class compatibility : bedload transport is only
+! ever computed from the per-class erosion path (l_erosion_by_class=.true.);
+! if some substance activates bedload in parasubstance.txt (l_bedload=.true.,
+! derived from ibedload1/ibedload2) but l_erosion_by_class is left .false.,
+! bedload fluxes would silently never be computed
+    IF (l_bedload .AND. .NOT. l_erosion_by_class) THEN
         MPI_master_only WRITE(iwarnlog, *) '****************************'
         MPI_master_only WRITE(iwarnlog, *) ' WARNING    '
-        MPI_master_only WRITE(iwarnlog, *) ' You are  taking into account CONSOLIDATION PROCESS'
-        MPI_master_only WRITE(iwarnlog, *) ' and have choose poro_optio n= 1'
-        MPI_master_only WRITE(iwarnlog, *) ' poro_option must be = 2. it has been changed automatically'
+        MPI_master_only WRITE(iwarnlog, *) ' You have activated BEDLOAD TRANSPORT for at least'
+        MPI_master_only WRITE(iwarnlog, *) ' one substance in parasubstance.txt, but l_erosion_by_class=.false.'
+        MPI_master_only WRITE(iwarnlog, *) ' bedload fluxes are only computed in the per-class erosion path.'
+        MPI_master_only WRITE(iwarnlog, *) ' l_bedload has been forced to .false. (no bedload transport).'
+        MPI_master_only WRITE(iwarnlog, *) ' set l_erosion_by_class=.true. in namsedim_erosion if you want bedload'
         MPI_master_only WRITE(iwarnlog, *)
-        poro_option = 2
+        l_bedload = .FALSE.
     ENDIF
-#endif
-   
-    END SUBROUTINE MUSTANG_compatibility
+
+    END SUBROUTINE mustang_compatibility
 !!===========================================================================
  
-    SUBROUTINE MUSTANG_init_param()
+    SUBROUTINE mustang_init_param()
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_init_param  ***
+    !&E                 ***  ROUTINE mustang_init_param  ***
     !&E
     !&E ** Purpose : initialize MUSTANG parameters
     !&E
@@ -448,7 +473,7 @@ CONTAINS
     !&E
     !&E ** Note : g and rho0 must be known
     !&E
-    !&E ** Called by :  MUSTANG_init
+    !&E ** Called by :  mustang_init
     !&E
     !&E--------------------------------------------------------------------------
     USE tools_calendar, ONLY: tool_datosec
@@ -499,13 +524,6 @@ CONTAINS
         subdt_bioturb = dtsedb
     ENDIF    
     subdt_consol = MIN(dtsedb, dtsedc, dt_dyninsed)
-#ifdef key_MUSTANG_V2    
-    IF (l_dzsminuni) THEN 
-        coeff_dzsmin = 0._rsh        
-    ELSE           
-        coeff_dzsmin = 1._rsh  
-    ENDIF   
-#endif  
     IF (l_morphocoupl) THEN
     t_morpho = tstart_morpho
         IF (l_MF_dhsed) THEN
@@ -530,7 +548,7 @@ CONTAINS
     ep_nivsed_out(:) = ep_nivsed_out(:) / 1000.0_rsh
     IF (choice_nivsed_out == 1) nk_nivsed_out = ksdmax
                                
-    MPI_master_only write(*,*) 'MUSTANG_init_param dt_consolid=', dt_consolid
+    MPI_master_only write(*,*) 'mustang_init_param dt_consolid=', dt_consolid
 
     DO iv = 1, isand2
 
@@ -551,12 +569,10 @@ CONTAINS
         stresscri0(iv)=g*(ros(iv)-rho0)*diam_sed(iv)*shield_cri_wu
       END IF
 
-#ifdef key_MUSTANG_V2
       psi_sed(iv)=LOG(diam_sed(iv)*1000.0_rsh)/LOG(2.0_rsh)
       IF (iv .ge. isand1) THEN
-            E0_sand(iv) = MUSTANG_E0sand(diam_sed(iv), stresscri0(iv), ros(iv), ws_sand(iv))
+            E0_sand(iv) = mustang_E0sand(diam_sed(iv), stresscri0(iv), ros(iv), ws_sand(iv))
       ENDIF
-#endif
     ENDDO ! iv = 1, isand2
 
     DO iv=imud1,imud2
@@ -569,19 +585,19 @@ CONTAINS
        ros_sand_homogen=ros(iv)
     ENDIF
 
-    END SUBROUTINE MUSTANG_init_param
+    END SUBROUTINE mustang_init_param
 !!=============================================================================
-  SUBROUTINE MUSTANG_init_fromfile
+  SUBROUTINE mustang_init_fromfile
  
     !&E-------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_init_fromfile  ***
+    !&E                 ***  ROUTINE mustang_init_fromfile  ***
     !&E
     !&E ** Purpose : manages the fields to be re-initialized in case of the 
     !&E              continuation of a previous run
     !&E
     !&E ** Description : open and read a netcdf file, written during a previous run 
     !&E
-    !&E ** Called by :  MUSTANG_init 
+    !&E ** Called by :  mustang_init 
     !&E
     !&E-------------------------------------------------------------------------
     !! * Modules used
@@ -628,15 +644,17 @@ CONTAINS
          ierr = checkdims(ncid, inised_name, lstr, indx)
 
          if (ierr.ne.nf_noerr) then
-          goto 99
+          may_day_flag=2
+          return
          elseif (indx.eq.0) then
            indx = 1
          endif
        else
          write(stdout,'(/1x,2A/15x,3A)') &
-                'MUSTANG_init_fromfile ERROR: Cannot ', &
+                'mustang_init_fromfile ERROR: Cannot ', &
                 'open netCDF file', '''', inised_name(1:lstr) ,'''.'
-         goto 99                                           !--> ERROR
+         may_day_flag=2                                    !--> ERROR
+         return
        endif
  
  
@@ -647,11 +665,13 @@ CONTAINS
          ksmi(GLOBAL_2D_ARRAY)=INT(tmp(GLOBAL_2D_ARRAY))
          if (ierr .ne. nf_noerr) then
            MPI_master_only write(stdout,2) 'ksmi', indx, inised_name(1:lstr)
-           goto 99                                         !--> ERROR
+           may_day_flag=2                                  !--> ERROR
+           return
          endif
        else
          MPI_master_only  write(stdout,1) 'ksmi', inised_name(1:lstr)
-         goto 99                                           !--> ERROR
+         may_day_flag=2                                    !--> ERROR
+         return
        endif
        
         ierr=nf_inq_varid (ncid,'ksma', varid)
@@ -661,11 +681,13 @@ CONTAINS
  
          if (ierr .ne. nf_noerr) then
            MPI_master_only write(stdout,2) 'ksma', indx, inised_name(1:lstr)
-           goto 99                                         !--> ERROR
+           may_day_flag=2                                  !--> ERROR
+           return
          endif
        else
          MPI_master_only  write(stdout,1) 'ksma', inised_name(1:lstr)
-         goto 99                                           !--> ERROR
+         may_day_flag=2                                    !--> ERROR
+         return
        endif
 
 ! scheduling time for dynamic-in-sediment (consolidation/diffusion/
@@ -675,7 +697,8 @@ CONTAINS
          ierr=nf_get_var1_FTYPE (ncid, varid, indx, t_dyninsed)
          if (ierr .ne. nf_noerr) then
            MPI_master_only write(stdout,2) 't_dyninsed', indx, inised_name(1:lstr)
-           goto 99                                         !--> ERROR
+           may_day_flag=2                                  !--> ERROR
+           return
          endif
        endif
 
@@ -693,11 +716,13 @@ CONTAINS
          
          if (ierr .ne. nf_noerr) then
            MPI_master_only write(stdout,2) 'DZS', indx, inised_name(1:lstr)
-           goto 99                                         !--> ERROR
+           may_day_flag=2                                  !--> ERROR
+           return
          endif
        else
          MPI_master_only  write(stdout,1) 'DZS', inised_name(1:lstr)
-         goto 99                                           !--> ERROR
+         may_day_flag=2                                    !--> ERROR
+         return
        endif
  
  
@@ -725,7 +750,8 @@ CONTAINS
  
          if (ierr .ne. nf_noerr) then
            MPI_master_only write(stdout,2) nomcv, indx, inised_name(1:lstr)
-           goto 99                                         !--> ERROR
+           may_day_flag=2                                  !--> ERROR
+           return
          endif
         
         else
@@ -750,7 +776,8 @@ CONTAINS
                                            inised_name(1:lstr)
          else
           MPI_master_only  write(stdout,1) nomcv, inised_name(1:lstr)
-          goto 99                          !--> ERROR
+          may_day_flag=2                   !--> ERROR
+          return
          endif
         endif
        enddo
@@ -781,11 +808,13 @@ CONTAINS
            dredg_hsed_init(GLOBAL_2D_ARRAY)=tmp(GLOBAL_2D_ARRAY)
            if (ierr .ne. nf_noerr) then
              MPI_master_only write(stdout,2) 'dredg_hsed_init', indx, inised_name(1:lstr)
-             goto 99                                         !--> ERROR
+             may_day_flag=2                                  !--> ERROR
+             return
            endif
          else
            MPI_master_only  write(stdout,1) 'dredg_hsed_init', inised_name(1:lstr)
-           goto 99                                           !--> ERROR
+           may_day_flag=2                                    !--> ERROR
+           return
          endif
       endif
  
@@ -793,34 +822,32 @@ CONTAINS
  !
        ierr=nf_close(ncid)
  
-   1   format(/1x,'MUSTANG_init_fromfile - unable to find variable:', 1x,A, &
+   1   format(/1x,'mustang_init_fromfile - unable to find variable:', 1x,A, &
                                   /15x,'in input NetCDF file:',1x,A/)
-   2   format(/1x,'MUSTANG_init_fromfile - error while reading variable:',1x, A, &
+   2   format(/1x,'mustang_init_fromfile - error while reading variable:',1x, A, &
           2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
-   3   format(/1x,'MUSTANG_init_fromfile - unable to find variable:', 1x,A,/10x,A, &
+   3   format(/1x,'mustang_init_fromfile - unable to find variable:', 1x,A,/10x,A, &
       &                            /15x,'in input NetCDF file:',1x,A,  &
           1x,'-> analytical value (cini_sed)'/)
        return
-   99  may_day_flag=2
-       return
-       
-   END SUBROUTINE MUSTANG_init_fromfile
+
+   END SUBROUTINE mustang_init_fromfile
 
 !!===========================================================================================
     
-    SUBROUTINE MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, h)
+    SUBROUTINE mustang_sedinit(ifirst, ilast, jfirst, jlast, h)
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_sedinit  ***
+    !&E                 ***  ROUTINE mustang_sedinit  ***
     !&E
     !&E ** Purpose : initialize the sediment geometry & content
     !&E
     !&E ** Description : 
     !&E
-    !&E ** Called by :  MUSTANG_init_sediment only if l_unised
+    !&E ** Called by :  mustang_init_sediment only if l_unised
     !&E
     !&E--------------------------------------------------------------------------
     USE dredging, ONLY : l_dredging, dredg_hsed_init
-         
+
     implicit none
 
     !! * Arguments
@@ -892,8 +919,8 @@ CONTAINS
             MPI_master_only WRITE(ierrorlog,*)  tot_csed_init
             MPI_master_only WRITE(ierrorlog,*)' difference with 1 is :'
             MPI_master_only WRITE(ierrorlog,*)  abs(tot_csed_init - 1.0_rsh)
-            STOP
-        ELSE IF (nvpc > 0) THEN
+            STOP 1
+        ELSE
             DO iv=1,nvpc
                 ! force fraction sum to equal 1.
                 cini_sed(iv) = cini_sed(iv)/tot_csed_init
@@ -989,7 +1016,7 @@ CONTAINS
             MPI_master_only write(ierrorlog,*)' ERROR in paraMUSTANG : dzsmaxuni =0. and l_unised=.TRUE.'
             MPI_master_only write(ierrorlog,*)' if dzsmaxuni =0. dzsmax must be read in an initial file '
             MPI_master_only write(ierrorlog,*)'  dzsmax must be evaluated from dzsmaxuni not null'
-            STOP
+            STOP 1
         ENDIF
 
         ! definition of dzsmax
@@ -1001,13 +1028,13 @@ CONTAINS
        MPI_master_only write(iscreenlog,*)
        MPI_master_only write(iscreenlog,*)'DZSMAX NON UNIFORM'
        MPI_master_only write(iscreenlog,*) &
-       'by default linearly computed in MUSTANG_sedinit '
+       'by default linearly computed in mustang_sedinit '
        MPI_master_only write(iscreenlog,*) &
        'from dzsmaxuni (',dzsmaxuni,'m) to dzsmaxuni/100 (',dzsmaxmin,'m) depending on water depth'
        MPI_master_only write(iscreenlog,*) &
        'dzsmax minimum for depth > ',h0max_def
        MPI_master_only write(iscreenlog,*) &
-       'PROGRAM your own initialization of dzsmax (or READ a file) in MUSTANG_sedinit'
+       'PROGRAM your own initialization of dzsmax (or READ a file) in mustang_sedinit'
        dzsmax(GLOBAL_2D_ARRAY)=(h0max_def-h(GLOBAL_2D_ARRAY))/h0max_def*dzsmaxuni+dzsmaxmin
        WHERE (dzsmax(GLOBAL_2D_ARRAY) > dzsmaxuni ) dzsmax(GLOBAL_2D_ARRAY)=dzsmaxuni
        WHERE (dzsmax(GLOBAL_2D_ARRAY) < dzsmaxmin ) dzsmax(GLOBAL_2D_ARRAY)=dzsmaxmin
@@ -1018,13 +1045,13 @@ CONTAINS
 
 
 
-    END SUBROUTINE MUSTANG_sedinit
+    END SUBROUTINE mustang_sedinit
 
 !!===========================================================================
 
-    SUBROUTINE MUSTANG_check_output_param
+    SUBROUTINE mustang_check_output_param
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_check_output_param  ***
+    !&E                 ***  ROUTINE mustang_check_output_param  ***
     !&E
     !&E ** Purpose : check input options and input parameters compatibilities
     !&E--------------------------------------------------------------------------
@@ -1042,8 +1069,8 @@ CONTAINS
             ELSE IF (nk_nivsed_outlu < 1 ) THEN
                 MPI_master_only WRITE(iscreenlog,*) &
         'Wrong nk_nivsed_out value, should be between 1 and',ksdmax
-                STOP
-            ENDIF 
+                STOP 1
+            ENDIF
             MPI_master_only WRITE(iscreenlog,*) &
         'results in sediment will be save only for the first ', nk_nivsed_out, &
                                     ' layers from sediment surface, one average for the last'
@@ -1072,15 +1099,15 @@ CONTAINS
             IF(nk_nivsed_outlu > min(5,ksdmax-1) ) THEN
                 MPI_master_only WRITE(iscreenlog,*)'ERROR in namelist namsedoutput (paraMUSTANG.txt) '
                 MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out must be <=min(5,',ksdmax-1,')'
-                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out is automatically set to 5 '
+                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out = ',nk_nivsed_outlu,' is not allowed.'
                 MPI_master_only WRITE(iscreenlog,*) &
-        'and an latter layer (6th) is added to integrate till the bottom sediment  '
-                nk_nivsed_outlu = min(5,ksdmax-1)
+        'Please choose nk_nivsed_out <=min(5,',ksdmax-1,') in the namelist.'
+                STOP 1
             ELSE IF (nk_nivsed_outlu < 1 ) THEN
                 MPI_master_only WRITE(iscreenlog,*) &
         'Wrong nk_nivsed_out value, should be between 1 and min(5,',ksdmax-1,')'
                 STOP 1
-            ENDIF   
+            ENDIF
             err = 0
             DO k=1,nk_nivsed_outlu
                 IF (ep_nivsed_out(k) == 0.) THEN
@@ -1091,7 +1118,7 @@ CONTAINS
             ENDDO
             IF (err>0) THEN
                 STOP 1
-            ENDIF     
+            ENDIF
             
             nk_nivsed_out =  nk_nivsed_outlu+1   
             ALLOCATE(ep_nivsed_outp1(nk_nivsed_out))
@@ -1107,16 +1134,16 @@ CONTAINS
         ELSE
             MPI_master_only WRITE(iscreenlog,*) &
         'Wrong choice_nivsed_out value, should be 1,2,3 or 4'
-            STOP
+            STOP 1
         ENDIF !choice_nivsed_out
 
-    END SUBROUTINE MUSTANG_check_output_param
+    END SUBROUTINE mustang_check_output_param
 
 !!===========================================================================
 
-    SUBROUTINE MUSTANG_allocate_output_arrays
+    SUBROUTINE mustang_allocate_output_arrays
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_allocate_output_arrays  ***
+    !&E                 ***  ROUTINE mustang_allocate_output_arrays  ***
     !&E
     !&E ** Purpose : prepare needed output arrays
     !&E--------------------------------------------------------------------------
@@ -1183,7 +1210,6 @@ CONTAINS
             var2D_flx_w2s_noncoh(GLOBAL_2D_ARRAY)= 0.0_rsh
         ENDIF
 
-#ifdef key_MUSTANG_V2
         IF (l_outsed_pephm_fcor) THEN
             ALLOCATE(var2D_pephm_fcor(nvpc,GLOBAL_2D_ARRAY))
             var2D_pephm_fcor(:,GLOBAL_2D_ARRAY) = 0.0_rsh
@@ -1222,7 +1248,6 @@ CONTAINS
             ALLOCATE(var2D_fsusp(nvpc,GLOBAL_2D_ARRAY))
             var2D_fsusp(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
-#endif
         IF (l_dyn_insed) THEN
             IF (l_outsed_consolidation) THEN
                 IF (choice_nivsed_out == 1) then
@@ -1249,13 +1274,13 @@ CONTAINS
                     
         ENDIF
 
-    END SUBROUTINE MUSTANG_allocate_output_arrays
+    END SUBROUTINE mustang_allocate_output_arrays
 
 !!===========================================================================
 
-    SUBROUTINE MUSTANG_init_output
+    SUBROUTINE mustang_init_output
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_init_output  ***
+    !&E                 ***  ROUTINE mustang_init_output  ***
     !&E
     !&E ** Purpose : check parameters and prepare needed arrays
     !&E--------------------------------------------------------------------------
@@ -1266,11 +1291,11 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
     MPI_master_only WRITE(iscreenlog, *)
 
-    CALL MUSTANG_check_output_param
+    CALL mustang_check_output_param
 
-    CALL MUSTANG_allocate_output_arrays
+    CALL mustang_allocate_output_arrays
 
-    CALL MUSTANG_init_vname
+    CALL mustang_init_vname
 
     MPI_master_only WRITE(iscreenlog, *)
     MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
@@ -1279,13 +1304,13 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, *)
 
 
-    END SUBROUTINE MUSTANG_init_output
+    END SUBROUTINE mustang_init_output
 !!===========================================================================
 
 
-    SUBROUTINE MUSTANG_init_vname
+    SUBROUTINE mustang_init_vname
       !!---------------------------------------------------------------------
-      !!                 *** MUSTANG_init_vname  ***
+      !!                 *** mustang_init_vname  ***
       !!
       !! ** Purpose : initialize MUSTANG output vname and variables
       !!
@@ -1314,10 +1339,8 @@ CONTAINS
         rstout3DsedMust(:) = .FALSE.
 
         outMust_nbvar = 2*ntrc_subs + 3*nvpc + 17
-#ifdef  key_MUSTANG_V2
         outMust_nbvar = outMust_nbvar + nvpc + 6
         outMust_nbvar = outMust_nbvar + 4*nvpc + 3
-# endif
         if (l_dyn_insed) outMust_nbvar = outMust_nbvar + 8
 
         ALLOCATE (hisMust(1:outMust_nbvar))
@@ -1608,7 +1631,6 @@ CONTAINS
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
-#ifdef  key_MUSTANG_V2
             indx = indx + 1
             vname_Must(1,indx) = TRIM(name_var(isubs))//'_pephm_fcor'
             vname_Must(2,indx) = 'Hindering exposure factor on toce'
@@ -1681,7 +1703,6 @@ CONTAINS
             ENDIF
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
-#endif /* key_MUSTANG_V2 */
     ENDDO
             indx = indx + 1
             vname_Must(1,indx) = 'frmudsup'
@@ -1784,7 +1805,6 @@ CONTAINS
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
-#ifdef key_MUSTANG_V2
             ! 3 : dzs_aclay_comp_save
             indx = indx + 1
             vname_Must(1,indx) = 'dzs_aclay_comp_save'
@@ -1904,8 +1924,6 @@ CONTAINS
             out2DMust(indx) = .TRUE.
             out3DsedMust(indx) = .FALSE.
 
-#endif /* key_MUSTANG_V2 */
-
     IF (l_dyn_insed) THEN
         indx = indx + 1
         vname_Must(1,indx) = 'loadograv'
@@ -2003,31 +2021,24 @@ CONTAINS
         out3DsedMust(indx) = .TRUE.
     ENDIF
 
-    END SUBROUTINE MUSTANG_init_vname
+    END SUBROUTINE mustang_init_vname
 
 !!==========================================================================================================
 
 
-    SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast   &
-#if defined MORPHODYN 
-                  , dhsed                                                &
-#endif
-                  )
+    SUBROUTINE mustang_morphoinit(ifirst, ilast, jfirst, jlast)
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE morphoinit  ***
     !&E
     !&E ** Purpose : initialization of hsed, hsed_previous
-    !&E ** Called by :  MUSTANG_init_sediment 
+    !&E ** Called by :  mustang_init_main
     !&E--------------------------------------------------------------------------
 
-    !! * Arguments 
+    !! * Arguments
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
-#if defined MORPHODYN
-    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT)           :: dhsed                       
-#endif
     !! * Local declarations
     INTEGER :: i, j, k
- 
+
     !!  initialisation of hsed  inside the domain  !!!
     !!  eliminate the meshes at open boundaries ??? not reuse from MARS? TODO or not ?
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2037,28 +2048,52 @@ CONTAINS
         hsed(i,j)=0.0_rsh
         DO k=ksmi(i,j),ksma(i,j)
             hsed(i,j)=hsed(i,j)+dzs(k,i,j)
-        ENDDO   
+        ENDDO
 
         IF(l_morphocoupl)THEN
             !  WARNING: not in first and last mesh on i and j axis (boundaries)! ??? not reuse from MARS? TODO or not ?
-            hsed_previous(i,j)=hsed(i,j)      
-#if defined MORPHODYN
-            dhsed(i,j)=hsed_previous(i,j)-hsed(i,j)
-#endif
+            hsed_previous(i,j)=hsed(i,j)
         ENDIF        ! endif l_morphocoupl
     ENDDO
     ENDDO
 
-    END SUBROUTINE MUSTANG_morphoinit
+    END SUBROUTINE mustang_morphoinit
 !!===========================================================================
 
-    SUBROUTINE MUSTANG_alloc()
+#if defined MORPHODYN
+    SUBROUTINE mustang_morphoinit_dh(ifirst, ilast, jfirst, jlast, dhsed)
     !&E--------------------------------------------------------------------------
-    !&E                 ***  ROUTINE MUSTANG_alloc  ***
+    !&E                 ***  ROUTINE morphoinit_dh  ***
+    !&E
+    !&E ** Purpose : initialization of dhsed (morphodynamic bathymetry change)
+    !&E ** Called by :  mustang_init_main
+    !&E--------------------------------------------------------------------------
+
+    !! * Arguments
+    INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT) :: dhsed
+    !! * Local declarations
+    INTEGER :: i, j
+
+    DO j=jfirst,jlast
+    DO i=ifirst,ilast
+        IF(l_morphocoupl)THEN
+            dhsed(i,j)=hsed_previous(i,j)-hsed(i,j)
+        ENDIF
+    ENDDO
+    ENDDO
+
+    END SUBROUTINE mustang_morphoinit_dh
+!!===========================================================================
+#endif
+
+    SUBROUTINE mustang_alloc()
+    !&E--------------------------------------------------------------------------
+    !&E                 ***  ROUTINE mustang_alloc  ***
     !&E
     !&E ** Purpose : allocation of arrays relative to sediment
     !&E
-    !&E ** Called by : MUSTANG_init
+    !&E ** Called by : mustang_init
     !&E
     !&E--------------------------------------------------------------------------
     
@@ -2075,10 +2110,8 @@ CONTAINS
     typart(-1:0)=0.0_rsh
     typart(1:nvpc)=1.0_rsh
     typart(nvpc+1:nv_adv)=0.0_rsh
-#ifdef key_MUSTANG_V2
     ALLOCATE(E0_sand(nvp))
     E0_sand(1:nvp)=0.0_rsh
-#endif
     IF (l_diss_insed) ALLOCATE(ivdiss(-1:nv_adv-nvp))
  
  
@@ -2121,13 +2154,11 @@ CONTAINS
        ALLOCATE(phitemp_s(GLOBAL_2D_ARRAY))
        phitemp_s(GLOBAL_2D_ARRAY) = 0.0_rsh
     ENDIF
-#ifdef key_MUSTANG_V2
     ALLOCATE(sigmapsg(ksdmin:ksdmax))
     ALLOCATE(stateconsol(ksdmin:ksdmax))
     ALLOCATE(permeab(ksdmin:ksdmax))
     ALLOCATE(psi_sed(nvp))
     psi_sed(1:nvp) = 0.0_rsh
-#endif
 
     ALLOCATE(rouse2D(nv_adv,GLOBAL_2D_ARRAY))
     ALLOCATE(rouse2D_integral(nv_adv,GLOBAL_2D_ARRAY))
@@ -2166,7 +2197,6 @@ CONTAINS
     gradvit(N,GLOBAL_2D_ARRAY) = 0.0_rsh
 
 
-#ifdef key_MUSTANG_V2
     ALLOCATE(poro_mud(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
     ALLOCATE(crel_mud(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
     ALLOCATE(l_isitcohesive(GLOBAL_2D_ARRAY))
@@ -2186,34 +2216,47 @@ CONTAINS
       slope_dhdy(GLOBAL_2D_ARRAY)=0.0_rsh
       sedimask_h0plusxe(GLOBAL_2D_ARRAY)=0.0_rsh
     ENDIF
-#endif
 
-    ALLOCATE(phieau_s2w(GLOBAL_2D_ARRAY))
-    ALLOCATE(phieau_s2w_drycell(GLOBAL_2D_ARRAY))
-    ALLOCATE(phieau_s2w_consol(GLOBAL_2D_ARRAY))
-    phieau_s2w(GLOBAL_2D_ARRAY)=0.0_rlg
-    phieau_s2w_drycell(GLOBAL_2D_ARRAY)=0.0_rlg
-    phieau_s2w_consol(GLOBAL_2D_ARRAY)=0.0_rlg
+    ! phieau_s2w/phieau_s2w_drycell/phieau_s2w_consol are only ever
+    ! written/read inside IF (l_fluxwat_IWS) blocks - verified across
+    ! sed_MUSTANG.F90 (both erosion/effdep bodies, mustang_eval_dissvar_IWSflux,
+    ! sed_mustang_consol_diff_bioturb, two previously-unconditional writes to
+    ! phieau_s2w_consol there now guarded too) and lateral_erosion.F90 -
+    ! safe to guard the allocation as well.
+    IF (l_fluxwat_IWS) THEN
+        ALLOCATE(phieau_s2w(GLOBAL_2D_ARRAY))
+        ALLOCATE(phieau_s2w_drycell(GLOBAL_2D_ARRAY))
+        ALLOCATE(phieau_s2w_consol(GLOBAL_2D_ARRAY))
+        phieau_s2w(GLOBAL_2D_ARRAY)=0.0_rlg
+        phieau_s2w_drycell(GLOBAL_2D_ARRAY)=0.0_rlg
+        phieau_s2w_consol(GLOBAL_2D_ARRAY)=0.0_rlg
+    ENDIF
 
     ALLOCATE( raphbx(GLOBAL_2D_ARRAY), raphby(GLOBAL_2D_ARRAY) )
     ALLOCATE( tauskin_x(GLOBAL_2D_ARRAY), tauskin_y(GLOBAL_2D_ARRAY) )
     raphbx(GLOBAL_2D_ARRAY)=0.0_rsh
     raphby(GLOBAL_2D_ARRAY)=0.0_rsh
 
-    ALLOCATE(flx_s2w_corim1(-1:nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_s2w_corip1(-1:nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_s2w_corjm1(-1:nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_s2w_corjp1(-1:nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_w2s_corin(nvp,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_w2s_corim1(nvp,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_w2s_corip1(nvp,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_w2s_corjm1(nvp,GLOBAL_2D_ARRAY))
-    ALLOCATE(flx_w2s_corjp1(nvp,GLOBAL_2D_ARRAY))
+
+    IF (l_erolat) THEN
+        ALLOCATE(flx_s2w_corim1(-1:nv_adv,GLOBAL_2D_ARRAY))
+        ALLOCATE(flx_s2w_corip1(-1:nv_adv,GLOBAL_2D_ARRAY))
+        ALLOCATE(flx_s2w_corjm1(-1:nv_adv,GLOBAL_2D_ARRAY))
+        ALLOCATE(flx_s2w_corjp1(-1:nv_adv,GLOBAL_2D_ARRAY))
     IF (l_fluxwat_IWS) THEN
-       ALLOCATE(phieau_s2w_corim1(GLOBAL_2D_ARRAY))
-       ALLOCATE(phieau_s2w_corip1(GLOBAL_2D_ARRAY))
-       ALLOCATE(phieau_s2w_corjm1(GLOBAL_2D_ARRAY))
-       ALLOCATE(phieau_s2w_corjp1(GLOBAL_2D_ARRAY))
+        ALLOCATE(phieau_s2w_corim1(GLOBAL_2D_ARRAY))
+        ALLOCATE(phieau_s2w_corip1(GLOBAL_2D_ARRAY))
+        ALLOCATE(phieau_s2w_corjm1(GLOBAL_2D_ARRAY))
+        ALLOCATE(phieau_s2w_corjp1(GLOBAL_2D_ARRAY))
+    ENDIF
+    ENDIF
+
+    IF (l_slipdeposit) THEN
+        ALLOCATE(flx_w2s_corin(nvp,GLOBAL_2D_ARRAY))
+        ALLOCATE(flx_w2s_corim1(nvp,GLOBAL_2D_ARRAY))
+        ALLOCATE(flx_w2s_corip1(nvp,GLOBAL_2D_ARRAY))
+        ALLOCATE(flx_w2s_corjm1(nvp,GLOBAL_2D_ARRAY))
+        ALLOCATE(flx_w2s_corjp1(nvp,GLOBAL_2D_ARRAY))
     ENDIF
 
     ! Initialization
@@ -2237,7 +2280,6 @@ CONTAINS
     !  option morpho
     !!!!!!!!!!!!!!!!!!!!
     IF(l_morphocoupl) THEN
-    !! Warning : no hx, hy in other model than MARS 
         ALLOCATE(hsed_previous(GLOBAL_2D_ARRAY))
         hsed_previous(GLOBAL_2D_ARRAY) = 0.0_rsh
     ENDIF
@@ -2256,7 +2298,7 @@ CONTAINS
     ENDIF
 
 
-    END SUBROUTINE MUSTANG_alloc
+    END SUBROUTINE mustang_alloc
 
 
 

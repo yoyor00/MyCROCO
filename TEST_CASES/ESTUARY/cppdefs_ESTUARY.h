@@ -40,9 +40,6 @@
 #  define SUSPLOAD
 #  undef  BEDLOAD
 # endif
-# ifdef MUSTANG
-#  undef  key_MUSTANG_V2
-# endif
 # define PSOURCE
 # define ANA_PSOURCE
 # define MASKING

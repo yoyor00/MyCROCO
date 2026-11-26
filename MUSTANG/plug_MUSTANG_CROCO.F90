@@ -13,11 +13,15 @@
 # ifdef WET_DRY
       USE croco_namelist, only: D_wetdry
 # endif
-      USE initMUSTANG, ONLY : MUSTANG_init
-      USE sed_MUSTANG, ONLY : MUSTANG_update
-      USE sed_MUSTANG, ONLY : MUSTANG_deposition
+      USE initMUSTANG, ONLY : mustang_init
+      USE initMUSTANG, ONLY : mustang_morphoinit
 # ifdef MORPHODYN
-      USE sed_MUSTANG, ONLY : MUSTANG_morpho
+      USE initMUSTANG, ONLY : mustang_morphoinit_dh
+# endif
+      USE sed_MUSTANG, ONLY : mustang_update
+      USE sed_MUSTANG, ONLY : mustang_deposition
+# ifdef MORPHODYN
+      USE sed_MUSTANG, ONLY : mustang_morpho
 # endif
 
       IMPLICIT NONE
@@ -44,7 +48,7 @@ CONTAINS
 
       TEMPREF_LIN = 10.0 
       SALREF_LIN  = 35.0
-      CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
+      CALL mustang_update (Istr, Iend, Jstr, Jend,  & 
                    t, zob,                          &
                    ubar, vbar,                      &
                    SALREF_LIN, TEMPREF_LIN, dt)
@@ -56,7 +60,7 @@ CONTAINS
 
       integer :: tile
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, t)
+      CALL mustang_deposition (Istr, Iend, Jstr, Jend, t)
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -73,11 +77,16 @@ CONTAINS
             h0fond = 0.
 # endif
 
-      CALL MUSTANG_init (Istr, Iend, Jstr, Jend,  &
-# if defined MORPHODYN
-                    dh,                           &
-# endif
+      CALL mustang_init (Istr, Iend, Jstr, Jend,  &
                     h0fond, zob, t)
+
+      ! call even if no morpho, initialization of hsed in all cases,
+      ! even if initfromfile
+      CALL mustang_morphoinit (Istr, Iend, Jstr, Jend)
+
+# ifdef MORPHODYN
+      CALL mustang_morphoinit_dh (Istr, Iend, Jstr, Jend, dh)
+# endif
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -87,17 +96,17 @@ CONTAINS
       integer :: tile
 # include "compute_tile_bounds.h"
 
-      CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, dh)
+      CALL mustang_morpho (Istr, Iend, Jstr, Jend, dh)
 
       end subroutine
 # endif
 !-----------------------------------------------------------------------
 !
-      end module plug_MUSTANG_CROCO
+      end module plug_mustang_CROCO
 
 #else
 
-      module plug_MUSTANG_CROCO
-      end module plug_MUSTANG_CROCO
+      module plug_mustang_CROCO
+      end module plug_mustang_CROCO
       
 #endif /* MUSTANG */

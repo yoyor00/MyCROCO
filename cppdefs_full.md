@@ -617,7 +617,6 @@ Other:
 - `MUSTANG` — MUSTANG sediment dynamics model _(auto-activates SUBSTANCE,
   TEMPERATURE, SALINITY; 
   force-undefines SEDIMENT —  mutually exclusive with the USGS SEDIMENT model)
-  - `key_MUSTANG_V2` — MUSTANG version 2 (without this key, version 1 is used)
   - `MORPHODYN` — Morphodynamics (bed evolution)
   - `SED_DENS` — Activate the effect of suspended sediment on the density
 

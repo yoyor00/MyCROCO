@@ -10,9 +10,9 @@
 : namsedim_deposition      : relative to sediment deposition
 : namsedim_erosion         : relative to sediment erosion
 : namsedim_poro            : relative to porosity
-:                            (only if key_MUSTANG_V2)
 : namsedim_bedload         : relative to sediment bedload
-:                            (only if key_MUSTANG_V2)
+:                            (only used if l_erosion_by_class=.TRUE. in
+:                            namsedim_erosion)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_morpho          : relative to morphodynamic
@@ -60,7 +60,9 @@
    x2toce_mud=0.
    E0_sand_option=0 
    E0_sand_Cst=0.     
-   E0_mud=0.000  
+   E0_mud=0.000
+/
+&namsedim_bedload
 /
 &namsedim_lateral_erosion
 /

@@ -33,7 +33,7 @@ MODULE dredging
    PRIVATE
 
    PUBLIC dredging_init_param ! called by initMUSTANG
-   PUBLIC dredging_main ! called by MUSTANG_update
+   PUBLIC dredging_main ! called by mustang_update
    PUBLIC l_dredging ! boolean , TRUE to activate dredging
    PUBLIC dump_gravel_flx ! to put gravel directly in deposit (not in water)
    PUBLIC dredg_hsed_init ! to keep initial state info
@@ -469,7 +469,7 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_main ***
       !!
-      !! ** Purpose : Main subroutine called by MUSTANG_update, main steps:
+      !! ** Purpose : Main subroutine called by mustang_update, main steps:
       !!                    - Check time
       !!                    - Compute dredged mass
       !!                    - Compute dumping mass

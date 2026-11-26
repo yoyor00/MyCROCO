@@ -16,13 +16,16 @@
     "check_outputs": ["croco_his.nc"],
     "unsupported": ["openmp"],
   },
-  // VILAINE case with MUSTANG V2 bedload + Vandera wave skewness/asymmetry
+  // VILAINE case with MUSTANG bedload + Vandera wave skewness/asymmetry
   // effect (Van der A et al., 2013). Same forcing (WAVE_OFFLINE already
   // enabled for VILAINE) and same input data as VILAINE, only the sediment
-  // bedload formulation differs (key_MUSTANG_V2 + l_vandera).
-  // l_vandera=.TRUE. is set directly in paraMUSTANG_COASTAL.nml
-  // (namsedim_bedload group, only read when key_MUSTANG_V2 is defined,
-  // so it has no effect on the plain VILAINE case above).
+  // bedload formulation differs (l_erosion_by_class/l_deposit_bymixture +
+  // l_vandera).
+  // l_vandera=.TRUE. is already set directly in paraMUSTANG_COASTAL.nml
+  // l_erosion_by_class/l_deposit_bymixture are
+  // patched in below rather than set in the shared .nml file itself,
+  // since VILAINE and VILAINE_VANDERA share that same file and must not
+  // both get switched to the V2-equivalent algorithms.
   "VILAINE_VANDERA": {
     "title": "VILAINE - MUSTANG V2 + Vandera bedload",
     "case": "COASTAL",
@@ -32,10 +35,18 @@
     "croco_files_path": "COASTAL_VILAINE_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2", "8": "2x4" },
     "cppkeys": {
-      "key_MUSTANG_V2": true,
-      "key_noTSdiss_insed": true,
+
     },
-    "patches": {},
+    "patches": {
+      "TEST_CASES/REALIST_EXAMPLES/paraMUSTANG_COASTAL.nml": [
+        {
+          "mode": "insert-after",
+          "what": "&namsedim_erosion",
+          "insert": "   l_erosion_by_class=.TRUE.",
+          "descr": "VILAINE_VANDERA: use the class-by-class (former V2) erosion algorithm",
+        }
+      ],
+    },
     "plotphy": {
       "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "croco_his.nc",

@@ -46,8 +46,8 @@
 :                   dry sediment)  (only if cppkey MUSTANG)
 :    tocd_n() : real, critical stress of deposition (N/m2)
 :    ros_n()  : real, density of particle (kg/m3)
-:    l_bedload_n() : boolean, allow bedload transport (used only if
-:                    key_MUSTANG_V2)
+:    l_bedload_n() : boolean, allow bedload transport (used only if 
+:                    l_erosion_by_class=.TRUE. in namsedim_erosion)
 :    diam_n() : real, diameter of particles (m)
 :
 :    GRAVEL substances are never in suspension (bedload only): unlike
@@ -107,7 +107,7 @@
 :    tocd_n() : real, critical stress of deposition (N/m2) 
 :    ros_n()  : real, density of particle (kg/m3)
 :    l_bedload_n() : boolean, allow bedload transport (used only if 
-:                    key_MUSTANG_V2)
+:                    l_erosion_by_class=.TRUE. in namsedim_erosion)
 :    diam_n() : diameter of particles
 :    l_sand2D() : boolean, to treat sand variable as 2D variable
 :    l_outsandrouse()  : boolean, to use a reconstitution of a ROUSE profil 

@@ -33,7 +33,6 @@
 #  define NO_BSTRESS_UPWIND
 # endif
 # ifdef MUSTANG
-#  define key_MUSTANG_V2
 #  define key_ANA_bedload
 # endif
 # define GLS_MIXING
