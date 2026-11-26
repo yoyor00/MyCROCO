@@ -29,7 +29,12 @@
      &     nrpfdiags_ek, diags_ekname, ldefdiags_ek_avg,
      &     ntsdiags_ek_avg, nwrtdiags_ek_avg, nrpfdiags_ek_avg,
      &     diags_ekname_avg
+      
+      use tools_calendar, only: tool_check_output_origin
 
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -48,7 +53,6 @@
 # ifdef NC4PAR
      &      , csize,cmode
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       character*60 text
 !
@@ -58,6 +62,7 @@
 #  define rec_per_file nrpfdiags_ek
 #  define wrt wrtdiags_ek
 #  define vidTime diags_ekTime
+#  define vidOrigin dia_ek_origin_in_sec
 #  define vidTstep diags_ekTstep
 #  define viddiags_ekHadv diags_ekHadv
 #  define viddiags_ekHdiff diags_ekHdiff
@@ -85,6 +90,7 @@
 #  define rec_per_file nrpfdiags_ek_avg
 #  define wrt wrtdiags_ek_avg
 #  define vidTime diags_ekTime_avg
+#  define vidOrigin dia_ek_avg_origin_in_sec
 #  define vidTstep diags_ekTstep_avg
 #  define viddiags_ekHadv diags_ekHadv_avg
 #  define viddiags_ekHdiff diags_ekHdiff_avg
@@ -123,7 +129,9 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
         create_new_file=ldefdiags_ek
@@ -133,13 +141,6 @@
       else
         create_new_file=.false.
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefdiags_ek
-#  else
-      create_new_file=ldefdiags_ek_avg
-#  endif
-# endif
 !
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
@@ -284,6 +285,8 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &                        NF_FOUT, ierr)
 
+
+        vidOrigin=start_date_in_sec
 ! Energy diagnostics variables.
 ! -------- ----------- --------
 !
@@ -832,6 +835,9 @@
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
 
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+
 
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
@@ -1100,6 +1106,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 # undef viddiags_ekHadv
 # undef viddiags_ekHdiff

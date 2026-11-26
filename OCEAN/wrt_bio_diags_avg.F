@@ -14,13 +14,15 @@
 ! Write time-averaged diags flux fields into averages netCDF file
                                   ! Writes requested model
       subroutine wrt_bio_diags_avg    ! fields at requested levels
-                                  ! into diagnostics netCDF file.
+                                      ! into diagnostics netCDF file.
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif                                  
       use croco_namelist, only: dianamebio_avg, nrpfdiabio_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"
@@ -97,7 +99,9 @@
 !
 C      write(*,*) 'Write Time'
       ierr=nf_put_var1_FTYPE (nciddiabio_avg, diaTimebio_avg, record,
-     &                                              timediabio_avg)
+     &                                              timediabio_avg
+     &  - dia_bio_avg_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr

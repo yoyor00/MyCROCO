@@ -25,8 +25,12 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
-      use croco_namelist, only: ldefsurf, nrpfsurf, surfname, 
+# ifdef NC4PAR
+      use mpi
+# endif
+      use croco_namelist, only: ldefsurf, nrpfsurf, surfname,
      &                         ldefsurf_avg, nrpfsurf_avg, surfname_avg
+      use tools_calendar, only: tool_check_output_origin
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -45,7 +49,6 @@
 # ifdef NC4PAR
      &      , csize,cmode
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       character*60 text
 
@@ -56,6 +59,7 @@
 #  define rec_per_file nrpfsurf
 #  define wrt wrtsurf
 #  define vidTime surfTime
+#  define vidOrigin surf_origin_in_sec
 #  define vidTstep surfTstep
 
 #  define vidsurft surf_surft
@@ -71,6 +75,7 @@
 #  define rec_per_file nrpfsurf_avg
 #  define wrt wrtsurf_avg
 #  define vidTime surfTime_avg
+#  define vidOrigin surf_avg_origin_in_sec
 #  define vidTstep surfTstep_avg
 
 #  define vidsurft surf_surft_avg
@@ -89,12 +94,16 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
         create_new_file=ldefsurf
@@ -102,19 +111,8 @@
         create_new_file=ldefsurf_avg
 #  endif
       else
-#  ifndef AVRH
         create_new_file=.false.
-#  else
-        create_new_file=.false.
-#  endif
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefsurf
-#  else
-      create_new_file=ldefsurf_avg
-#  endif
-# endif
 !
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
@@ -258,6 +256,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &                        NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 
 ! surface variables.
 ! -------- ----------- --------
@@ -529,6 +529,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
@@ -662,6 +664,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 

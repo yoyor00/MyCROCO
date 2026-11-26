@@ -38,7 +38,6 @@
 # define ANA_SST
 # define ANA_BTFLUX
 # define AVERAGES
-# define AVERAGES_K
 # undef  DIAGNOSTICS_EDDY
 
 

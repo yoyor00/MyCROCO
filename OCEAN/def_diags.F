@@ -29,7 +29,11 @@
      &     ldefdia_avg, ntsdia_avg, nwrtdia_avg, nrpfdia_avg,
      &     dianame_avg
 #endif
+      use tools_calendar, only: tool_check_output_origin
 
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -40,7 +44,6 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -58,6 +61,7 @@
 #  define rec_per_file nrpfdia
 #  define wrt3D wrtdia3D
 #  define vidTime diaTime
+#  define vidOrigin dia_origin_in_sec
 #  define vidTstep diaTstep
 !
 #  define vidTXadv diaTXadv
@@ -94,6 +98,7 @@
 #  define rec_per_file nrpfdia_avg
 #  define wrt3D wrtdia3D_avg
 #  define vidTime diaTime_avg
+#  define vidOrigin dia_avg_origin_in_sec
 #  define vidTstep diaTstep_avg
 !
 #  define vidTXadv diaTXadv_avg
@@ -136,12 +141,16 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
         create_new_file=ldefdia
@@ -149,19 +158,8 @@
         create_new_file=ldefdia_avg
 # endif
       else
-#  ifndef AVRH
         create_new_file=.false.
-#  else
-        create_new_file=.false.
-#  endif
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefdia
-#  else
-      create_new_file=ldefdia_avg
-#  endif
-# endif
 !
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
@@ -299,6 +297,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 !
 ! Tracer diagnostics variables :
 ! ------ ----------- ---------
@@ -993,6 +993,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 !
 ! Tracer flux diagnostics variables :
 ! ------ ---- ----------- ---------
@@ -1355,6 +1357,7 @@
 # undef rec_per_file
 # undef wrt3D
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 # undef vidTXadv

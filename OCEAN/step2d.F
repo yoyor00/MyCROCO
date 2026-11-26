@@ -99,11 +99,14 @@ C$    trd=omp_get_thread_num()
 !
       USE debug
       USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha ! needed when AGRIF_CONSERV_VOL
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
 # ifdef MPI
-     &         err,
+     &         err,ierr,
 # endif
 # if defined PSOURCE || defined PSOURCE_MASS
      &        is,
@@ -169,7 +172,6 @@ C$    trd=omp_get_thread_num()
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -450,6 +452,38 @@ C$OMP END MASTER
         enddo
       enddo
 # endif /* ZNUDGING */
+
+
+!
+!-----------------------------------------------------------------------
+! Apply mass point sources (volume vertical influx)
+!-----------------------------------------------------------------------
+# ifdef PSOURCE_MASS
+      do is=1,Nsrc
+#  ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+#  else
+        i=Isrc(is)
+        j=Jsrc(is)
+#  endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          zeta_new(i,j)=zeta_new(i,j)+
+     &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast
+        endif
+      enddo
+# endif
+!-----------------------------------------------------------------------
+! Apply Rain flux
+!-----------------------------------------------------------------------
+# ifdef RAIN_FLUX
+      do j=JstrV-1,Jend
+       do i=IstrU-1,Iend
+        zeta_new(i,j)=zeta_new(i,j)-EmP(i,j)*dtfast
+       enddo
+      enddo
+# endif
 !
 !-----------------------------------------------------------------------
 ! Mask land cells & ensure that total depth in masked cells is > Dcrit
@@ -558,38 +592,6 @@ C$OMP END MASTER
 ! in some cases with wetdry but not sure it is
 ! the proper fix
 C$OMP BARRIER
-# endif
-
-!-----------------------------------------------------------------------
-! Apply mass point sources (volume vertical influx) 
-!-----------------------------------------------------------------------
-!
-# ifdef PSOURCE_MASS
-      do is=1,Nsrc
-#  ifdef MPI
-        i=Isrc_mpi(is,mynode)
-        j=Jsrc_mpi(is,mynode)
-#  else
-        i=Isrc(is)
-        j=Jsrc(is)
-#  endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast 
-        endif
-      enddo
-# endif
-
-!-----------------------------------------------------------------------
-! Apply Rain flux 
-!-----------------------------------------------------------------------
-# ifdef RAIN_FLUX
-      do j=JstrR,JendR
-       do i=IstrR,IendR
-        zeta(i,j,knew)=zeta(i,j,knew)-EmP(i,j)*dtfast 
-       enddo
-      enddo
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1928,7 +1930,7 @@ C$OMP END MASTER
 # endif
         may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err)
+        call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
         stop                            !-->  EXIT
 # endif

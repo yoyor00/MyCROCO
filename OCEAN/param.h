@@ -98,6 +98,13 @@
       integer, parameter :: Agrif_lev_sedim = 0
 # endif
 
+#else /* !SOLVE3D */
+! No tracers without SOLVE3D
+      integer, parameter :: ntrc_pas = 0
+      integer, parameter :: ntrc_subs = 0
+      integer, parameter :: ntfix = 0
+      integer, parameter :: ntrc_substot = 0
+      integer, parameter :: ntrc_sed = 0
 #endif /* SOLVE3D */
 
 !

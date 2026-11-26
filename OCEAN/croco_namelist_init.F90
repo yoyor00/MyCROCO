@@ -183,9 +183,7 @@ contains
 #ifdef AVERAGES
       call init_primary_averages_fields()
 #endif
-#if defined SOLVE3D || (!defined SOLVE3D && defined RIP)
       call init_auxiliary_history_fields()
-#endif
 #if defined SOLVE3D && defined TEMPERATURE
       call init_temperature_history_fields()
 #endif
@@ -231,7 +229,7 @@ contains
 #if defined SOLVE3D && defined MORPHODYN
       call init_morphodyn_history_fields()
 #endif
-#if defined AVERAGES && defined SOLVE3D
+#ifdef AVERAGES
       call init_auxiliary_averages_fields()
 #endif
 #if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
@@ -945,11 +943,14 @@ contains
    !---------------------------------------------------------------------
    !  init_abl
    !  Adjust ablname for MPI/ENSEMBLE.
+   !  Apply default nwrtablhis = nwrt when nwrtablhis is 0.
    !---------------------------------------------------------------------
    subroutine init_abl(ierr)
-      use croco_namelist, ONLY: ablname
+      use croco_namelist, ONLY: ablname, nwrtablhis, nwrt
       implicit none
       integer, intent(inout) :: ierr
+
+      if (nwrtablhis == 0) nwrtablhis = nwrt
 
       call adjust_filename_parallel(ablname, "ablname", ierr)
       call adjust_filename_ensemble(ablname)
@@ -1365,9 +1366,9 @@ contains
       use croco_namelist, ONLY: out_his_tracer
 # endif
 #endif
-      use param, ONLY: NT
       use ncscrum, ONLY: wrthis, indxTime, indxZ, indxUb, indxVb
 #ifdef SOLVE3D
+      use param, ONLY: NT
       use ncscrum, ONLY: indxU, indxV
 #endif
       implicit none
@@ -1403,9 +1404,9 @@ contains
       use croco_namelist, ONLY: out_avg_tracer
 #  endif
 # endif
-      use param, ONLY: NT
       use ncscrum, ONLY: wrtavg, indxTime, indxZ, indxUb, indxVb
 #ifdef SOLVE3D
+      use param, ONLY: NT
       use ncscrum, ONLY: indxU, indxV
 #endif
       implicit none
@@ -1429,16 +1430,17 @@ contains
    end subroutine init_primary_averages_fields
 #endif
 
-#if defined SOLVE3D || (!defined SOLVE3D && defined RIP)
    !---------------------------------------------------------------------
    !  init_auxiliary_history_fields
-   !  SOLVE3D basics (rho, omega, w, akv) + surface stress (always).
+   !  Surface/bottom stress (always) + SOLVE3D basics (rho, omega, w, akv).
    !---------------------------------------------------------------------
    subroutine init_auxiliary_history_fields()
       use croco_namelist, ONLY: &
-         out_his_rho, out_his_omega, out_his_w, out_his_akv, &
-         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr, &
+         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
+#ifdef SOLVE3D
+      use croco_namelist, ONLY: out_his_rho, out_his_omega, out_his_w, out_his_akv, &
          out_his_z_r, out_his_z_w
+#endif
       use ncscrum, ONLY: wrthis, indxTime, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
@@ -1466,7 +1468,6 @@ contains
       if (out_his_z_r .or. out_his_z_w) wrthis(indxTime) = .true.
 #endif
    end subroutine init_auxiliary_history_fields
-#endif
 
 #if defined SOLVE3D && defined TEMPERATURE
    subroutine init_temperature_history_fields()
@@ -1628,30 +1629,26 @@ contains
    end subroutine init_morphodyn_history_fields
 # endif
 
-#if defined AVERAGES && defined SOLVE3D
+#ifdef AVERAGES
    !---------------------------------------------------------------------
    !  init_auxiliary_averages_fields
-   !  SOLVE3D basics (rho, omega, w, akv) + surface stress.
+   !  Surface/bottom stress (always) + SOLVE3D basics (rho, omega, w, akv).
    !---------------------------------------------------------------------
    subroutine init_auxiliary_averages_fields()
       use croco_namelist, ONLY: &
-         out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
-         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr, &
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
+#ifdef SOLVE3D
+      use croco_namelist, ONLY: out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
          out_avg_z_r, out_avg_z_w
+#endif
       use ncscrum, ONLY: wrtavg, indxTime, &
-                         indxR, indxO, indxW, indxAkv, indxZ_r, indxZ_w, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
+#ifdef SOLVE3D
+      use ncscrum, ONLY: indxR, indxO, indxW, indxAkv, indxZ_r, indxZ_w
+#endif
       implicit none
 
-      wrtavg(indxR) = out_avg_rho
-      wrtavg(indxO) = out_avg_omega
-      wrtavg(indxW) = out_avg_w
-      wrtavg(indxAkv) = out_avg_akv
-      if (out_avg_rho .or. out_avg_omega .or. out_avg_w .or. out_avg_akv) wrtavg(indxTime) = .true.
-      wrtavg(indxZ_r) = out_avg_z_r
-      wrtavg(indxZ_w) = out_avg_z_w
-      if (out_avg_z_r .or. out_avg_z_w) wrtavg(indxTime) = .true.
       wrtavg(indxBostr) = out_avg_bostr
       wrtavg(indxBustr) = out_avg_bustr
       wrtavg(indxBvstr) = out_avg_bvstr
@@ -1660,6 +1657,16 @@ contains
       wrtavg(indxVWstr) = out_avg_vstr
       if (out_avg_bostr .or. out_avg_bustr .or. out_avg_bvstr .or. &
           out_avg_wstr .or. out_avg_ustr .or. out_avg_vstr) wrtavg(indxTime) = .true.
+#ifdef SOLVE3D
+      wrtavg(indxR) = out_avg_rho
+      wrtavg(indxO) = out_avg_omega
+      wrtavg(indxW) = out_avg_w
+      wrtavg(indxAkv) = out_avg_akv
+      if (out_avg_rho .or. out_avg_omega .or. out_avg_w .or. out_avg_akv) wrtavg(indxTime) = .true.
+      wrtavg(indxZ_r) = out_avg_z_r
+      wrtavg(indxZ_w) = out_avg_z_w
+      if (out_avg_z_r .or. out_avg_z_w) wrtavg(indxTime) = .true.
+#endif
    end subroutine init_auxiliary_averages_fields
 #endif
 
@@ -2211,8 +2218,8 @@ contains
 #ifdef AGRIF
       use Agrif_Util
 #endif
-#include "nc_sta.h"
       implicit none
+#include "nc_sta.h"
 #ifdef AGRIF
       if (.not. Agrif_Root()) return
 #endif

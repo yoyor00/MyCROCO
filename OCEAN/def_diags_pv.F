@@ -31,7 +31,11 @@
      &     ntsdiags_pv_avg, nwrtdiags_pv_avg, nrpfdiags_pv_avg,
      &     diags_pvname_avg
 #endif
+      use tools_calendar, only: tool_check_output_origin
 
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -42,7 +46,6 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -64,6 +67,7 @@
 #  define rec_per_file nrpfdiags_pv
 #  define wrt wrtdiags_pv
 #  define vidTime diags_pvTime
+#  define vidOrigin dia_pv_origin_in_sec
 #  define vidTstep diags_pvTstep
 
 #  ifdef DIAGNOSTICS_PV_FULL
@@ -79,6 +83,7 @@
 #  define rec_per_file nrpfdiags_pv_avg
 #  define wrt wrtdiags_pv_avg
 #  define vidTime diags_pvTime_avg
+#  define vidOrigin dia_pv_avg_origin_in_sec
 #  define vidTstep diags_pvTstep_avg
 
 #  ifdef DIAGNOSTICS_PV_FULL
@@ -98,12 +103,16 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
          create_new_file=ldefdiags_pv
@@ -111,19 +120,8 @@
          create_new_file=ldefdiags_pv_avg
 #  endif
       else
-#  ifndef AVRH
         create_new_file=.false.
-#  else
-        create_new_file=.false.
-#  endif
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefdiags_pv
-#  else
-      create_new_file=ldefdiags_pv_avg
-#  endif
-# endif
 
 !
       if (ncid.ne.-1) create_new_file=.false.
@@ -270,6 +268,8 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
+        vidOrigin=start_date_in_sec
+!
 ! PV diagnostics variables.
 ! -------- ----------- --------
 
@@ -538,7 +538,9 @@
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
 
-
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+!
 ! momentum flux diagnostics variables :
 ! -------- ---- ----------- ----------
 
@@ -667,6 +669,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 # ifdef DIAGNOSTICS_PV_FULL

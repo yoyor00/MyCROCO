@@ -21,11 +21,13 @@
       subroutine wrt_diags_eddy_avg
 
       USE croco_namelist, ONLY: nrpfdiags_eddy_avg, diags_eddyname_avg
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"
@@ -102,7 +104,9 @@
 ! Averaged diag Time
 !
       ierr=nf_put_var1_FTYPE (nciddiags_eddy_avg, diags_eddyTime_avg,
-     &                       record, timediags_eddy_avg)
+     &                       record, timediags_eddy_avg
+     & - dia_eddy_avg_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr

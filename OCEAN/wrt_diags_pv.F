@@ -21,11 +21,13 @@
       subroutine wrt_diags_pv
 
       USE croco_namelist, ONLY: nrpfdiags_pv, diags_pvname
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"
@@ -102,7 +104,9 @@
 !
 ! Time
 !
-      ierr=nf_put_var1_FTYPE (nciddiags_pv, diags_pvTime, record, time)
+      ierr=nf_put_var1_FTYPE (nciddiags_pv, diags_pvTime, record, time
+     &  - dia_pv_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr

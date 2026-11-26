@@ -39,6 +39,7 @@
 #ifdef AVERAGES
       USE croco_namelist, ONLY: nrpfavg, avgname
 #endif
+      USE tools_calendar, ONLY: tool_check_output_origin
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,
@@ -52,7 +53,9 @@
       USE stoarray        ! Stochastic arrays and options
       USE stoalloc        ! Stochastic working arrays
 #endif
-
+#ifdef NC4PAR
+      use mpi
+#endif
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -79,7 +82,6 @@
 #include "netcdf.inc"
 #ifdef NC4PAR
 # include "mpi_cpl.h"
-      include 'mpif.h'
 #endif
       character*70 text
 
@@ -88,6 +90,7 @@
 # define rec_per_file nrpfhis
 # define wrt wrthis
 # define vidTime hisTime
+# define vidOrigin his_origin_in_sec
 # define vidTstep hisTstep
 # define vidZ hisZ
 # define vidUb hisUb
@@ -172,6 +175,7 @@
 # define rec_per_file nrpfavg
 # define wrt wrtavg
 # define vidTime avgTime
+# define vidOrigin avg_origin_in_sec
 # define vidTstep avgTstep
 # define vidZ avgZ
 # define vidUb avgUb
@@ -338,15 +342,14 @@
 ! is created.
 !
 
-#ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
         create_new_file=ldefhis
       else
         create_new_file=.false.
       endif
-#else
-      create_new_file=ldefhis
-#endif
       if (ncid.ne.-1) create_new_file=.false.
 #if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
@@ -498,6 +501,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 
 !=======================================================================
 !
@@ -2799,6 +2804,8 @@
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 #endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 
 !
 ! Free-surface.
@@ -3894,6 +3901,7 @@
 #undef rec_per_file
 #undef wrt
 #undef vidTime
+#undef vidOrigin
 #undef vidTstep
 #undef vidZ
 #undef vidUb

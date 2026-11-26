@@ -5,12 +5,14 @@ MODULE lib_mpp
 #if defined key_pisces
 
    use scalars
+# if defined MPI
+   use mpi
+# endif
 
    IMPLICIT NONE
    PUBLIC
 
 # if defined MPI
-  include 'mpif.h'
 # include "mpi_cpl.h"
 # endif
 

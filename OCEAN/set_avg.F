@@ -291,6 +291,39 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+        if (wrtavg(indxAkv)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Akv_avg(i,j,k)=cff*(cff1*Akv_avg(i,j,k)+Akv(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+#   ifdef TEMPERATURE
+        if (wrtavg(indxAkt)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Akt_avg(i,j,k,itemp)=cff*(cff1*Akt_avg(i,j,k,itemp)
+     &                                        +Akt(i,j,k,itemp))
+              enddo
+            enddo
+          enddo
+        endif
+#   endif
+#   ifdef SALINITY
+        if (wrtavg(indxAks)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Akt_avg(i,j,k,isalt)=cff*(cff1*Akt_avg(i,j,k,isalt)
+     &                                        +Akt(i,j,k,isalt))
+              enddo
+            enddo
+          enddo
+        endif
+#   endif
 #  if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         if (wrtavg(indxbvf)) then
@@ -437,9 +470,14 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
+#   ifdef RAIN_FLUX
+              stflx_avg(i,j,isalt)=cff*(cff1*stflx_avg(i,j,isalt)+
+     &                               stf_cff*EmP(i,j) )
+#   else
               stflx_avg(i,j,isalt)=cff*(cff1*stflx_avg(i,j,isalt)+
      &                               stf_cff*stflx(i,j,isalt) /
      &               ( max(eps,t(i,j,N,nstp,isalt)) ) )
+#   endif
             enddo
           enddo
         endif
@@ -544,41 +582,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  endif
-#  ifdef AVERAGES_K
-        if (wrtavg(indxAkv)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akv_avg(i,j,k)=cff*(cff1*Akv_avg(i,j,k)+Akv(i,j,k))
-              enddo
-            enddo
-          enddo
-        endif
-#   ifdef TEMPERATURE
-        if (wrtavg(indxAkt)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akt_avg(i,j,k,itemp)=cff*(cff1*Akt_avg(i,j,k,itemp)
-     &                                        +Akt(i,j,k,itemp))
-              enddo
-            enddo
-          enddo
-        endif
-#   endif
-#   ifdef SALINITY
-        if (wrtavg(indxAks)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akt_avg(i,j,k,isalt)=cff*(cff1*Akt_avg(i,j,k,isalt)
-     &                                        +Akt(i,j,k,isalt))
-              enddo
-            enddo
-          enddo
-        endif
-#   endif
 #  endif
 #  if defined BIOLOGY && !defined PISCES
         if (wrtavg(indxHel)) then

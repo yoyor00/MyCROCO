@@ -581,6 +581,9 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       USE croco_namelist, ONLY: testcase_name
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -598,7 +601,6 @@ C$    integer  trd, omp_get_thread_num
       real*QUAD mssh,area,cff1
 #  ifdef MPI
 #   include "mpi_cpl.h"
-      include 'mpif.h'
       integer ierr
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 #  endif
@@ -901,7 +903,7 @@ c
 #   ifdef RAIN_FLUX  
         do j=JstrR,JendR
           do i=IstrR,IendR
-            !set a value in cm/day , converson is done in m/s
+            !set a value in cm/day , conversion is done in m/s
             EmP(i,j)=-0.1*0.01/86400.
           enddo
         enddo
@@ -1628,6 +1630,9 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       USE croco_namelist, ONLY: testcase_name
+# ifdef MPI
+      use mpi
+# endif
       implicit none
       real wamp,wdir,wprd,
      &     ho,khd,kh,kw,kr,ks,wday,ramp,cff,co,gamw,
@@ -1639,6 +1644,10 @@ C$    integer  trd, omp_get_thread_num
 # include "forces.h"
 # include "ocean3d.h"
 # include "scalars.h"
+# ifdef MPI
+#  include "mpi_cpl.h"
+      integer ierr
+# endif
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif

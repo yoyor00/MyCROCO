@@ -33,6 +33,9 @@ MODULE initMUSTANG
     !! * Modules used
     USE comMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
+#if defined key_MUSTANG_V2
+    USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
+#endif
     USE comsubstance
     USE module_substance
     USE croco_namelist, ONLY : sedname_must, rho0, testcase_name
@@ -94,8 +97,13 @@ CONTAINS
     CHARACTER(len=lchain) :: filepc_user
     INTEGER               :: lstr
     INTEGER               :: lenstr
-    REAL(KIND=rsh)        :: sommud, cvolgrvsan
+    REAL(KIND=rsh)        :: sommud, cvolgrvsan, cvolp
     LOGICAL :: l_0Dcase
+#ifdef key_MUSTANG_V2
+    REAL(KIND=rsh)        :: mass_tot, poro_mud_new, crel_mud_new, poro_kij
+    REAL(KIND=rsh),DIMENSION(nvpc) :: frac_sed
+    REAL(KIND=rsh),DIMENSION(1:nvp) :: mass_sed
+#endif
 
     ierrorlog = stdout
     iwarnlog = stdout
@@ -161,7 +169,7 @@ CONTAINS
     ELSE
         CALL MUSTANG_init_fromfile
     END IF
-      
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Porosity estimation
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -186,7 +194,16 @@ CONTAINS
 
             DO k=ksmi(i,j),ksma(i,j)
                 c_sedtot(k,i,j)=SUM(cv_sed(igrav1:imud2,k,i,j))
-                poro(k,i,j)=1.0_rsh - c_sedtot(k,i,j)/ros(1)
+                ! porosity re-derived from cv_sed/dzs exactly as
+                ! sed_MUSTANG_fusion does it (per-class density, not a
+                ! single ros(1) for the whole mix): this must hold on
+                ! both cold start and restart, since poro/poro_mud/
+                ! crel_mud are not themselves saved in the restart file
+                cvolp=0.0_rsh
+                DO iv=1,nvp
+                    cvolp=cvolp+cv_sed(iv,k,i,j)*typart(iv)/ros(iv)
+                ENDDO
+                poro(k,i,j)=1.0_rsh - cvolp
 #ifdef key_MUSTANG_V2
                 sommud=0.0_rsh
                 DO iv=imud1,imud2
@@ -197,7 +214,25 @@ CONTAINS
                     cvolgrvsan=cvolgrvsan+cv_sed(iv,k,i,j)/ros(iv)
                 ENDDO
                 crel_mud(k,i,j)=sommud/(1.0_rsh-cvolgrvsan)
-                poro_mud(k,i,j)=1.0_rsh - crel_mud(k,i,j)/ros(1)
+                IF (crel_mud(k,i,j)==0.0_rsh) THEN
+                    poro_mud_new=0.0_rsh
+                ELSE
+                    poro_mud_new=1.0_rsh - crel_mud(k,i,j)/ros(1)
+                ENDIF
+                crel_mud_new=crel_mud(k,i,j)
+
+                mass_tot=0.0_rsh
+                DO iv=igrav1,imud2
+                    mass_sed(iv)=cv_sed(iv,k,i,j)*dzs(k,i,j)
+                    mass_tot=mass_tot+mass_sed(iv)
+                ENDDO
+                DO iv=igrav1,imud2
+                    frac_sed(iv)=mass_sed(iv)/mass_tot
+                ENDDO
+                CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud_new, &
+                           crel_mud_new, poro_kij)
+                poro(k,i,j)=poro_kij
+                poro_mud(k,i,j)=poro_mud_new
 #endif
             ENDDO
           ELSE
@@ -529,7 +564,7 @@ CONTAINS
     ENDDO
 
     ! homogeneous sand density
-    IF (isand1 > 0) THEN
+    IF (nv_sand > 0) THEN
        iv=isand1
        ros_sand_homogen=ros(iv)
     ENDIF
@@ -847,7 +882,7 @@ CONTAINS
             tot_csed_init=tot_csed_init+cini_sed(iv)              
         ENDDO
 
-        IF( abs(tot_csed_init - 1.0_rsh) > epsilon_MUSTANG ) THEN
+        IF( nvpc > 0 .AND. abs(tot_csed_init - 1.0_rsh) > epsilon_MUSTANG ) THEN
             MPI_master_only WRITE(ierrorlog,*)' '
             MPI_master_only WRITE(ierrorlog,*)' inital concentrations of constitutive particulate matter'
             MPI_master_only WRITE(ierrorlog,*)' have not been well defined'
@@ -856,13 +891,13 @@ CONTAINS
             MPI_master_only WRITE(ierrorlog,*)' : the sum of all must be =1 and it is :'
             MPI_master_only WRITE(ierrorlog,*)  tot_csed_init
             MPI_master_only WRITE(ierrorlog,*)' difference with 1 is :'
-            MPI_master_only WRITE(ierrorlog,*)  abs(tot_csed_init - 1.0_rsh) 
-            STOP   
-        ELSE
+            MPI_master_only WRITE(ierrorlog,*)  abs(tot_csed_init - 1.0_rsh)
+            STOP
+        ELSE IF (nvpc > 0) THEN
             DO iv=1,nvpc
                 ! force fraction sum to equal 1.
-                cini_sed(iv) = cini_sed(iv)/tot_csed_init            
-            ENDDO    
+                cini_sed(iv) = cini_sed(iv)/tot_csed_init
+            ENDDO
         ENDIF
       
         WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
@@ -2079,8 +2114,8 @@ CONTAINS
     epn_bottom_MUSTANG(GLOBAL_2D_ARRAY) = 0.0_rsh
     sal_bottom_MUSTANG(GLOBAL_2D_ARRAY) = 0.0_rsh
     temp_bottom_MUSTANG(GLOBAL_2D_ARRAY) = 0.0_rsh
-    cw_bottom_MUSTANG(nv_tot,GLOBAL_2D_ARRAY) = 0.0_rsh
-    ws3_bottom_MUSTANG(nvp,GLOBAL_2D_ARRAY) = 0.0_rsh
+    cw_bottom_MUSTANG(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+    ws3_bottom_MUSTANG(:,GLOBAL_2D_ARRAY) = 0.0_rsh
     roswat_bot(GLOBAL_2D_ARRAY) = 0.0_rsh
     IF (l_diss_insed) THEN
        ALLOCATE(phitemp_s(GLOBAL_2D_ARRAY))

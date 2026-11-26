@@ -23,11 +23,13 @@
 #endif
 
 
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"
@@ -103,7 +105,7 @@
 ! Time
 !
       ierr=nf_put_var1_FTYPE (nciddia, diaTime, record, time
-     &  - start_date_in_sec
+     &  - dia_origin_in_sec
      & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))

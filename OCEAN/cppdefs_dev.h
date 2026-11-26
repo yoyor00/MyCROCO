@@ -601,17 +601,17 @@
     PSOURCE / PSOURCE_NCFILE option
 ======================================================================
 */
+#if defined PSOURCE_NCFILE
+# ifndef PSOURCE_MASS
+#  define PSOURCE
+# endif
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS
 # define ANA_PSOURCE  /* ON: set vertical profil for qbar */
 # undef RIVER_RAMP
 #endif
 #ifdef PSOURCE_MASS
 # undef PSOURCE
-#endif
-#if defined PSOURCE_NCFILE
-# define PSOURCE
-# define ANA_PSOURCE
-# undef RIVER_RAMP
 #endif
 
 /*
@@ -982,9 +982,6 @@
 
 #endif /* AGRIF */
 
-#if defined AGRIF && defined EXACT_RESTART
-# error "AGRIF with EXACT_RESTART is not yet implemented"
-#endif
 
 #if defined AGRIF && defined XIOS && \
       ( defined OA_COUPLING || defined OW_COUPLING )
@@ -1038,7 +1035,6 @@
 ======================================================================
 */
 #ifndef SOLVE3D
-# undef AVERAGES_K
 # undef TRACERS
 # undef TEMPERATURE
 # undef SALINITY

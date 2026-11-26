@@ -269,9 +269,7 @@ CONTAINS
       ilc = 1+iic-nit000 ! number of time step since restart
       IF( iic > nit000 ) THEN
          IF( MOD( ilc-1, nitrst ) == 0  &
-#ifdef EXACT_RESTART
      &                      .OR. MOD(ilc,nitrst) == 0  &
-#endif
      &                      )  THEN
 #if defined PISCES
 ! need the CPP key to avoid compilation error
@@ -1234,6 +1232,9 @@ CONTAINS
 
       SUBROUTINE p4z_rst_wri      ! variables into restart
                                   ! netCDF file.
+#if defined MPI & !defined PARALLEL_FILES
+      use mpi
+#endif
 # include "netcdf.inc"
 
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
@@ -1254,7 +1255,6 @@ CONTAINS
 
 
 #if defined MPI & !defined PARALLEL_FILES
-      INCLUDE 'mpif.h'
       INTEGER status(MPI_STATUS_SIZE), blank
 #endif
 

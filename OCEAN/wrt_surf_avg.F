@@ -21,11 +21,13 @@
 !
       subroutine wrt_surf_avg
       use croco_namelist, only: surfname_avg, nrpfsurf_avg
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
+      use mpi
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"
@@ -97,7 +99,7 @@
 !
       ierr=nf_put_var1_FTYPE (ncidsurf_avg, surfTime_avg,
      &                       record, timesurf_avg
-     &  - start_date_in_sec
+     &  - surf_avg_origin_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))

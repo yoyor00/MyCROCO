@@ -446,10 +446,6 @@
           shflx_rlw(i,j)=hflw
         ENDDO !<-- terminate i-loop
       ENDDO   !<-- terminate j-loop
-!----------------------
-      nt_n = 1 + MOD( iic  , 2)
-      nt_a = 1 + MOD( iic+1, 2)
-!----------------------
       return
       end
 #else

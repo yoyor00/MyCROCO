@@ -70,15 +70,18 @@ contains
    !    - each phase remains independently readable / testable
    !---------------------------------------------------------------------
    subroutine read_nml(ierr)
-      use param, ONLY: stdout, NT
+      use param, ONLY: stdout
+#if defined SOLVE3D
+      use param, ONLY: NT
+# if defined SEDIMENT
+      use param, ONLY: NST
+# endif
+#endif
 #ifdef DIAGNOSTICS_BIO
       use param, ONLY: NumFluxTerms, NumVSinkTerms
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       use param, ONLY: NumGasExcTerms
 # endif
-#endif
-#if defined SOLVE3D && defined SEDIMENT
-      use param, ONLY: NST
 #endif
       use croco_namelist
       use croco_namelist_check, ONLY: check_all
@@ -98,7 +101,7 @@ contains
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ndtfast, ninfo, m2filter_alpha
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
-      namelist /croco_initial/ nrrec, ininame
+      namelist /croco_initial/ nrrec, ininame, lresetrec
       namelist /croco_restart/ nrst, nrpfrst, rstname
 #ifdef NBQ
       namelist /croco_time_stepping_nbq/ csound_nbq, visc2_nbq
@@ -346,10 +349,11 @@ contains
       namelist /croco_surf_average_fields/ out_avg_surf
 # endif
 #endif
-# if defined SOLVE3D || defined RIP
       namelist /croco_auxiliary_history_fields/ &
+         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
+# ifdef SOLVE3D
+      namelist /croco_auxiliary_history_3d_fields/ &
          out_his_rho, out_his_omega, out_his_w, out_his_akv, &
-         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr, &
          out_his_z_r, out_his_z_w
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
@@ -397,10 +401,13 @@ contains
 # if defined SOLVE3D && defined MORPHODYN
       namelist /croco_morphodyn_history_fields/ out_his_hm
 # endif
-# if defined AVERAGES && defined SOLVE3D
+# ifdef AVERAGES
       namelist /croco_auxiliary_averages_fields/ &
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
+# endif
+# if defined AVERAGES && defined SOLVE3D
+      namelist /croco_auxiliary_averages_3d_fields/ &
          out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
-         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr, &
          out_avg_z_r, out_avg_z_w
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
@@ -652,8 +659,7 @@ contains
 
       MPI_master_only write (stdout, *) '*** READING NAMELIST ***'
 
-      ! Open the namelist file; if absent, fall back to default values
-      ! for all parameters (non-fatal: the model can still run).
+      ! Open the namelist file; stop with a clear error if absent.
       ! newunit= lets the compiler pick a free unit number automatically.
       ! open (newunit=nmlunit, file=trim(fname_nml), status='old', &
       !       action='read', iostat=ios)
@@ -663,9 +669,9 @@ contains
       open (unit=nmlunit, file=trim(fname_nml), status='old', &
             action='read', iostat=ios)
       if (ios /= 0) then
-         MPI_master_only write (stdout, *) &
-            'WARNING: namelist file not found: ', trim(fname_nml)
-         MPI_master_only write (stdout, *) 'Using default values.'
+         MPI_master_only write (stdout, '(3a)') &
+            'Error - namelist file not found: "', trim(fname_nml), '".'
+         ierr = ierr + 1
          return
       end if
 
@@ -1340,6 +1346,18 @@ contains
             ierr = ierr + 1
          end if
       end if
+# ifdef SOLVE3D
+      ! --- croco_auxiliary_history_3d_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_auxiliary_history_3d_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_auxiliary_history_3d_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_auxiliary_history_3d_fields (parse error)", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_3d_fields)
+            ierr = ierr + 1
+         end if
+      end if
+# endif
       ! --- history: per-physics optional blocks (14 blocks) ---
 # if defined SOLVE3D && defined TEMPERATURE
       call check_nml_presence(nmlunit, "croco_temperature_history_fields", .false., found, ierr)
@@ -1471,12 +1489,21 @@ contains
       end if
 # endif
       ! --- averages: per-physics optional blocks (15 blocks) ---
-# if defined AVERAGES && defined SOLVE3D
+# ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_auxiliary_averages_fields", .false., found, ierr)
       if (found) then
          read (nmlunit, nml=croco_auxiliary_averages_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_fields", nmlunit, ios, iomsg)
             MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
+            ierr = ierr + 1; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D
+      call check_nml_presence(nmlunit, "croco_auxiliary_averages_3d_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_auxiliary_averages_3d_fields, iostat=ios, iomsg=iomsg); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_3d_fields", nmlunit, ios, iomsg)
+            MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_3d_fields)
             ierr = ierr + 1; end if
       end if
 # endif
@@ -2525,14 +2552,20 @@ contains
 #if defined ANA_PSOURCE
 # if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       MPI_master_only WRITE (stdout, nml=croco_psource)
+      ! The per-source arrays are zero-sized when psource_Nsrc = 0.  Writing
+      ! such a namelist group aborts on some gfortran versions (the runtime
+      ! trips over the zero-size descriptor), so only echo it when there is at
+      ! least one source.
+      if (psource_Nsrc > 0) then
 #  ifdef PSOURCE_NCFILE
-      MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
+         MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
 #  else
-      MPI_master_only WRITE (stdout, nml=croco_psource_data)
+         MPI_master_only WRITE (stdout, nml=croco_psource_data)
 #  endif
 #  ifdef TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
+         MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
 #  endif
+      end if
 # endif
 #endif
 #ifdef SEDIMENT
@@ -2560,8 +2593,9 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_primary_history_tracer_fields)
 # endif
 #endif
-#if defined SOLVE3D || defined RIP
       MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_fields)
+#ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_3d_fields)
 #endif
 #if defined SOLVE3D && defined TEMPERATURE
       MPI_master_only WRITE (stdout, nml=croco_temperature_history_fields)
@@ -2680,8 +2714,11 @@ contains
 #  endif
 # endif
 #endif
-#if defined AVERAGES && defined SOLVE3D
+#ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_3d_fields)
 #endif
 #if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
       MPI_master_only WRITE (stdout, nml=croco_temperature_averages_fields)
@@ -2866,7 +2903,10 @@ contains
    !  closing it, which avoids any risk of double-close.
    !---------------------------------------------------------------------
    subroutine fatal_nml_error(nml_name, nmlunit, ios, iomsg)
-      use param, ONLY: stdout, NT
+      use param, ONLY: stdout
+#if defined SOLVE3D
+      use param, ONLY: NT
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       use croco_namelist, ONLY: psource_Nsrc
 #endif
@@ -2935,10 +2975,12 @@ contains
       if (looks_like_array) then
          MPI_master_only write (stdout, '(a)') &
             '  -> this assigns an array'
+#if defined SOLVE3D
          MPI_master_only write (stdout, '(a,i0,a)') &
             '  -> if it is sized per-tracer '// &
             '(like tnu2, tnu4, Akt_bak), it must have exactly NT = ', NT, &
             ' values.'
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
          MPI_master_only write (stdout, '(a,i0,a)') &
             '  -> if it is sized per river/point-source '// &
