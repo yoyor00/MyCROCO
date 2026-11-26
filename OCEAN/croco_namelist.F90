@@ -434,7 +434,7 @@ MODULE croco_namelist
 
 #ifdef LAGRANGIAN
    ! &croco_lagrangian
-   character(len=180) :: lagrangianname = "lagrangian_traj.txt"
+   character(len=180) :: lagrangianname = "lagrangian_paralag.txt"
    !! Lagrangian parameters input file.
 #endif
 
