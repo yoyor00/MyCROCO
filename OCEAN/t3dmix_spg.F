@@ -699,8 +699,7 @@
 !
 # if defined DIAGNOSTICS_TS_MLD
         call get_diagTS_over_mld(Istr,Iend,Jstr,Jend,
-     &                    itrc,FX,FE,4,
-     &                    mld_turb,mld_dens,mld_temp)
+     &                    itrc,FX,FE,4)
 #  endif /* DIAGNOSTICS_TS_MLD */
 # endif /* DIAGNOSTICS_TS */
 !

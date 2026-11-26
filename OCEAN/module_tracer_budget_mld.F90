@@ -47,8 +47,7 @@
 !==========================================================================
 !==========================================================================
        subroutine get_diagTS_over_mld(Istr,Iend,Jstr,Jend, &
-                  itrc,T_mld_nnew,T_mld_nstp,mode, &
-                  mld_turb_local,mld_dens_local,mld_temp_local)
+                  itrc,T_mld_nnew,T_mld_nstp,mode)
 !--------------------------------------------------------------------------
 ! Purposes : main routine to get TS diagnostics integrated over MLD
 !            3 steps : (1) get mld and vertical index of mld
@@ -61,10 +60,7 @@
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         integer, intent(in) :: mode
-        real, intent(inout) :: mld_turb_local(GLOBAL_2D_ARRAY), &
-                               mld_dens_local(GLOBAL_2D_ARRAY), &
-                               mld_temp_local(GLOBAL_2D_ARRAY)
-        real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
+        real, intent(inout) :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
                 T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
 
         ! Local declarations
@@ -77,10 +73,8 @@
                    kmld_dens(PRIVATE_2D_SCRATCH_ARRAY), &
                    kmld_temp(PRIVATE_2D_SCRATCH_ARRAY)
 
-
         call get_mld_idx(Istr,Iend,Jstr,Jend, &
-                kmld_turb,kmld_dens,kmld_temp, &
-                mld_turb_local,mld_dens_local,mld_temp_local)
+                kmld_turb,kmld_dens,kmld_temp)
 
         if (mld_crit_type == 'turbulence') then
                 kmld_integ = kmld_turb
@@ -108,17 +102,13 @@
 !==========================================================================
 !==========================================================================
        subroutine get_mld_idx(Istr,Iend,Jstr,Jend, &
-                       kmld_turb,kmld_dens,kmld_temp, &
-                       mld_turb_local,mld_dens_local,mld_temp_local)
+                       kmld_turb,kmld_dens,kmld_temp)
 !--------------------------------------------------------------------------
 ! Purposes : - get the mld and mld vertical index using the three 
 !              criteria: turbulence, density and temperature
 !--------------------------------------------------------------------------
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend
-        real, intent(inout) :: mld_turb_local(GLOBAL_2D_ARRAY), &
-                               mld_dens_local(GLOBAL_2D_ARRAY), &
-                               mld_temp_local(GLOBAL_2D_ARRAY)
         ! Local declarations
         integer :: kmld_turb(PRIVATE_2D_SCRATCH_ARRAY), &
                    kmld_dens(PRIVATE_2D_SCRATCH_ARRAY), &
@@ -126,13 +116,13 @@
 
         call idx_mld_density(Istr,Iend,Jstr,Jend, &
             mld_crit_D,mld_depth_ref, &
-            kmld_dens,mld_dens_local)
+            kmld_dens,mld_dens)
         call idx_mld_temperature(Istr,Iend,Jstr,Jend, &
             mld_crit_T,mld_depth_ref, &
-            kmld_temp,mld_temp_local)
+            kmld_temp,mld_temp)
         call idx_mld_turbulence(Istr,Iend,Jstr,Jend, & 
             mld_crit_AKt,mld_depth_ref, &
-            kmld_turb,mld_turb_local) 
+            kmld_turb,mld_turb) 
        end subroutine get_mld_idx
 
 !==========================================================================
@@ -243,7 +233,7 @@
 !--------------------------------------------------------------------------
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
-        real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
+        real, intent(inout) :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
                 T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
         integer,intent(in) :: kmld_integ(PRIVATE_2D_SCRATCH_ARRAY)
         ! Local declarations
