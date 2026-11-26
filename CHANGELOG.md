@@ -144,6 +144,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : useless sponge option in croco.in.1 (#436)
   
 - SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
+- SCRIPTS: create_config.bash -f no longer asks to overwrite an existing work
+  directory, so non-interactive runs do not block on stdin
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
