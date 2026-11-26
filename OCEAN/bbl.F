@@ -100,7 +100,6 @@
 # include "scalars.h"
 # if defined ANA_BSEDIM || defined SEDIMENT
 #  include "sediment.h"
-#  define SKINSTRESS_2D
 #  if defined SKINSTRESS_2D
       real    Umag_bar(PRIVATE_2D_SCRATCH_ARRAY),
      &          Ur_bar(PRIVATE_2D_SCRATCH_ARRAY),
@@ -123,28 +122,32 @@
       logical SAND, SILT
       integer Iend, Istr, Jend, Jstr, i, ised, j, k
       integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
-      real    Ab, anglec, anglew, Cdrag1, Cdrag2,
-     &        Fwave, Kbh, Kbh2, Kdh, phic, phicw,
-     &        d50, rhosed, rhow, smgd, osmgd, D, mu_w,
-     &        tau_cb, tau_ex, tau_bf, tau_up, tau_en,
-     &        tau_w, tau_ws, tau_c, tau_cs, tau_cw, tau_cws,
-     &        tau_cws_max, thetw, twopi, Ucur, Vcur, Ubc, visk,
-     &        znots, znot, znota, znot_bl, znot_rip,
-     &        eps, zomin, zomax, depth, Ut, sinh_maxarg
+      integer icase
+      real    d50, rhosed, tau_cb, rhow, smgd, osmgd, mu_w,
+     &        visk
+      real    Ab, Fwave, Kbh, Kbh2, Kdh, Ut, sinh_maxarg,
+     &        Ubc
+      real    Ucur, Vcur, depth
+      real    znots, znota, Cdrag1, Cdrag2, tau_c, tau_w, phic, phicw,
+     &        tau_cw, tau_cs, tau_ws, tau_cws, tau_cws_max
+      real    anglec, anglew
+      real    eps, twopi
       parameter
      &       (Ubc   = 1.e-2,  ! minimum orbital velocity for waves
      &        eps   = 1.e-10, ! small number to avoid zero division
-     &        zomin = 1.e-5,  ! minimum roughness
-     &        zomax = 3.e-2,   ! maximum roughness
      &        sinh_maxarg = 700) ! SINH maximum arg value
 # ifdef Z0_RIP
       real    rhgt, rlen, rhmax, rhmin, rlmin, psi,
-     &        rhbio, rlbio, rhbiomax, rhfac
+     &        rhbio, rlbio, rhbiomax, rhfac, zomin, zomax
       parameter (
      &        rhmin = 1.e-4,      ! minimum ripple height [m]
      &        rlmin = rhmin/0.12, ! minimum ripple length [m]
      &        rhbiomax = 6.e-3,   ! maximum biogenic ripple height [m]
-     &        rhfac = 0.0164)     ! biogenic ripple factor
+     &        rhfac = 0.0164,     ! biogenic ripple factor
+     &        zomin = 1.e-5,      ! minimum roughness
+     &        zomax = 3.e-2)      ! maximum roughness
+      real    znot_rip, znot_t, tau_ct, tau_wt, tau_cwt, tau_cwt_max,
+     &        thetw, tau_ex
 # endif
       real       taucw(PRIVATE_2D_SCRATCH_ARRAY),
      &        taucwmax(PRIVATE_2D_SCRATCH_ARRAY),
@@ -400,7 +403,7 @@
 !  Max mobility number
             psi=osmgd*(1.27*Ub(i,j))**2
 !  Compute ripple dimensions
-            CALL rip_dim_VA2013(psi, d50, rhgt, rlen)
+            call rip_dim_VA2013(psi, d50, rhgt, rlen)
             rhgt=max(rhmin,rhgt*Ab)  ! height (m)
             rlen=max(rlmin,rlen*Ab)  ! length (m)
 #   else
@@ -427,7 +430,7 @@
             rhmax=0.25*rlen
             rhgt=max(min(rhmax,rhgt),rhmin)
             icase=1
-            CALL rip_dim_LIAMOS(d50, smgd, visk, tau_cb,
+            call rip_dim_LIAMOS(d50, smgd, visk, tau_cb,
      &                          tau_cs, tau_ws,
      &                          tau_cws_max, tau_cwt_max,
      &                          rhgt, rlen, icase)
@@ -480,7 +483,7 @@
             tau_ws = 0.
             tau_cws_max = tau_cs
             tau_cwt_max = tau_cs
-            CALL rip_dim_LIAMOS(d50, smgd, visk, tau_cb,
+            call rip_dim_LIAMOS(d50, smgd, visk, tau_cb,
      &                          tau_cs, tau_ws,
      &                          tau_cws_max, tau_cwt_max,
      &                          rhgt, rlen, icase)
