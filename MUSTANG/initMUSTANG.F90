@@ -226,12 +226,14 @@ CONTAINS
                         mass_sed(iv)=cv_sed(iv,k,i,j)*dzs(k,i,j)
                         mass_tot=mass_tot+mass_sed(iv)
                     ENDDO
-                    DO iv=igrav1,imud2
-                        frac_sed(iv)=mass_sed(iv)/mass_tot
-                    ENDDO
-                    CALL mustang_comp_poro_mixsed(frac_sed, poro_mud_new, &
-                               crel_mud_new, poro_kij)
-                    poro(k,i,j)=poro_kij
+                    IF (mass_tot .GT. 0.0_rsh) THEN
+                        DO iv=igrav1,imud2
+                            frac_sed(iv)=mass_sed(iv)/mass_tot
+                        ENDDO
+                        CALL mustang_comp_poro_mixsed(frac_sed, poro_mud_new, &
+                                   crel_mud_new, poro_kij)
+                        poro(k,i,j)=poro_kij
+                    ENDIF
                 ENDIF
             ENDDO
           ELSE
