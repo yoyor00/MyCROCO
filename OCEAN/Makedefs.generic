@@ -7,9 +7,11 @@
 
 # Optional PSyclone pass, off unless CROCO_PSYCLONE is set in the environment
 # (e.g. CROCO_PSYCLONE=psyclone, or "psyclone -s script.py"). OpenMP
-# directives and conditional (C$) lines must be kept for OpenMP builds.
+# directives and conditional (C$) lines must be kept for OpenMP builds;
+# --keep-comments is implied by --keep-directives but is stated explicitly.
+# The source form (fixed or free) is detected by PSyclone itself.
  PSYCLONE = $(CROCO_PSYCLONE)
- PSYOPTS  = --keep-directives --keep-conditional-openmp-statements
+ PSYOPTS  = --keep-comments --keep-directives --keep-conditional-openmp-statements
 PSYFFLAGS = $(PSYFFLAGS1)
 
 .f.o:
@@ -37,17 +39,17 @@ ifeq ($(PSYCLONE),)
 else
 # PSyclone pass: the preprocessed source goes through $(PSYCLONE) and its
 # (free-form) output is compiled instead. A source PSyclone cannot process
-# is compiled as is, with a warning.
+# fails the build, so that the CI job fails too.
 .F.o:
 	$(CPP) -P $(CPPFLAGS) $*.F > $*_.f1
 	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f2
 	python3 ./change_loops.py $*_.f2 $*_.tmp
 	cat $*_.tmp | ./mpc > $*_.f && \rm -f $*_.tmp $*_.f1 $*_.f2
-	if $(PSYCLONE) $(PSYOPTS) --fixed-form -o $*_psy.f90 $*_.f > $*_psy.log 2>&1 ; then \
+	if $(PSYCLONE) $(PSYOPTS) -o $*_psy.f90 $*_.f > $*_psy.log 2>&1 ; then \
 	  $(CFT) -c $(FFLAGS90) $(PSYFFLAGS) $*_psy.f90 -o $*.o ; \
 	else \
-	  echo "PSYCLONE WARNING: $*.F not processed, see $*_psy.log" ; \
-	  $(CFT) -c $(FFLAGS) $*_.f -o $*.o ; \
+	  cat $*_psy.log ; \
+	  exit 1 ; \
 	fi
 endif
 
@@ -65,11 +67,11 @@ else
 .F90.o:
 	$(CPP) -P $(CPPFLAGS) $*.F90 > $*_.f1
 	$(CROCO_TIMINGS_CONVERT) $*_.f1 $*_.f90 && \rm -f $*_.f1
-	if $(PSYCLONE) $(PSYOPTS) --free-form -o $*_psy.f90 $*_.f90 > $*_psy.log 2>&1 ; then \
+	if $(PSYCLONE) $(PSYOPTS) -o $*_psy.f90 $*_.f90 > $*_psy.log 2>&1 ; then \
 	  $(CFT) -c $(FFLAGS90) $(PSYFFLAGS) $*_psy.f90 -o $*.o ; \
 	else \
-	  echo "PSYCLONE WARNING: $*.F90 not processed, see $*_psy.log" ; \
-	  $(CFT) -c $(FFLAGS90) $*_.f90 -o $*.o ; \
+	  cat $*_psy.log ; \
+	  exit 1 ; \
 	fi
 endif
 
