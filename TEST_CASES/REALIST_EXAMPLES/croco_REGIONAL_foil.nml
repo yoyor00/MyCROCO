@@ -244,7 +244,7 @@
 /
 
 &croco_lagrangian
-  lagrangianname = "TEST_CASES/REALIST_EXAMPLES/foil_traj.txt"
+  lagrangianname = "TEST_CASES/REALIST_EXAMPLES/foil_paralag.txt"
 /
 
 &croco_foil
