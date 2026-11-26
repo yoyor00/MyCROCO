@@ -19,7 +19,7 @@
 :-----------------------------------------------------------------------------
 :
  &namtraj
- 	file_trajec = "TEST_CASES/REALIST_EXAMPLES/lagrangian_traject3d_mixed.dat"
+ 	file_trajec = "TEST_CASES/REALIST_EXAMPLES/lagrangian_patch_mixed.dat"
 	dir_pathout = "./"
 	dtsave_traj = 1.d0 /
 :
