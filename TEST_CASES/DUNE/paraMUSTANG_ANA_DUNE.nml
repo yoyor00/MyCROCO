@@ -35,7 +35,7 @@
    date_start_morpho='2019/01/01 00:00:00'
    l_unised = .true. 
    hseduni = 3. 
-   cseduni= 702.0    
+   cseduni= 1590.0
    ksmiuni = 1  
    ksmauni = 11  
 /

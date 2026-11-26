@@ -158,6 +158,7 @@ MODULE sed_MUSTANG
     USE sed_MUSTANG_CROCO,    ONLY :  sed_gradvit
 #ifdef key_MUSTANG_V2
     USE sed_MUSTANG_CROCO,    ONLY :  sed_bottom_slope
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_bedload_bc_edges
 #if defined MPI
       USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_flxbedload
       USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_maskbedload
@@ -376,22 +377,7 @@ ENDIF
 
 #ifdef key_MUSTANG_V2
    IF (l_bedload) THEN
-#if defined MPI
-       if (float(ifirst+ii*Lm) .EQ. 1) then
-        flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
-        flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
-       endif
-       if (float(jfirst+jj*Mm) .EQ. 1) then
-        flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
-        flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
-       endif
-#else
-        flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
-        flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
-        flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
-        flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
-#endif
-
+    CALL sed_bedload_bc_edges(ifirst, ilast, jfirst, jlast)
 #if defined MPI
     call sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
 #endif

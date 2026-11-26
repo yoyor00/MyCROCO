@@ -138,6 +138,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   restart inconsistencies with MORPHODYN, update testcase plot script 
   accordingly (#470)
 - MUSTANG : Fix MUSTANG restart bit-exactness (#562)
+- MUSTANG : restore bedload null-gradient boundary on all 4 domain edges
+  (east/north were missing), and warn if the initial sediment concentration
+  disagrees with the porosity law, a regression from #562 (#627)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)

@@ -19,6 +19,8 @@
 !&E     subroutine sed_gradvit            ! calcul gradient de vitesse, u*
 !&E     subroutine sed_skinstress         ! computes the skin stress
 !&E     subroutine sed_bottom_slope
+!&E     subroutine sed_bedload_bc_edges ! null-gradient bedload flux boundary
+!&E                                       condition at non-periodic edges
 !&E     subroutine sed_exchange_w2s ! MPI treatment of slip deposit fluxes
 !&E     subroutine sed_exchange_flxbedload ! MPI treatment of bedload fluxes
 !&E     subroutine sed_exchange_maskbedload ! MPI exchange of mask for 
@@ -44,6 +46,7 @@
     PUBLIC sed_MUSTANG_settlveloc
 #ifdef key_MUSTANG_V2
     PUBLIC sed_bottom_slope
+    PUBLIC sed_bedload_bc_edges
 #if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
     PUBLIC wave_height
     PUBLIC wave_period
@@ -862,6 +865,56 @@ END SUBROUTINE combine_wave_current
       ENDDO
 
   END SUBROUTINE sed_bottom_slope
+!!=============================================================================
+  SUBROUTINE sed_bedload_bc_edges(ifirst, ilast, jfirst, jlast)
+   !&E--------------------------------------------------------------------------
+   !&E                 ***  ROUTINE sed_bedload_bc_edges  ***
+   !&E
+   !&E ** Purpose : null-gradient (zero-flux-divergence) bedload flux
+   !&E    boundary condition at non-periodic domain edges
+   !&E
+   !&E ** Called by :  MUSTANG_update
+   !&E--------------------------------------------------------------------------
+   !! * Arguments
+   INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
+
+#if defined MPI
+#  ifndef EW_PERIODIC
+       if (ifirst.eq.1 .and. .not.WEST_INTER) then
+        flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
+        flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
+       endif
+       if (ilast.eq.Lmmpi .and. .not.EAST_INTER) then
+        flx_bx(:,ilast+1,:)=flx_bx(:,ilast,:)
+        flx_by(:,ilast+1,:)=flx_by(:,ilast,:)
+       endif
+#  endif
+#  ifndef NS_PERIODIC
+       if (jfirst.eq.1 .and. .not.SOUTH_INTER) then
+        flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
+        flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
+       endif
+       if (jlast.eq.Mmmpi .and. .not.NORTH_INTER) then
+        flx_bx(:,:,jlast+1)=flx_bx(:,:,jlast)
+        flx_by(:,:,jlast+1)=flx_by(:,:,jlast)
+       endif
+#  endif
+#else
+#  ifndef EW_PERIODIC
+       flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
+       flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
+       flx_bx(:,ilast+1,:)=flx_bx(:,ilast,:)
+       flx_by(:,ilast+1,:)=flx_by(:,ilast,:)
+#  endif
+#  ifndef NS_PERIODIC
+       flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
+       flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
+       flx_bx(:,:,jlast+1)=flx_bx(:,:,jlast)
+       flx_by(:,:,jlast+1)=flx_by(:,:,jlast)
+#  endif
+#endif
+
+  END SUBROUTINE sed_bedload_bc_edges
 !!=============================================================================
 #if defined MPI
   SUBROUTINE sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)

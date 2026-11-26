@@ -100,9 +100,10 @@ CONTAINS
     REAL(KIND=rsh)        :: sommud, cvolgrvsan, cvolp
     LOGICAL :: l_0Dcase
 #ifdef key_MUSTANG_V2
-    REAL(KIND=rsh)        :: mass_tot, poro_mud_new, crel_mud_new, poro_kij
+    REAL(KIND=rsh)        :: mass_tot, poro_mud_new, crel_mud_new, poro_kij, poro_raw, cfac
     REAL(KIND=rsh),DIMENSION(nvpc) :: frac_sed
     REAL(KIND=rsh),DIMENSION(1:nvp) :: mass_sed
+    LOGICAL :: l_poro_ini_warned
 #endif
 
     ierrorlog = stdout
@@ -173,6 +174,9 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Porosity estimation
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#ifdef key_MUSTANG_V2
+    l_poro_ini_warned = .FALSE.
+#endif
       DO j = jfirst, jlast
         DO i = ifirst, ilast
           IF (ksma(i,j) .NE. 0) THEN
@@ -205,6 +209,7 @@ CONTAINS
                 ENDDO
                 poro(k,i,j)=1.0_rsh - cvolp
 #ifdef key_MUSTANG_V2
+                poro_raw=poro(k,i,j)
                 sommud=0.0_rsh
                 DO iv=imud1,imud2
                     sommud=sommud+cv_sed(iv,k,i,j)
@@ -233,6 +238,31 @@ CONTAINS
                            crel_mud_new, poro_kij)
                 poro(k,i,j)=poro_kij
                 poro_mud(k,i,j)=poro_mud_new
+
+                ! the initial concentration (cseduni/cini_sed_n, or a
+                ! restart file) is read as-is: it is no longer rescaled
+                ! to match poro_kij.
+                ! warn once if the concentration this implies is more
+                ! than 1% off the one consistent with poro_kij, and
+                ! tell the user what concentration would be consistent
+                cfac=(1.0_rsh-poro_kij)/(1.0_rsh-poro_raw)
+                IF (.NOT. l_poro_ini_warned .AND. ABS(cfac-1.0_rsh) > 0.01_rsh) THEN
+                  MPI_master_only WRITE(iwarnlog,'(/1x,A)') &
+                    'MUSTANG WARNING: initial sediment concentration is not consistent with the porosity law'
+                  MPI_master_only WRITE(iwarnlog,'(1x,A,I0,A,I0,A,I0,A)') &
+                    '  (first seen at i=',i,', j=',j,', k=',k,')'
+                  MPI_master_only WRITE(iwarnlog,'(1x,A,F8.4)') &
+                    '  porosity implied by the given concentration = ',poro_raw
+                MPI_master_only WRITE(iwarnlog,'(1x,A,F8.4)') &
+                    '  vs. equilibrium porosity from mustang = ',poro_kij
+                  MPI_master_only WRITE(iwarnlog,'(1x,A,F10.3,A)') &
+                    '  total sediment concentration provided = ',c_sedtot(k,i,j),' kg/m3'
+                MPI_master_only WRITE(iwarnlog,'(1x,A,F10.3,A)') &
+                    '  a consistent value would be ',c_sedtot(k,i,j)*cfac,' kg/m3'
+                  MPI_master_only WRITE(iwarnlog,'(1x,A)') &
+                    '  => for a uniform bed (l_unised), rescale cseduni to this value (cini_sed_n fractions unchanged)'
+                  l_poro_ini_warned = .TRUE.
+                ENDIF
 #endif
             ENDDO
           ELSE
