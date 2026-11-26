@@ -72,10 +72,10 @@
         integer :: mode_t3dmix_S=2
         integer :: mode_t3dmix_ISO=3
         integer :: mode_t3dmix_spg=4
-        integer :: kmld_integ(GLOBAL_2D_ARRAY)
-        integer :: kmld_turb(GLOBAL_2D_ARRAY), &
-                   kmld_dens(GLOBAL_2D_ARRAY), &
-                   kmld_temp(GLOBAL_2D_ARRAY)
+        integer :: kmld_integ(PRIVATE_2D_SCRATCH_ARRAY)
+        integer :: kmld_turb(PRIVATE_2D_SCRATCH_ARRAY), &
+                   kmld_dens(PRIVATE_2D_SCRATCH_ARRAY), &
+                   kmld_temp(PRIVATE_2D_SCRATCH_ARRAY)
 
 
         call get_mld_idx(Istr,Iend,Jstr,Jend, &
@@ -120,9 +120,9 @@
                                mld_dens_local(GLOBAL_2D_ARRAY), &
                                mld_temp_local(GLOBAL_2D_ARRAY)
         ! Local declarations
-        integer :: kmld_turb(GLOBAL_2D_ARRAY), &
-                   kmld_dens(GLOBAL_2D_ARRAY), &
-                   kmld_temp(GLOBAL_2D_ARRAY) 
+        integer :: kmld_turb(PRIVATE_2D_SCRATCH_ARRAY), &
+                   kmld_dens(PRIVATE_2D_SCRATCH_ARRAY), &
+                   kmld_temp(PRIVATE_2D_SCRATCH_ARRAY) 
 
         call idx_mld_density(Istr,Iend,Jstr,Jend, &
             mld_crit_D,mld_depth_ref, &
@@ -147,7 +147,7 @@
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         integer, intent(in) :: mode
-        integer, intent(in) :: kmld_integ(GLOBAL_2D_ARRAY)
+        integer, intent(in) :: kmld_integ(PRIVATE_2D_SCRATCH_ARRAY)
         real, intent(inout) :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
                                T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
 
@@ -245,7 +245,7 @@
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
         real :: T_mld_nnew(PRIVATE_2D_SCRATCH_ARRAY), &
                 T_mld_nstp(PRIVATE_2D_SCRATCH_ARRAY)
-        integer,intent(in) :: kmld_integ(GLOBAL_2D_ARRAY)
+        integer,intent(in) :: kmld_integ(PRIVATE_2D_SCRATCH_ARRAY)
         ! Local declarations
         integer :: i,j,k,kmld
         real :: cff

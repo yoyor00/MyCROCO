@@ -83,14 +83,14 @@
 
         ! Arguments 
         integer, intent(in) :: Istr,Iend,Jstr,Jend
-        integer, intent(inout) :: Kmld(GLOBAL_2D_ARRAY)
+        integer, intent(inout) :: kmld(PRIVATE_2D_SCRATCH_ARRAY)
         real, intent(inout) :: mld(GLOBAL_2D_ARRAY)
         ! Local declarations
         integer :: i,j,k
 
         do j=Jstr,Jend
          do i=Istr,Iend
-          mld(i,j)=(z_w(i,j,N)-z_w(i,j,Kmld(i,j)-1)) SWITCH rmask(i,j)
+          mld(i,j)=(z_w(i,j,N)-z_w(i,j,kmld(i,j)-1)) SWITCH rmask(i,j)
          enddo
         enddo
        end subroutine mld_from_vertical_idx
@@ -111,7 +111,7 @@
         ! Arguments 
         integer, intent(in) :: Istr,Iend,Jstr,Jend
         real, intent(in) :: threshold_dens,depth_ref
-        integer, intent(inout) :: kmld_dens(GLOBAL_2D_ARRAY)
+        integer, intent(inout) :: kmld_dens(PRIVATE_2D_SCRATCH_ARRAY)
         real, intent(inout) :: mld(GLOBAL_2D_ARRAY)
         ! Local declarations
         integer :: indx_depth, cff1,cff
@@ -164,7 +164,7 @@
         ! Arguments 
         integer, intent(in) :: Istr,Iend,Jstr,Jend
         real, intent(in) :: threshold_temp,depth_ref
-        integer, intent(inout) :: kmld_temp(GLOBAL_2D_ARRAY)
+        integer, intent(inout) :: kmld_temp(PRIVATE_2D_SCRATCH_ARRAY)
         real, intent(inout) :: mld(GLOBAL_2D_ARRAY)
         ! Local declarations
         integer :: indx_depth, cff1,cff
@@ -218,7 +218,7 @@
         ! Arguments
         integer, intent(in) :: Istr,Iend,Jstr,Jend
         real, intent(in) :: threshold_turb,depth_ref
-        integer,intent(inout) :: kmld_turb(GLOBAL_2D_ARRAY)
+        integer,intent(inout) :: kmld_turb(PRIVATE_2D_SCRATCH_ARRAY)
         real,intent(inout) :: mld(GLOBAL_2D_ARRAY)
         ! Local declarations
         integer :: indx_depth, cff1,cff
