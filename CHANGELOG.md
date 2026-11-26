@@ -73,6 +73,24 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
   per-rank JSON output), enabled at build time with `jobcomp --timings`
 
+- LAGRANGIAN : Module LAGRANGIAN added. Performs online particle tracking 
+  using velocity and diffusivity fields from CROCO. It computes 
+  three-dimensional particle transport by advection, with optional 
+  turbulent diffusion and prescribed vertical behavior. The module can 
+  represent passive drifters and pelagic particles.
+
+- FOIL : Module FOIL added. FOIL is a mechanistic individual-based model
+  currently operational for anchovy and sardine in the Bay of Biscay, 
+  that can be implemented for other species provided sufficient knowledge 
+  and information are available for correct parameterisation. 
+  FOIL relies on the LAGRANGIAN module to simulate the transport of 
+  early life stages and other passive marine organisms. It can also 
+  simulate complete life cycles and population dynamics over multiple 
+  generations. Individual growth, reproduction, and bioenergetics are 
+  represented using a Dynamic Energy Budget (DEB) model, 
+  while a dedicated movement component represents the active displacement 
+  of non-passive fish stages.
+
 ### Fixed
 
 - PSOURCE_NCFILE : fix PSOURCE being defined together with PSOURCE_MASS,
