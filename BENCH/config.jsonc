@@ -92,6 +92,7 @@
       "OVERFLOW",
       "RIVER_PSOURCE_MASS",
       "RIVER",
+      "SOLITON",
       "UPWELLING",
     ],
     "@realist_base": [
@@ -102,6 +103,7 @@
       "BENGUELA_LR_GLS",
       "BENGUELA_LR_NBQ",
       "VILAINE",
+      "VILAINE_VANDERA",
     ],
     "@realist": [
       "BENGUELA_LR_BRY",

@@ -705,7 +705,6 @@
   || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 #endif
-#ifdef EXACT_RESTART
 # ifdef M3FAST
 #  ifdef TS_MIX_ISO_FILT
 #  else
@@ -715,8 +714,6 @@
 #  else
 #  endif
 # endif
-#else
-#endif
 #ifdef SOLVE3D
 # ifdef SALINITY
 # else
@@ -789,8 +786,6 @@
 # ifdef MUSTANG
 !$acc&, rstMUS
 # endif
-#endif
-#ifdef EXACT_RESTART
 #endif
 #ifdef BBL
 !$acc&, rstBBL
@@ -1106,8 +1101,6 @@
 # endif
 # ifdef M3FAST
 # endif
-# ifdef EXACT_RESTART
-# endif
 #endif
 #ifdef SOLVE3D
 # if defined ANA_VMIX || defined LMD_MIXING \
@@ -1262,12 +1255,16 @@
 !$acc&, v_avg
 !$acc&, t_avg
 !$acc&, rho_avg
+!$acc&, Akv_avg
+!$acc&, Akt_avg
 #  if defined ANA_VMIX || defined LMD_MIXING \
    || defined LMD_SKPP || defined LMD_BKPP \
    || defined GLS_MIXING
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
+!$acc&, z_r_avg
+!$acc&, z_w_avg
 #  ifdef NBQ
 !$acc&, w_avg
 #  else
@@ -1318,10 +1315,6 @@
 #  endif
 #  ifdef DIF_COEF_3D
 !$acc&, diff3d_avg
-#  endif
-#  ifdef AVERAGES_K
-!$acc&, Akv_avg
-!$acc&, Akt_avg
 #  endif
 # endif
 # ifdef WAVE_IO

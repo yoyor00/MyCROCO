@@ -8,10 +8,15 @@
 
 
 &croco_time_stepping
-  ntimes = 2880
   dt = 30
   ndtfast = 60
   ninfo = 1
+/
+
+&croco_calendar
+  start_date    = "2000-01-01 00:00:00"
+  end_date      = "2000-01-02 00:00:00"
+  calendar_type = "gregorian"
 /
 
 &croco_s_coord
@@ -95,16 +100,19 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .false.
-  out_his_omega = .false.
-  out_his_w = .false.
-  out_his_akv = .true.
   out_his_bostr = .true.
   out_his_bustr = .true.
   out_his_bvstr = .true.
   out_his_wstr = .false.
   out_his_ustr = .false.
   out_his_vstr = .false.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .false.
+  out_his_akv = .true.
 /
 
 &croco_temperature_history_fields

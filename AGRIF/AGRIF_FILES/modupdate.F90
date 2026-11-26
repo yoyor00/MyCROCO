@@ -32,6 +32,7 @@ module Agrif_Update
     use Agrif_Mask
 #if defined AGRIF_MPI
     use Agrif_Mpp
+    use mpi
 #endif
 !
     implicit none
@@ -145,9 +146,6 @@ subroutine Agrif_UpdateWhole ( parent, child, uinf, usup,       &
                                s_child,   s_parent,             &
                                ds_child, ds_parent, nbdim, procname )
 !---------------------------------------------------------------------------------------------------
-#if defined AGRIF_MPI
-    include 'mpif.h'
-#endif
 !
     type(Agrif_Variable),      pointer    :: parent         !< Variable on the parent grid
     type(Agrif_Variable),      pointer    :: child          !< Variable on the child grid
@@ -257,9 +255,6 @@ subroutine Agrif_UpdateBcnd ( parent, child, uinf, usup,        &
                               s_child,  s_parent,               &
                               ds_child, ds_parent, nbdim, procname )
 !---------------------------------------------------------------------------------------------------
-#if defined AGRIF_MPI
-    include 'mpif.h'
-#endif
 !
     type(Agrif_Variable), pointer           :: parent       !< Variable on the parent grid
     type(Agrif_Variable), pointer           :: child        !< Variable on the child grid
@@ -385,9 +380,6 @@ subroutine Agrif_UpdatenD ( type_update, parent, child,     &
 #endif
                             nbdim, procname, nb, ndir )
 !---------------------------------------------------------------------------------------------------
-#if defined AGRIF_MPI
-    include 'mpif.h'
-#endif
 !
     type(Agrif_Variable), pointer           :: parent       !< Variable of the parent grid
     type(Agrif_Variable), pointer           :: child        !< Variable of the child grid

@@ -7,10 +7,15 @@
 /
 
 &croco_time_stepping
-  ntimes = 21600
   dt = 2
   ndtfast = 10
   ninfo = 1
+/
+
+&croco_calendar
+  start_date    = "2000-01-01 00:00:00"
+  end_date      = "2000-01-01 12:00:00"
+  calendar_type = "gregorian"
 /
 
 &croco_s_coord
@@ -75,6 +80,14 @@
   sedname = "TEST_CASES/SED_TOY/sediment_sed_toy_rouse.in"
 /
 
+&croco_sediments_mustang
+  sedname_must = "TEST_CASES/SED_TOY/paraMUSTANG_SED_TOY_ROUSE.nml"
+/
+
+&croco_substance
+  subsfilename = "TEST_CASES/SED_TOY/parasubstance_SED_TOY_ROUSE.nml"
+/
+
 &croco_primary_history_fields
   out_his_zeta = .true.
   out_his_ubar = .true.
@@ -91,14 +104,17 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .false.
-  out_his_omega = .false.
-  out_his_w = .false.
-  out_his_akv = .true.
   out_his_bostr = .true.
   out_his_wstr = .true.
   out_his_ustr = .true.
   out_his_vstr = .true.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .false.
+  out_his_akv = .true.
 /
 
 &croco_temperature_history_fields

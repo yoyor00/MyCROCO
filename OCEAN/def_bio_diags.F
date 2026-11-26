@@ -27,7 +27,11 @@
      &     dianamebio, ldefdiabio_avg, ntsdiabio_avg,
      &     nwrtdiabio_avg, nrpfdiabio_avg, dianamebio_avg
 #endif
+      use tools_calendar, only: tool_check_output_origin
 
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -38,7 +42,6 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
 !
       logical create_new_file
@@ -57,6 +60,7 @@
 #  define wrtGasExc wrtdiabioGasExc
 #  define wrtVSink wrtdiabioVSink
 #  define vidTime diaTimebio
+#  define vidOrigin dia_bio_origin_in_sec
 #  define vidTstep diaTstepbio
 #  define vidFlux diabioFlux
 #  define vidGasExc diabioGasExc
@@ -69,6 +73,7 @@
 #  define wrtGasExc wrtdiabioGasExc_avg
 #  define wrtVSink wrtdiabioVSink_avg
 #  define vidTime diaTimebio_avg
+#  define vidOrigin dia_bio_avg_origin_in_sec
 #  define vidTstep diaTstepbio_avg
 #  define vidFlux diabioFlux_avg
 #  define vidGasExc diabioGasExc_avg
@@ -85,16 +90,25 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
+      if (lvar.eq.total_rec-1) then
 # ifndef AVRH
-      create_new_file = ldefdiabio
+        create_new_file = ldefdiabio
 # else
-      create_new_file = ldefdiabio_avg
+        create_new_file = ldefdiabio_avg
 # endif
+      else
+        create_new_file=.false.
+      endif
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
@@ -247,6 +261,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
+
+        vidOrigin=start_date_in_sec
 !
 ! Tracer diagnostics variables.
 !
@@ -417,7 +433,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-# if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 # endif
             endif
@@ -470,6 +486,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 !
 ! Tracer flux diagnostics variables.
 !
@@ -578,6 +596,7 @@
 # undef wrtVSink
 # undef wrtGasExc
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 # undef vidFlux
 # undef vidGasExc

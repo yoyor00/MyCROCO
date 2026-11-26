@@ -90,7 +90,7 @@ CONTAINS
       REAL(wp) :: zepsherf, zepshert, zepsherq, zepsherv, zrespirc, zrespirn, zrespirp, zbasresb, zbasresi
       REAL(wp) :: zgraztotc, zgraztotn, zgraztotp, zgraztotf, zbasresn, zbasresp, zbasresf
       REAL(wp) :: zgradoc, zgradon, zgradop, zgraref, zgradoct, zgradont, zgradopt, zgrareft
-      REAL(wp) :: zexcess, zgraren, zgrarep, zgrarem
+      REAL(wp) :: zexcess, zgraren, zgrarep
       REAL(wp) :: zgrapoc, zgrapon, zgrapop, zgrapof, zprcaca, zmortz
       REAL(wp) :: zrespz, zltortz, ztortz, zgrasratf, zgrasratn, zgrasratp
       REAL(wp) :: zgraznc, zgraznn, zgraznp, zgrazpoc, zgrazpon, zgrazpop, zgrazpof
@@ -100,7 +100,7 @@ CONTAINS
       REAL(wp) :: zsizepn, zsizedn, zsizedp, zdiffdn, zdiffpn, zdiffdp
       REAL(wp) :: zpexpod, zmaxsi, ztra
       REAL(wp) :: zlogtemp1, zlogtemp2
-      REAL(wp), DIMENSION(A2D(0),jpk) :: zproportn, zproportd, zprodlig
+      REAL(wp), DIMENSION(A2D(0),jpk) :: zproportn, zproportd, zprodlig, zgrarem
       
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing, zfezoo, zzligprod, zw3d
       CHARACTER (len=25) :: charout
@@ -127,6 +127,8 @@ CONTAINS
             zzligprod(ji,jj,jk) = tr(ji,jj,jk,jplgw,Krhs)
          END_3D
       ENDIF
+      !
+      zgrarem(:,:,:) = 0._wp
 
       ! Use of excess carbon for metabolism
       zmetexcess = 0.0
@@ -339,7 +341,7 @@ CONTAINS
          zgradoc   =  (1.0 - ssigma) * zgradoct
          zgradon   =  (1.0 - ssigma) * zgradont
          zgradop   =  (1.0 - ssigma) * zgradopt
-         zgrarem   = ssigma * zgradoct
+         zgrarem(ji,jj,jk)   = ssigma * zgradoct
          zgraren   = ssigma * zgradont
          zgrarep   = ssigma * zgradopt
          zgraref   = zgrareft
@@ -353,7 +355,7 @@ CONTAINS
 
          ! Addition of respiration to the release of inorganic nutrients
          ! -------------------------------------------------------------
-         zgrarem   = zgrarem + zbasresi + zrespirc
+         zgrarem(ji,jj,jk)   = zgrarem(ji,jj,jk) + zbasresi + zrespirc
          zgraren   = zgraren + zbasresn + zrespirc * no3rat3
          zgrarep   = zgrarep + zbasresp + zrespirc * po4rat3
          zgraref   = zgraref + zbasresf + zrespirc * feratz
@@ -371,7 +373,7 @@ CONTAINS
          !
          tr(ji,jj,jk,jpdon,Krhs) = tr(ji,jj,jk,jpdon,Krhs) + zgradon
          tr(ji,jj,jk,jpdop,Krhs) = tr(ji,jj,jk,jpdop,Krhs) + zgradop
-         tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - o2ut * zgrarem 
+         tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - o2ut * zgrarem(ji,jj,jk)
          tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) + zgraref
          tr(ji,jj,jk,jpzoo,Krhs) = tr(ji,jj,jk,jpzoo,Krhs) &
                  &                + zepsherv * zgraztotc - zrespirc - zmortz - zgrazz
@@ -412,7 +414,7 @@ CONTAINS
          prodcal(ji,jj,jk) = prodcal(ji,jj,jk) + zprcaca  ! prodcal=prodcal(nanophy)+prodcal(microzoo)+prodcal(mesozoo)
          !
          zprcaca = part * zprcaca
-         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zgrarem - zprcaca
+         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zgrarem(ji,jj,jk) - zprcaca
          tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - 2. * zprcaca + rno3 * zgraren
          tr(ji,jj,jk,jpcal,Krhs) = tr(ji,jj,jk,jpcal,Krhs) + zprcaca
       END_3D
@@ -425,7 +427,11 @@ CONTAINS
                zw3d(ji,jj,jkR) =  zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
             END_3D
             CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
-            CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unassc ) * (-o2ut) * ssigma ) ! o2 consumption by Microzoo
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jkR) = (-o2ut) * zgrarem(ji,jj,jk) &
+                 &               * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+            END_3D
+            CALL iom_put( "MicroZo2" , zw3d ) ! o2 consumption by Microzoo
             !
             DO_3D( 0, 0, 0, 0, 1, jpk)
                ztra = tr(ji,jj,jk,jpfer,Krhs)
@@ -452,8 +458,8 @@ CONTAINS
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
          trc3d(ji,jj,jkR,jp_grapoc) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by microzoo
-         trc3d(ji,jj,jkR,jp_mico2) = zgrazing(ji,jj,jk) * ( 1.- epsher - unassc ) &
-          &                  * (-o2ut) * ssigma * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
+         trc3d(ji,jj,jkR,jp_mico2)  = (-o2ut) * zgrarem(ji,jj,jk) &
+            &                          * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Microzoo
       END_3D
 #endif
       IF( l_dia_graz ) DEALLOCATE( zgrazing )

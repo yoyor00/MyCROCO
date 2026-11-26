@@ -36,7 +36,7 @@
 !----------------------------------------------------------------------
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 ! Number of tides
-      integer, parameter :: Ntides = 8
+      integer, parameter :: Ntides = 10
 #endif
 !
 !----------------------------------------------------------------------
@@ -66,7 +66,7 @@
 
 # if defined SUBSTANCE
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
-      integer, parameter :: ntrc_subs = 3
+      integer, parameter :: ntrc_subs = 6
       integer, parameter :: ntfix = 0
       integer, parameter :: ntrc_substot = ntrc_subs+ntfix
 # else

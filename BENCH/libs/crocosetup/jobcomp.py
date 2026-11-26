@@ -7,6 +7,7 @@
 ##########################################################
 # python
 import os
+import re
 import shlex
 import argparse
 import shutil
@@ -82,6 +83,17 @@ class JobcompCrocoConfig:
             }
         ]
         patch_lines(cppdefs_path, rules)
+
+    def cppdef_h_is_defined(self, key_name: str) -> bool:
+        """
+        Check whether a key is currently '# define'd (as opposed to
+        '# undef'd or simply absent) in the resolved cppdefs.h.
+        """
+        cppdefs_path = os.path.join(self.builddir, "cppdefs.h")
+        with open(cppdefs_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        pattern = re.compile(rf"^#\s*define\s+{re.escape(key_name)}\b")
+        return any(pattern.match(normalize_line(line)) for line in lines)
 
     def param_h_configure_openmp_split(self, splitting: str):
         """
@@ -247,6 +259,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         Set any cpp key
         """
         self.croco_config.cppdef_h_set_key(key, status)
+
+    def cppdef_h_is_defined(self, key: str) -> bool:
+        """
+        Check whether a cpp key is currently defined
+        """
+        return self.croco_config.cppdef_h_is_defined(key)
 
     def handle_variables(self, arg_vars: list, extra_vars: dict) -> dict:
         """

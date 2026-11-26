@@ -42,6 +42,9 @@
       real v_avg(GLOBAL_2D_ARRAY,N)
       real t_avg(GLOBAL_2D_ARRAY,N,NT)
       real rho_avg(GLOBAL_2D_ARRAY,N)
+      real Akv_avg(GLOBAL_2D_ARRAY,0:N)
+      real Akt_avg(GLOBAL_2D_ARRAY,0:N,2)
+      common /avg_Akv/Akv_avg /avg_Akt/Akt_avg
 #  if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
@@ -59,6 +62,9 @@
      &       /avg_bvf/bvf_avg
 #  endif
      &       /avg_w/w_avg
+      real z_r_avg(GLOBAL_2D_ARRAY,N)
+      real z_w_avg(GLOBAL_2D_ARRAY,0:N)
+      common /avg_z_r/z_r_avg /avg_z_w/z_w_avg
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
       real btflx_avg(GLOBAL_2D_ARRAY,NT)
@@ -123,11 +129,6 @@
 #  ifdef DIF_COEF_3D
       real diff3d_avg(GLOBAL_2D_ARRAY,N)
       common /avg_diff3d/diff3d_avg
-#  endif
-#  ifdef AVERAGES_K
-      real Akv_avg(GLOBAL_2D_ARRAY,0:N)
-      real Akt_avg(GLOBAL_2D_ARRAY,0:N,2)
-      common /avg_Akv/Akv_avg /avg_Akt/Akt_avg
 #  endif
 # endif
 # ifdef WAVE_IO

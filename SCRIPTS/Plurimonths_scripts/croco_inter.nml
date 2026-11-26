@@ -7,18 +7,14 @@
 /
 
 &croco_time_stepping
-  ntimes = NUMTIMES
   dt = TIMESTEP
   ndtfast = NFAST
   ninfo = 1
 /
 
-&croco_use_calendar
-  start_date = "Ystart-Mstart-01"
-  end_date = "Yend-Mend-01"
-  dt_his = NHHIS
-  dt_avg = NHAVG
-  dt_rst = NHRST
+&croco_calendar
+  start_date = "Ystart-Mstart-01 00:00:00"
+  end_date = "Yend-Mend-01 00:00:00"
 /
 
 &croco_s_coord
@@ -146,6 +142,7 @@
 &croco_diag_mld_dens
   mld_crit_D = 3.d-2
   mld_crit_T = 2.d-1
+  mld_depth_ref = 10
 /
 
 &croco_diagnosticsM
@@ -280,14 +277,14 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
-  psource_Lsrc(2,1) = T
-  psource_Lsrc(2,2) = T
-  psource_Tsrc0(1,1) = 20.
-  psource_Tsrc0(1,2) = 15.
-  psource_Tsrc0(2,1) = 20.
-  psource_Tsrc0(2,2) = 15.
+  psource_Lsrc(1,1) = T      ! River #1, tracer #1 (temperature)
+  psource_Lsrc(1,2) = T      ! River #1, tracer #2 (salinity)
+  psource_Lsrc(2,1) = T      ! River #2, tracer #1 (temperature)
+  psource_Lsrc(2,2) = T      ! River #2, tracer #2 (salinity)
+  psource_Tsrc0(1,1) = 20.   ! River #1, tracer #1 (temperature)
+  psource_Tsrc0(1,2) = 15.   ! River #1, tracer #2 (salinity)
+  psource_Tsrc0(2,1) = 20.   ! River #2, tracer #1 (temperature)
+  psource_Tsrc0(2,2) = 15.   ! River #2, tracer #2 (salinity)
 /
 
 &croco_sediments
@@ -318,16 +315,19 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .false.
-  out_his_omega = .false.
-  out_his_w = .true.
-  out_his_akv = .false.
   out_his_bostr = .true.
   out_his_bustr = .false.
   out_his_bvstr = .false.
   out_his_wstr = .true.
   out_his_ustr = .true.
   out_his_vstr = .true.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
 /
 
 &croco_temperature_history_fields
@@ -466,16 +466,19 @@
 /
 
 &croco_auxiliary_averages_fields
-  out_avg_rho = .false.
-  out_avg_omega = .true.
-  out_avg_w = .true.
-  out_avg_akv = .false.
   out_avg_bostr = .true.
   out_avg_bustr = .false.
   out_avg_bvstr = .false.
   out_avg_wstr = .true.
   out_avg_ustr = .true.
   out_avg_vstr = .true.
+/
+
+&croco_auxiliary_averages_3d_fields
+  out_avg_rho = .false.
+  out_avg_omega = .true.
+  out_avg_w = .true.
+  out_avg_akv = .false.
 /
 
 &croco_temperature_averages_fields

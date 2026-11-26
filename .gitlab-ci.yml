@@ -1,5 +1,6 @@
 # ci croco
 stages:
+  - test
   - bench
   - report
 
@@ -31,6 +32,18 @@ variables:
   stage: bench
   tags: [ci.inria.fr, large_more_disk]
   image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
+
+# ─── dependency generator (always-on, fast gate) ──────────────────────────
+#
+# regressions of OCEAN/make_depend.py, Make.depend generation.
+make_depend:
+  stage: test
+  tags: [ci.inria.fr, large]
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  script:
+    # make_depend.py tests
+    - cd $CI_PROJECT_DIR
+    - python3 -m unittest discover -s OCEAN/tests -v
 
 # ─── gfortran (always-on) ─────────────────────────────────────────────────
 
@@ -104,6 +117,7 @@ gfortran_parallel_schedule:
       - { CASES: "@realist",                       VARIANTS: "sequential,mpi-4", TITLE: "debug_realist",                  OPTIONS: "--debug" }
       - { CASES: "@agrif_realist_complement",      VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist_complement", OPTIONS: "--debug" }
       - { CASES: "@realist",                       VARIANTS: "mpi-4",            TITLE: "restart_realist",                OPTIONS: "--restart --compare-to mpi-4" }
+      - { CASES: "THACKER",                        VARIANTS: "sequential",       TITLE: "restart_wetdry",                 OPTIONS: "--debug --restart" }
       - { CASES: "BENGUELA_LR_TIDES_BULK,VILAINE", VARIANTS: "mpi-4",            TITLE: "plotphy_realist",                OPTIONS: "-s build,run,plotphy" }
   script:
     - cd $CI_PROJECT_DIR/BENCH

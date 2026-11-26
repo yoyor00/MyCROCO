@@ -41,9 +41,15 @@ C$    integer omp_get_thread_num
 # endif
 # endif
 !     implicit none
+# ifdef MPI
+      use mpi
+# endif
 #include "param.h"
 #include "ncscrum.h"
 #include "grid.h"
+#ifdef AGRIF
+# include "zoom.h"
+#endif
 #include "ocean2d.h"
 #include "ocean3d.h"
 #include "coupling.h"
@@ -99,7 +105,6 @@ C$    integer omp_get_thread_num
       real init    !!!!  0xFFFA5A5A ==> NaN
       parameter (init=0.)
 #ifdef MPI
-      include 'mpif.h'
       integer ierr
 #endif
 !
@@ -144,6 +149,9 @@ C$    integer omp_get_thread_num
           umask_wet(i,j)=1
           vmask_wet(i,j)=1
           pmask_wet(i,j)=1
+# ifdef AGRIF
+          rmask_childs(i,j)=1
+# endif
 #endif
 #ifdef WAVE_DRY
           rmask_wavewet(i,j)=1
@@ -194,6 +202,7 @@ C$    integer omp_get_thread_num
             rho(i,j,k) =init
 # ifdef AVERAGES
             rho_avg(i,j,k)=init
+            z_r_avg(i,j,k)=init
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
 #  ifndef NBQ
@@ -330,6 +339,7 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef AVERAGES
             omega_avg(i,j,k)=init
+            z_w_avg(i,j,k)=init
 #  ifdef NBQ
             w_avg(i,j,k)=init
 #  endif
@@ -503,7 +513,9 @@ C$    integer omp_get_thread_num
             Taver_mld(i,j,itrc)=init
 #   ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld(i,j,itrc)=init
+            kbld(i,j)=init
 #   endif
+            kbl_nstp(i,j)=init
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
@@ -1392,8 +1404,14 @@ C$    integer omp_get_thread_num
           do i=IstrR,IendR
 # if !defined LMD_MIXING && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
+#  ifdef AVERAGES
+            Akv_avg(i,j,k)=Akv_bak
+#  endif
 # else
             Akv(i,j,k)=init
+#  ifdef AVERAGES
+            Akv_avg(i,j,k)=init
+#  endif
 # endif
 # if defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
@@ -1406,16 +1424,28 @@ C$    integer omp_get_thread_num
 # if !defined LMD_MIXING && !defined GLS_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,itemp)=Akt_bak(itemp)
+#   endif
 #  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akt_bak(isalt)
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,isalt)=Akt_bak(isalt)
+#   endif
 #  endif
 # else
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=init
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,itemp)=init
+#   endif
 #  endif
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=init
+#   ifdef AVERAGES
+              Akt_avg(i,j,k,isalt)=init
+#   endif
 #  endif
 # endif
           enddo
@@ -1444,14 +1474,8 @@ C$    integer omp_get_thread_num
           hbl(i,j)=init
 #  endif
           kbl(i,j)=init
-#  if defined DIAGNOSTICS_TS_MLD_DENS
-          kbl1(i,j)=init
-#  endif
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
-#  endif
-#  if defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD
-          kbl_nstp(i,j)=init
 #  endif
         enddo
       enddo
@@ -1508,6 +1532,8 @@ C$    integer omp_get_thread_num
 # endif
 
 # ifdef M3FAST
+      got_qdmu_nbq=.false.
+      got_qdmv_nbq=.false.
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef NBQ_MASS

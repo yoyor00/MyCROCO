@@ -121,12 +121,7 @@
 ! I/O : flag for type sigma vertical transformation
 !----------------------------------------------------------------------
 !
-#ifdef NEW_S_COORD
       real, parameter :: Vtransform = 2
-#else
-      real, parameter :: Vtransform = 1
-#endif
-
 
 #ifdef STATIONS
       ! Maximum number of stations
@@ -152,11 +147,6 @@
 # else
       integer, parameter :: ntrc_salt = 0
 # endif
-# ifdef STOGEN
-      integer, parameter :: ntrc_stogen = 3
-# else
-      integer, parameter :: ntrc_stogen = 0
-#endif
 
 # ifdef BIOLOGY
 #  ifdef PISCES
@@ -200,6 +190,12 @@
       integer, parameter :: igls = 2
 # endif
 
+#else /* !SOLVE3D */
+! No tracers without SOLVE3D
+      integer, parameter :: itemp = 0
+      integer, parameter :: ntrc_temp = 0
+      integer, parameter :: ntrc_salt = 0
+      integer, parameter :: ntrc_bio = 0
 #endif /* SOLVE3D */
 
 
@@ -603,8 +599,10 @@
 # ifdef SUBSTANCE
       integer, parameter :: NT = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs
       integer, parameter :: NTot = NT+ntfix
-      integer, parameter :: itsubs1 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+1
-      integer, parameter :: itsubs2 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs
+      integer, parameter :: itsubs1 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+
+     &                                ntrc_sed+1
+      integer, parameter :: itsubs2 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+
+     &                                ntrc_sed+ntrc_subs
 # else
       integer, parameter :: NT = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
       integer, parameter :: NTot = NT
@@ -630,9 +628,9 @@
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
 #   ifdef DIAGNOSTICS_TS_MLD_DENS
-      parameter (ntrc_diats=18*NT)
+      parameter (ntrc_diats=18*NT+1)
 #   else
-      parameter (ntrc_diats=17*NT)
+      parameter (ntrc_diats=17*NT+1)
 #   endif
 #  else
       parameter (ntrc_diats=8*NT)
@@ -670,5 +668,20 @@
 # else
       parameter (ntrc_surf=0)
 # endif
+#else /* !SOLVE3D */
+! No tracers/diagnostics without SOLVE3D: keep these at zero so that
+! index formulas shared between the 2D and 3D cases (see ncscrum.h)
+! do not need a separate, non-consecutive set of formulas for 2D.
+      integer, parameter :: ntrc_diats = 0
+      integer, parameter :: ntrc_diauv = 0
+      integer, parameter :: ntrc_diabio = 0
+      integer, parameter :: ntrc_diavrt = 0
+      integer, parameter :: ntrc_diaek = 0
+      integer, parameter :: ntrc_diapv = 0
+      integer, parameter :: ntrc_diaeddy = 0
+      integer, parameter :: ntrc_surf = 0
+      integer, parameter :: NTA = 0
+      integer, parameter :: NT = 0
+      integer, parameter :: NTot = 0
 #endif /*SOLVE3D */
 

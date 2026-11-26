@@ -42,13 +42,17 @@
 #if defined OA_COUPLING || defined OW_COUPLING
       use mod_prism
 #endif
+#ifdef MPI
+      use mpi
+#endif
+!$croco timings use
 !
       integer, intent(inout) :: ierr
+#ifdef MPI
+      integer :: err
+#endif
 #ifdef AGRIF
       type(Agrif_pgrid), pointer :: parcours
-#endif
-#ifdef MPI
-      include 'mpif.h'
 #endif
 !
 ! provides ocean_grid_comm (the "world" communicator macro used below
@@ -61,6 +65,7 @@
 !  failure (ierr /= 0), skip straight to the MPI abort/finalize
 !  epilogue below, which is what actually reacts to ierr/=0.
 !
+!$croco timings start main_finalize
       if (ierr == 0) then
       call closecdf
 #ifdef STOGEN
@@ -84,11 +89,12 @@
       enddo
 #endif
       endif ! ierr == 0
+!$croco timings stop main_finalize
 
       if (may_day_flag /= 0) ierr=1
 
 #ifdef MPI
-      if (ierr /= 0) call mpi_abort (MPI_COMM_WORLD, ierr)
+      if (ierr /= 0) call mpi_abort (MPI_COMM_WORLD, ierr, err)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
 
 # if defined XIOS
@@ -110,6 +116,7 @@
 # endif
 #endif
 
+!$croco timings finalize
       stop
       end subroutine croco_finalize_run
 

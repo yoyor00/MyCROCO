@@ -80,7 +80,6 @@
 # define SPHERICAL
 # define MASKING
 # define WET_DRY
-# define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
@@ -128,6 +127,7 @@
 #  undef  BULK_ECUMEV6
 #  undef  BULK_WASP
 #  define BULK_GUSTINESS
+#  define RAIN_FLUX
 #  undef  BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
@@ -256,11 +256,8 @@
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
 # undef  AVERAGES
-# undef  AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
-                     /* Exact restart */
-# undef EXACT_RESTART
 /*
 !                        Diagnostics
 !--------------------------------------------
@@ -271,8 +268,6 @@
 !--------------------------------------------
 !
 */
-# undef DO_NOT_OVERWRITE
-# undef RESTART_DIAGS
 
 # undef DIAGNOSTICS_TS
 

@@ -59,9 +59,7 @@
 !
 
       if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
-#ifdef EXACT_RESTART
      &                    .or.      mod(ilc,nrst).eq.0
-#endif
      &     .or. (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
 #ifdef AVERAGES
      &    .or. (mod(ilc-ntsavg,navg).eq.0 .and. wrtavg(indxTime))
@@ -157,9 +155,7 @@
 ! Get record number
 !
         if (mod(ilc-1,nrst).eq.0
-#ifdef EXACT_RESTART
      &                      .or. mod(ilc,nrst).eq.0
-#endif
      &                      )     nrecrst=nrecrst+1
         if (mod(ilc-1,nwrt).eq.0) nrechis=nrechis+1
 #ifdef AVERAGES
@@ -243,9 +239,7 @@
 ! Call output routines
 !
         if (mod(ilc-1,nrst).eq.0
-#ifdef EXACT_RESTART
      &       .or. mod(ilc,nrst).eq.0
-#endif
      &       ) call wrt_rst
 #ifndef XIOS
         if (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime)) call wrt_his

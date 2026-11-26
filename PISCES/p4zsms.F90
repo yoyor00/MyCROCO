@@ -29,6 +29,7 @@ MODULE p4zsms
    USE sedmodel        ! Sediment model
 !   USE lbclnk          ! ocean lateral boundary conditions (or mpp link)
    USE prtctl          ! print control for debugging
+   USE tools_calendar, ONLY: tool_sectodat
 
    IMPLICIT NONE
    PRIVATE
@@ -268,9 +269,7 @@ CONTAINS
       ilc = 1+iic-nit000 ! number of time step since restart
       IF( iic > nit000 ) THEN
          IF( MOD( ilc-1, nitrst ) == 0  &
-#ifdef EXACT_RESTART
      &                      .OR. MOD(ilc,nitrst) == 0  &
-#endif
      &                      )  THEN
 #if defined PISCES
 ! need the CPP key to avoid compilation error
@@ -785,9 +784,7 @@ CONTAINS
       &      , csize,cmode           &
 #endif
       &      , r3dgrd(4)
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
+      CHARACTER (len=19)    :: cdate
       CHARACTER(len=20) :: cltra, cltrs, cltru
 
 !
@@ -807,7 +804,6 @@ CONTAINS
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (cn_pisrst_out, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           cn_pisrst_out=TRIM(cn_pisrst_out(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
@@ -815,7 +811,6 @@ CONTAINS
           cn_pisrst_out=TRIM(cn_pisrst_out)//cdate(18:19)//'.nc'
           lstr=lenstr(cn_pisrst_out)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 
@@ -1237,6 +1232,9 @@ CONTAINS
 
       SUBROUTINE p4z_rst_wri      ! variables into restart
                                   ! netCDF file.
+#if defined MPI & !defined PARALLEL_FILES
+      use mpi
+#endif
 # include "netcdf.inc"
 
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
@@ -1257,7 +1255,6 @@ CONTAINS
 
 
 #if defined MPI & !defined PARALLEL_FILES
-      INCLUDE 'mpif.h'
       INTEGER status(MPI_STATUS_SIZE), blank
 #endif
 
@@ -1303,7 +1300,9 @@ CONTAINS
 !
 ! Time.
 !
-      ierr = nf_put_var1_FTYPE (ncidpisrst, rstpistime, record, time)
+      ierr = nf_put_var1_FTYPE (ncidpisrst, rstpistime, record, time   &
+     &  - origin_date_in_sec                                          &
+     &  )
       IF (ierr .NE. nf_noerr) THEN
          lvar = lenstr(vname(1,indxTime))
          WRITE(stdout,1) vname(1,indxTime)(1:lvar), record, ierr

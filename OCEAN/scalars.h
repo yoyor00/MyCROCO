@@ -33,10 +33,7 @@
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
       real dtfast, time, time2, time_start, tdays, start_time
-#ifdef USE_CALENDAR
-      real time_end
       character*19 date
-#endif
       integer iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
@@ -67,10 +64,7 @@
      &                       wstp, wnew,
 #endif
      &                       PREDICTOR_2D_STEP
-#ifdef USE_CALENDAR
-      common /time_indices2/ time_end,
-     &                       date
-#endif
+      common /time_indices2/ date
 
 !
 ! Slowly changing variables: these are typically set in the beginning
@@ -146,12 +140,13 @@
 #endif
       integer numthreads,     ntstart
      &      , nfast
-#ifdef EXACT_RESTART
      &     ,  forw_start
-#endif
 
 #if defined SOLVE3D && defined TRACERS
       logical got_tini(NT)
+#endif
+#if defined SOLVE3D && defined TRACERS && defined SUBSTANCE
+      logical got_tini_fix(ntfix)
 #endif
 #ifdef SEDIMENT
       logical got_inised(3)
@@ -180,11 +175,12 @@
 #endif
      &      , numthreads,     ntstart
      &      , nfast
-#ifdef EXACT_RESTART
-     &       , forw_start
-#endif
+     &      , forw_start
 #if defined SOLVE3D && defined TRACERS
      &                      , got_tini
+#endif
+#if defined SOLVE3D && defined TRACERS && defined SUBSTANCE
+     &                      , got_tini_fix
 #endif
 #ifdef SEDIMENT
      &                      , got_inised

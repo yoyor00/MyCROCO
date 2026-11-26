@@ -130,12 +130,13 @@
 !------------------------------------------------------------------------------
 
       module module_interface_oa
+#ifdef MPI
+      use mpi
+#endif
 
+      use tools_calendar, only: tool_datetosec
       implicit none
 
-#ifdef MPI
- include 'mpif.h'
-#endif
 
 
       !> MPI parameters for the Croco-OA interface

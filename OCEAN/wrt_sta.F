@@ -25,6 +25,9 @@
       USE Agrif_Util
 # endif
       use croco_namelist, only: nrpfsta, staname
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -53,7 +56,6 @@
       real ToutN(N,Msta)
 # endif
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), nstas_inc
 # endif
 
@@ -114,7 +116,9 @@ c     write(*,*) 'record = ', record
 !
 ! Time
 !
-      ierr=nf_put_var1_FTYPE (ncidsta, staTime, record, time)
+      ierr=nf_put_var1_FTYPE (ncidsta, staTime, record, time
+     & - sta_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr,

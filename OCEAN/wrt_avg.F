@@ -15,6 +15,9 @@
       subroutine wrt_avg             ! fields into averages
                                      ! netCDF file.
       use croco_namelist, only: dt, avgname, nrpfavg, rho0
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
 !     implicit none
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -25,7 +28,6 @@
 #  endif
 # endif
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"
@@ -100,9 +102,7 @@ CR      write(*,*) 'wrt_avg:  time  ' MYID
 !     Averaged time
 !
       ierr=nf_put_var1_FTYPE (ncidavg, avgTime, record, time_avg
-# ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-# endif
+     &  - avg_origin_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime))
@@ -286,10 +286,44 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
      &        vname(1,indxR), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
+!
+!     Write out vertical viscosity coefficient.
+!
+      if (wrtavg(indxAkv)) then
+!$acc update if(compute_on_device) host(Akv_avg)
+         work=Akv_avg
+         call fillvalue3d_w(work,ncidavg,avgAkv,
+     &        vname(1,indxAkv), record,w3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
+      endif
+!
+!     Write out vertical diffusion coefficient for potential temperature.
+!     
+#  ifdef TEMPERATURE                 
+      if (wrtavg(indxAkt)) then 
+!$acc update if(compute_on_device) host(Akt_avg(:,:,:,itemp))
+         work=Akt_avg(:,:,:,itemp)
+         call fillvalue3d_w(work,ncidavg,avgAkt,
+     &        vname(1,indxAkt), record,w3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
+      endif
+#  endif /* TEMPERATURE */
+#  ifdef SALINITY
+!
+!     Write out vertical diffusion coefficient for salinity.
+!     
+      if (wrtavg(indxAks)) then
+!$acc update if(compute_on_device) host(Akt_avg(:,:,:,isalt))
+         work=Akt_avg(:,:,:,isalt)
+         call fillvalue3d_w(work,ncidavg,avgAks,
+     &        vname(1,indxAks), record,w3dvar,type)
+CR       write(*,*) 'wrt_avg:  wrtAks' MYID
+      endif
+#  endif /* SALINITY */
 #  if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
-!     Brunt vaisala frequency.
+!     Square of Brunt vaisala frequency (N^2).
 !
       if (wrtavg(indxbvf)) then
 !$acc update if(compute_on_device) host(bvf_avg)
@@ -324,6 +358,23 @@ CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
      &        vname(1,indxW), record,r3dvar,type)
 #  endif
 CR      write(*,*) 'wrt_avg:  wrtW' MYID
+      endif
+!
+!     Write out depth of rho- and w-points (m).
+!
+      if (wrtavg(indxZ_r)) then
+!$acc update if(compute_on_device) host(z_r_avg)
+         workr=z_r_avg
+         call fillvalue3d(workr,ncidavg,avgZ_r,
+     &        vname(1,indxZ_r), record,r3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtZ_r' MYID
+      endif
+      if (wrtavg(indxZ_w)) then
+!$acc update if(compute_on_device) host(z_w_avg)
+         work=z_w_avg
+         call fillvalue3d_w(work,ncidavg,avgZ_w,
+     &        vname(1,indxZ_w), record,w3dvar,type)
+CR      write(*,*) 'wrt_avg:  wrtZ_w' MYID
       endif
 !
 #  if defined SST_SKIN && defined TEMPERATURE
@@ -363,43 +414,6 @@ CR      write(*,*) 'wrt_avg:  wrtVisc' MYID
 CR      write(*,*) 'wrt_avg:  wrtDiff' MYID
       endif
 #  endif
-#  ifdef AVERAGES_K
-!
-!     Write out vertical viscosity coefficient.
-!
-      if (wrtavg(indxAkv)) then
-!$acc update if(compute_on_device) host(Akv_avg)
-         work=Akv_avg
-         call fillvalue3d_w(work,ncidavg,avgAkv,
-     &        vname(1,indxAkv), record,w3dvar,type)
-CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
-      endif
-!
-!     Write out vertical diffusion coefficient for potential temperature.
-!
-#   ifdef TEMPERATURE
-      if (wrtavg(indxAkt)) then
-!$acc update if(compute_on_device) host(Akt_avg(:,:,:,itemp))
-         work=Akt_avg(:,:,:,itemp)
-         call fillvalue3d_w(work,ncidavg,avgAkt,
-     &        vname(1,indxAkt), record,w3dvar,type)
-CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
-      endif
-#   endif /* TEMPERATURE */
-#   ifdef SALINITY
-!
-!     Write out vertical diffusion coefficient for salinity.
-!
-      if (wrtavg(indxAks)) then
-!$acc update if(compute_on_device) host(Akt_avg(:,:,:,isalt))
-         work=Akt_avg(:,:,:,isalt)
-         call fillvalue3d_w(work,ncidavg,avgAks,
-     &        vname(1,indxAks), record,w3dvar,type)
-CR       write(*,*) 'wrt_avg:  wrtAks' MYID
-      endif
-#   endif /* SALINITY */
-#  endif  /* AVERAGES_K */
-
 #  if defined LMD_SKPP || defined GLS_MIXING
 !
 !     Write out depth of planetary boundary layer (m).

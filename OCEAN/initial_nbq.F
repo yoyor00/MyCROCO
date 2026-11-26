@@ -56,11 +56,11 @@
 # ifdef NBQ
       use croco_namelist, only: csound_nbq
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
       integer  Istr, Iend, Jstr, Jend
-# ifdef MPI
-      include 'mpif.h'
-# endif
 # include "param.h"
 # include "scalars.h"
 # include "private_scratch.h"
@@ -221,10 +221,7 @@
 !----------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)
-# ifndef EXACT_RESTART
-! Note that if EXACT_RESTART CPP-switch is defined
-! qdmu_nbq is read from rst file
-
+        if (.not.got_qdmu_nbq) then
         do k=1,N
           do j=Jstr-1,Jend+1
             do i=Istr,Iend+1
@@ -232,7 +229,9 @@
           enddo
          enddo
         enddo
+        endif
 
+        if (.not.got_qdmv_nbq) then
         do k=1,N
           do j=Jstr,Jend+1
             do i=Istr-1,Iend+1
@@ -240,7 +239,7 @@
             enddo
           enddo
         enddo
-# endif
+        endif
 
 # ifdef NBQ
         do k=1,N-1

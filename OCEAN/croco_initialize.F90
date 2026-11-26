@@ -50,15 +50,17 @@
       use buffer, only : init_buffer
       use croco_namelist_read, only : read_nml, read_nml_fname
       use croco_namelist, only : dt, ndtfast, ntimes, ninfo
-      use croco_namelist, only : ldefhis, nrrec
+      use croco_namelist, only : ldefhis, nrrec, nrst
+      use croco_namelist, only : end_date
+      use tools_calendar, only : tool_datosec
+#ifdef MPI
+      use mpi
+#endif
 #ifdef STATIONS
       use croco_namelist, only : ldefsta
 #endif
 #if defined ABL1D && !defined XIOS
       use croco_namelist, only : ldefablhis
-#endif
-#ifdef USE_CALENDAR
-      use croco_namelist, only : end_date
 #endif
 #if defined OA_COUPLING || defined OW_COUPLING
       use mod_prism
@@ -93,12 +95,6 @@
                          ! should be used everywhere in the code 
 #ifdef WKB_WWAVE
       integer :: winterp
-#endif
-#ifdef USE_CALENDAR
-      real(kind=8) :: tool_datosec
-#endif
-#ifdef MPI
-      include 'mpif.h'
 #endif
 #ifdef ENSEMBLE
       integer :: mpi_comm_all
@@ -395,7 +391,6 @@
         call Agrif_initvalues_adaptive_state()
       else
 #endif
-#ifdef EXACT_RESTART
         call get_initial (nrrec-1, 2) ! Set initial conditions
                                        ! in case of restart
 !$OMP BARRIER
@@ -405,7 +400,6 @@
         enddo
 !$OMP BARRIER
 # endif
-#endif
         call get_initial (nrrec, 1)   ! Set initial conditions
 #ifdef AGRIF_ADAPTIVE
       endif
@@ -435,15 +429,19 @@
       endif ! lroot
 #endif
 
-#ifdef USE_CALENDAR
       if (lroot) then
-        time_end=tool_datosec(end_date)
-        ntimes=int((time_end-time)/dt)
+        ntimes=NINT((tool_datosec(end_date)-time)/dt)+ntstart-1
         MPI_master_only write(stdout,*)                                  &
            'Ntimes from date_start and date_end:',ntimes
-        ntimes=ntimes+ntstart
-      endif  
-#endif
+!
+!  nrst=-1 : write a restart file only once, at the end of the
+!  simulation (forced here since ntimes is now known). nrst is
+!  compared against ilc=1+iic-ntstart (steps since this run started),
+!  so it must be set to the number of steps in this run, not to the
+!  absolute final step index ntimes.
+!
+        if (nrst == -1) nrst=ntimes-ntstart+1
+      endif
 !
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
@@ -580,6 +578,14 @@
 !
 #if defined AGRIF_ADAPTIVE && defined SOLVE3D
       if (.not.lroot) call Agrif_initvalues_adaptive_bt()
+#endif
+#ifdef WET_DRY
+!  set umask_wet/vmask_wet before bulk_flux's first use, otherwise
+!  they'd still be at their init_arrays.F default ("fully wet")
+!$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call init_wetdry (tile)
+      enddo
 #endif
 !
 !----------------------------------------------------------------------
@@ -931,17 +937,19 @@
         enddo
       endif
 #else
-      if (ldefhis .and. wrthis(indxTime)) call wrt_his
+!
+! In case of restart (record counter already restored by get_initial),
+! the initial state is already in the history file: do not write it again.
+!
+      if (ldefhis .and. wrthis(indxTime) .and. nrechis == 0)           &
+                                                      call wrt_his
 #endif
 
 #ifdef ABL1D
       if (lroot) then ! compatibility TBC
-!$OMP PARALLEL DO PRIVATE(tile)
-        do tile=0,NSUB_X*NSUB_E-1
-          call abl_ini (tile)
-        enddo
 # ifndef XIOS
-      if (ldefablhis .and. wrtabl(indxTime)) call wrt_abl_his
+      if (ldefablhis .and. wrtabl(indxTime) .and. nrecablhis == 0)     &
+                                                  call wrt_abl_his
 # endif
       endif ! lroot
 #endif

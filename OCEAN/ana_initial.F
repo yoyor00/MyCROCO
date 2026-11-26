@@ -29,7 +29,7 @@
 # ifdef SOLVE3D
       call ana_initial_3d_tile (Istr,Iend,Jstr,Jend)
 # endif
-# ifdef ANA_INITIAL
+# if defined ANA_INITIAL && defined SOLVE3D
       if (trim(testcase_name) == 'ANA_JET') then
         call ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
       endif
@@ -95,8 +95,8 @@
             y0=el/2.
 #  ifdef AGRIF
           else
-            x0=2.*Agrif_Parent_xl/3.
-            y0=Agrif_Parent_el/2.
+            x0=2.*Agrif_Parent(xl)/3.
+            y0=Agrif_Parent(el)/2.
           endif
 #  endif
           cff1=0.395
@@ -239,6 +239,20 @@
           enddo
         end select
 
+# ifdef WET_DRY
+!
+!  Cap how far below Dcrit the analytical zeta can be, so a dry
+!  cell never gets an arbitrarily negative total depth (h+zeta)
+!
+        do j=JR_RANGE
+          do i=IR_RANGE
+            if (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) then
+              zeta(i,j,1) = Dcrit(i,j)-h(i,j)-1.e-14
+            endif
+          enddo
+        enddo
+# endif
+
       else  !  nrrec.ne.0.
 
 !  Add perturbation to restart field for rip channel testcases
@@ -332,7 +346,7 @@
       use Agrif_Util
 # endif
 # ifdef SUBSTANCE
-      USE comsubstance, ONLY: cini_wat
+      USE comsubstance, ONLY: cini_wat, cini_wat_fix, cvfix_wat
 # endif
       implicit none
 # include "param.h"
@@ -464,8 +478,10 @@
           cmax = 0.D0
           do j=JstrV,Jend-1
             do i=IstrU,Iend-1
-              cx = dt*( MAX(u(i+1,j,N,1),0.)-MIN(u(i,j,N,1),0.) )*pm(i,j)
-              cy = dt*( MAX(v(i,j+1,N,1),0.)-MIN(v(i,j,N,1),0.) )*pn(i,j)
+              cx = dt*( MAX(u(i+1,j,N,1),0.)
+     &                -MIN(u(i,j,N,1),0.) )*pm(i,j)
+              cy = dt*( MAX(v(i,j+1,N,1),0.)
+     &                -MIN(v(i,j,N,1),0.) )*pn(i,j)
               cmax = MAX( cx+cy, cmax )
             enddo
           enddo
@@ -526,9 +542,9 @@
                 v(i,j,k,2)  = 0.
 #   ifdef NBQ
                 wz(i,j,k,1) = -0.01*du*hup0*
-     &                                (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                    *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
-     &                                    *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
+     &                        (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
+     &                        *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                        *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
                 wz(i,j,k,2) = wz(i,j,k,1)
 #   endif
               enddo
@@ -1042,26 +1058,6 @@
             enddo
           enddo
 
-        case ('')
-          do k=1,N
-            do j=JR_RANGE
-              do i=IR_RANGE
-# ifdef TEMPERATURE
-                t(i,j,k,1,itemp)=14.+5.*50.*log(
-     &                           cosh((z_w(i,j,k )-(-80.))/50.)
-     &                          /cosh((z_w(i,j,k-1)-(-80.))/50.)
-     &                              )/(z_w(i,j,k)-z_w(i,j,k-1))
-     &              +((z_w(i,j,k)+z_w(i,j,k-1))/2.-0.)/1000.
-                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
-# endif /* TEMPERATURE */
-# ifdef SALINITY
-                t(i,j,k,1,isalt)=35.
-                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
-# endif
-              enddo
-            enddo
-          enddo
-
         case ('ANA_JET')
           ! All fields set by ana_jet_initial_tile
 
@@ -1140,7 +1136,8 @@
             do j=JR_RANGE
               do i=IR_RANGE
 # ifdef TEMPERATURE
-                t(i,j,k,1,itemp)=(288.95-273.16)+1.5*TANH(xr(i,j)/100.E+3)
+                t(i,j,k,1,itemp)=(288.95-273.16)
+     &                          +1.5*TANH(xr(i,j)/100.E+3)
                 t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
 # endif /* TEMPERATURE */
 # ifdef SALINITY
@@ -1151,6 +1148,35 @@
             enddo
           enddo
 
+!  Note (#560): testcase_name == '' is the established convention
+!  for realistic config , so it is handled here with its own stratification 
+!  rather than falling through to the case default below. 
+!  case default (flat 20C/35psu profile) only catches a misspelled or new
+!  testcase_name with no dedicated ana_initial branch, kept for backward
+!  compatibility.
+        case ('')
+          do k=1,N
+            do j=JR_RANGE
+              do i=IR_RANGE
+# ifdef TEMPERATURE
+                t(i,j,k,1,itemp)=14.+5.*50.*log(
+     &                           cosh((z_w(i,j,k )-(-80.))/50.)
+     &                          /cosh((z_w(i,j,k-1)-(-80.))/50.)
+     &                              )/(z_w(i,j,k)-z_w(i,j,k-1))
+     &              +((z_w(i,j,k)+z_w(i,j,k-1))/2.-0.)/1000.
+                t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+# endif /* TEMPERATURE */
+# ifdef SALINITY
+                t(i,j,k,1,isalt)=35.
+                t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+# endif
+              enddo
+            enddo
+          enddo
+!  Note (#560): 
+!  case default (flat 20C/35psu profile) only catches a misspelled or new
+!  testcase_name with no dedicated ana_initial branch, kept for backward
+!  compatibility.
         case default
           do k=1,N
             do j=JR_RANGE
@@ -1256,39 +1282,12 @@
           do i=IR_RANGE
             do iv=itsubs1,itsubs2
               if (.not.got_tini(iv)) then
-                select case (trim(testcase_name))
-                case ('')
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                case ('TIDAL_FLAT', 'ESTUARY', 'ESTUARY_SQUARE')
-                  if (h(i,j).gt.0) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                case ('DUNE', 'DUNE3D', 'ANA_DUNE')
-# ifdef MUSTANG
-                  t(i,j,k,1,iv)=cini_wat(iv)
-# else
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-# endif
-                case ('SED_TOY', 'SED_TOY_ROUSE', 'SED_TOY_FLOC_0D',
-     &                'SED_TOY_FLOC_1D', 'SED_TOY_RESUSP', 'SED_TOY_CONSOLID')
-                  t(i,j,k,1,iv)=cini_wat(iv)
-                case default
-                  if (h(i,j).lt.300) then
-                    t(i,j,k,1,iv)=cini_wat(iv)
-                  else
-                    t(i,j,k,1,iv)=0.
-                  endif
-                end select
+                t(i,j,k,1,iv)=cini_wat(iv)
+              endif
+            enddo
+            do iv=1,ntfix
+              if (.not.got_tini_fix(iv)) then
+                cvfix_wat(i,j,k,iv)=cini_wat_fix(iv)
               endif
             enddo
           enddo
@@ -1738,6 +1737,7 @@
       end
 #endif /* SOLVE3D */
 
+#ifdef SOLVE3D
 !======================================================================
 !
       subroutine ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
@@ -1825,6 +1825,9 @@ C$OMP BARRIER
 # ifdef AGRIF
       use Agrif_Util
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1837,12 +1840,12 @@ C$OMP BARRIER
 #  include "climat.h"
 # endif
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc,
-     &        jet_perturb, tndx
+     &        jet_perturb, tndx, ierr
       real cff,x,y,Fyz,
      &     rhomaxs,bgdrhos,zs1,dzs,drhos,drhosfs,
      &     rhomaxn,bgdrhon,zn1,dzn,drhon,drhosfn,
      &     drhosf,z0,z0p,dzs_a,dzn_a,zk,
-     &     Ljet,cff_perturb,ierr,tanh
+     &     Ljet,cff_perturb,tanh
       real*QUAD mssh,area,cff1
       real rhoprof(0:N,2)
       real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
@@ -1856,7 +1859,6 @@ C$OMP BARRIER
      &    dZ(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 !$acc declare create(rhoprof,ru,rv,P)
 # ifdef MPI
-      include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 # endif
       real asymth,zz,zasym,dzasym
@@ -2289,4 +2291,4 @@ C$OMP BARRIER
 !$acc end kernels
       return
       end
-
+#endif /* SOLVE3D */

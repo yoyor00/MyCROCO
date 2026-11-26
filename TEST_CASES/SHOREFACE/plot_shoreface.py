@@ -77,9 +77,9 @@ theta_b = float(nc.theta_b)
 hc = float(nc.hc)
 
 zeta = np.squeeze(nc.variables["zeta"][tindex, args.yindex, xindex:])
-zr = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r", 2))
+zr = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r"))
 zru = 0.5 * (zr[:, :-1] + zr[:, 1:])
-zw = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w", 2))
+zw = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w"))
 zwu = 0.5 * (zw[:, :-1] + zw[:, 1:])
 
 # Create 2D coordinate grids

@@ -14,7 +14,6 @@
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
-# define NEW_S_COORD
 # define UV_ADV
 # undef  NBQ
 # ifdef NBQ
@@ -37,7 +36,6 @@
 #  define M3_FRC_BRY
 #  define T_FRC_BRY
 #  define AVERAGES
-#  define AVERAGES_K
 # else
 #  define UV_VIS2
 #  define UV_VIS_SMAGO

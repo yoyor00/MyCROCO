@@ -57,9 +57,12 @@ MODULE comsubstance
     INTEGER, DIMENSION(:), ALLOCATABLE  :: irk_mod !rank (position) in the model of the variable in the array managing substances
     INTEGER, DIMENSION(:), ALLOCATABLE  :: irk_fil !rank (position) in the data file of the variable
 
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_wat, cini_air, cobc_wat
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_wat, cobc_wat
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: typdiss
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: sub_flx_atm, cv_rain
+    ! t90 : user-set mortality/decay time (h, 0. = no decay);
+    ! f90 : per-timestep decay factor derived from t90, see substance_read_alloc
+    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: t90, f90
     CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: obc_cv_name, long_name_var, name_var, standard_name_var
     CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: init_cv_name, unit_var
     REAL(KIND=rsh), DIMENSION(:,:,:,:),ALLOCATABLE :: ws_part
@@ -85,9 +88,9 @@ MODULE comsubstance
     ! -------------------------------------------------------------------------
     ! Fixed substances in water column
     ! -------------------------------------------------------------------------
-    REAL(KIND=rsh),DIMENSION(:), ALLOCATABLE        :: cini_wat_fix ! - NOT USED
+    REAL(KIND=rsh),DIMENSION(:), ALLOCATABLE        :: cini_wat_fix
     LOGICAL,DIMENSION(:), ALLOCATABLE               :: l_out_subs_fix
-    CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: init_cv_name_fix ! - NOT USED
+    CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: init_cv_name_fix
     REAL(KIND=rsh),DIMENSION(:,:,:,:), ALLOCATABLE  :: cvfix_wat 
     CHARACTER(LEN=lchain),DIMENSION(:), ALLOCATABLE :: standard_name_var_fix, name_var_fix
 

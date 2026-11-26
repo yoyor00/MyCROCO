@@ -15,15 +15,20 @@
                                                   ! file.
         USE croco_namelist, ONLY: ldefhis, nrpfrst, rstname
 #if defined MUSTANG
-        USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
+        USE comMUSTANG, ONLY : rstMust, vname_rstMust,
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
-     &   rstMust_nbvar
+     &   rstMust_nbvar, rstT_dyninsed
 #endif
+# ifdef NC4PAR
+      use mpi
+# endif
+      use tools_calendar, only: tool_sectodat, tool_check_output_origin
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3),  auxil(2),  checkdims
      &      , b3dgrd(4)
+     &      , auxildg(2)
 #ifdef ABL1D
      &      , abl3dgrd(4)
 #endif
@@ -39,9 +44,7 @@
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
+      CHARACTER (len=19)    :: cdate
 
 #include "param.h"
 #include "scalars.h"
@@ -49,7 +52,6 @@
 #include "netcdf.inc"
 #ifdef NC4PAR
 # include "mpi_cpl.h"
-      include 'mpif.h'
 #endif
 !
 ! Put time record index into file name. In  the case when model
@@ -68,7 +70,6 @@
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (rstname, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(1:4)//cdate(6:7)
@@ -76,7 +77,6 @@
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 !
@@ -168,6 +168,10 @@
         ierr=nf_def_dim (ncid, 'auxil',    4,        auxil(1))
 #endif
         auxil(2)=timedim
+#ifndef XIOS
+        ierr=nf_def_dim (ncid, 'auxil_dg', ncntdg, auxildg(1))
+        auxildg(2)=timedim
+#endif
 
         r2dgrd(3)=timedim           ! Free surface
 
@@ -235,6 +239,19 @@
 #endif
         ierr=nf_put_att_text (ncid, rstTstep, 'long_name', 48,
      &       'time step and record numbers from initialization')
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files: each file has its own
+! output frequency, so its counter is stored separately.
+!
+        ierr=nf_def_var (ncid, 'time_step_dg', nf_int, 2, auxildg,
+     &       rstTstepDg)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstTstepDg,nf_collective)
+# endif
+        ierr=nf_put_att_text (ncid, rstTstepDg, 'long_name', 54,
+     &       'record numbers of the diagnostics files (time_step_dg)')
+#endif
 !
 ! Time.
 !
@@ -256,6 +273,8 @@
 
         call nf_add_attribute(ncid, rstTime, vname(:,indxTime),
      &      5, NF_DOUBLE, ierr)
+
+        rst_origin_in_sec=start_date_in_sec
 !
 !     Free-surface.
 !
@@ -650,6 +669,30 @@
 #  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
 
+# ifdef DIAGNOSTICS_TS_MLD
+!
+! MLD vertical index at previous time step (needed by MLD budget)
+!
+        lvar=lenstr(vname(1,indxKbl_nstp))
+        ierr=nf_def_var (ncid, vname(1,indxKbl_nstp)(1:lvar),
+     &       NF_DOUBLE, 3, r2dgrd, rstKbl_nstp)
+#  ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstKbl_nstp,nf_collective)
+#  endif
+        lvar=lenstr(vname(2,indxKbl_nstp))
+        ierr=nf_put_att_text (ncid, rstKbl_nstp, 'long_name',
+     &       lvar,   vname(2,indxKbl_nstp)(1:lvar))
+        lvar=lenstr(vname(3,indxKbl_nstp))
+        ierr=nf_put_att_text (ncid, rstKbl_nstp, 'units', lvar,
+     &       vname(3,indxKbl_nstp)(1:lvar))
+        lvar=lenstr(vname(4,indxKbl_nstp))
+        ierr=nf_put_att_text (ncid, rstKbl_nstp, 'field', lvar,
+     &       vname(4,indxKbl_nstp)(1:lvar))
+
+        call nf_add_attribute(ncid, rstKbl_nstp,
+     &       vname(:,indxKbl_nstp), 5, NF_DOUBLE,ierr)
+# endif /* DIAGNOSTICS_TS_MLD */
+
 # if defined GLS_MIXING
 !
 ! Turbulent kinetic energy.
@@ -816,7 +859,6 @@
 #  endif /* M3FAST */
 # endif /* LMD_MIXING */
 
-# ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.
 !
@@ -1028,7 +1070,47 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
-# endif  /* EXACT_RESTART */
+
+#  ifdef WET_DRY
+!  Wetting/drying masks at u- and v-points
+!
+        lvar=lenstr(vname(1,indxumaskwet))
+        ierr=nf_def_var (ncid, vname(1,indxumaskwet)(1:lvar),
+     &                         NF_DOUBLE, 3, u2dgrd, rstumaskwet)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstumaskwet,nf_collective)
+#   endif
+        lvar=lenstr(vname(2,indxumaskwet))
+        ierr=nf_put_att_text (ncid, rstumaskwet, 'long_name', lvar,
+     &                         vname(2,indxumaskwet)(1:lvar))
+        lvar=lenstr(vname(3,indxumaskwet))
+        ierr=nf_put_att_text (ncid, rstumaskwet, 'units', lvar,
+     &                         vname(3,indxumaskwet)(1:lvar))
+        lvar=lenstr(vname(4,indxumaskwet))
+        ierr=nf_put_att_text (ncid, rstumaskwet, 'field', lvar,
+     &                         vname(4,indxumaskwet)(1:lvar))
+      call nf_add_attribute(ncid, rstumaskwet,
+     &                      vname(:,indxumaskwet), 5, NF_DOUBLE, ierr)
+
+        lvar=lenstr(vname(1,indxvmaskwet))
+        ierr=nf_def_var (ncid, vname(1,indxvmaskwet)(1:lvar),
+     &                         NF_DOUBLE, 3, v2dgrd, rstvmaskwet)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstvmaskwet,nf_collective)
+#   endif
+        lvar=lenstr(vname(2,indxvmaskwet))
+        ierr=nf_put_att_text (ncid, rstvmaskwet, 'long_name', lvar,
+     &                         vname(2,indxvmaskwet)(1:lvar))
+        lvar=lenstr(vname(3,indxvmaskwet))
+        ierr=nf_put_att_text (ncid, rstvmaskwet, 'units', lvar,
+     &                         vname(3,indxvmaskwet)(1:lvar))
+        lvar=lenstr(vname(4,indxvmaskwet))
+        ierr=nf_put_att_text (ncid, rstvmaskwet, 'field', lvar,
+     &                         vname(4,indxvmaskwet)(1:lvar))
+      call nf_add_attribute(ncid, rstvmaskwet,
+     &                      vname(:,indxvmaskwet), 5, NF_DOUBLE, ierr)
+#  endif /* WET_DRY */
+
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT
@@ -1139,6 +1221,22 @@
      &              vname_rstMust(:,indx), 5, NF_DOUBLE, ierr)
             endif
         enddo
+!
+! Scheduling time for dynamic-in-sediment (consolidation/diffusion/
+! bioturbation) process: not a gridded field, stored as a single
+! scalar per restart record so it can be restored exactly instead
+! of being reset to the current time on restart.
+!
+        ierr=nf_def_var (ncid, 't_dyninsed',
+     &                              NF_DOUBLE, 1, timedim,
+     &                              rstT_dyninsed)
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstT_dyninsed,nf_collective)
+#   endif
+        ierr=nf_put_att_text (ncid, rstT_dyninsed, 'long_name', 48,
+     &       'next scheduled time for dynamic-in-sediment update')
+        ierr=nf_put_att_text (ncid, rstT_dyninsed, 'units', 6,
+     &       'second')
 #endif  /* MUSTANG */
 
 
@@ -1261,7 +1359,7 @@
               rec=rec-ierr
             elseif (nrpfrst.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-#if defined MPI & !defined PARALLEL_FILES
+#if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 #endif
             endif
@@ -1299,6 +1397,20 @@
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTstep,nf_collective)
 #endif
+#ifndef XIOS
+!
+! Record numbers of the diagnostics files (absent in old files).
+!
+        ierr=nf_inq_varid (ncid, 'time_step_dg', rstTstepDg)
+        if (ierr .ne. nf_noerr) then
+          rstTstepDg=-1
+        else
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstTstepDg,nf_collective)
+# endif
+        endif
+        ierr=nf_noerr
+#endif
 !
 ! Time.
 !
@@ -1311,6 +1423,8 @@
 #ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTime,nf_collective)
 #endif
+        call tool_check_output_origin(ncid, rstTime, start_date_in_sec,
+     &                                 rst_origin_in_sec)
 
 ! Free-surface.
 !
@@ -1548,6 +1662,22 @@
 #  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
 
+# ifdef DIAGNOSTICS_TS_MLD
+!
+! MLD vertical index at previous time step (needed by MLD budget)
+!
+          lvar=lenstr(vname(1,indxKbl_nstp))
+          ierr=nf_inq_varid (ncid,vname(1,indxKbl_nstp)(1:lvar),
+     &                                               rstKbl_nstp)
+          if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname(1,indxKbl_nstp)(1:lvar), rstname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,rstKbl_nstp,nf_collective)
+#  endif
+# endif /* DIAGNOSTICS_TS_MLD */
+
 # if defined GLS_MIXING
 !
 ! Turbulent kinetic energy.
@@ -1652,7 +1782,6 @@
 #  endif
 # endif
 
-# ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.
 !
@@ -1800,7 +1929,33 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
-# endif /* EXACT_RESTART */
+
+#  ifdef WET_DRY
+        lvar=lenstr(vname(1,indxumaskwet))
+        ierr=nf_inq_varid (ncid, vname(1,indxumaskwet)(1:lvar),
+     &                                            rstumaskwet)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxumaskwet)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstumaskwet,nf_collective)
+#   endif
+
+        lvar=lenstr(vname(1,indxvmaskwet))
+        ierr=nf_inq_varid (ncid, vname(1,indxvmaskwet)(1:lvar),
+     &                                            rstvmaskwet)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) vname(1,indxvmaskwet)(1:lvar),
+     &                                                 rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+#   ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstvmaskwet,nf_collective)
+#   endif
+#  endif /* WET_DRY */
+
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT
@@ -1864,6 +2019,15 @@
           ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
 # endif
         enddo
+
+        ierr=nf_inq_varid (ncid, 't_dyninsed', rstT_dyninsed)
+        if (ierr. ne. nf_noerr) then
+          write(stdout,1) 't_dyninsed', rstname(1:lstr)
+          goto 99                                       !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstT_dyninsed,nf_collective)
+# endif
 #endif
 
 

@@ -206,6 +206,9 @@
       common /mask_r_wet_avg/rmask_wet_avg
       common /Dcrit_wet/Dcrit
       common /wetdry_wet/wetdry
+!  true if umask_wet/vmask_wet were read from the restart file
+      logical got_wetdry_rst
+      common /got_wetdry_rst/ got_wetdry_rst
 #endif
 
 #ifdef WAVE_DRY

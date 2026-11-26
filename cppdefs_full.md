@@ -26,11 +26,6 @@ Output :
 
 - `FILLVAL` — Write fill value in masked land points
 
----
-
-## Calendar
-
-- `USE_CALENDAR` — Absolute date/time mode
 
 ---
 
@@ -109,10 +104,10 @@ Choose one scheme per variable class (M2, M3, T).
   - `POT_TIDES` — Include tidal potential forcing
   - `TIDES_MAS` — Online harmonic prediction (SHOM Simon method) of tidal elevation,
     currents and potential from raw amplitude/phase constituents. no nodal (f/u) 
-    corrections needed in the input; requires `USE_CALENDAR` and auto-activates `MASKING`. 
+    corrections needed in the input; auto-activates `MASKING`. 
     Works with either `ZCLIMATOLOGY`/`M2CLIMATOLOGY` or `Z_FRC_BRY`/`M2_FRC_BRY`
   - `TIDERAMP` — Ramp tidal forcing over 1 day at start
-  - `OBC_REDUCED_PHYSICS` — Compute tidal velcocity from tidal elevation in case of 
+  - `OBC_REDUCED_PHYSICS` — Compute tidal velocity from tidal elevation when
     tidal current is not available (undef `UV_TIDES`)
 
 ---
@@ -143,7 +138,6 @@ Choose one scheme per variable class (M2, M3, T).
 - `SPHERICAL` — Longitude/latitude grid positioning
 - `MASKING` — Land masking
 - `WET_DRY` — Wetting-and-drying scheme
-- `NEW_S_COORD` — New (Song & Haidvogel 1994) vertical S-coord
 - `EW_PERIODIC` — East-West periodic boundary conditions
 - `NS_PERIODIC` — North-South periodic boundary conditions
 
@@ -517,15 +511,8 @@ Use these keys when running test cases without external NetCDF files. Each `ANA_
 ## Input / Output
 
 - `AVERAGES` — Time-averaged output fields
-- `AVERAGES_K` — Time-averaged vertical mixing fields
 - `OUTPUTS_SURFACE` — Surface-only output snapshot fields
 - `HOURLY_VELOCITIES` — Additional hourly velocity output
-
----
-
-## Restart
-
-- `EXACT_RESTART` — Write extra fields for exact bit-reproducible restart
 
 ---
 
@@ -533,8 +520,6 @@ Use these keys when running test cases without external NetCDF files. Each `ANA_
 
 Budget diagnostics for tracers, momentum, vorticity, energy, etc.
 
-- `DO_NOT_OVERWRITE` — Keep existing diagnostic files (append mode)
-- `RESTART_DIAGS` — Restart diagnostic accumulation from file
 - `DIAGNOSTICS_TS` — Tracer equation budget terms
   - `DIAGNOSTICS_TS_ADV` — Use advective (flux) formulation
   - `DIAGNOSTICS_TS_MLD` — Integrate budgets over the mixed layer
@@ -543,7 +528,7 @@ Budget diagnostics for tracers, momentum, vorticity, energy, etc.
 - `DIAGNOSTICS_UV` — Momentum equation budget terms
 - `DIAGNOSTICS_VRT` — Depth-mean vorticity budget
 - `DIAGNOSTICS_KE` — Kinetic energy budget
-- `DIAGNOSTICS_BARO` — Barotropic kinetic energy
+- `DIAGNOSTICS_BARO` — Isolate barotropic/baroclinic coupling contribution for momentum, vorticity and kinetic energy budgets
 - `DIAGNOSTICS_PV` — Potential vorticity budget
 - `DIAGNOSTICS_DISS` — Dissipation _(auto-activates DIAGNOSTICS\_PV)_
 - `DIAGNOSTICS_EDDY` — Reynolds-stress eddy terms
@@ -629,14 +614,9 @@ Other:
 
 ## MUSTANG Sediment Model
 
-- `MUSTANG` — MUSTANG sediment dynamics model _(auto-activates SUBSTANCE, USE\_CALENDAR,
-  TEMPERATURE, SALINITY, key\_noTSdiss\_insed and key\_nofluxwat\_IWS; 
+- `MUSTANG` — MUSTANG sediment dynamics model _(auto-activates SUBSTANCE,
+  TEMPERATURE, SALINITY; 
   force-undefines SEDIMENT —  mutually exclusive with the USGS SEDIMENT model)
-  - `key_noTSdiss_insed` — Temperature, salinity and other dissolved variables are not
-    computed in the sediment: they keep constant values and no dissolved-variable fluxes
-    are exchanged between water and sediment _(auto-derived)_
-  - `key_nofluxwat_IWS` — No water flux exchange between water and sediment
-    (recommended together with `key_noTSdiss_insed`) _(auto-derived)_
   - `key_MUSTANG_V2` — MUSTANG version 2 (without this key, version 1 is used)
   - `MORPHODYN` — Morphodynamics (bed evolution)
   - `SED_DENS` — Activate the effect of suspended sediment on the density

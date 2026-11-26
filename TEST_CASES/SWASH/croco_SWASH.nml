@@ -7,10 +7,15 @@
 /
 
 &croco_time_stepping
-  ntimes = 106700
   dt = 0.0019532775
   ndtfast = 5
   ninfo = 200
+/
+
+&croco_calendar
+  start_date    = "2000-01-01 00:00:00"
+  end_date      = "2000-01-01 00:03:28.41470925"
+  calendar_type = "gregorian"
 /
 
 &croco_time_stepping_nbq
@@ -124,16 +129,19 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .false.
-  out_his_omega = .false.
-  out_his_w = .true.
-  out_his_akv = .true.
   out_his_bostr = .true.
   out_his_bustr = .false.
   out_his_bvstr = .false.
   out_his_wstr = .false.
   out_his_ustr = .false.
   out_his_vstr = .false.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .true.
 /
 
 &croco_temperature_history_fields
@@ -172,16 +180,19 @@
 /
 
 &croco_auxiliary_averages_fields
-  out_avg_rho = .false.
-  out_avg_omega = .false.
-  out_avg_w = .true.
-  out_avg_akv = .true.
   out_avg_bostr = .true.
   out_avg_bustr = .true.
   out_avg_bvstr = .true.
   out_avg_wstr = .false.
   out_avg_ustr = .false.
   out_avg_vstr = .false.
+/
+
+&croco_auxiliary_averages_3d_fields
+  out_avg_rho = .false.
+  out_avg_omega = .false.
+  out_avg_w = .true.
+  out_avg_akv = .true.
 /
 
 &croco_temperature_averages_fields

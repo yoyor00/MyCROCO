@@ -31,7 +31,10 @@
      &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg, nrpfdiags_eddy_avg,
      &     diags_eddyname_avg
 #endif
-
+      use tools_calendar, only: tool_check_output_origin
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -50,7 +53,6 @@
 # ifdef NC4PAR
      &      , csize,cmode
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       character*60 text
 !
@@ -60,6 +62,7 @@
 #  define rec_per_file nrpfdiags_eddy
 #  define wrt wrtdiags_eddy
 #  define vidTime diags_eddyTime
+#  define vidOrigin dia_eddy_origin_in_sec
 #  define vidTstep diags_eddyTstep
 #  define viddiags_zz diags_eddyzz
 #  define viddiags_uu diags_eddyuu
@@ -83,6 +86,7 @@
 #  define rec_per_file nrpfdiags_eddy_avg
 #  define wrt wrtdiags_eddy_avg
 #  define vidTime diags_eddyTime_avg
+#  define vidOrigin dia_eddy_avg_origin_in_sec
 #  define vidTstep diags_eddyTstep_avg
 #  define viddiags_zz diags_eddyzz_avg
 #  define viddiags_uu diags_eddyuu_avg
@@ -110,12 +114,16 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
         create_new_file=ldefdiags_eddy
@@ -125,13 +133,6 @@
       else
         create_new_file=.false.
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefdiags_eddy
-#  else
-      create_new_file=ldefdiags_eddy_avg
-#  endif
-# endif
 !
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
@@ -277,6 +278,8 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
+        vidOrigin=start_date_in_sec
+
 ! eddy diagnostics variables.
 ! -------- ----------- --------
 
@@ -312,6 +315,7 @@
 
            call nf_add_attribute(ncid,viddiags_zz(itrc)
      &            ,vname(:,indxeddyzz+itrc-1),5,NF_FOUT, ierr)
+
 
 !------------------------------
 ! indxeddyuu
@@ -775,7 +779,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-# if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 # endif
             endif
@@ -826,6 +830,9 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
+
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 
 
 ! momentum flux diagnostics variables :
@@ -1104,6 +1111,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
+# undef vidOrigin
 # undef vidTstep
 !
 # undef viddiags_zz

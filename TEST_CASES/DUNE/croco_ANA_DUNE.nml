@@ -7,18 +7,15 @@
 /
 
 &croco_time_stepping
-  ntimes = 72000
   dt = 0.1
   ndtfast = 60
   ninfo = 100
 /
 
-&croco_use_calendar
+&croco_calendar
   start_date = "2019-01-01 00:00:00"
   end_date = "2019-01-01 02:00:00"
-  dt_his = 0.5
-  dt_avg = 4
-  dt_rst = 4
+  calendar_type = "gregorian"
 /
 
 &croco_s_coord
@@ -46,7 +43,7 @@
 /
 
 &croco_restart
-  nrst = 72000
+  nrst = 144000
   nrpfrst = 0
   rstname = "ana_dune_rst.nc"
 /
@@ -93,11 +90,11 @@
 /
 
 &croco_sediments_mustang
-  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV2_Ana_dune.txt"
+  sedname_must = "TEST_CASES/DUNE/paraMUSTANG_ANA_DUNE.nml"
 /
 
 &croco_substance
-  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Ana_dune.txt"
+  subsfilename = "TEST_CASES/DUNE/parasubstance_ANA_DUNE.nml"
 /
 
 &croco_primary_history_fields
@@ -116,14 +113,17 @@
 /
 
 &croco_auxiliary_history_fields
-  out_his_rho = .true.
-  out_his_omega = .false.
-  out_his_w = .true.
-  out_his_akv = .false.
   out_his_bostr = .true.
   out_his_wstr = .true.
   out_his_ustr = .true.
   out_his_vstr = .true.
+/
+
+&croco_auxiliary_history_3d_fields
+  out_his_rho = .true.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
 /
 
 &croco_bvf_history_fields

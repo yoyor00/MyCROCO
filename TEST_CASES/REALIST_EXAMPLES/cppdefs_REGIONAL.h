@@ -80,7 +80,6 @@
 # define SPHERICAL
 # define MASKING
 # undef  WET_DRY
-# define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
 # define UV_COR
@@ -256,11 +255,8 @@
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
 # define AVERAGES
-# define AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
-                     /* Exact restart */
-# undef EXACT_RESTART
 /*
 !                        Diagnostics
 !--------------------------------------------
@@ -271,8 +267,6 @@
 !--------------------------------------------
 !
 */
-# undef DO_NOT_OVERWRITE
-# undef RESTART_DIAGS
 
 # undef DIAGNOSTICS_TS
 

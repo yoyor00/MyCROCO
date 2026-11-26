@@ -292,7 +292,9 @@ fi
 if [ "$MY_CONFIG_WORK" != "$MY_CONFIG_HOME" ]; then
     if [ ! -d $MY_CONFIG_WORK ]; then
         mkdir -p $MY_CONFIG_WORK
-    else
+    elif [ $x_f -eq 0 ]; then
+        # -f is the non-interactive mode: like for the home directory above,
+        # an existing work directory must not turn into a blocking question
         echo 'Already a configuration exists ...'
         echo 'You chould check the configuration directory ' $MY_CONFIG_WORK
         echo -n " Do you want to proceed anyway (risk of overwriting) ? [N/y] "
@@ -354,7 +356,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     # AGRIF
     if [[ ${options[@]} =~ "agrif" ]] ; then
 	cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml.1 $MY_CROCO_DIR/croco.nml.1
-	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/AGRIF_FixedGrids_REGIONAL.in $MY_CROCO_DIR/AGRIF_FixedGrids.in
     fi
     # INTER
     if [[ ${options[@]} =~ "inter" ]] ; then
@@ -379,8 +381,8 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
     # MUSTANG
     if [[ ${options[@]} =~ "mustang" ]] ; then
-	mkdir -p $MY_CROCO_DIR/MUSTANG_NAMELIST
-	cp -f ${CROCO_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $MY_CROCO_DIR/MUSTANG_NAMELIST/.
+    cp -f ${CROCO_DIR}/MUSTANG/paraMUSTANG_full_example.nml $MY_CROCO_DIR.
+    cp -f ${CROCO_DIR}/MUSTANG/parasubstance_full_example.nml $MY_CROCO_DIR.
     fi
     # OANALYSIS
     if [[ ${options[@]} =~ "oanalysis" ]] ; then

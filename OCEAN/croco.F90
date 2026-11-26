@@ -33,25 +33,19 @@
       use ncscrum
       use croco_initialize, only : croco_initialize_run
       use croco_finalize, only : croco_finalize_run
-      use croco_namelist, only : ntimes, ninfo
-#ifdef USE_CALENDAR
-      use croco_namelist, only : end_date
+      use croco_namelist, only : ntimes
+#ifdef MPI
+      use mpi
 #endif
+!$croco timings use
 !
       implicit none
 !
       integer :: ierr
       integer :: iifroot, iicroot
-#ifdef USE_CALENDAR
-      character(len=19) :: tool_sectodat
-      real(kind=8) :: tool_datosec
-#endif
 #ifdef AGRIF
       integer :: size_XI, size_ETA, se, sse, sz, ssz
       external :: step
-#endif
-#ifdef MPI
-      include 'mpif.h'
 #endif
 !
 #include "private_scratch.h"
@@ -75,12 +69,18 @@
       call Agrif_Init_Grids()
 #endif
 !
+!  Wall-clock timing facility.
+!
+!$croco timings init
+!
 !----------------------------------------------------------------------
 !  Model initialization: namelist read through the first history
 !  write. See croco_initialize.F90 for the full sequence.
 !----------------------------------------------------------------------
 !
+!$croco timings start main_init
       call croco_initialize_run (ierr)
+!$croco timings stop main_init
 !
 !  Only run the time loop if croco_initialize_run fully succeeded (ierr)
 !  and did not itself flag a fatal problem (may_day_flag, e.g. a bad
@@ -105,9 +105,6 @@
                       'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
-#ifdef USE_CALENDAR
-      time_end=tool_datosec(end_date)
-#endif
 
 #ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD, ierr)
@@ -129,14 +126,8 @@
       call computenbmaxtimes
 #endif
 
+!$croco timings start time_step
       time_stepping: do iicroot=ntstart,ntimes+1
-
-#ifdef USE_CALENDAR
-        if (mod(iicroot-1,ninfo) == 0) then
-          MPI_master_only write(stdout,'(a)') tool_sectodat(time)
-        endif
-        if (time > time_end) exit time_stepping
-#endif
 
 #ifdef SOLVE3D
 # ifndef AGRIF
@@ -158,6 +149,7 @@
 #endif
         if (may_day_flag /= 0) exit time_stepping
       enddo time_stepping                  !-->  end of time step
+!$croco timings stop time_step
 
       endif ! ierr == 0 .and. may_day_flag == 0
 

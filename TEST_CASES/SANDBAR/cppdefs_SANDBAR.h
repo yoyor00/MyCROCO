@@ -16,7 +16,6 @@
 # undef  NBQ
 # define SOLVE3D
 # define UV_ADV
-# define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
@@ -69,7 +68,6 @@
 #  define M3_FRC_BRY
 #  define T_FRC_BRY
 #  define AVERAGES
-#  define AVERAGES_K
 #  define DIAGNOSTICS_EDDY
 /* NBQ */
 # endif 

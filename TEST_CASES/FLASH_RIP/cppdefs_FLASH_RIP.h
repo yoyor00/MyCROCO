@@ -1,7 +1,6 @@
 # undef  MPI
 # undef  NC4PAR
 # define SOLVE3D
-# define NEW_S_COORD
 # define UV_ADV
 # define NO_TRACER
 # define NO_TEMPERATURE
@@ -39,7 +38,6 @@
 # define ANA_SST
 # define ANA_BTFLUX
 # define AVERAGES
-# define AVERAGES_K
 # undef  DIAGNOSTICS_EDDY
 
 

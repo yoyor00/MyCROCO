@@ -35,7 +35,7 @@
       end
 !======================================================================
       subroutine abl_ini_tile(Istr,Iend,Jstr,Jend)
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, ininame
 #  if defined ABL_NUDGING && defined ABL_NUDGING_TRA
       use croco_namelist, only: ltra_min, ltra_max
 #  endif
@@ -150,8 +150,8 @@
 !======================================================================
 !++ Generate initial conditions
 !======================================================================
-      nt_n = 1 + MOD( iic  , 2)
-      nt_a = 1 + MOD( iic+1, 2)
+      nt_n = 1
+      nt_a = 2
 !======================================================================
 
 !======================================================================
@@ -188,16 +188,11 @@
       endif
 # endif
 
-! Check the presence of u_abl in croco_ini.nc file in case of
-! EXACT_RESTART
-# ifdef EXACT_RESTART
+! Check the presence of u_abl in croco_ini.nc file
       lstr=lenstr(ininame)
       ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
       lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
       ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar), varid)
-# else
-      ierr=nf_noerr+1
-# endif
       if (ierr .ne. nf_noerr) then
         do k=1,N_abl
           do j=jmin,jmax

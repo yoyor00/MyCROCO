@@ -125,13 +125,16 @@ C$    trd=omp_get_thread_num()
 # ifdef CVTK_DEBUG
       USE debug
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, kbak,kold,
      &        imin,imax,jmin,jmax,
      &        k1, k2, kp1
 # ifdef MPI
-     &       ,err
+     &       ,err, ierr
 # endif
 # ifdef PSOURCE
      &       ,is
@@ -200,7 +203,6 @@ C$    trd=omp_get_thread_num()
      &               ntcorv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &               ntcorw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # endif
-
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
@@ -245,7 +247,6 @@ C$    trd=omp_get_thread_num()
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -332,11 +333,11 @@ C$    trd=omp_get_thread_num()
 !$acc kernels if(compute_on_device) default(present)
 
 # ifdef NBQ
-      if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
+      if (FIRST_RST_TIME_STEP.and.FIRST_FAST_STEP) then
          do k=1,N
            do j=JstrV-2,Jend+1
              do i=IstrU-2,Iend+1
-               rho_bak(i,j,k)=rho(i,j,k) 
+               rho_bak(i,j,k)=rho(i,j,k)
              enddo
             enddo
           enddo
@@ -796,13 +797,13 @@ C$OMP END MASTER
 !
 # ifdef ZNUDGING
 #  ifdef ZONAL_NUDGING
-      if (FIRST_TIME_STEP .or. mod(iic,10).eq.0) then
+      if (FIRST_RST_TIME_STEP .or. mod(iic,10).eq.0) then
         if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew),zetazon)
         endif
       endif
-      if (FIRST_TIME_STEP) then
+      if (FIRST_RST_TIME_STEP) then
         if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ssh(START_2D_ARRAY),sshzon)
@@ -847,7 +848,7 @@ C$OMP END MASTER
 ! Then compute wet/dry masks
 !
 # ifdef WET_DRY
-      call wetdry_tile (Istr,Iend,Jstr,Jend)
+      call wetdry_tile (Istr,Iend,Jstr,Jend, .false.)
 # endif
 !
 !-----------------------------------------------------------------------
@@ -877,7 +878,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # if defined NBQ && !defined NBQ_GRID_SLOW
-      if ( (FIRST_TIME_STEP .and. FIRST_FAST_STEP) NSTEP_GRID ) then
+      if ( (FIRST_RST_TIME_STEP .and. FIRST_FAST_STEP) NSTEP_GRID ) then
 !
 ! Update main grid parameters
 !
@@ -1436,7 +1437,7 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # ifdef NBQ
-      if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
+      if (FIRST_RST_TIME_STEP .and. FIRST_FAST_STEP) then
         do j=JstrR,JendR
           do k=0,N
             do i=IstrR,IendR
@@ -1451,14 +1452,14 @@ C$OMP END MASTER
 !  Acoustic wave emission
 !-------------------------------------------------------------------
 !
-# ifdef ACOUSTIC_FORCING 
-      if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
+# ifdef ACOUSTIC_FORCING
+      if (FIRST_RST_TIME_STEP .and. FIRST_FAST_STEP) then
         period_exp = 0.025/2.
         for_a_exp  = 2.5
         amp_exp    = 1.e-2
         hmax_exp   = 128.
         dg_exp     = 2.
-        time_nbq   = 0. 
+        time_nbq   = 0.
       endif
 # endif
 !
@@ -3468,7 +3469,7 @@ C$OMP END MASTER
 # if defined M2NUDGING && defined M2CLIMATOLOGY
 
 #  ifdef ZONAL_NUDGING
-      if (FIRST_TIME_STEP .or. mod(iic,10).eq.0) then
+      if (FIRST_RST_TIME_STEP .or. mod(iic,10).eq.0) then
         if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ubar(START_2D_ARRAY,knew),ubzon)
@@ -3476,8 +3477,8 @@ C$OMP END MASTER
      &                   vbar(START_2D_ARRAY,knew),vbzon)
         endif
       endif
-      if (FIRST_TIME_STEP) then
-        if (FIRST_FAST_STEP) then 
+      if (FIRST_RST_TIME_STEP) then
+        if (FIRST_FAST_STEP) then
           call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ubclm(START_2D_ARRAY),ubclmzon)
           call zonavg_2d(Istr,Iend,Jstr,Jend,
@@ -4196,7 +4197,7 @@ C$OMP END MASTER
 
         may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err)
+        call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
         stop                            !-->  EXIT
 # endif
