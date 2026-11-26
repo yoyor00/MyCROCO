@@ -19,7 +19,7 @@ OPENMPISDEFINED
 #ifdef MPI
 MPIISDEFINED
 #endif
-#if defined OA_COUPLING || defined OW_COUPLING
+#if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
 OACPLISDEFINED
 #endif
 #ifdef XIOS

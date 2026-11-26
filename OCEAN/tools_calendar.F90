@@ -350,7 +350,7 @@ CONTAINS
       IMPLICIT NONE
 #if defined MPI
       INTEGER :: ierr
-# if defined OA_COUPLING || defined OW_COUPLING || defined XIOS || defined ENSEMBLE
+# if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING || defined XIOS || defined ENSEMBLE
 !$AGRIF_DO_NOT_TREAT
       INTEGER :: ocean_grid_comm
       common /cpl_comm/ ocean_grid_comm

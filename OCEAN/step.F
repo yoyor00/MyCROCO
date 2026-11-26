@@ -16,7 +16,7 @@
 !
 #include "cppdefs.h"
       subroutine step()
-# if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
       use croco_namelist, only: ntimes, dt
 # endif
 !$croco timings use

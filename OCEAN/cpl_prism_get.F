@@ -40,6 +40,7 @@
       INTEGER    :: iok_utau, iok_vtau, iok_etau, iok_ntau, iok_taum
       INTEGER    :: iok_srflx, iok_itemp , iok_isalt
       INTEGER    :: iok_psfc
+      INTEGER    :: iok_siconc, iok_sflx
       INTEGER    :: iok_wdry
       INTEGER    :: iok_wt0m1, iok_whs, iok_wdir
       INTEGER    :: iok_wbhd, iok_wfoc, iok_wlm

@@ -2365,6 +2365,9 @@ C 				  endif
 # ifdef ABL1D
 # include "abl1d.h"
 # endif
+# ifdef OI_COUPLING
+# include "mpi_cpl.h"
+# endif
 
 !
 #ifdef DIAGNOSTICS_EDDY
@@ -2877,6 +2880,12 @@ c !$acc wait
       call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
       endif
 # endif /* SALINITY */
+# ifdef OI_COUPLING
+      if (xios_field_is_active("siconc")) then
+      call xios_send_field("siconc",siconc(:,:))
+      endif
+# endif /* OI_COUPLING */
+
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
 ! but I found it quiet ugly

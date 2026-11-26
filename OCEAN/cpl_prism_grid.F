@@ -21,7 +21,6 @@
       use mpi
       IMPLICIT NONE
 
-# include 'mpif.h'
 # include "param.h"
 # include "grid.h"
 # include "scalars.h"

@@ -722,7 +722,8 @@ MODULE croco_namelist
    !! Write velocity (u, v, w, ubar, vbar) to stations file
 #endif
 
-#if (defined SPONGE && !defined SPONGE_GRID)
+!#if (defined SPONGE && !defined SPONGE_GRID)
+#if (defined SPONGE || defined SPONGE_GRID)
    ! &croco_sponge
    real :: x_sponge = 0.0
    !! Thickness of sponge/nudging layer [m]

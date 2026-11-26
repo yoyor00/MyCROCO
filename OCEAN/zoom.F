@@ -950,7 +950,7 @@ CR      write(*,*) '  0' MYID
       UVspongeTimeindex = -1
 
       iif = -1
-# if defined OA_COUPLING || defined OW_COUPLING
+# if defined OA_COUPLING || defined OW_COUPLING || defined OI_COUPLING
       it_inside_root = 1
 # endif
 # ifdef AGRIF_ADAPTIVE
