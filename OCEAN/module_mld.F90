@@ -10,7 +10,6 @@
 !======================================================================
 
 #include "cppdefs.h" 
-
       module module_mld
 !============================================================================
 !!                   ***  MODULE  module_mld  ***
@@ -19,6 +18,7 @@
 !! (turbulence, density, temperature)
 !============================================================================
 
+# ifdef SOLVE3D
 #  ifdef MASKING
 #   define SWITCH *
 #  else
@@ -263,5 +263,6 @@
 
        end subroutine idx_mld_turbulence
 
-      end module module_mld
+# endif /* SOLV3D */
 
+      end module module_mld
