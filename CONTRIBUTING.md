@@ -14,7 +14,7 @@ contributors to the project.
 > Dedicated **coding_rules** are being prepared to formalize and extend
 > these guidelines, but it is still under discussion.
 >
-> Likewise, the way the use of AI tools in contributing code to CROCO
+> Likewise, the way the **use of AI tools** in contributing code to CROCO
 > should be framed is being discussed and is not yet settled. This
 > document will be updated once these points are decided.
 
