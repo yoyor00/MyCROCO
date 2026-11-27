@@ -769,8 +769,9 @@ CONTAINS
          ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
           do k=ksdmin,ksdmax
              dzs(k,:,:)=tmp3d(:,:,k)
+             WHERE (dzs(k,GLOBAL_2D_ARRAY) == -valmanq) dzs(k,GLOBAL_2D_ARRAY)=0.0_rsh
           enddo
-         
+
          if (ierr .ne. nf_noerr) then
            MPI_master_only write(stdout,2) 'DZS', indx, inised_name(1:lstr)
            may_day_flag=2                                  !--> ERROR
@@ -799,12 +800,13 @@ CONTAINS
         ierr=nf_inq_varid (ncid,nomcv, varid)
         if (ierr .eq. nf_noerr) then
          ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
- 
+
          do k=ksdmin,ksdmax
              cv_sed(iv,k,:,:)=tmp3d(:,:,k)
-             c_sedtot(k,:,:)=c_sedtot(k,:,:)+cv_sed(iv,k,:,:)*typart(iv)  
+             WHERE (cv_sed(iv,k,GLOBAL_2D_ARRAY) == -valmanq) cv_sed(iv,k,GLOBAL_2D_ARRAY)=0.0_rsh
+             c_sedtot(k,:,:)=c_sedtot(k,:,:)+cv_sed(iv,k,:,:)*typart(iv)
          enddo
- 
+
          if (ierr .ne. nf_noerr) then
            MPI_master_only write(stdout,2) nomcv, indx, inised_name(1:lstr)
            may_day_flag=2                                  !--> ERROR
