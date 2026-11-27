@@ -1,9 +1,22 @@
 
 # Contributing
 
-
 This guide describes the conventions and workflow expected from all
 contributors to the project.
+
+> [!IMPORTANT]
+> ### Status
+>
+> CROCO is currently in the middle of a transition from legacy Fortran 77
+> (`.F`) files to modern Fortran 90 (`.F90`) modules, and this document
+> will keep evolving alongside that transition.
+>
+> Dedicated **coding_rules** are being prepared to formalize and extend
+> these guidelines, but it is still under discussion.
+>
+> Likewise, the way the use of AI tools in contributing code to CROCO
+> should be framed is being discussed and is not yet settled. This
+> document will be updated once these points are decided.
 
 Most rules follow common **modern Fortran** community practices that
 CROCO is gradually moving toward, even though some parts of the codebase
@@ -18,36 +31,6 @@ with the current structure of the model.
 The long-term goal is to progressively improve readability, modularity,
 and maintainability without introducing disruptive changes to the
 existing workflow.
-
-
-------------------------------------------------------------------------
-
-# Syntax and Style
-
-Follow common **modern Fortran style conventions** and enforce them
-using tools such as **fprettify** or **findent** when formatting code.
-
--   Indent with **2 to 4 spaces** (do not use tabs).
--   Use **free-form source format** (`.f90`, `.f95`, `.f03`, `.f08`).
--   Line length should ideally stay below **132 characters**.
-
-------------------------------------------------------------------------
-
-# Code Structure
-
-Follow the spirit of **clarity and simplicity**.
-
--   Always use `implicit none`.
--   Prefer **modules** over global state.
--   Avoid duplicated logic; factor reusable routines into helper
-    procedures.
--   Keep procedures **short and composable** rather than creating overly
-    complex abstractions.
--   Check what is **already implemented** before writing new code.
--   Explicitly specify `intent(in)`, `intent(out)`, or `intent(inout)`
-    for arguments.
--   Avoid hidden side effects.
--   Avoid unnecessary generalisation or configuration unless needed.
 
 ------------------------------------------------------------------------
 
@@ -142,11 +125,11 @@ Use descriptive names such as:
 -   Ensure that:
 
     -   tests pass
-    -   documentation is updated if necessary in dedicated repository
+    -   documentation is updated if necessary
 
 A good MR description should include:
 
--   purpose of the change
+-   purpose of the change (WHY, not WHAT)
 -   related issue
 -   summary of implementation
 -   potential side effects
