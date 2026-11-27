@@ -15,7 +15,7 @@ from .croco import Croco
 from .messaging import Messaging
 from .system import gen_system_info
 from .perf import Performance
-from .helpers import run_shell_command
+from .helpers import run_shell_command, replace_symlink
 from .htmlreport.htmlreport import generate_html
 
 
@@ -49,6 +49,7 @@ class Benchmarking:
         self.make_ref_variant_first()
 
         # Create croco instances
+        self.init_errors = []
         self.instances = self.create_croco_instances()
 
         # dump
@@ -62,9 +63,7 @@ class Benchmarking:
         dirname = os.path.dirname(results)
         basename = os.path.basename(results)
         link_name = f"{dirname}/last"
-        if os.path.exists(link_name):
-            os.remove(link_name)
-        os.symlink(basename, link_name)
+        replace_symlink(basename, link_name)
 
     def make_ref_variant_first(self):
         """
@@ -74,7 +73,7 @@ class Benchmarking:
         ref_name = self.config.variant_ref_name
 
         # ref variant
-        if ref_name in self.config.case_names:
+        if ref_name in self.config.variant_names:
             self.config.variant_names.remove(ref_name)
             self.config.variant_names.insert(0, ref_name)
 
@@ -97,6 +96,14 @@ class Benchmarking:
             res = res_splitting
         return res
 
+    def _try_create_instance(self, res, config, case_name, variant_name, restarted):
+        try:
+            res.append(Croco(config, case_name, variant_name, restarted))
+        except Exception as e:
+            msg = f"Case '{case_name}': failed to initialise — {e}"
+            Messaging.step_error(msg)
+            self.init_errors.append(msg)
+
     def create_croco_instances(self) -> Union[Croco]:
         # extract some
         config = self.config
@@ -115,26 +122,16 @@ class Benchmarking:
                     if config.restart:
                         if "restart" not in case_config.get("unsupported", []):
                             if variant_name == self.config.variant_ref_name:
-                                restarted = False
-                                res.append(
-                                    Croco(config, case_name, variant_name, restarted)
-                                )
-                                restarted = True
-                                res.append(
-                                    Croco(config, case_name, variant_name, restarted)
-                                )
+                                self._try_create_instance(res, config, case_name, variant_name, False)
+                                self._try_create_instance(res, config, case_name, variant_name, True)
                             else:
-                                restarted = True
-                                res.append(
-                                    Croco(config, case_name, variant_name, restarted)
-                                )
+                                self._try_create_instance(res, config, case_name, variant_name, True)
                         else:
                             Messaging.step(
                                 f"Skip unsupported restart option for {case_name}"
                             )
                     else:
-                        restarted = False
-                        res.append(Croco(config, case_name, variant_name, restarted))
+                        self._try_create_instance(res, config, case_name, variant_name, False)
                 else:
                     Messaging.step(f"Skip unsupported {case_name}/{variant_name}")
 
@@ -146,6 +143,11 @@ class Benchmarking:
         self.process_instances()
         self.perf_results()
         self.generate_reports()
+        if self.init_errors:
+            raise Exception(
+                f"{len(self.init_errors)} case(s) failed to initialise:\n"
+                + "\n".join(self.init_errors)
+            )
 
     def build_instances(self):
         """Handles the build step."""
@@ -204,6 +206,8 @@ class Benchmarking:
             generate_html(
                 self.config.results,
                 output_file=os.path.join(self.config.results, "treeview.html"),
+                ref_variant_name=self.config.variant_ref_name,
+                use_ref_path=self.config.use_ref if self.config.use_ref else None,
             )
         if self.config.report.contains_false():
             Messaging.step_error("Error: False detected in report")

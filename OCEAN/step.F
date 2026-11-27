@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !
@@ -15,6 +16,10 @@
 !
 #include "cppdefs.h"
       subroutine step()
+# if defined OA_COUPLING || defined OW_COUPLING
+      use croco_namelist, only: ntimes, dt
+# endif
+!$croco timings use
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -48,37 +53,45 @@
        iif = iif+1
       IF (iif .EQ. 0) then
 #endif
+!$croco timings start step3d_pre
 C$OMP PARALLEL
         call prestep3D_thread()
 C$OMP END PARALLEL
+!$croco timings stop step3d_pre
 #ifdef SOLVE3D
       endif
       IF ((iif.GT.0).AND.(iif.LT.(nfast+1))) THEN
 #endif
+!$croco timings start step2d
 C$OMP PARALLEL
         call step2d_thread()
 C$OMP END PARALLEL
+!$croco timings stop step2d
 #ifdef SOLVE3D
       ENDIF
       IF (iif .EQ. (nfast+1)) then
 #endif
+!$croco timings start step3d_uv
 C$OMP PARALLEL
         call step3D_uv_thread()
 C$OMP END PARALLEL
+!$croco timings stop step3d_uv
 #ifdef SOLVE3D
       endif
       IF (iif .EQ. (nfast + 2)) then
 #endif
+!$croco timings start step3d_t
 C$OMP PARALLEL
         call step3D_t_thread()
 C$OMP END PARALLEL
+!$croco timings stop step3d_t
 #ifdef SOLVE3D
         iif = -1
         nbstep3d = nbstep3d + 1
       endif
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Put phase of OASIS3
-      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)) then
+      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+2)) then
 #  ifdef AGRIF
         if(it_inside_root==Agrif_rel_idt()) then 
 #  endif
@@ -106,6 +119,12 @@ C$OMP END PARALLEL
 !====================================================================
 !
       subroutine prestep3D_thread()
+      use croco_namelist
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+      USE mod_tides_mas, ONLY : mas_update_calendar
+#  endif
+# endif
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
@@ -120,6 +139,9 @@ C$OMP END PARALLEL
 #endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
+#endif
+#ifdef STOGEN
+          USE stomod   ! stochastic module
 #endif
       implicit none
 #include "param.h"
@@ -139,7 +161,9 @@ C$OMP END PARALLEL
 #if defined CVTK_DEBUG_ADVANCED
 # include "coupling.h"
 #endif
-
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -168,16 +192,18 @@ C$OMP BARRIER
 
 C$OMP MASTER
       time=time_start+dt*float(iic-ntstart)
-#ifdef USE_CALENDAR
-      tdays=(time-time_start)*sec2day
-#else
-      tdays=time*sec2day
-#endif
+      ! tdays: elapsed days since the run's true start (restart-invariant)
+      tdays=(time-time_start+dt*float(ntstart-1))*sec2day
 
 #ifdef SOLVE3D
       nstp=1+mod(iic-ntstart,2)
       nrhs=nstp
       nnew=3
+#endif
+
+#ifdef ABL1D
+      nt_n = 1 + MOD(iic-ntstart  , 2)
+      nt_a = 1 + MOD(iic-ntstart+1, 2)
 #endif
 
 #ifdef AGRIF
@@ -236,6 +262,13 @@ C$OMP BARRIER
 
 #ifdef SOLVE3D
 
+! set_vbc ahead of set_bry/ana_bry below which need patm2d 
+! (OBC_PATM inverse-barometer correction) already
+! up to date rather than lagging by one step
+      do tile=my_first,my_last
+        call set_vbc (tile)
+      enddo
+C$OMP BARRIER
       do tile=my_first,my_last
 # ifdef AGRIF
         IF (Agrif_Root()) THEN
@@ -303,8 +336,16 @@ C$OMP BARRIER
 
       enddo
 C$OMP BARRIER
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+!  Refreshed mas time once per step, ahead of the tile loop
+C$OMP MASTER
+      call mas_update_calendar(time)
+C$OMP END MASTER
+C$OMP BARRIER
+#  endif
+# endif
       do tile=my_first,my_last
-        call set_vbc (tile)
 # if defined  BBL && !defined M3FAST
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
@@ -342,6 +383,10 @@ C$OMP MASTER
 C$OMP END MASTER
 #  endif
 # endif
+
+#ifdef STOGEN
+      call sto_mod(iic) ! update stochastic fields 
+#endif
 
 # ifdef BULK_FLUX
       do tile=my_first,my_last
@@ -500,9 +545,6 @@ C$OMP BARRIER
 # if defined DIAGNOSTICS_VRT
         call set_diags_vrt (tile)
 # endif
-# if defined DIAGNOSTICS_EK
-        call set_diags_ek (tile)
-# endif
 # if defined DIAGNOSTICS_PV
         call set_diags_pv (tile)
 # endif
@@ -526,7 +568,7 @@ C$OMP BARRIER
         if (ldefdiags_vrt_avg .and. wrtdiags_vrt_avg(indxTime))
      &      call set_diags_vrt_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_KE
         if (ldefdiags_ek_avg .and. wrtdiags_ek_avg(indxTime))
      &      call set_diags_ek_avg (tile)
 #  endif
@@ -613,6 +655,11 @@ C$OMP BARRIER
 #ifdef CVTK_DEBUG
       use debug
 #endif
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+      USE mod_tides_mas, ONLY : mas_update_calendar
+#  endif
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -729,6 +776,15 @@ C$OMP BARRIER
         ENDIF
 # endif
 C$OMP BARRIER
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+!  Refreshed mas time once per step, ahead of the tile loop
+C$OMP MASTER
+        call mas_update_calendar(time)
+C$OMP END MASTER
+C$OMP BARRIER
+#  endif
+# endif
         do tile=my_first,my_last
           call set_vbc (tile)
 # ifdef BBL
@@ -949,6 +1005,13 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+      do tile=my_first,my_last
+# if defined DIAGNOSTICS_KE
+        ! located at the end of step3d_uv because we need u(:::,nstp)
+        call set_diags_ek (tile)
+# endif
+      enddo
+
 #endif /* SOLVE3D */
 !
 #if defined AGRIF && defined AGRIF_2WAY
@@ -992,10 +1055,10 @@ C$OMP END MASTER
 # if defined CVTK_DEBUG && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
-#  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+#  if defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
-#  endif /* key_MUSTANG_bedload  key_MUSTANG_V2 */
+#  endif /* key_MUSTANG_V2 */
 # endif /* CVTK_DEBUG_AVANCED  SOLVE3D */
 #endif /* MUSTANG */
       implicit none
@@ -1095,7 +1158,7 @@ C$OMP MASTER
             call check_tab2d(c_sedtot(ilay, :, :),'c_sedtot step3d_t','rint')
             call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','rint')
         enddo
-#   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+#   if defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
             call check_tab2d(flx_bx(itrc, :, :),'flx_bx step3d_t','r')
             call check_tab2d(flx_by(itrc, :, :),'flx_by step3d_t','r')

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
@@ -21,6 +22,16 @@
                                  ! Create diag data NetCDF file:
                                  ! Define its variables, dimensions,
                                  ! and attributes
+#ifdef DIAGNOSTICS_BIO
+      use croco_namelist, only: ldefdiabio, nwrtdiabio, nrpfdiabio,
+     &     dianamebio, ldefdiabio_avg, ntsdiabio_avg,
+     &     nwrtdiabio_avg, nrpfdiabio_avg, dianamebio_avg
+#endif
+      use tools_calendar, only: tool_check_output_origin
+
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -31,7 +42,6 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
 !
       logical create_new_file
@@ -50,7 +60,7 @@
 #  define wrtGasExc wrtdiabioGasExc
 #  define wrtVSink wrtdiabioVSink
 #  define vidTime diaTimebio
-#  define vidTime2 diaTime2bio
+#  define vidOrigin dia_bio_origin_in_sec
 #  define vidTstep diaTstepbio
 #  define vidFlux diabioFlux
 #  define vidGasExc diabioGasExc
@@ -63,7 +73,7 @@
 #  define wrtGasExc wrtdiabioGasExc_avg
 #  define wrtVSink wrtdiabioVSink_avg
 #  define vidTime diaTimebio_avg
-#  define vidTime2 diaTime2bio_avg
+#  define vidOrigin dia_bio_avg_origin_in_sec
 #  define vidTstep diaTstepbio_avg
 #  define vidFlux diabioFlux_avg
 #  define vidGasExc diabioGasExc_avg
@@ -80,16 +90,25 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
+      if (lvar.eq.total_rec-1) then
 # ifndef AVRH
-      create_new_file = ldefdiabio
+        create_new_file = ldefdiabio
 # else
-      create_new_file = ldefdiabio_avg
+        create_new_file = ldefdiabio_avg
 # endif
+      else
+        create_new_file=.false.
+      endif
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
       if (mynode.gt.0) create_new_file=.false.
@@ -184,9 +203,9 @@
         if (total_rec.le.1) then
 #  ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                   ,r3dgrd, w3dgrd)
+     &                   ,r3dgrd, w3dgrd, NF_FOUT)
 #  else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 #  endif
       endif
 # endif
@@ -242,38 +261,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime2)
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
-# endif
-# ifndef AVRH
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, vname(2,indxTime2)(1:lvar))
-# else
-        text='avg'/ /vname(2,indxTime2)
-        lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, text(1:lvar))
-# endif
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
-     &                                vname(2,indxTime2)(1:lvar))
 
-        lvar=lenstr(vname(3,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'units',  lvar,
-     &                                vname(3,indxTime2)(1:lvar))
-        lvar=lenstr(vname(4,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
-     &                                vname(4,indxTime2)(1:lvar))
-
-        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
-     &       NF_FOUT, ierr)
+        vidOrigin=start_date_in_sec
 !
 ! Tracer diagnostics variables.
 !
@@ -444,7 +433,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-# if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 # endif
             endif
@@ -497,18 +486,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
-# endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 !
 ! Tracer flux diagnostics variables.
 !
@@ -617,7 +596,7 @@
 # undef wrtVSink
 # undef wrtGasExc
 # undef vidTime
-# undef vidTime2
+# undef vidOrigin
 # undef vidTstep
 # undef vidFlux
 # undef vidGasExc

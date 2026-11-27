@@ -1,6 +1,5 @@
 #include "cppdefs.h"
 
-
 MODULE sedmodel
    !!======================================================================
    !!                       ***  MODULE sedmodel   ***

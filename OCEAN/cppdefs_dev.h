@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA,
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /*
@@ -34,13 +35,20 @@
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
 #endif
 
+
 /*
-    Constant tracer option (for debugging)
+======================================================================
+   Set ENSEMBLE options:
+   Define MPI
+   Change the generic name of MPI communicator MPI_COMM_WORLD
+   to communicator used for individual member
+======================================================================
 */
-#ifdef KILPATRICK
-# define CONST_TRACERS
-#else
-# undef CONST_TRACERS
+#ifdef ENSEMBLE
+# define MPI
+# define MPI_COMM_WORLD ocean_grid_comm
+# define MPI_COMM_ALL MPI_COMM_WORLD
+# define LOGFILE
 #endif
 
 /*
@@ -128,7 +136,7 @@
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
     defined PASSIVE_TRACER || defined SUBSTANCE   || \
-    defined SEDIMENTS      || defined BIOLOGY
+    defined SEDIMENT       || defined BIOLOGY
 # define TRACERS
 # define TEMPERATURE
 #endif
@@ -148,9 +156,6 @@
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
 # undef  M3FAST_REINIT
-# ifdef TANK
-#  define NOT_NBQ_AM4
-# endif
 # undef  TRACETXT
 # undef  DIAG_CFL
 # define HZR Hzr
@@ -260,8 +265,7 @@
 */
 #if defined SOLVE3D
 # define VAR_RHO_2D
-# if !defined NONLIN_EOS && !defined INNERSHELF \
-                         && !defined MOVING_BATHY
+# if !defined NONLIN_EOS && !defined NO_RESET_RHO0
 #  define RESET_RHO0
 # endif
 #endif
@@ -281,17 +285,10 @@
    as the weight value.
 ======================================================================
 */
-#if defined BASIN || defined EQUATOR  || defined GRAV_ADJ \
-                  || defined SOLITON  || defined JET \
-                  || defined ACOUSTIC || defined VORTEX \
-                  || defined THACKER  || defined TANK \
-                  || defined KH_INST  || defined TS_HADV_TEST
-# define PGF_FLAT_BOTTOM
-#elif defined RIP || defined FLASH_RIP
-# define PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
-#elif defined PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
+#ifdef PGF_BASIC_JACOBIAN
+# ifndef WJ_GRADP
+#  define WJ_GRADP 0.125
+# endif
 #endif
 
 /*
@@ -355,7 +352,7 @@
 /*
    Set UP3 scheme in barotropic equations for 2DH applications
 */
-#if !defined SOLVE3D && !defined SOLITON
+#if !defined SOLVE3D && !defined NO_M2_HADV_UP3
 # define M2_HADV_UP3
 #endif
 /*
@@ -471,7 +468,7 @@
    If BIO_HADV_WENO5 is chosen, the advection scheme for passive tracers is
    independent from that selected for the two active tracers (TS_HADV)
 */
-#ifdef BIO_HADV_WENO5
+#if defined BIO_HADV_WENO5 || defined SUBSTANCE
 # if defined TEMPERATURE && defined SALINITY
 #  define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
 # elif defined TEMPERATURE || defined SALINITY
@@ -511,7 +508,7 @@
 ======================================================================
 */
 #ifdef SPONGE
-# ifndef INNERSHELF
+# ifndef NO_SPONGE_GRID
 #  define SPONGE_GRID
 # endif
 # define SPONGE_DIF2
@@ -530,7 +527,6 @@
 
 # if defined GLS_KOMEGA
 # elif defined GLS_KEPSILON
-# elif defined GLS_GEN
 # else
 #  define GLS_KEPSILON
 # endif
@@ -575,9 +571,6 @@
 #ifdef TIDES_MAS
 # define MASKING
 #endif
-#if defined TIDES_MAS  && !defined USE_CALENDAR
-#error "TIDES with TIDES_MAS requires USE_CALENDAR "
-#endif
 
 /*
 ======================================================================
@@ -608,17 +601,17 @@
     PSOURCE / PSOURCE_NCFILE option
 ======================================================================
 */
+#if defined PSOURCE_NCFILE
+# ifndef PSOURCE_MASS
+#  define PSOURCE
+# endif
+#endif
 #if defined PSOURCE || defined PSOURCE_MASS
 # define ANA_PSOURCE  /* ON: set vertical profil for qbar */
 # undef RIVER_RAMP
 #endif
 #ifdef PSOURCE_MASS
 # undef PSOURCE
-#endif
-#if defined PSOURCE_NCFILE
-# define PSOURCE
-# define ANA_PSOURCE
-# undef RIVER_RAMP
 #endif
 
 /*
@@ -707,10 +700,6 @@
 # endif
 # define WKB_ADD_DIFF
 # define WKB_ADD_DIFFRACTION
-# if defined SHOREFACE || defined SANDBAR \
-                       || (defined RIP && !defined BISCA)
-#  define ANA_BRY_WKB
-# endif
 #endif
 
 #ifdef MRL_WCI
@@ -726,9 +715,6 @@
          || (defined WAVE_OFFLINE && defined MRL_WCI) \
          || defined ANA_WWAVE
 # define WAVE_IO
-# if !defined WAVE_ROLLER || !defined WKB_WWAVE
-#  define wepb0 wepb
-# endif
 #endif
 
 /*
@@ -793,21 +779,23 @@
 #endif
 /*
 ======================================================================
-    Bottom stress option:
+    Bottom stress :
 
-    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid
-    numerical instability associated with reversing bottom flow
-    NOW replaced by BSTRESS_FAST option
+    LIMIT_BSTRESS: Set limiting factor to avoid numerical instability 
+    associated with the Euler explicit treatment of the bottom stress
+    BSTRESS_FAST is an alternative with computation at fast time step
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
-# define  LIMIT_BSTRESS
+# ifndef NO_LIMIT_BSTRESS
+#  define LIMIT_BSTRESS
+# endif
 #endif
+/*
+======================================================================
+    BBL :
+======================================================================
 */
-#ifdef INNERSHELF
-# undef  LIMIT_BSTRESS
-#endif
 #ifdef BBL
 # ifdef OW_COUPLING
 # elif defined WAVE_OFFLINE
@@ -871,11 +859,6 @@
 #   define SLOPE_LESSER        /* default: Lesser        */
 #  endif
 # endif /* BEDLOAD */
-# ifdef DUNE
-#  ifdef ANA_DUNE
-#   undef SLOPE_LESSER
-#  endif
-# endif /* DUNE */
 #endif /* SEDIMENT */
 
 /*
@@ -885,11 +868,8 @@
 #ifdef MUSTANG
 # undef  SEDIMENT
 # define SUBSTANCE
-# define USE_CALENDAR
 # define TEMPERATURE
 # define SALINITY
-# define key_noTSdiss_insed
-# define key_nofluxwat_IWS
 #endif /* MUSTANG */
 
 
@@ -1002,9 +982,6 @@
 
 #endif /* AGRIF */
 
-#if defined AGRIF && defined EXACT_RESTART
-# error "AGRIF with EXACT_RESTART is not yet implemented"
-#endif
 
 #if defined AGRIF && defined XIOS && \
       ( defined OA_COUPLING || defined OW_COUPLING )
@@ -1058,7 +1035,6 @@
 ======================================================================
 */
 #ifndef SOLVE3D
-# undef AVERAGES_K
 # undef TRACERS
 # undef TEMPERATURE
 # undef SALINITY

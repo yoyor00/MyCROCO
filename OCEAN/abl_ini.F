@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -34,6 +35,13 @@
       end
 !======================================================================
       subroutine abl_ini_tile(Istr,Iend,Jstr,Jend)
+      use croco_namelist, only: dt, ininame
+#  if defined ABL_NUDGING && defined ABL_NUDGING_TRA
+      use croco_namelist, only: ltra_min, ltra_max
+#  endif
+#  if defined ABL_NUDGING && defined ABL_NUDGING_DYN
+      use croco_namelist, only: ldyn_min, ldyn_max
+#  endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -142,8 +150,8 @@
 !======================================================================
 !++ Generate initial conditions
 !======================================================================
-      nt_n = 1 + MOD( iic  , 2)
-      nt_a = 1 + MOD( iic+1, 2)
+      nt_n = 1
+      nt_a = 2
 !======================================================================
 
 !======================================================================
@@ -180,16 +188,11 @@
       endif
 # endif
 
-! Check the presence of u_abl in croco_ini.nc file in case of
-! EXACT_RESTART
-# ifdef EXACT_RESTART
+! Check the presence of u_abl in croco_ini.nc file
       lstr=lenstr(ininame)
       ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
       lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
       ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar), varid)
-# else
-      ierr=nf_noerr+1
-# endif
       if (ierr .ne. nf_noerr) then
         do k=1,N_abl
           do j=jmin,jmax
@@ -228,6 +231,9 @@
 #  endif
 #  if defined ABL_NUDGING_TRA
       cff1     = 1. / ( bmax - bmin )**3
+! invert timescales [s] -> coefficients [s^-1]
+      ltra_min = 1./ltra_min
+      ltra_max = 1./ltra_max
 ! for active tracers
       alp3_tra = -2. * cff1                 * ( ltra_max - ltra_min )
       alp2_tra =  3. * cff1 * (bmax + bmin) * ( ltra_max - ltra_min )
@@ -261,6 +267,9 @@
 #  endif
 #  if defined ABL_NUDGING_DYN
       cff1     = 1. / ( bmax - bmin )**3
+! invert timescales [s] -> coefficients [s^-1]
+      ldyn_min = 1./ldyn_min
+      ldyn_max = 1./ldyn_max
 ! for dynamics
       alp3_dyn = -2. * cff1                 * ( ldyn_max - ldyn_min )
       alp2_dyn =  3. * cff1 * (bmax + bmin) * ( ldyn_max - ldyn_min )

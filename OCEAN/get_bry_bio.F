@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -13,6 +14,8 @@
                     && !defined ANA_BRY
 
       subroutine get_bry_bio    ! Read side boundary forcing
+      use croco_namelist, only: dt, bry_file
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none             ! fields from boundary file
 # include "param.h"
 # include "scalars.h"
@@ -20,9 +23,12 @@
 # include "netcdf.inc"
 # include "boundary.h"
       real cff
-      integer  lstr,lvar,lvar2,lenstr, ierr, ierr_all, itrc
+      character*180 transf
+      integer  lstr,lvar,lvar2,lenstr, ierr, ierr_all, itrc,
+     &         varid, vtransform_value, vt_rec, ierr_vt
       integer  nf_read_bry_EW, nf_read_bry_NS
       character*60 text
+      logical  old_vt
 !
 ! Initialization: Check, whether boundary forcing file is already
 !================ opened, and if not, open it.  Find and save netCDF
@@ -46,6 +52,51 @@
      &      bry_file(1:lstr),   '''.'
         endif
         if (ierr.eq.nf_noerr) then
+!
+! Check the vertical s-coordinate transformation used to create
+! the boundary file: stop if VertCoordType=OLD/SH94 or Vtransform/=2.
+! If neither VertCoordType nor Vtransform is present, the file is
+! assumed to be valid (tools write Vtransform=2 by default).
+!
+          old_vt=.false.
+          transf=' '
+          ierr_vt=nf_get_att_text(bry_id, nf_global,
+     &                            'VertCoordType', transf)
+          if (ierr_vt.eq.nf_noerr) then
+            if (trim(transf).eq.'OLD' .or.
+     &          trim(transf).eq.'SH94') old_vt=.true.
+          endif
+!
+          vtransform_value=0
+          ierr_vt=nf_inq_varid(bry_id, 'Vtransform', varid)
+          if (ierr_vt.eq.nf_noerr) then
+            vt_rec=1
+            ierr_vt=nf_get_var1_int(bry_id, varid, vt_rec,
+     &                                         vtransform_value)
+          else
+            ierr_vt=nf_get_att_int(bry_id, nf_global, 'Vtransform',
+     &                                         vtransform_value)
+          endif
+          if (ierr_vt.eq.nf_noerr .and. vtransform_value.ne.2)
+     &                                         old_vt=.true.
+!
+          if (old_vt) then
+            MPI_master_only write(stdout,'(/1x,A/(16x,A))')
+     &  'GET_BRY_BIO ERROR: Old Vtransform is obsolete.',
+     &  'From now on, CROCO uses only one vertical',
+     &  's-coordinate transformation (Vtransform=2).',
+     &  'Two possibilities:',
+     &  '1) keep these input files and use croco <= v2.1.3',
+     &  '   (with the NEW_S_COORD cppkey deactivated)',
+     &  '2) regenerate the input files with croco_tools',
+     &  '   or croco_pytools (Vtransform=2).',
+     &  'Newer versions of the tools no longer support',
+     &  'the old Vtransform.',
+     &  'For details, see the documentation.'
+            may_day_flag=2
+            return                                       !--> ERROR
+          endif
+!
           ierr_all=0
           do itrc=1,NT
             if (itrc.eq.itemp) then
@@ -623,6 +674,16 @@ c     goto 99                                     !--> ERROR
 #  endif
 # endif     /* PISCES or (BIO_NChlPZD || BIO_N2ChlPZ2) or BIO_BioEBUS */
             endif   !condition on itrc value
+          if (itrc.eq.itemp .or. itrc.eq.isalt) then
+            call tool_origindate(bry_id,bry_time_id,
+     &                           bryt_origin_date_in_sec(itrc),
+     &                           bryt_secinunit(itrc))
+          else if (got_tbry(itrc)) then
+            call tool_origindate(bry_id,bry_tid(itrc),
+     &                           bryt_origin_date_in_sec(itrc),
+     &                           bryt_secinunit(itrc))
+          endif
+
           enddo   ! loop on itrc
 !
 ! Initialisation ierr_all
@@ -742,13 +803,9 @@ c                goto 99         !--> ERROR
               ierr=nf_get_var1_FTYPE
      &          (bry_id, bry_tid(itrc), bry_rec1(itrc), cff)
               if (ierr.eq.nf_noerr) then
-# ifdef USE_CALENDAR
-                call tool_origindate(bry_id,bry_tid(itrc),
-     &                         bry_origin_date_in_sec)
-                cff=cff+bry_origin_date_in_sec*sec2day
-# endif
+                cff=bryt_origin_date_in_sec(itrc)+cff*bryt_secinunit(itrc)
                 itbry1(itrc)=min(3-itbry1(itrc),ntbry1(itrc))
-                bry_time1(itbry1(itrc),itrc)=cff*day2sec +
+                bry_time1(itbry1(itrc),itrc)=cff +
      &            bry_cycle1(itrc)*bry_ncycle1(itrc)
 !
                 ierr_all=0
@@ -787,12 +844,9 @@ c                goto 99         !--> ERROR
                 ierr=ierr_all
                 if (ierr.eq.0) then
                   MPI_master_only  write(stdout,
-     &              '(6x,A,9x,A,1x,G12.4,1x,I4)')
+     &              '(6x,A,9x,A,1x,A19,1x,I4)')
      &              'GET_BRY_BIO    -- Read all boundary data',
-     &              'for time =', cff
-# ifdef USE_CALENDAR
-     &               -bry_origin_date_in_sec*sec2day
-# endif
+     &              'for time =', tool_sectodat(cff)
 # ifdef MPI
      &              , mynode
 # endif
@@ -814,9 +868,7 @@ c                goto 99         !--> ERROR
      $          ,'file ''',   bry_file(1:lstr),  '''',  'tdays = ',
      $          tdays,'  but the last available  bry_time ='
      $          ,bry_time(itbry1(itrc))*sec2day
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
              endif
 
           enddo                 !do while
@@ -847,6 +899,7 @@ c                goto 99         !--> ERROR
 !  Set-up biology boundary forcing fields
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2, itrc
       real cff, cff1,cff2
@@ -931,13 +984,9 @@ c                goto 99         !--> ERROR
      &      '(/2(1x,A)/3(1x,A,F16.10)/)')
      &      'SET_BRY_ALL_TILE - current model time is out of bounds of',
      &      '''bry_time''.',     'BRY_TSTART=',   bry_time(it1)*sec2day
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
      &      ,'TDAYS=',  tdays,    'BRY_TEND=',     bry_time(it2)*sec2day
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
             may_day_flag=2
           endif
         endif

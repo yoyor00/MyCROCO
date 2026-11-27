@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -16,6 +17,7 @@
      &                     Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS,
      &                                    wrk1,wrk2,wrk3, Rib,
      &                                                 my_kbl)
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -290,8 +292,8 @@
      &                 +(v(i,j  ,N,tind)-v(i,j  ,k,tind)+
      &                   v(i,j+1,N,tind)-v(i,j+1,k,tind))**2)
 
-            Vtsq=Vtc*(z_r(i,j,N)-z_r(i,j,k))*ws(i,j)
-     &           *sqrt(max(0.,0.5*(bvf(i,j,k)+bvf(i,j,k-1))))
+            Vtsq=1.8*Vtc*(z_r(i,j,N)-z_r(i,j,k))*ws(i,j)
+     &           *sqrt(max(1.e-5,0.5*(bvf(i,j,k)+bvf(i,j,k-1))))
 
             Rib(i,j,ku)=Ritop/(dVsq+Vtsq+eps)
           enddo

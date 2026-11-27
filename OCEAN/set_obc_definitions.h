@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /*
@@ -42,19 +43,6 @@
 /* PARENT OBC DEFINITIONS */
 
 #ifndef CHILD
-# ifdef DUNE
-#  define OBC_COM_EAST
-#  define OBC_COM_WEST
-#  ifdef OBC_TSPECIFIED
-#   define OBC_COM_TSPECIFIED
-#  endif
-#  ifdef OBC_M3ORLANSKI
-#   define OBC_COM_M3ORLANSKI
-#  endif
-#  define OBC_COM_ZCHAPMAN
-#  define OBC_COM_M2SPECIFIED_WEST
-#  define OBC_COM_M2CHARACT_EAST
-# else
 #  ifdef OBC_EAST
 #   define OBC_COM_EAST
 #  endif
@@ -197,7 +185,6 @@
 #    define OBC_COM_NBQSPECIFIED_NORTH
 #   endif
 #  endif
-# endif
 
 #else
 /* CHILD OBC DEFINITIONS */

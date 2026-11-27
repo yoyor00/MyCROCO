@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -29,6 +30,7 @@
 !
 !         i n p u t     o u t p u t      i n t e r n a l
 !
+      use tools_calendar, only: tool_origindate
       implicit none
       real              cycle_length,      tend,     cff
       integer ncid,     icycle,          tshift,  vartype,  lvar,
@@ -36,7 +38,7 @@
      &                  ntime,           i,ierr,ierr0,nvdims,ldim,
      &                                   size,    vdims(5), lenstr
       real*8  tstart
-      real*8  cycle_origin_date_in_sec
+      real*8  cycle_origin_date_in_sec, cycle_secinunit
       character*16 varname, dimname, attname
 
 #include "param.h"
@@ -120,12 +122,9 @@
       ierr=nf_get_var1_FTYPE(ncid, varid, 1, tstart)
 
       if (ierr .ne. nf_noerr) goto 10                     !--> ERROR
-#ifdef USE_CALENDAR
-            call tool_origindate(ncid, varid,
-     &                           cycle_origin_date_in_sec)
-              tstart=tstart+cycle_origin_date_in_sec*sec2day
-#endif
-      tstart=tstart*day2sec
+      call tool_origindate(ncid, varid,
+     &                     cycle_origin_date_in_sec, cycle_secinunit)
+      tstart=cycle_origin_date_in_sec+tstart*cycle_secinunit
 
       if (cycle_length.gt.0.) then
         cff=time-tstart
@@ -148,11 +147,9 @@
           ierr=nf_get_var1_FTYPE(ncid, varid, irec, tend)
           if (ierr .ne. nf_noerr) goto 10                 !--> ERROR
 
-#ifdef USE_CALENDAR
-          tend=tend+cycle_origin_date_in_sec*sec2day
-#endif
+          tend=cycle_origin_date_in_sec+tend*cycle_secinunit
 
-          tend=tend*day2sec+tshift*cycle_length
+          tend=tend+tshift*cycle_length
           if (tstart.le.time .and. time.lt.tend) then
             trecord=i
           elseif (irec.ne.1) then

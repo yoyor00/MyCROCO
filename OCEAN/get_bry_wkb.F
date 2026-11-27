@@ -1,17 +1,20 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #if !defined ANA_BRY_WKB && defined WKB_WWAVE
 
       subroutine get_bry_wkb        ! Read side boundary forcing
+       use croco_namelist, only: dt, brywkb_file
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none                 ! fields from boundary file
 
 # define wac_west 'cdir_west'
@@ -51,7 +54,9 @@
           ierr=nf_inq_varid (brywkb_id, 'brywkb_time',  brywkb_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'brywkb_time'
           ierr_all=ierr_all+ierr
-
+          call tool_origindate(brywkb_id,brywkb_time_id,
+     &                           brywkb_origin_date_in_sec,
+     &                           brywkb_secinunit)
 # ifdef WKB_OBC_WEST
           ierr=nf_inq_varid (brywkb_id, 'wac_west', wacbry_west_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'wac_west'
@@ -121,13 +126,9 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (brywkb_id, brywkb_time_id, brywkb_rec, cff)
           if (ierr.eq.nf_noerr) then
-# ifdef USE_CALENDAR
-            call tool_origindate(brywkb_id,brywkb_time_id,
-     &                           brywkb_origin_date_in_sec)
-            cff=cff+brywkb_origin_date_in_sec*sec2day
-# endif
+            cff=brywkb_origin_date_in_sec+cff*brywkb_secinunit
             itbrywkb=min(3-itbrywkb,ntbrywkb)
-            brywkb_time(itbrywkb)=cff*day2sec + brywkb_cycle*brywkb_ncycle
+            brywkb_time(itbrywkb)=cff + brywkb_cycle*brywkb_ncycle
 # ifdef SEDIMENT
             brywkb_time(itbrywkb)=brywkb_time(itbrywkb)/morph_fac
 # endif
@@ -190,12 +191,9 @@
 # endif
             ierr=ierr_all
             if (ierr.eq.0) then
-              write(stdout,'(6x,A,9x,A,1x,G12.4,1x,I4)')
+              write(stdout,'(6x,A,9x,A,1x,A19,1x,I4)')
      &       'GET_BRY_WKB - Read wave boundary data',
-     &                                  'for time =', cff
-# ifdef USE_CALENDAR
-     &                 -brywkb_origin_date_in_sec*sec2day
-# endif
+     &                                  'for time =', tool_sectodat(cff)
 # ifdef MPI
      &                                              , mynode
 # endif
@@ -214,9 +212,7 @@
      &    'file ''',   brywkb_file(1:lstr),  '''',  'tdays = ',tdays,
      &    '  but the last available  brywkb_time =',
      &                                   brywkb_time(itbrywkb)*sec2day
-# ifdef USE_CALENDAR
      &                              -brywkb_origin_date_in_sec*sec2day
-# endif
         endif
       enddo
   2   format(' ERROR in get_bry: cannot read variable ''',A,'''')
@@ -240,6 +236,7 @@
 !  Set-up all boundary forcing fields
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff, cff1,cff2
@@ -312,13 +309,9 @@
         write(stdout,'(/2(1x,A)/3(1x,A,F16.10)/)')
      &   'SET_BRY_WKB_TILE - current model time is out of bounds of',
      &   '''brywkb_time''.',     'BRY_WKB_TSTART=', brywkb_time(it1)*sec2day
-# ifdef USE_CALENDAR
      &                                    -brywkb_origin_date_in_sec*sec2day
-# endif
      &       ,'TDAYS=',  tdays,    'BRY_WKB_TEND=', brywkb_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &                                    -brywkb_origin_date_in_sec*sec2day
-# endif
         may_day_flag=2
       endif
       return

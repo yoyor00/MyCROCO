@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -22,6 +23,10 @@
 !
 # ifdef AGRIF
       USE Agrif_Util
+# endif
+      use croco_namelist, only: nrpfsta, staname
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
 # endif
       implicit none
 # include "param.h"
@@ -51,7 +56,6 @@
       real ToutN(N,Msta)
 # endif
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), nstas_inc
 # endif
 
@@ -112,7 +116,9 @@ c     write(*,*) 'record = ', record
 !
 ! Time
 !
-      ierr=nf_put_var1_FTYPE (ncidsta, staTime, record, time)
+      ierr=nf_put_var1_FTYPE (ncidsta, staTime, record, time
+     & - sta_origin_in_sec
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr,

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -15,10 +16,12 @@
                                     ! Read point or grided surface
       subroutine get_stflux (itrc)  ! flux for tracer variables itrc
                                     ! from forcing NetCDF file.
+      use croco_namelist, only: dt, frcname, rho0
 # ifdef OPENACC
       use exchange_device_host
 # endif
 # define STFLUX_DATA
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -53,6 +56,9 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'shf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+          call tool_origindate(ncidfrc,stf_tid(itrc),
+     &                         stf_origin_date_in_sec(itrc),
+     &                         stf_secinunit(itrc))
         endif
 # endif
 # ifdef SALINITY
@@ -62,6 +68,9 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'swf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+          call tool_origindate(ncidfrc,stf_tid(itrc),
+     &                         stf_origin_date_in_sec(itrc),
+     &                         stf_secinunit(itrc))
         endif
 # endif
         lvar=lenstr(vname(1,indxShflx+itrc-1))
@@ -131,12 +140,8 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'stf_time', stf_rec(i)
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
-        call tool_origindate(ncidfrc,stf_tid(itrc),
-     &                       stf_origin_date_in_sec)
-        cff=cff+stf_origin_date_in_sec*sec2day
-# endif
-        stf_time(i,itrc)=cff*day2sec+stf_cycle(itrc)*stf_ncycle(itrc)
+        cff=stf_origin_date_in_sec(itrc)+cff*stf_secinunit(itrc)
+        stf_time(i,itrc)=cff+stf_cycle(itrc)*stf_ncycle(itrc)
         if (stf_time(itstf(itrc),itrc).eq.-1.E+20)
      &      stf_time(itstf(itrc),itrc)=stf_time(i,itrc)
 
@@ -155,12 +160,10 @@ c**        call opencdf (frcname,N)
           goto 99                                         !--> ERROR
         endif
        itstf(itrc)=i
-       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,A19,1x,I4)')
      &            'GET_STFLUX -- Read surface flux of tracer', itrc,
-     &                                             'for time =', cff
-# ifdef USE_CALENDAR
-     &  -stf_origin_date_in_sec*sec2day
-# endif
+     &                                             'for time =',
+     &            tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -180,9 +183,7 @@ c**        call opencdf (frcname,N)
      &                                a,' at TIME index = ',i4)
   7   write(stdout,8) stf_rec(itrc),ntstf(itrc),frcname(1:lstr),
      &                tdays, stf_time(itstf(itrc),itrc)*sec2day
-# ifdef USE_CALENDAR
-     &  -stf_origin_date_in_sec*sec2day
-# endif
+     &  -stf_origin_date_in_sec(itrc)*sec2day
   8   format(/,' GET_STFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing file: ', a,/,14x,'TDAYS = ',
@@ -197,6 +198,7 @@ c**        call opencdf (frcname,N)
 ! Set-up surface tracer flux for current tile.
 !--------------------------------------------------------------------
 !
+        use croco_namelist, only: dt
 # define STFLUX_DATA
       implicit none
       integer Istr,Iend,Jstr,Jend, itrc, i,j, it1,it2
@@ -272,9 +274,7 @@ c**        call opencdf (frcname,N)
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'stf_time',tdays,stf_time(it2,itrc)*sec2day
-# ifdef USE_CALENDAR
-     &  -stf_origin_date_in_sec*sec2day
-# endif
+     &  -stf_origin_date_in_sec(itrc)*sec2day
   1       format(/,' SET_STFLUX_TILE - current model time exceeds',
      &          1x,'ending value for variable: ',A8,/,14x,'TDAYS = ',
      &                                    g12.4, 2x, 'TSTF = ',g12.4)

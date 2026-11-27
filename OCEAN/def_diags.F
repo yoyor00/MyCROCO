@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
@@ -23,6 +24,16 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#if defined DIAGNOSTICS_TS
+      use croco_namelist, only: ldefdia, nwrtdia, nrpfdia, dianame,
+     &     ldefdia_avg, ntsdia_avg, nwrtdia_avg, nrpfdia_avg,
+     &     dianame_avg
+#endif
+      use tools_calendar, only: tool_check_output_origin
+
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -33,7 +44,6 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       logical create_new_file, res
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -51,7 +61,7 @@
 #  define rec_per_file nrpfdia
 #  define wrt3D wrtdia3D
 #  define vidTime diaTime
-#  define vidTime2 diaTime2
+#  define vidOrigin dia_origin_in_sec
 #  define vidTstep diaTstep
 !
 #  define vidTXadv diaTXadv
@@ -76,9 +86,9 @@
 #   define vidTrate_mld diaTrate_mld
 #   define vidTentr_mld diaTentr_mld
 #   define vidTaver_mld diaTaver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#   define vidTcrit_mld diaTcrit_mld
-# endif
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#    define vidTcrit_mld diaTcrit_mld 
+#   endif
 #  endif
 !
 # else /* AVRH */
@@ -87,7 +97,7 @@
 #  define rec_per_file nrpfdia_avg
 #  define wrt3D wrtdia3D_avg
 #  define vidTime diaTime_avg
-#  define vidTime2 diaTime2_avg
+#  define vidOrigin dia_avg_origin_in_sec
 #  define vidTstep diaTstep_avg
 !
 #  define vidTXadv diaTXadv_avg
@@ -112,9 +122,9 @@
 #   define vidTrate_mld diaTrate_mld_avg
 #   define vidTentr_mld diaTentr_mld_avg
 #   define vidTaver_mld diaTaver_mld_avg
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#   define vidTcrit_mld diaTcrit_mld_avg
-# endif
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#    define vidTcrit_mld diaTcrit_mld_avg 
+#   endif
 #  endif
 !
         character*60 text
@@ -129,16 +139,25 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifndef AVRH
-      create_new_file=ldefdia
-# else
-      create_new_file=ldefdia_avg
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
+      if (lvar.eq.total_rec-1) then
+#  ifndef AVRH
+        create_new_file=ldefdia
+#  else
+        create_new_file=ldefdia_avg
 # endif
+      else
+        create_new_file=.false.
+      endif
 !
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
@@ -221,9 +240,9 @@
       if (total_rec.le.1) then
 #  ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &        ,r3dgrd, w3dgrd)
+     &        ,r3dgrd, w3dgrd, NF_FOUT)
 #  else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 #  endif
       endif
 # endif
@@ -276,41 +295,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime2)
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
-# endif
-!
-# ifndef AVRH
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, vname(2,indxTime2)(1:lvar))
-# else
-        text='avg'/ /vname(2,indxTime2)
-        lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, text(1:lvar))
-# endif
-!
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
-     &                                vname(2,indxTime2)(1:lvar))
-!
-        lvar=lenstr(vname(3,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'units',  lvar,
-     &                                vname(3,indxTime2)(1:lvar))
-!
-        lvar=lenstr(vname(4,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
-     &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
-     &       NF_FOUT, ierr)
+        vidOrigin=start_date_in_sec
 !
 ! Tracer diagnostics variables :
 ! ------ ----------- ---------
@@ -774,8 +760,6 @@
 
        call nf_add_attribute(ncid,vidTentr_mld(itrc),
      &      vname(:,indxTentr_mld+itrc-1), 5, NF_FOUT, ierr)
-
-!
 !
 ! Taver indxTaver on MLD
 !
@@ -803,32 +787,28 @@
      &                     lvar, vname(4,indxTaver_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTaver_mld(itrc),
-     &      vname(:,indxTaver_mld+itrc-1), 5, NF_FOUT, ierr)
-
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     & .or. itrc.eq.iCRT4) then
+     &      vname(:,indxTaver_mld+itrc-1),5, NF_FOUT, ierr)
 !
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+!  Tcrit indxTcrit on MLD (only defined for itrc=1,2)
 !
-! Tcrit indxTcrit on MLD
-!
+         if (itrc.le.2) then
            lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidTcrit_mld(itrc))
-#  ifdef NC4PAR
+#   ifdef NC4PAR
            ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
-#  endif
-# ifndef AVRH
+#   endif
+#   ifndef AVRH
            lvar=lenstr(vname(2,indxTcrit_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
      &                     lvar, vname(2,indxTcrit_mld+itrc-1)(1:lvar))
-# else
+#   else
            text='averaged '/ /vname(2,indxTcrit_mld+itrc-1)
            lvar=lenstr(text)
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
      &                                          lvar, text(1:lvar))
-# endif
+#   endif
            lvar=lenstr(vname(3,indxTcrit_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc),'units',
      &                     lvar, vname(3,indxTcrit_mld+itrc-1)(1:lvar))
@@ -837,16 +817,11 @@
      &                     lvar, vname(4,indxTcrit_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTcrit_mld(itrc),
-     &      vname(:,indxTcrit_mld+itrc-1), 5, NF_FOUT, ierr)
-
-       endif
-
-#endif /* DIAGNOSTICS_TS_MLD_CRIT */
-
+     &      vname(:,indxTcrit_mld+itrc-1),5, NF_FOUT, ierr)
          endif
-
-
+#  endif/* DIAGNOSTICS_TS_MLD_DENS */
 !
+        endif
 # endif /* DIAGNOSTICS_TS_MLD */
        enddo
 !
@@ -902,7 +877,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-# if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 # endif
             endif
@@ -953,18 +928,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime,nf_collective)
 # endif
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
-# endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 !
 ! Tracer flux diagnostics variables :
 ! ------ ---- ----------- ---------
@@ -1204,9 +1169,6 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTentr_mld(itrc),nf_collective)
 #  endif
-
-
-!
 !
 ! indxTaver on MLD
 !
@@ -1221,43 +1183,30 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
 #  endif
-
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &  .or. itrc.eq.iCRT4) then
-!          
+#  if defined DIAGNOSTICS_TS_MLD_DENS
 !
-! indxTcrit on MLD
+!  indxTcrit on MLD (only defined for itrc=1,2)
 !
-          lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
-          ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
+       if (itrc.le.2) then
+        lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
+        ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                        vidTcrit_mld(itrc))
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-#  ifdef NC4PAR
+#   ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
-#  endif
+#   endif
+       endif
+#  endif /*DIAGNOSTICS_TS_MLD_DENS*/
         endif
-!
-# endif /*DIAGNOSTICS_TS_MLD_CRIT*/
 
-!
-        endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
       enddo
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'DEF_DIAG -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-!
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_DIAG -- Opened ',
@@ -1278,7 +1227,6 @@
 !
       endif             !<--  create_new_file
 !
-
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_DIAG ERROR: Cannot ',
@@ -1307,7 +1255,7 @@
 # undef rec_per_file
 # undef wrt3D
 # undef vidTime
-# undef vidTime2
+# undef vidOrigin
 # undef vidTstep
 !
 # undef vidTXadv
@@ -1332,9 +1280,9 @@
 #  undef vidTrate_mld
 #  undef vidTentr_mld
 #  undef vidTaver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#  undef vidTcrit_mld
-# endif
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
+#   undef vidTcrit_mld
+#  endif
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
 # ifdef AVERAGES

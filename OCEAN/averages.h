@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /* This is include file "averages.h": time-averaged fields
@@ -41,6 +42,9 @@
       real v_avg(GLOBAL_2D_ARRAY,N)
       real t_avg(GLOBAL_2D_ARRAY,N,NT)
       real rho_avg(GLOBAL_2D_ARRAY,N)
+      real Akv_avg(GLOBAL_2D_ARRAY,0:N)
+      real Akt_avg(GLOBAL_2D_ARRAY,0:N,2)
+      common /avg_Akv/Akv_avg /avg_Akt/Akt_avg
 #  if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
@@ -58,6 +62,9 @@
      &       /avg_bvf/bvf_avg
 #  endif
      &       /avg_w/w_avg
+      real z_r_avg(GLOBAL_2D_ARRAY,N)
+      real z_w_avg(GLOBAL_2D_ARRAY,0:N)
+      common /avg_z_r/z_r_avg /avg_z_w/z_w_avg
       real stflx_avg(GLOBAL_2D_ARRAY,NT)
       common /avg_stflx/stflx_avg
       real btflx_avg(GLOBAL_2D_ARRAY,NT)
@@ -122,11 +129,6 @@
 #  ifdef DIF_COEF_3D
       real diff3d_avg(GLOBAL_2D_ARRAY,N)
       common /avg_diff3d/diff3d_avg
-#  endif
-#  ifdef AVERAGES_K
-      real Akv_avg(GLOBAL_2D_ARRAY,0:N)
-      real Akt_avg(GLOBAL_2D_ARRAY,0:N,2)
-      common /avg_Akv/Akv_avg /avg_Akt/Akt_avg
 #  endif
 # endif
 # ifdef WAVE_IO

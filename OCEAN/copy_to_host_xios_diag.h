@@ -39,8 +39,6 @@
 #ifdef ASSIMILATION
 #endif
 #ifdef SOLVE3D
-# ifdef  NEW_S_COORD
-# endif
 # ifdef  LMD_SKPP2005
 # endif
 #endif
@@ -88,15 +86,11 @@
 # ifdef MPI
 # else
 # endif
-# ifdef USE_CALENDAR
-# endif
 #if defined MUSTANG
 # endif
 #if defined ONLINE_ANALYSIS
 #ifdef MPI
 #endif
-#endif
-#ifdef USE_CALENDAR
 #endif
 # ifdef EW_PERIODIC
 #  define IU_RANGE Istr,Iend
@@ -116,8 +110,6 @@
 # endif
 # if defined MPI
 # else
-# endif
-# ifdef USE_CALENDAR
 # endif
 # ifdef SPHERICAL
 # else
@@ -160,7 +152,7 @@
 # endif
 # if defined DIAGNOSTICS_VRT
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 # endif
 # ifdef DIAGNOSTICS_PV
 # endif
@@ -868,7 +860,7 @@ c       endif
       endif
 #  endif
 #  endif
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
       if (xios_field_is_active("ekrate")) then
 !$acc update host( ekrate ) 
       endif

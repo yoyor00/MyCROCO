@@ -1,13 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! This routine belongs to the specific CROCO package.
-!
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -105,6 +104,8 @@
 !====================================================================
 !
       subroutine Agrif_initvalues()
+      use croco_namelist, only: dt, ldefhis, nrrec
+      use croco_namelist_read, only: read_nml_fname, read_nml
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
@@ -202,6 +203,9 @@
 !  Read in tunable model parameters in roms.in file
 !----------------------------------------------------------------------
 !
+      call read_nml_fname ()
+      call read_nml (ierr)
+      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -329,11 +333,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-!! GC change for EXACT_RESTART
-!!        call get_initial
-!==================== FOR EXACT_RESTART as in main.F ====================
-#  ifdef EXACT_RESTART
-        call get_initial (nrrec-1, 2) ! Set initial conditions
+!==================== FOR RESTART as in main.F ====================
+      call get_initial (nrrec-1, 2) ! Set initial conditions
                                     ! in the case of restart run.
 C$OMP BARRIER
 #   ifdef SOLVE3D
@@ -342,7 +343,6 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
 #   endif
-#  endif
       call get_initial (nrrec, 1)   ! Set initial conditions
       time=start_time
       tdays=time*sec2day
@@ -438,9 +438,7 @@ C$OMP BARRIER
 #  endif
 
         if (Agrif_Parent_Nb_Step() == 0) then
-!!     call get_initial
-!==================== FOR EXACT_RESTART as in main.F ====================
-#  ifdef EXACT_RESTART
+!==================== FOR RESTART as in main.F ====================
           call get_initial (nrrec-1, 2) ! Set initial conditions
                                         ! in the case of restart run.
 C$OMP BARRIER
@@ -450,7 +448,6 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
 #   endif
-#  endif
       call get_initial (nrrec, 1)   ! Set initial conditions
 !==================================================================
         endif
@@ -1786,6 +1783,7 @@ CR      write(*,*) '  0' MYID
 # ifdef MASKING
        recursive subroutine ResetMask()
        Use Agrif_Util
+       USE croco_namelist, ONLY: gamma2
 #  include "param.h"
 #  include "grid.h"
 #  include "scalars.h"
@@ -1846,6 +1844,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       Subroutine Updateh(tabres,i1,i2,j1,j2,before)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1873,16 +1872,8 @@ CR      write(*,*) '  0' MYID
 
          do j=j1,j2
            do i=i1,i2
-# ifdef NEW_S_COORD
              h(i,j)=max(tabres(i,j),hmin)
-# else
-             h(i,j)=max(tabres(i,j),hc)
-# endif
-# ifdef NEW_S_COORD
              hinv(i,j)=1./(h(i,j)+hc)
-# else
-             hinv(i,j)=1./h(i,j)
-# endif
            enddo
          enddo
 
@@ -1891,29 +1882,17 @@ CR      write(*,*) '  0' MYID
              z_w(i,j,0) = -h(i,j)
            enddo
            do k=1,N,+1
-# ifdef NEW_S_COORD
              cff_w =hc*sc_w(k)
              cff_r =hc*sc_r(k)
              cff1_w=Cs_w(k)
              cff1_r=Cs_r(k)
-# else
-             cff_w =hc*(sc_w(k)-Cs_w(k))
-             cff_r =hc*(sc_r(k)-Cs_r(k))
-             cff1_w=Cs_w(k)
-             cff1_r=Cs_r(k)
-# endif
              do i=i1,i2
                z_w0=cff_w+cff1_w*h(i,j)
                z_r0=cff_r+cff1_r*h(i,j)
-# ifdef NEW_S_COORD
                z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+Zt_avg1(i,j)
      &                                          *(1.+z_w0*hinv(i,j))
                z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+Zt_avg1(i,j)
      &                                          *(1.+z_r0*hinv(i,j))
-# else
-               z_w(i,j,k)=z_w0+Zt_avg1(i,j)*(1.+z_w0*hinv(i,j))
-               z_r(i,j,k)=z_r0+Zt_avg1(i,j)*(1.+z_r0*hinv(i,j))
-# endif
                Hz_bak(i,j,k)=Hz(i,j,k)
                Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
              enddo
@@ -1986,6 +1965,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       subroutine hinterp(tabres,i1,i2,j1,j2,before,nb,ndir)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -2036,22 +2016,14 @@ CR      write(*,*) '  0' MYID
            if ( western_side ) then
              do j=j1,j2
                h(0,j) = 2.*tabres(1,j)-h(1,j)
-# ifdef NEW_S_COORD
                hinv(0,j) = 1./(h(0,j)+hc)
-# else
-               hinv(0,j) = 1./h(0,j)
-# endif
              enddo
            endif
 
            if ( eastern_side ) then
              do j=j1,j2
                h(LOCALLM+1,j) = 2.*tabres(LOCALLM+1,j)-h(LOCALLM,j)
-# ifdef NEW_S_COORD
                hinv(LOCALLM+1,j) = 1./(h(LOCALLM+1,j)+hc)
-# else
-               hinv(LOCALLM+1,j) = 1./h(LOCALLM+1,j)
-# endif
              enddo
            endif
 
@@ -2059,22 +2031,14 @@ CR      write(*,*) '  0' MYID
            if ( southern_side ) then
              do i=i1,i2
                h(i,0) = 2.*tabres(i,1)-h(i,1)
-# ifdef NEW_S_COORD
                hinv(i,0) = 1./(h(i,0)+hc)
-# else
-               hinv(i,0) = 1./h(i,0)
-# endif
              enddo
            endif
 
            if ( northern_side ) then
              do i=i1,i2
                h(i,LOCALMM+1) = 2.*tabres(i,LOCALMM+1)-h(i,LOCALMM)
-# ifdef NEW_S_COORD
                hinv(i,LOCALMM+1) = 1./(h(i,LOCALMM+1)+hc)
-# else
-               hinv(i,LOCALMM+1) = 1./h(i,LOCALMM+1)
-# endif
              enddo
            endif
          endif ! <- endif isens

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 
@@ -14,6 +15,7 @@
 #include "cppdefs.h"
 
       subroutine put_global_atts (ncid, ierr)
+            use croco_namelist
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
 #include "param.h"
@@ -143,16 +145,9 @@
 
       endif
 
-
       lvar=lenstr(title)
       ierr=nf_put_att_text(ncid, nf_global, 'title',   lvar,
      &                                         title(1:lvar))
-
-!# ifdef USE_CALENDAR || XIOS
-!      lvar=lenstr(origin_date)
-!      ierr=nf_put_att_text(ncid, nf_global, 'origin_date',lvar,
-!     &                                     origin_date(1:lvar))
-!# endif
       lvar=lenstr(rstname)
       ierr=nf_put_att_text(ncid, nf_global, 'rst_file',lvar,
      &                                       rstname(1:lvar))
@@ -212,13 +207,10 @@
 ! S-coordinate control parameters "theta_s", "theta_b", "Tcline"
 ! and "hc" (written as global attributes).
 !
-# ifdef  NEW_S_COORD
       ierr=nf_put_att_text (ncid, nf_global, 'VertCoordType',3,'NEW')
-      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '2')
-# else
-      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '1')
-# endif
-# ifdef  LMD_SKPP2005
+      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Vtransform', nf_ftype,
+     &                                                 1, Vtransform)
+# ifdef LMD_SKPP2005
       ierr=nf_put_att_text (ncid, nf_global, 'skpp',4,'2005')
 # endif
       ierr=nf_put_att_FTYPE(ncid, nf_global,'theta_s',nf_ftype,
@@ -432,10 +424,8 @@
 #if (defined SPONGE && !defined SPONGE_GRID)
       ierr=nf_put_att_FTYPE(ncid,nf_global,'x_sponge',nf_ftype, 1,
      &                                                     x_sponge)
-      ierr=nf_put_att_FTYPE(ncid,nf_global,'v_sponge',nf_ftype, 1,
-     &                                                     v_sponge)
-      ierr=nf_put_att_text (ncid,nf_global,'sponge_expl', 51,
-     &        'Sponge parameters : extent (m) & viscosity (m2.s-1)')
+      ierr=nf_put_att_text (ncid,nf_global,'sponge_expl', 32,
+     &        'Sponge layer width [m]: x_sponge')
 #endif
 !
 ! Sediment parameters

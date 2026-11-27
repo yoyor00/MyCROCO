@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -51,11 +52,15 @@
 !
 !======================================================================
 !
+      use croco_namelist, only: dt, rho0
+# ifdef NBQ
+      use croco_namelist, only: csound_nbq
+# endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
       integer  Istr, Iend, Jstr, Jend
-# ifdef MPI
-      include 'mpif.h'
-# endif
 # include "param.h"
 # include "scalars.h"
 # include "private_scratch.h"
@@ -110,7 +115,6 @@
 !
         ifl_nbq  = 1
         slip_nbq = 0
-        iteration_nbq_max=ndtnbq
 !
 !  Pseudoacoustic speed:
 !   should be around 5 times external phase speed sqrt(g*h)
@@ -217,10 +221,7 @@
 !----------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)
-# ifndef EXACT_RESTART
-! Note that if EXACT_RESTART CPP-switch is defined
-! qdmu_nbq is read from rst file
-
+        if (.not.got_qdmu_nbq) then
         do k=1,N
           do j=Jstr-1,Jend+1
             do i=Istr,Iend+1
@@ -228,7 +229,9 @@
           enddo
          enddo
         enddo
+        endif
 
+        if (.not.got_qdmv_nbq) then
         do k=1,N
           do j=Jstr,Jend+1
             do i=Istr-1,Iend+1
@@ -236,7 +239,7 @@
             enddo
           enddo
         enddo
-# endif
+        endif
 
 # ifdef NBQ
         do k=1,N-1

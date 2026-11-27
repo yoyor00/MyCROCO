@@ -1,23 +1,24 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
       subroutine setup_grid2 (tile)
+#ifdef MPI
+      use mpi
+#endif
 !     implicit none
       integer tile
 #include "param.h"
 #include "scalars.h"
 #include "mpi_cpl.h"
-#ifdef MPI
-      include 'mpif.h'
-#endif
 #include "compute_tile_bounds.h"
       call setup_grid2_tile (Istr,Iend,Jstr,Jend)
       return
@@ -31,6 +32,9 @@
 ! barotropic mode; combined crossection of all open boundaries.
 !
 !     implicit none
+#ifdef MPI
+      use mpi
+#endif
       integer Istr,Iend,Jstr,Jend, i,j, NSUB
       real cff, my_hmax, my_grdmax, my_Cu_max
      &        , my_hmin, my_grdmin, my_Cu_min
@@ -43,7 +47,6 @@
 #include "grid.h"
 #include "mpi_cpl.h"
 #ifdef MPI
-      include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
       real*8 buff(14)
 # if QUAD == 16
@@ -112,7 +115,11 @@
       my_volume=QuadZero
       do j=Jstr,Jend
         do i=Istr,Iend
-          my_volume=my_volume+h(i,j)/(pm(i,j)*pn(i,j))
+          my_volume=my_volume+
+#ifdef MASKING
+     &                  rmask(i,j)*
+#endif
+     &                  h(i,j)/(pm(i,j)*pn(i,j))
         enddo
       enddo
 

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -14,9 +15,14 @@
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
+      use croco_namelist, only: dt, frcname, testcase_name
+# ifdef MUSTANG  
+      use croco_namelist, only: wave_file
+# endif
 # ifdef OPENACC
       use exchange_device_host
 # endif
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -56,6 +62,8 @@
           write(stdout,3) 'wwv_time', wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
+        call tool_origindate(ncidwave,ww_tid,
+     &                       ww_origin_date_in_sec, ww_secinunit)
 
 # ifndef MUSTANG
         ncidfrc=ncidwave
@@ -255,12 +263,8 @@
         write(stdout,6) 'wwv_time', ww_rec
         goto 99                                         !--> ERROR
       endif
-# ifdef USE_CALENDAR
-        call tool_origindate(ncidwave,ww_tid,
-     &                       ww_origin_date_in_sec)
-        cff=cff+ww_origin_date_in_sec*sec2day
-# endif
-      wwv_time(i)=cff*day2sec+ww_cycle*ww_ncycle
+        cff=ww_origin_date_in_sec+cff*ww_secinunit
+      wwv_time(i)=cff+ww_cycle*ww_ncycle
       if (wwv_time(itww).eq.-1.E+20) wwv_time(itww)=wwv_time(i)
 
 ! Read wave amplitude
@@ -392,11 +396,9 @@
 
 
       itww=i
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
-     &  'GET_WWAVE --','Read wind wave input data for time =', cff
-# ifdef USE_CALENDAR
-     &  -ww_origin_date_in_sec*sec2day
-# endif
+      MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
+     &  'GET_WWAVE --','Read wind wave input data for time =',
+     &  tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -418,9 +420,7 @@
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) ww_rec, ntww, wave_file(1:lstr), tdays,
      &                                wwv_time(itww)*sec2day
-# ifdef USE_CALENDAR
      &  -ww_origin_date_in_sec*sec2day
-# endif
   8   format(/,' GET_WWAVE - ERROR: requested time record ',I4,
      &       1x,'exceeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing NetCDF file: ',a, /,14x,'TDAYS = ',
@@ -453,6 +453,7 @@
 !  Set-up wave amplitude, direction, period for current tile.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
 
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2
@@ -496,7 +497,7 @@
 ! Time interpolation is not performed in this case.
 !
       if (ww_cycle.lt.0.) then
-        if (FIRST_TIME_STEP) then
+        if (FIRST_RST_TIME_STEP) then
 
             wwA=wwa_scale*wwap(itww)
             wwD=wwd_scale*wwdp(itww)
@@ -639,24 +640,32 @@
 !          the direction where the waves travel to,
 !          measured clockwise from geographic North.
 !
-# if defined CURVGRID || !defined SHOREFACE
+# ifdef CURVGRID
 !$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
-#  if !defined SHOREFACE && !defined MUSTANG
-!         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
-          Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+#  ifndef MUSTANG
+          if (trim(testcase_name) /= 'SHOREFACE') &
+            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
-#  ifdef CURVGRID
-#   ifdef MUSTANG
+#  ifdef MUSTANG
           Dwave(i,j)=Dwave(i,j)-angler(i,j)*rad2deg
-#   else
+#  else
           Dwave(i,j)=Dwave(i,j)-angler(i,j)
-#   endif
 #  endif
         enddo
       enddo
-# endif /* CURVGRID || !SHOREFACE */
+# else
+      if (trim(testcase_name) /= 'SHOREFACE') then
+!$acc parallel loop if(compute_on_device) default(present)
+        do j=jstrR,jendR
+          do i=istrR,iendR
+!           Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
+            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+          enddo
+        enddo
+      endif
+# endif /* CURVGRID */
 !
 !--------------------------------------------------------------------
 ! Simulate nearshore modifications for low resolution data
@@ -740,9 +749,7 @@
       if ((ww_cycle.gt.0.) .and. (fac1.lt.0..or.fac2.lt.0.)) then
         if (ZEROTH_TILE) then
           write(stdout,1) 'wwv_time', tdays, wwv_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &  -ww_origin_date_in_sec*sec2day
-# endif
   1       format(/,' SET_WWAVE_TILE - current model time exceeds',
      &             ' ending value for variable: ',a,/,14x,'TDAYS = ',
      &                                      g12.4,2x,'TEND = ',g12.4)

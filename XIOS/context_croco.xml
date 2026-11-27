@@ -33,8 +33,11 @@
     </grid>
     
     <grid id="rho_2D"> 		<domain domain_ref="rho"/> 				</grid>
+    <grid id="rho_2D_unmasked"> 		<domain domain_ref="rho_unmasked"/> 				</grid>
     <grid id="u_2D">		<domain domain_ref="u"  />				</grid>
+    <grid id="u_2D_unmasked">		<domain domain_ref="u_unmasked"  />				</grid>
     <grid id="v_2D">		<domain domain_ref="v"  />				</grid>
+    <grid id="v_2D_unmasked">		<domain domain_ref="v_unmasked"  />				</grid>
     <grid id="w_2D">		<domain domain_ref="w"  />				</grid>
     <grid id="rho_3D"> 		<domain domain_ref="rho"/>	<axis axis_ref="s_rho"/></grid>
     <grid id="rho_3DS">       <domain domain_ref="rho"/>	<axis axis_ref="s_rhoS"/></grid>

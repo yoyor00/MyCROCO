@@ -115,51 +115,6 @@
 #  endif
 # endif
 
-
-# ifndef DIAGNOSTICS_UV
-      real wrkXadv(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkXadv(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkYadv(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkYadv(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkHdiff(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkHdiff(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkCor(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkCor(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkPrsgrd(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkPrsgrd(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkHmix(GLOBAL_2D_ARRAY,2,2)
-!CSDISTRIBUTE_RESHAPE wrkHmix(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkVmix(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkVmix(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkrate(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkrate(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real wrkVmix2(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkVmix2(BLOCK_PATTERN,*) BLOCK_CLAUSE
-#  if defined DIAGNOSTICS_BARO
-      real wrkBaro(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
-#  endif
-#  if defined M3FAST
-      real wrkfast(GLOBAL_2D_ARRAY,2)
-!CSDISTRIBUTE_RESHAPE wrkfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
-#  endif
-      common /diag_wrkXadv/wrkXadv
-     &       /diag_wrkYadv/wrkYadv
-     &       /diag_wrkHdiff/wrkHdiff
-     &       /diag_wrkCor/wrkCor
-     &       /diag_wrkPrsgrd/wrkPrsgrd
-     &       /diag_wrkHmix/wrkHmix
-     &       /diag_wrkVmix/wrkVmix
-     &       /diag_wrkrate/wrkrate
-     &       /diag_wrkVmix2/wrkVmix2
-#  if defined DIAGNOSTICS_BARO
-     &       /diag_wrkBaro/wrkBaro
-#  endif
-#  if defined M3FAST
-     &       /diag_wrkfast/wrkfast
-#  endif
-# endif /*ifndef DIAGNOSTICS_UV */
-
 #endif /* DIAGNOSTICS_VRT */
 
 

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -97,11 +98,15 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !
       USE debug
+      USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha ! needed when AGRIF_CONSERV_VOL
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
 # ifdef MPI
-     &         err,
+     &         err,ierr,
 # endif
 # if defined PSOURCE || defined PSOURCE_MASS
      &        is,
@@ -152,7 +157,7 @@ C$    trd=omp_get_thread_num()
 #  include "zoom.h"
         integer irhox, irhoy, irhot
 # endif
-# if defined INTERNAL || defined BODYTIDE
+# ifdef BODYTIDE
       real U0, omega
 # endif
 # ifdef WET_DRY
@@ -167,7 +172,6 @@ C$    trd=omp_get_thread_num()
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -187,11 +191,7 @@ C$    trd=omp_get_thread_num()
 ! momentum equations.
 !
 # ifdef M2FILTER_NONE
-#  ifdef TANK
-         myalpha   = 0.01
-#  else
-         myalpha   = 0.25
-#  endif
+         myalpha   = m2filter_alpha
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
          mygamma   = 0.08344500 - 0.51358400*myalpha
@@ -452,6 +452,38 @@ C$OMP END MASTER
         enddo
       enddo
 # endif /* ZNUDGING */
+
+
+!
+!-----------------------------------------------------------------------
+! Apply mass point sources (volume vertical influx)
+!-----------------------------------------------------------------------
+# ifdef PSOURCE_MASS
+      do is=1,Nsrc
+#  ifdef MPI
+        i=Isrc_mpi(is,mynode)
+        j=Jsrc_mpi(is,mynode)
+#  else
+        i=Isrc(is)
+        j=Jsrc(is)
+#  endif
+        if (IstrR.le.i .and. i.le.IendR .and.
+     &      JstrR.le.j .and. j.le.JendR) then
+          zeta_new(i,j)=zeta_new(i,j)+
+     &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast
+        endif
+      enddo
+# endif
+!-----------------------------------------------------------------------
+! Apply Rain flux
+!-----------------------------------------------------------------------
+# ifdef RAIN_FLUX
+      do j=JstrV-1,Jend
+       do i=IstrU-1,Iend
+        zeta_new(i,j)=zeta_new(i,j)-EmP(i,j)*dtfast
+       enddo
+      enddo
+# endif
 !
 !-----------------------------------------------------------------------
 ! Mask land cells & ensure that total depth in masked cells is > Dcrit
@@ -555,43 +587,11 @@ C$OMP END MASTER
 !$acc end kernels
 
 # ifdef WET_DRY
-      call wetdry_tile (Istr,Iend,Jstr,Jend)
+      call wetdry_tile (Istr,Iend,Jstr,Jend, .false.)
 !RB this barrier seems to have a benefic effect
 ! in some cases with wetdry but not sure it is
 ! the proper fix
 C$OMP BARRIER
-# endif
-
-!-----------------------------------------------------------------------
-! Apply mass point sources (volume vertical influx) 
-!-----------------------------------------------------------------------
-!
-# ifdef PSOURCE_MASS
-      do is=1,Nsrc
-#  ifdef MPI
-        i=Isrc_mpi(is,mynode)
-        j=Jsrc_mpi(is,mynode)
-#  else
-        i=Isrc(is)
-        j=Jsrc(is)
-#  endif
-        if (IstrR.le.i .and. i.le.IendR .and.
-     &      JstrR.le.j .and. j.le.JendR) then
-          zeta(i,j,knew)=zeta(i,j,knew)+ 
-     &    Qbar(is)*pm(i,j)*pn(i,j)*dtfast 
-        endif
-      enddo
-# endif
-
-!-----------------------------------------------------------------------
-! Apply Rain flux 
-!-----------------------------------------------------------------------
-# ifdef RAIN_FLUX
-      do j=JstrR,JendR
-       do i=IstrR,IendR
-        zeta(i,j,knew)=zeta(i,j,knew)-EmP(i,j)*dtfast 
-       enddo
-      enddo
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1545,7 +1545,7 @@ C$OMP END MASTER
 !  Body force for the Internal Tide test case
 !-----------------------------------------------------------------------
 !
-# if defined INTERNAL || defined BODYTIDE
+# ifdef BODYTIDE
       omega=2.*pi/(12.4*3600.)
       U0=0.02
       do j=Jstr,Jend
@@ -1930,7 +1930,7 @@ C$OMP END MASTER
 # endif
         may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err)
+        call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
         stop                            !-->  EXIT
 # endif

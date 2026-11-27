@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
@@ -25,6 +26,15 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#ifdef DIAGNOSTICS_EDDY
+      use croco_namelist, only: ldefdiags_eddy_avg,
+     &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg, nrpfdiags_eddy_avg,
+     &     diags_eddyname_avg
+#endif
+      use tools_calendar, only: tool_check_output_origin
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -43,7 +53,6 @@
 # ifdef NC4PAR
      &      , csize,cmode
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       character*60 text
 !
@@ -53,7 +62,7 @@
 #  define rec_per_file nrpfdiags_eddy
 #  define wrt wrtdiags_eddy
 #  define vidTime diags_eddyTime
-#  define vidTime2 diags_eddyTime2
+#  define vidOrigin dia_eddy_origin_in_sec
 #  define vidTstep diags_eddyTstep
 #  define viddiags_zz diags_eddyzz
 #  define viddiags_uu diags_eddyuu
@@ -77,7 +86,7 @@
 #  define rec_per_file nrpfdiags_eddy_avg
 #  define wrt wrtdiags_eddy_avg
 #  define vidTime diags_eddyTime_avg
-#  define vidTime2 diags_eddyTime2_avg
+#  define vidOrigin dia_eddy_avg_origin_in_sec
 #  define vidTstep diags_eddyTstep_avg
 #  define viddiags_zz diags_eddyzz_avg
 #  define viddiags_uu diags_eddyuu_avg
@@ -105,12 +114,16 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
 #  ifndef AVRH
         create_new_file=ldefdiags_eddy
@@ -120,13 +133,6 @@
       else
         create_new_file=.false.
       endif
-# else
-#  ifndef AVRH
-      create_new_file=ldefdiags_eddy
-#  else
-      create_new_file=ldefdiags_eddy_avg
-#  endif
-# endif
 !
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
@@ -271,40 +277,8 @@
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime2)
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
-# endif
-# ifndef AVRH
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, vname(2,indxTime)(1:lvar))
-# else
-        text='avg'/ /vname(2,indxTime2)
-        lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &       lvar, text(1:lvar))
-# endif
-!
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
-     &                                vname(2,indxTime2)(1:lvar))
-!
-        lvar=lenstr(vname(3,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'units',  lvar,
-     &                                vname(3,indxTime2)(1:lvar))
-!
-        lvar=lenstr(vname(4,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
-     &                                vname(4,indxTime2)(1:lvar))
 
-        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
-     &       NF_FOUT, ierr)
+        vidOrigin=start_date_in_sec
 
 ! eddy diagnostics variables.
 ! -------- ----------- --------
@@ -341,6 +315,7 @@
 
            call nf_add_attribute(ncid,viddiags_zz(itrc)
      &            ,vname(:,indxeddyzz+itrc-1),5,NF_FOUT, ierr)
+
 
 !------------------------------
 ! indxeddyuu
@@ -804,7 +779,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-# if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 # endif
             endif
@@ -856,18 +831,8 @@
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
 
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
-# endif
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
 
 
 ! momentum flux diagnostics variables :
@@ -1107,12 +1072,7 @@
 ! ---------------------------------
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_eddy: -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_eddy: -- Opened ',
+     &                     'DEF_DIAGS_EDDY -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !
@@ -1151,7 +1111,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
-# undef vidTime2
+# undef vidOrigin
 # undef vidTstep
 !
 # undef viddiags_zz

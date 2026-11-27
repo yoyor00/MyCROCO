@@ -36,7 +36,9 @@ class AbstractCrocoSetup(ABC):
         self.builddir = os.path.abspath(builddir)
 
     @abstractmethod
-    def configure(self, configure_args: str) -> None:
+    def configure(
+        self, configure_args: str, cppdefs_file: str = None, param_file: str = None
+    ) -> None:
         """
         Perform the configuration of CROCO to be ready to build.
 
@@ -45,18 +47,24 @@ class AbstractCrocoSetup(ABC):
         configure_args: str
             The arguments as a string parsed and transformed for compatibility
             translation.
+        cppdefs_file: str
+            Optional absolute path to a pre-resolved, single-case cppdefs.h
+            (e.g. TEST_CASES/cppdefs_<Case>.h) to use in place of patching
+            the master cppdefs.h. Applied before any other patch.
+        param_file: str
+            Same as cppdefs_file, but for param.h.
         """
         raise Exception("Not provided by implementation !")
 
     @abstractmethod
-    def make(self, make_jobs: str) -> None:
+    def make(self, jobs: int) -> None:
         """
         Perform the compilation either with jobcomp of make.
 
         Parameters
         ----------
-        make_jobs: str
-            To pass the `-j8` option if wanted.
+        jobs: int
+            Number of parallel build jobs to use (e.g. for a `-j8` option).
         """
         raise Exception("Not provided by implementation !")
 
@@ -89,5 +97,20 @@ class AbstractCrocoSetup(ABC):
             Name of the key to enable or disable.
         status: bool
             New status of the key.
+        """
+        raise Exception("Not provided by implementation !")
+
+    @abstractmethod
+    def cppdef_h_is_defined(self, key_name: str) -> bool:
+        """
+        Check whether a CPP key is currently '# define'd in the resolved
+        cppdefs.h of the build directory. Reflects the actual compiled
+        configuration regardless of how it got there (case "cppkeys"
+        toggles or a case-provided fixed cppdefs_file).
+
+        Parameters
+        ----------
+        key_name: str
+            Name of the key to check.
         """
         raise Exception("Not provided by implementation !")

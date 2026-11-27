@@ -8,6 +8,7 @@ MODULE sedstp
    !!======================================================================
 #if defined key_sediment
    USE sed      ! sediment global variables
+   USE oce_sed
    USE seddta   ! data read
    USE sedchem  ! chemical constant
    USE sedsol   ! Organic reactions and diffusion
@@ -85,9 +86,7 @@ CONTAINS
       ilc = 1+iic-nit000 ! number of time step since restart
       IF( iic > nit000 ) THEN
          IF( MOD( ilc-1, nitrst ) == 0  &
-#ifdef EXACT_RESTART
      &                      .OR. MOD(ilc,nitrst) == 0  &
-#endif
      &                      )  THEN
 #if defined key_sediment      
 ! need the CPP key to avoid compilation error

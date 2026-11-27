@@ -1,17 +1,18 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #if defined SOLVE3D
       subroutine def_grid_3d (ncid, r2dgrd, u2dgrd, v2dgrd,
-     &                        r3dgrd, w3dgrd)
+     &                        r3dgrd, w3dgrd, nf_ftype)
 !
 ! Define grid variables in output NetCDF file for 3D configuration,
 ! which may be restart, history, averages, etc..
@@ -35,15 +36,6 @@
 # include "param.h"
 # include "ncscrum.h"
 # include "netcdf.inc"
-!
-! Decide about precision:
-!
-      if (ncid.eq.ncidrst) then
-        nf_ftype=NF_FTYPE
-      else
-        nf_ftype=NF_FOUT
-      endif
-!
 !
 ! Grid type switch: Spherical or Cartesian.
 !
@@ -145,15 +137,9 @@
      &     'S-coordinate at RHO-points')
       ierr=nf_put_att_text (ncid, varid, 'axis', 1, 'Z')
       ierr=nf_put_att_text (ncid, varid, 'positive', 2, 'up')
-#  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
      &     'ocean_s_coordinate_g2')
       ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
-#  else
-      ierr=nf_put_att_text (ncid, varid, 'standard_name',21,
-     &     'ocean_s_coordinate_g1')
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
-#  endif
       ierr=nf_put_att_text (ncid, varid, 'formula_terms',49,
      &     's: s_rho C: Cs_rho eta: zeta depth: h depth_c: hc')
 !-
@@ -164,15 +150,9 @@
       ierr=nf_put_att_text (ncid, varid, 'positive', 2, 'up')
       ierr=nf_put_att_FTYPE(ncid, varid, 'c_grid_axis_shift',
      &     nf_ftype, 1, -0.5)
-#  if defined NEW_S_COORD
       ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
      &     'ocean_s_coordinate_g2_at_w_location')
       ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '2')
-#  else
-      ierr=nf_put_att_text (ncid, varid, 'standard_name',35,
-     &     'ocean_s_coordinate_g1_at_w_location')
-      ierr=nf_put_att_text (ncid, varid, 'Vtransform',1, '1')
-#  endif
       ierr=nf_put_att_text (ncid, varid, 'formula_terms',46,
      &     's: s_w C: Cs_w eta: zeta depth: h depth_c: hc')
 

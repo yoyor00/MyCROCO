@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -15,7 +16,9 @@
 !     Read in point or grided sea river runoff tracer
 !     concentration the appropriate time from runoff NetCDF file.
 !
-      implicit none
+        use croco_namelist, only: dt
+      use tools_calendar, only: tool_origindate, tool_sectodat
+        implicit none
 # include "param.h"
 # include "forces.h"
 # include "scalars.h"
@@ -27,7 +30,7 @@
      &     itrc
       integer s(2),c(2)
 # if defined SUBSTANCE
-      character*20 nametrc
+      character*60 nametrc
       character*60 vname1
 # endif
 !     #define CR
@@ -709,13 +712,15 @@ c     goto 99           !--> ERROR
 # endif /* SUBSTANCE  */
 
           endif
-
 !     Read in Netcdf file the concentration
 C     R          write(*,*)'==============='
 C     R          write(*,*)'ITRC=',itrc
 C     R          write(*,*)'indxTsrc+itrc-1=',indxTsrc+itrc-1
 C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
           if (got_tsrc(itrc)) then
+            call tool_origindate(ncidqbar,tsrc_tid(itrc),
+     &                       tsrc_origin_date_in_sec(itrc),
+     &                       tsrc_secinunit(itrc))
             lvar=lenstr(vname(1,indxTsrc+itrc-1))
             ierr=nf_inq_varid (ncidqbar,vname(1,indxTsrc+itrc-1)
      &           (1:lvar),tsrc_id(itrc))
@@ -781,17 +786,13 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 
           ierr=nf_get_var1_FTYPE (ncidqbar, tsrc_tid(itrc),
      &         tsrc_rec(itrc),  cff)
-# ifdef USE_CALENDAR
-        call tool_origindate(ncidqbar,tsrc_tid(itrc),
-     &                       tsrc_origin_date_in_sec)
-        cff=cff+tsrc_origin_date_in_sec*sec2day
-# endif
+        cff=tsrc_origin_date_in_sec(itrc)+cff*tsrc_secinunit(itrc)
 
           if (ierr .ne. nf_noerr) then
             write(stdout,6) 'Xtsrc_time', tsrc_rec(itrc)
             goto 99             !--> ERROR   ??
           endif
-          tsrc_time(i,itrc)=cff*day2sec+tsrc_cycle(itrc)*
+          tsrc_time(i,itrc)=cff+tsrc_cycle(itrc)*
      &         tsrc_ncycle(itrc)
           if (tsrc_time(ittsrc(itrc),itrc).eq.-1.E+20) then
             tsrc_time(ittsrc(itrc),itrc)=tsrc_time(i,itrc)
@@ -804,12 +805,9 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 
           ittsrc(itrc)=i
           MPI_master_only write(stdout,
-     &         '(6x,A,2x,I2,1x,A,1x,g12.4,1x,I4)')
+     &         '(6x,A,2x,I2,1x,A,1x,A19,1x,I4)')
      &         'GET_PSOURCE_TS -- Read conc fields of tracer ',itrc,
-     &         'for time =', cff
-# ifdef USE_CALENDAR
-     &  -tsrc_origin_date_in_sec*sec2day
-# endif
+     &         'for time =', tool_sectodat(cff)
 # ifdef MPI
      &         , mynode
 # endif
@@ -843,6 +841,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 !
 !     Set-up river runoff concentration data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
       integer itrc,Istr,Iend,Jstr,Jend,i, it1,it2
       real cff, cff1,cff2
@@ -893,9 +892,7 @@ C     R    &                  'Tsrc0(i,itrc)=',Tsrc0(i,itrc)
 !
           elseif (ZEROTH_TILE) then
             write(stdout,1) 'qbar_time', tdays, qbar_time(it2)*sec2day
-# ifdef USE_CALENDAR
-     &  -tsrc_origin_date_in_sec*sec2day
-# endif
+     &  -tsrc_origin_date_in_sec(itrc)*sec2day
  1          format(/,' SET_PSOURCE_TS -- ',
      &           ' current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,

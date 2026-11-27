@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -14,10 +15,12 @@
                               ! Read point or grided shortwave
       subroutine get_srflux   ! radiation flux at the appropriate
                               ! time from forcing NetCDF file.
+      use croco_namelist, only: dt, frcname, rho0
 # ifdef OPENACC
       use exchange_device_host
 # endif
 # define SRFLUX_DATA
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -49,6 +52,9 @@
           write(stdout,3) 'srf_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+        call tool_origindate(ncidfrc,srf_tid,
+     &                       srf_origin_date_in_sec, srf_secinunit)
+
 !
 ! srflx
 !
@@ -130,12 +136,8 @@
           write(stdout,6) 'srf_time', srf_rec
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
-        call tool_origindate(ncidfrc,srf_tid,
-     &                       srf_origin_date_in_sec)
-        cff=cff+srf_origin_date_in_sec*sec2day
-# endif
-        srf_time(i)=cff*day2sec+srf_cycle*srf_ncycle
+        cff=srf_origin_date_in_sec+cff*srf_secinunit
+        srf_time(i)=cff+srf_cycle*srf_ncycle
         if (srf_time(itsrf).eq.-1.E+20) srf_time(itsrf)=srf_time(i)
 !
 ! srflx
@@ -176,12 +178,10 @@
 # endif /* DIURNAL_INPUT_SRFLX */
 
        itsrf=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &           'GET_SRFLUX --',
-     &           'Read solar shortwave radiation for time =', cff
-# ifdef USE_CALENDAR
-     &  -srf_origin_date_in_sec*sec2day
-# endif
+     &           'Read solar shortwave radiation for time =',
+     &           tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -202,9 +202,7 @@
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) srf_rec, ntsrf, frcname(1:lstr), tdays,
      &                                srf_time(itsrf)*sec2day
-# ifdef USE_CALENDAR
      &  -srf_origin_date_in_sec*sec2day
-# endif
   8   format(/,' GET_SRFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing NetCDF file: ',a, /,14x,'TDAYS = ',
@@ -220,6 +218,7 @@
 !  Set-up shortwave radiation flux for current tile.
 !--------------------------------------------------------------------
 !
+        use croco_namelist, only: dt
 # define SRFLUX_DATA
       implicit none
 # include "param.h"
@@ -326,9 +325,7 @@
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'srf_time', tdays, srf_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &  -srf_origin_date_in_sec*sec2day
-# endif
   1       format(/,' SET_SRFLUX_TILE - current model time exceeds',
      &             ' ending value for variable: ',a,/,14x,'TDAYS = ',
      &                                      g12.4,2x,'TEND = ',g12.4)

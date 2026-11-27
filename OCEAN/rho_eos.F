@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -89,11 +90,11 @@
 ! [This separation and constraining algorithm is subsequently used
 ! in computation of pressure gradient in the prsgrd routine]
 !
-! If so prescribed compute the Brunt-Väisäla frequency [1/s^2] at
+! If so prescribed compute the square of Brunt-Väisäla frequency [1/s^2] at
 ! horizontal RHO-points and vertical W-points,
 !
 !                          g    d rho  |
-!             bvf^2 = - ------ ------- |                          (8)
+!               bvf = - ------ ------- |                          (8)
 !                        rho0    d z   | adiabatic
 !
 ! where density anomaly difference is computed by adiabatically
@@ -116,6 +117,10 @@
 #  ifdef MUSTANG
       USE comsubstance, ONLY : ros, nvpc, l_subs2D
 #  endif
+#  if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+#  endif
+      USE croco_namelist, ONLY: rho0
       implicit none
 
 #  include "param.h"
@@ -249,7 +254,7 @@
 #  endif
 !
 !-----------------------------------------------------------------------
-!  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
+!  Compute square of Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
 !  and vertical W-points!
 !-----------------------------------------------------------------------
 !
@@ -321,6 +326,7 @@
       end
 
       subroutine rho_eos_tile (Istr,Iend,Jstr,Jend)
+      USE croco_namelist, ONLY: rho0, R0, T0, S0, Tcoef, Scoef
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -392,7 +398,7 @@
          enddo
 #  endif
 !-----------------------------------------------------------------------
-!  Compute Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
+!  Compute square of Brunt-Vaisala frequency (1/s2) at horizontal RHO-points
 !  and vertical W-points.
 !-----------------------------------------------------------------------
 !
@@ -610,6 +616,13 @@ c #  endif
       end
 
       subroutine reset_rho0_tile (Istr,Iend,Jstr,Jend)
+      USE croco_namelist, ONLY: rho0
+#  if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+#  endif
+#  ifdef MPI
+      use mpi
+#  endif
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, NSUB
@@ -630,10 +643,10 @@ c #  endif
 #  endif
       real*QUAD mrho,vol
 #  ifdef MPI
-      include 'mpif.h'
 #   include "mpi_cpl.h"
       integer ierr
-      real*QUAD allrho(1,NNODES),allvol(1,NNODES)
+      real*8 d_mrho, d_vol
+      real*8 allrho(1,NNODES),allvol(1,NNODES)
 #  endif
 #  include "grid.h"
 #  include "ocean3d.h"
@@ -717,10 +730,12 @@ C$OMP CRITICAL (rho_cr_rgn)
         tile_count=0                   ! it is, not always master.
         mrho=avg_rho/avg_vol
 #  ifdef MPI
-        call MPI_ALLGATHER(mrho,1,MPI_DOUBLE_PRECISION,
+        d_mrho=mrho
+        d_vol=vol
+        call MPI_ALLGATHER(d_mrho,1,MPI_DOUBLE_PRECISION,
      &                   allrho,1,MPI_DOUBLE_PRECISION,
      &                            MPI_COMM_WORLD,ierr)
-        call MPI_ALLGATHER(vol,1,MPI_DOUBLE_PRECISION,
+        call MPI_ALLGATHER(d_vol,1,MPI_DOUBLE_PRECISION,
      &                  allvol,1,MPI_DOUBLE_PRECISION,
      &                           MPI_COMM_WORLD,ierr)
         mrho=QuadZero

@@ -66,7 +66,7 @@ class RawDrawer:
 
         # case middle time step
         if step == -2:
-            step = shape[0] / 2
+            step = shape[0] // 2
 
         # log
         Messaging.step(f"Render var={variable}, step={step}, shape={shape}")

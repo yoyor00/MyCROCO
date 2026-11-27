@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifdef T_FRC_BRY
@@ -15,9 +16,9 @@
 
 #ifndef ANA_BRY
       real bry_time(2)
-      REAL(kind=8) :: bry_origin_date_in_sec
+      REAL(kind=8) :: bry_origin_date_in_sec, bry_secinunit
       common /bry_indices_array/ bry_time,
-     &        bry_origin_date_in_sec
+     &        bry_origin_date_in_sec, bry_secinunit
       real bry_cycle
       common /bry_indices_real/ bry_cycle
       integer bry_id, bry_time_id, bry_ncycle, bry_rec, itbry, ntbry
@@ -26,7 +27,9 @@
 
 # if defined BIOLOGY || defined PISCES
       real bry_time1(2,NT)
-      common /bry_indices_array1/ bry_time1
+      REAL(kind=8) :: bryt_origin_date_in_sec(NT), bryt_secinunit(NT)
+      common /bry_indices_array1/ bry_time1,
+     &        bryt_origin_date_in_sec, bryt_secinunit
       real bry_cycle1(NT)
       common /bry_indices_real1/ bry_cycle1
       integer bry_tid(NT), bry_ncycle1(NT),
@@ -52,6 +55,12 @@
 #   ifdef T_FRC_BRY
       integer tbry_west_id(NT)
       common /t_west_id/ tbry_west_id
+#    ifdef SUBSTANCE
+!     per-substance, per-side flag: true if obc_cv_name(itrc) names a
+!     variable that was actually found in the bry file for this side
+      logical got_tbry_west(NT)
+      common /got_tbry_west/ got_tbry_west
+#    endif
 #   endif
 #  endif
 # endif
@@ -73,6 +82,10 @@
 #   ifdef T_FRC_BRY
       integer tbry_east_id(NT)
       common /t_east_id/ tbry_east_id
+#    ifdef SUBSTANCE
+      logical got_tbry_east(NT)
+      common /got_tbry_east/ got_tbry_east
+#    endif
 #   endif
 #  endif
 # endif
@@ -94,6 +107,10 @@
 #   ifdef T_FRC_BRY
       integer tbry_south_id(NT)
       common /t_south_id/ tbry_south_id
+#    ifdef SUBSTANCE
+      logical got_tbry_south(NT)
+      common /got_tbry_south/ got_tbry_south
+#    endif
 #   endif
 #  endif
 # endif
@@ -115,6 +132,10 @@
 #   ifdef T_FRC_BRY
       integer tbry_north_id(NT)
       common /t_north_id/ tbry_north_id
+#    ifdef SUBSTANCE
+      logical got_tbry_north(NT)
+      common /got_tbry_north/ got_tbry_north
+#    endif
 #   endif
 #  endif
 # endif
@@ -254,9 +275,9 @@
 #ifdef WKB_WWAVE
 # ifndef ANA_BRY_WKB
       real    brywkb_time(2)
-      REAL(kind=8) :: brywkb_origin_date_in_sec
+      REAL(kind=8) :: brywkb_origin_date_in_sec, brywkb_secinunit
       common /brywkb_indices_array/ brywkb_time,
-     &        brywkb_origin_date_in_sec
+     &        brywkb_origin_date_in_sec, brywkb_secinunit
       real    brywkb_cycle
       common /brywkb_indices_real/ brywkb_cycle
       integer brywkb_id, brywkb_time_id,

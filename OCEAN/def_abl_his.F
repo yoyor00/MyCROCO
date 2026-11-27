@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -34,6 +35,16 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+      USE croco_namelist, ONLY: ldefablhis
+# ifndef AVRH
+      USE croco_namelist, ONLY: ablname, nrpfablhis
+# else
+      USE croco_namelist, ONLY: ablname_avg, nrpfablavg
+# endif
+      USE tools_calendar, ONLY: tool_check_output_origin
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -49,7 +60,6 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
       character*70 text
 
@@ -58,7 +68,7 @@
 #  define rec_per_file nrpfablhis
 #  define wrt wrtabl
 #  define vidTime ablhisTime
-#  define vidTime2 ablhisTime2
+#  define vidOrigin ablhis_origin_in_sec
 #  define vidTstep ablhisTstep
 #  define vidabl_pu_dta ablhis_pu_dta
 #  define vidabl_pv_dta ablhis_pv_dta
@@ -85,7 +95,7 @@
 #  define rec_per_file nrpfablavg
 #  define wrt wrtabl_avg
 #  define vidTime ablavgTime
-#  define vidTime2 ablavgTime2
+#  define vidOrigin ablavg_origin_in_sec
 #  define vidTstep ablavgTstep
 #  define vidabl_pu_dta ablavg_pu_dta
 #  define vidabl_pv_dta ablavg_pv_dta
@@ -126,6 +136,8 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 ! Decide whether to create a new file, or open existing one.
@@ -155,15 +167,14 @@
 ! is created.
 !
 
-# ifdef DO_NOT_OVERWRITE
+! Create a new file only at the first record of a file; otherwise open
+! the existing file and append (restart-safe: never overwrite a file
+! that already holds records from a previous run segment).
       if (lvar.eq.total_rec-1) then
         create_new_file=ldefablhis
       else
         create_new_file=.false.
       endif
-# else
-      create_new_file=ldefablhis
-# endif
 
       if (ncid.ne.-1) create_new_file=.false.
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
@@ -269,37 +280,7 @@
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
      &       NF_FOUT, ierr)
 
-!
-!-----------------------------------------------------------------------
-! Time2.
-!-----------------------------------------------------------------------
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                            NF_DOUBLE, 1, timedim, vidTime2)
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
-# endif
-# ifndef AVRH
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
-     &                                vname(2,indxTime2)(1:lvar))
-# else
-        text='averaged '/ /vname(2,indxTime2)
-        lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
-     &                                             text(1:lvar))
-# endif
-        lvar=lenstr(vname(3,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'units',  lvar,
-     &                                vname(3,indxTime2)(1:lvar))
-        lvar=lenstr(vname(4,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
-     &                                vname(4,indxTime2)(1:lvar))
-
-        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
-     &       NF_FOUT, ierr)
-
+        vidOrigin=start_date_in_sec
 !=======================================================================
 !
 ! Define primary variables
@@ -913,7 +894,7 @@
               rec=rec-ierr
             elseif (rec_per_file.eq.0) then
               total_rec=rec+1           ! <-- set to the next record
-# if defined MPI & !defined PARALLEL_FILES
+# if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
               if (mynode.gt.0) total_rec=total_rec-1
 # endif
             endif
@@ -962,17 +943,10 @@
           write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-!
-!-----------------------------------------------------------------------
-! Time2.
-!-----------------------------------------------------------------------
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
+
+        call tool_check_output_origin(ncid, vidTime, start_date_in_sec,
+     &                                 vidOrigin)
+
 !
 !-----------------------------------------------------------------------
 ! U-wind
@@ -1309,7 +1283,7 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
-# undef vidTime2
+# undef vidOrigin
 # undef vidTstep
 # undef vidabl_pu_dta
 # undef vidabl_pv_dta

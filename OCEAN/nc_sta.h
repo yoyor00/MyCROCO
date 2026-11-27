@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 ! This is include file "nc_sta.h".
@@ -27,58 +28,55 @@
 
       integer stafield
       parameter(stafield=5)
-      integer indxstaGrd, indxstaTemp, indxstaSalt,
-     & indxstaRho, indxstaVel
-      parameter (     indxstaGrd=1, indxstaTemp=2,
-     & indxstaSalt=3, indxstaRho=4,  indxstaVel=5)
+      integer indxstaGrd, indxstaTemp, indxstaSalt
+      integer indxstaRho, indxstaVel
+      parameter (indxstaGrd=1, indxstaTemp=2)
+      parameter (indxstaSalt=3, indxstaRho=4,  indxstaVel=5)
 
 
       integer ncidsta,    nrecsta,    staGlevel
-     &      , staTstep,   staTime,    staXgrd,   staYgrd
-     &      , staZgrd,    staZeta,    staU,      staV
+      integer staTstep,   staTime,    staXgrd,   staYgrd
+      integer staZgrd,    staZeta,    staU,      staV
 #ifdef SPHERICAL
-     &      , staLon,     staLat
+      integer staLon,     staLat
 #else
-     &      , staX,       staY
+      integer staX,       staY
 #endif
 #ifdef SOLVE3D
-     &      , staDepth,   staDen
+      integer staDepth,   staDen
 # ifdef TEMPERATURE
-     &      , staTemp
+      integer staTemp
 # endif
 # ifdef SALINITY
-     &      , staSal
+      integer staSal
 # endif
 # ifdef MUSTANG
-     &      , staMUS(NT-2)
+      integer staMUS(NT-2)
 # endif
 #endif
       logical wrtsta(stafield)
 
-      common/incscrum_sta/
-     &        ncidsta,    nrecsta,    staGlevel
-     &      , staTstep,   staTime,    staXgrd,   staYgrd
-     &      , staZgrd,    staZeta,    staU,      staV
+      common/incscrum_sta/ncidsta,    nrecsta,    staGlevel
+      common/incscrum_sta/staTstep,   staTime,    staXgrd,   staYgrd
+      common/incscrum_sta/staZgrd,    staZeta,    staU,      staV
 #ifdef SPHERICAL
-     &      , staLon,     staLat
+      common/incscrum_sta/ staLon,     staLat
 #else
-     &      , staX,       staY
+      common/incscrum_sta/ staX,       staY
 #endif
 #ifdef SOLVE3D
-     &      , staDepth,   staDen
+      common/incscrum_sta/ staDepth,   staDen
 # ifdef TEMPERATURE
-     &      ,   staTemp
+      common/incscrum_sta/ staTemp
 # endif
 # ifdef SALINITY
-     &      , staSal
+      common/incscrum_sta/staSal
 # endif
 # ifdef MUSTANG
-     &      , staMUS
+      common/incscrum_sta/ staMUS
 # endif
 
 #endif
-     &      , wrtsta
+      common/incscrum_sta/ wrtsta
 
 
-      character*80  staname,   staposname
-      common /cncscrum_sta/ staname,   staposname

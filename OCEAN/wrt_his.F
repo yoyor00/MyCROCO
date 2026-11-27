@@ -1,17 +1,20 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
+      USE croco_namelist, only: dt, rho0
+      USE croco_namelist, ONLY: nrpfhis, hisname
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif
@@ -63,6 +66,15 @@
      &     obst_tau, obst_fuz, obst_fvz
 #endif
 
+#ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+#endif
+
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff
@@ -79,7 +91,6 @@
       integer tile, itrc,i,j,k
 #endif
 #if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
 #include "param.h"
@@ -207,30 +218,12 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     Time
 !
       ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
+     &  - his_origin_in_sec
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         MPI_master_only write(stdout,1)
      &        vname(1,indxTime)(1:lvar), record, ierr
-     &        MYID
-        goto 99                !--> ERROR
-      endif
-
-!
-!     Time2
-!
-      ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
-#ifdef USE_CALENDAR
-     &  - origin_date_in_sec
-#endif
-     &  )
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(stdout,1)
-     &        vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
       endif
@@ -463,8 +456,8 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-!$acc update if(compute_on_device) host(wepb0(:,:))
-        ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
+!$acc update if(compute_on_device) host(wepb(:,:))
+            ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
@@ -691,14 +684,35 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
 !
+!     STOGEN stochastic modeling components 
+!
+#ifdef STOGEN
+!- 2D stochastic field -
+      if (ln_stogen.AND.wrthis(indxXIsto2d)) then
+        work2d=sto_xi2d
+        ierr=nf_fwrite(work2d, ncidhis, hisXIsto2d, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          MPI_master_only write(stdout,1)
+     &        vname(1,indxXIsto2d)(1:lvar), record, ierr
+     &           MYID
+          goto 99             !--> ERROR
+        endif
+CR      write(stdout,*) 'wrt_his:  wrtstoXI2d' MYID
+      endif
+!- 3D stochastic field -
+      if (ln_stogen.AND.wrthis(indxXIsto3d)) then
+        workr=sto_xi3d
+        call fillvalue3d(workr,ncidhis,hisXIsto3d,indxXIsto3d,
+     &        record,r3dvar,type)
+CR      write(stdout,*) 'wrt_his:    wrtstoXI3d' MYID
+      endif
+#endif /* STOGEN */
+!
 !     Tracer variables.
 !
 # ifdef TRACERS
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
          if (wrthis(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,itrc))
             workr=t(:,:,:,nstp,itrc)
@@ -720,9 +734,6 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-      endif
-# endif
       enddo
 # endif /* TRACERS */
 !
@@ -738,7 +749,7 @@ CR      write(*,*) 'wrt_his:  wrtRHO' MYID
 # if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
-!     Brunt vaisala frequency.
+!     Square of Brunt vaisala frequency (N^2).
 !
       if (wrthis(indxbvf)) then
 !$acc update if(compute_on_device) host(bvf(:,:,:))
@@ -800,6 +811,23 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 # endif
 
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
+      endif
+!
+!     Write out depth of rho- and w-points (m).
+!
+      if (wrthis(indxZ_r)) then
+!$acc update if(compute_on_device) host(z_r(:,:,:))
+        workr=z_r
+        call fillvalue3d(workr,ncidhis,hisZ_r,vname(1,indxZ_r),
+     &        record,r3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_r' MYID
+      endif
+      if (wrthis(indxZ_w)) then
+!$acc update if(compute_on_device) host(z_w(:,:,:))
+        work=z_w
+        call fillvalue3d_w(work,ncidhis,hisZ_w,vname(1,indxZ_w),
+     &        record,w3dvar,type)
+CR      write(*,*) 'wrt_his:  wrtZ_w' MYID
       endif
 !
 # ifdef VIS_COEF_3D
@@ -1005,16 +1033,21 @@ CR          write(*,*) 'wrt_his:  btflx(:,:,itemp)' MYID
 !
 !       --> convert [psu.m.s-1] => [cm/days] :
 !       stf_cff= 86400/0.01 = 1/stf_scale
-!       After forcing reading (get_stflx.F), multiply by 0.01/86400.
+!       After forcing reading (get_stflux.F), multiply by 0.01/86400.
 !       Then in get_vbc.F, mult. by salinity t(i,j,N,nstp,isalt)
 !
       if (wrthis(indxSwflx)) then
 !$acc update if(compute_on_device) host(stflx(:,:,isalt))
         do j=0,Mm+1
           do i=0,Lm+1
+#  ifdef RAIN_FLUX
+            work2d(i,j)=stf_cff*EmP(i,j)
+     &              SWITCH rmask(i,j)
+#  else
             work2d(i,j)=stf_cff*stflx(i,j,isalt)/
      &              ( max(eps,t(i,j,N,nstp,isalt)))
      &              SWITCH rmask(i,j)
+#  endif
           enddo
         enddo
         ierr=nf_fwrite(work2d, ncidhis, hisSwflx, record, r2dvar)
@@ -1359,10 +1392,6 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Tracer variables.
 !
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
         if (wrthis(indxT+itrc-1)) then
           workr=t(:,:,:,nstp,itrc)
 # if defined MUSTANG
@@ -1384,9 +1413,6 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         endif
-# endif
       enddo
 
 !
@@ -1528,7 +1554,6 @@ CR      write(*,*) 'wrt_his var2D_flx_w2s'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pephm_fcor'  MYID
             endif
-#ifdef key_MUSTANG_bedload
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_bx(itrc,:,:)
@@ -1557,7 +1582,6 @@ CR      write(*,*) 'wrt_his var2D_bil_bedload'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
             endif
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
       enddo
 
@@ -1660,7 +1684,6 @@ CR      write(*,*) 'wrt_his var2D_pct_iter_coh'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_niter_ero'  MYID
       endif
-#ifdef key_MUSTANG_bedload
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_flx_bx_int(:,:)
@@ -1683,7 +1706,6 @@ CR      write(*,*) 'wrt_his var2D_flx_by_int'  MYID
 CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
       endif
 
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN

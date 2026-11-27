@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !   
 #include "cppdefs.h"
@@ -16,6 +17,13 @@
       USE xios
 #ifdef key_pisces
       USE trc, ONLY : profsed
+#endif
+      use croco_namelist, only: ntimes, dt, ndtfast,
+     &                              ininame, rstname, title, frcname,
+     &                              theta_s, theta_b, Tcline, hc,
+     &                              nwrt, rdrg, rho0, gamma2, x_sponge
+#ifndef ANA_GRID
+      use croco_namelist, only: grdname
 #endif
       IMPLICIT NONE
 
@@ -66,7 +74,7 @@
       !
       ! See ncscrum.h for r2dvar ...
       SELECT CASE (TRIM(cdgrd))
-      CASE ("rho")
+      CASE ("rho", "rho_unmasked")
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
@@ -74,11 +82,11 @@
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
-      CASE ("u")
+      CASE ("u", "u_unmasked")
          vtype=u2dvar
          nx_glo=LLm+1
          ny_glo=MMm+2
-      CASE ("v")
+      CASE ("v", "v_unmasked")
          vtype=v2dvar
          nx_glo=LLm+2
          ny_glo=MMm+1
@@ -841,11 +849,9 @@ C ass_file
 C apar_file
 #endif
 #ifdef SOLVE3D
-# ifdef  NEW_S_COORD
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='VertCoordType', value='NEW')
-# endif
-# ifdef  LMD_SKPP2005
+# ifdef LMD_SKPP2005
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='skpp', value='2005')
 # endif
@@ -962,17 +968,15 @@ C 				  endif
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='gamma2_expl', value=
      &          'Slipperiness parameter')
-# ifdef SPONGE
+#if (defined SPONGE && !defined SPONGE_GRID)
 !
 ! Sponge parameters
 !
       CALL iom_set_file_global_attr_float   (cdid
      &      ,type='float',name='x_sponge', value=x_sponge)
-      CALL iom_set_file_global_attr_float   (cdid
-     &     ,type='float',name='v_sponge', value=v_sponge)
       CALL iom_set_file_global_attr_char   (cdid,
      &     type='string',name='sponge_expl',value=
-     &     'Sponge parameters : extent (m) & viscosity (m2.s-1)')
+     &     'Sponge layer width [m]: x_sponge')
 # endif
 # ifdef SEDIMENT
 !
@@ -1160,11 +1164,13 @@ C 				  endif
 
 
       SUBROUTINE dom_ngb( plon, plat, kii, kjj, cdgrid )
+# ifdef MPI
+      use mpi
+# endif
 # include "param.h"
 # include "grid.h"
 # ifdef MPI
 #      include "mpi_cpl.h"
-       include 'mpif.h'
 # endif
       !!----------------------------------------------------------------------
       !!                    ***  ROUTINE dom_ngb  ***
@@ -1305,15 +1311,19 @@ C 				  endif
       TYPE(xios_duration)   ::   output_freq
       !!----------------------------------------------------------------------
       !
-# if !defined USE_CALENDAR
-      ! start_date with format yyyy-mm-dd
-       READ(xios_origin_date(1:4),fmt='(i4)') iyear
-       READ(xios_origin_date(6:7),fmt='(i2)') imonth
-       READ(xios_origin_date(9:10),fmt='(i2)') iday
-       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )
-# else
-       CALL ymds2ju(1900, 1, 1, 0., jday0 ) 
-# endif
+      ! time*sec2day (used below via time*sec2day+jday0), unlike tdays,
+      ! is ALWAYS absolute days since tools_calendar's internal 1900
+      ! epoch, regardless of when this routine runs: tdays switches
+      ! meaning to "elapsed days since the run's true start" as soon as
+      ! step.F executes (see its comment there), whereas time keeps the
+      ! same formula throughout. This routine only happens to run once,
+      ! before the time-stepping loop starts, so tdays would still work
+      ! today -- but relying on that is fragile, so use time directly.
+      ! jday0 must be the julian day of that same fixed 1900 epoch, not
+      ! the run's own configurable origin_date (using the run's origin
+      ! here would double-count it, since it is already folded into
+      ! time).
+       CALL ymds2ju( 1900, 1, 1, 0., jday0 )
       DO jn = 1,2
 
          IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
@@ -1370,7 +1380,7 @@ C 				  endif
             idx = INDEX(clname,'@startdate@') + 
      &            INDEX(clname,'@STARTDATE@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate( tdays+jday0  )
+               cldate = iom_sdate( time*sec2day+jday0  )
                clname = clname(1:idx-1)//TRIM(cldate)//
      &          clname(idx+11:LEN_TRIM(clname))
                idx = INDEX(clname,'@startdate@') + 
@@ -1380,7 +1390,7 @@ C 				  endif
             idx = INDEX(clname,'@startdatefull@') + 
      &            INDEX(clname,'@STARTDATEFULL@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate(tdays+jday0 , ldfull = .TRUE. )
+               cldate = iom_sdate(time*sec2day+jday0 , ldfull = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)//
      &          clname(idx+15:LEN_TRIM(clname))
                idx = INDEX(clname,'@startdatefull@') +
@@ -1390,7 +1400,7 @@ C 				  endif
             idx = INDEX(clname,'@enddate@') +
      &            INDEX(clname,'@ENDDATE@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate( tdays+jday0 + dt
+               cldate = iom_sdate( time*sec2day+jday0 + dt
      &          / day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)
      &          //clname(idx+9:LEN_TRIM(clname))
@@ -1401,8 +1411,8 @@ C 				  endif
             idx = INDEX(clname,'@enddatefull@') + 
      &            INDEX(clname,'@ENDDATEFULL@')
             DO WHILE ( idx /= 0 ) 
-               cldate = iom_sdate( tdays+jday0 + dt  
-     &          /day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE., 
+               cldate = iom_sdate( time*sec2day+jday0 + dt
+     &          /day2sec * REAL( ntimes - ntstart ), ld24 = .TRUE.,
      &           ldfull = .TRUE. )
                clname = clname(1:idx-1)//TRIM(cldate)
      &          //clname(idx+13:LEN_TRIM(clname))
@@ -1779,6 +1789,9 @@ C 				  endif
       !
       USE xios     ! XIOS library
       USE xios_module
+      use croco_namelist, only: start_date, calendar_type
+      use tools_calendar, only: tool_sectodat, tool_decompdate,
+     &                          tool_xios_calendar_type
 
 #if defined MUSTANG
       USE comMUSTANG, only: nk_nivsed_out
@@ -1800,7 +1813,7 @@ C 				  endif
      &                               ,if_xios_dom_grid
 
 #endif
-      !    
+      !
       IMPLICIT NONE
       !
 # include "param.h"
@@ -1828,14 +1841,23 @@ C 				  endif
       TYPE(xios_variable) :: var_hdl
       LOGICAL ok
       !
-      CHARACTER(len=19) :: cldate
       CHARACTER(len=10) :: clname
       CHARACTER(len=10) :: cdname
       INTEGER           :: imd
-      INTEGER iday,imonth,iyear,ihour,iminute,isec
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: tool_sectodat
-#endif
+      ! torigin_*: decoded from the namelist start_date, this is XIOS's
+      ! fixed "time_origin" -- the reference epoch of the output time
+      ! axis. Distinct from both origin_date (whatever date is embedded
+      ! in the initial/restart file being read) and rundate_* below.
+      INTEGER :: torigin_year, torigin_month, torigin_day
+      INTEGER :: torigin_hour, torigin_minute, torigin_second
+      ! rundate_*: the real calendar date right now, decoded from
+      ! start_time; this is XIOS's "start_date" -- where the calendar
+      ! currently stands, not a fixed reference. Named "rundate" (not
+      ! "start_date") precisely to avoid confusion with the namelist's
+      ! start_date, which torigin_* decodes instead.
+      INTEGER :: rundate_year, rundate_month, rundate_day
+      INTEGER :: rundate_hour, rundate_minute, rundate_second
+      CHARACTER(len=19) :: rundate_str
 
       !!---------------------------------------------------------------------
       !  
@@ -1871,25 +1893,27 @@ C 				  endif
 # endif
       CALL iom_swap( cdname )
 
-      ! calendar parameters
+      ! rundate_* is decoded here from start_time rather than in
+      ! get_initial.F, since get_initial.F is never called for an
+      ! ANA_INITIAL fresh start (nrrec==0) and would leave it undefined
+      ! in that case.
+      rundate_str = tool_sectodat(start_time)
+      CALL tool_decompdate(rundate_str, rundate_day, rundate_month,
+     &                      rundate_year, rundate_hour, rundate_minute,
+     &                      rundate_second)
 
-# if !defined USE_CALENDAR
-! start_date with format yyyy-mm-dd
-      READ(xios_origin_date(1:4),fmt='(i4)') iyear
-      READ(xios_origin_date(6:7),fmt='(i2)') imonth
-      READ(xios_origin_date(9:10),fmt='(i2)') iday
-      ihour=0
-      iminute=0
-      isec=0
-# else
-      cldate = tool_sectodat(time)
-      CALL tool_decompdate(cldate,iday,imonth,iyear,ihour,iminute,isec)
-# endif
-      CALL xios_define_calendar( TYPE = "Gregorian", 
-     &      start_date  = xios_date(start_year,start_month,start_day,
-     &                    start_hour,start_minute,start_second),
-     &      time_origin = xios_date(origin_year,origin_month,origin_day,
-     &                    origin_hour,origin_minute,origin_second))
+      CALL tool_decompdate(start_date, torigin_day, torigin_month,
+     &                      torigin_year, torigin_hour, torigin_minute,
+     &                      torigin_second)
+
+      CALL xios_define_calendar(
+     &      TYPE = TRIM(tool_xios_calendar_type(calendar_type)),
+     &      start_date  = xios_date(rundate_year,rundate_month,
+     &                    rundate_day,rundate_hour,rundate_minute,
+     &                    rundate_second),
+     &      time_origin = xios_date(torigin_year,torigin_month,
+     &                    torigin_day,torigin_hour,torigin_minute,
+     &                    torigin_second))
 
       ! horizontal grid definition
       CALL set_scalar
@@ -1901,6 +1925,9 @@ C 				  endif
       CALL set_grid( "v"  , lonv, latv )
       CALL set_grid( "w"  , lonr, latr )
       CALL set_grid( "psi", lonu, latv )
+      CALL set_grid( "rho_unmasked", lonr, latr )
+      CALL set_grid( "u_unmasked"  , lonu, latu )
+      CALL set_grid( "v_unmasked"  , lonv, latv )
 # else
       CALL set_grid( "rho", xr, yr )
       CALL set_grid( "b"  , xr, yr )
@@ -1908,6 +1935,9 @@ C 				  endif
       CALL set_grid( "v"  , xr, yp )
       CALL set_grid( "w"  , xr, yr )
       CALL set_grid( "psi", xp, yp )
+      CALL set_grid( "rho_unmasked", xr, yr )
+      CALL set_grid( "u_unmasked"  , xp, yr )
+      CALL set_grid( "v_unmasked"  , xr, yp )
 # endif
 
 # ifdef MASKING
@@ -2236,6 +2266,9 @@ C 				  endif
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
+#if defined key_MUSTANG_V2
+      USE comsubstance, ONLY : l_bedload
+#endif
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
       USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
      &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
@@ -2312,7 +2345,7 @@ C 				  endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 # ifdef DIAGNOSTICS_PV
@@ -2849,10 +2882,10 @@ c !$acc wait
 ! but I found it quiet ugly
 
       if (xios_field_is_active("rho")) then
-      call xios_send_field("rho",rho)
+      call xios_send_field("rho",rho+rho0-1000.)
       endif
       if (xios_field_is_active("rho_surf")) then
-      call xios_send_field("rho_surf",rho(:,:,N))
+      call xios_send_field("rho_surf",rho(:,:,N)+rho0-1000.)
       endif
 
 # if defined ANA_VMIX || defined LMD_MIXING \
@@ -2881,7 +2914,7 @@ c !$acc wait
       call xios_send_field("omega",work)
       endif
 
-#  ifdef M3FAST
+#  ifdef NBQ
       if (xios_field_is_active("u_nbq")) then
         worknbq=0.
           do k=-N_sl+1,N-1
@@ -2971,7 +3004,7 @@ c !$acc wait
 #  endif
 
       if (xios_field_is_active("w")) then
-# ifndef M3FAST
+# ifndef NBQ
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
 # else        
@@ -3371,7 +3404,7 @@ c !$acc wait
 
 #  ifdef DIAGNOSTICS_TS
          itrc=1
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
       if (xios_field_is_active("T_rate")) then
           call xios_send_field("T_rate", Trate(:,:,:,itrc))
       endif
@@ -3388,8 +3421,8 @@ c !$acc wait
       if (xios_field_is_active("T_Forc")) then
           call xios_send_field("T_Forc",TForc(:,:,:,itrc))
       endif
-#  endif          
-#  ifdef SALINITY
+#   endif          
+#   ifdef SALINITY
         itrc = 2
       if (xios_field_is_active("S_rate")) then
           call xios_send_field("S_rate", Trate(:,:,:,itrc))
@@ -3407,11 +3440,70 @@ c !$acc wait
       if (xios_field_is_active("S_Forc")) then
           call xios_send_field("S_Forc",TForc(:,:,:,itrc))
       endif
+#   endif
+#   ifdef DIAGNOSTICS_TS_MLD
+#    ifdef TEMPERATURE
+        itrc = 1
+      if (xios_field_is_active("T_rate_mld")) then
+          call xios_send_field("T_rate_mld", Trate_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_adv_mld")) then
+          call xios_send_field("T_adv_mld", TXadv_mld(:,:,itrc)
+     &           + TYadv_mld(:,:,itrc) + TVadv_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Hmix_mld")) then
+          call xios_send_field("T_Hmix_mld",THmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Vmix_mld")) then
+          call xios_send_field("T_Vmix_mld",TVmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Forc_mld")) then
+          call xios_send_field("T_Forc_mld",TForc_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_entr_mld")) then
+          call xios_send_field("T_entr_mld",Tentr_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_aver_mld")) then
+          call xios_send_field("T_aver_mld",Taver_mld(:,:,itrc))
+      endif
+#     ifdef DIAGNOSTICS_TS_MLD_DENS
+      if (xios_field_is_active("D_depth_mld")) then
+          call xios_send_field("D_depth_mld",Tcrit_mld(:,:,itrc))
+      endif
+#     endif
+#    endif
+#    ifdef SALINITY
+        itrc = 2
+      if (xios_field_is_active("S_rate_mld")) then
+          call xios_send_field("S_rate_mld", Trate_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_adv_mld")) then
+          call xios_send_field("S_adv_mld", TXadv_mld(:,:,itrc)
+     &           + TYadv_mld(:,:,itrc) + TVadv_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Hmix_mld")) then
+          call xios_send_field("S_Hmix_mld",THmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Vmix_mld")) then
+          call xios_send_field("S_Vmix_mld",TVmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Forc_mld")) then
+          call xios_send_field("S_Forc_mld",TForc_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_entr_mld")) then
+          call xios_send_field("S_entr_mld",Tentr_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_aver_mld")) then
+          call xios_send_field("S_aver_mld",Taver_mld(:,:,itrc))
+      endif
+#     ifdef DIAGNOSTICS_TS_MLD_DENS
+      if (xios_field_is_active("T_depth_mld")) then
+          call xios_send_field("T_depth_mld",Tcrit_mld(:,:,itrc))
+      endif
+#     endif
+#    endif
+#   endif
 #  endif
-#  endif
-
-
-
 
 #  ifdef DIAGNOSTICS_VRT
       if (xios_field_is_active("vrtrate")) then
@@ -3457,39 +3549,39 @@ c !$acc wait
 #  endif
 
 
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
 
       if (xios_field_is_active("ekrate")) then
-          call xios_send_field("ekrate", ekrate(:,:))
+          call xios_send_field("ekrate", ekrate(:,:,:))
       endif
       if (xios_field_is_active("ekadv")) then
-          call xios_send_field("ekadv", ekHadv(:,:) + ekVadv(:,:))
+          call xios_send_field("ekadv", ekHadv(:,:,:) + ekVadv(:,:,:))
       endif
       if (xios_field_is_active("ekCor")) then
-          call xios_send_field("ekCor",ekCor(:,:))
+          call xios_send_field("ekCor",ekCor(:,:,:))
       endif
       if (xios_field_is_active("ekPrsgrd")) then
-          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:))
+          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:,:))
       endif
       if (xios_field_is_active("ekHmix")) then
-          call xios_send_field("ekHmix",ekHmix(:,:))
+          call xios_send_field("ekHmix",ekHmix(:,:,:))
       endif
       if (xios_field_is_active("ekHdiff")) then
-          call xios_send_field("ekHdiff",ekHdiff(:,:))
+          call xios_send_field("ekHdiff",ekHdiff(:,:,:))
       endif
       if (xios_field_is_active("ekVmix")) then
-          call xios_send_field("ekVmix",ekVmix(:,:))
+          call xios_send_field("ekVmix",ekVmix(:,:,:))
       endif
       if (xios_field_is_active("ekVmix2")) then
-          call xios_send_field("ekVmix2",ekVmix2(:,:))
+          call xios_send_field("ekVmix2",ekVmix2(:,:,:))
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("ekBaro")) then
-          call xios_send_field("ekBaro",ekBaro(:,:))
+          call xios_send_field("ekBaro",ekBaro(:,:,:))
       endif
 #  endif
       if (xios_field_is_active("ekvol")) then
-          call xios_send_field("ekvol",ekvol(:,:))
+          call xios_send_field("ekvol",ekvol(:,:,:))
       endif
       if (xios_field_is_active("ekDrag")) then
           call xios_send_field("ekDrag",ekDrag(:,:))
@@ -3499,7 +3591,7 @@ c !$acc wait
       endif
 #  ifdef M3FAST
       if (xios_field_is_active("ekfast")) then
-          call xios_send_field("ekfast",ekfast(:,:))
+          call xios_send_field("ekfast",ekfast(:,:,:))
       endif
 #  endif
 #  endif
@@ -3715,7 +3807,7 @@ c !$acc wait
 
 
 # ifdef MUSTANG
-      do itrc=3,NT
+      do itrc=itsubs1,itsubs1+nvpc-1
          write(nametrc,'(a)') TRIM(name_var(itrc-2))
          workr=t(:,:,:,nstp,itrc)
          if (itrc .ge. itsubs1+nv_grav .and.
@@ -3840,8 +3932,7 @@ c !$acc wait
      &                             var2D_pephm_fcor(itrc,:,:))
             endif
          ENDIF
-#ifdef key_MUSTANG_bedload
-         IF (l_outsed_bedload) then
+         IF (l_bedload .and. l_outsed_bedload) then
             write (nametrc, '(a,"_flx_bx")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
@@ -3858,14 +3949,13 @@ c !$acc wait
      &                             var2D_bil_bedload(itrc,:,:))
             endif
          ENDIF
-         IF (l_outsed_fsusp) then
+         IF (l_bedload .and. l_outsed_fsusp) then
             write (nametrc, '(a,"_fsusp")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
      &                             var2D_fsusp(itrc,:,:))
             endif
          ENDIF
-#endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
       ENDDO
 
@@ -3928,8 +4018,7 @@ c !$acc wait
      &                        var2D_niter_ero)
             endif
       ENDIF
-#ifdef key_MUSTANG_bedload
-      IF (l_outsed_bedload) then
+      IF (l_bedload .and. l_outsed_bedload) then
             if (xios_field_is_active("flx_bx_int")) then
             call xios_send_field("flx_bx_int",
      &                        var2D_flx_bx_int)
@@ -3943,7 +4032,6 @@ c !$acc wait
      &                        var2D_bil_bedload_int)
             endif
       ENDIF
-#endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN

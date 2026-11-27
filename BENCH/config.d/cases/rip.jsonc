@@ -1,35 +1,17 @@
 {
-  // RIP
+  // RIP — Rip current test cases (48 x 48 x 20)
+  // Each case has its own cppdefs, param and nml files.
+  //
+  //   RIP         : idealized Duck Beach, 3D topography (MRL_WCI)
+  //   RIP_TOPO_2D : longshore uniform topography (+ WAVE_RAMP)
+  //   BISCA       : realistic case with input files (BBL, no ANA_GRID)
+  //   GRANDPOPO   : idealized Grand Popo Beach in Benin
   "RIP": {
     "title": "RIP - (48 x 48 x 20 : 1800)",
     "case": "RIP",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_rip.py",
+      "plotphy_script": "./TEST_CASES/RIP/plot_rip.py",
       "plotphy_script_input": "rip_his.nc",
-    },
-    "cppkeys": {
-      "RIP": true,
-      "RIP_TOPO_2D": false,
-      "BISCA": false,
-      "NBQ": false,
-      "WAVE_MAKER": false,
-      "GRANDPOPO": false,
-    },
-    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
-    "patches": {},
-    "check_outputs": ["rip_his.nc"],
-    "unsupported": ["restart", "openmp"],
-  },
-  "RIP_GRANDPOPO": {
-    "title": "RIP - GRANDPOPO - (48 x 48 x 20 : 1800)",
-    "case": "RIP",
-    "cppkeys": {
-      "RIP": true,
-      "RIP_TOPO_2D": false,
-      "BISCA": false,
-      "NBQ": false,
-      "WAVE_MAKER": false,
-      "GRANDPOPO": true,
     },
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {},
@@ -38,15 +20,32 @@
   },
   "RIP_TOPO_2D": {
     "title": "RIP - TOPO_2D - (48 x 48 x 20 : 1800)",
-    "case": "RIP",
-    "cppkeys": {
-      "RIP": true,
-      "RIP_TOPO_2D": true,
-      "BISCA": false,
-      "NBQ": false,
-      "WAVE_MAKER": false,
-      "GRANDPOPO": false,
-    },
+    "case": "RIP_TOPO_2D",
+    "nml_file": "TEST_CASES/RIP/croco_RIP_TOPO_2D.nml",
+    "cppdefs_file": "TEST_CASES/RIP/cppdefs_RIP_TOPO_2D.h",
+    "param_file": "TEST_CASES/RIP/param_RIP_TOPO_2D.h",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "patches": {},
+    "check_outputs": ["rip_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  "BISCA": {
+    "title": "RIP - BISCA - (48 x 48 x 20 : 1800)",
+    "case": "BISCA",
+    "nml_file": "TEST_CASES/RIP/croco_BISCA.nml",
+    "cppdefs_file": "TEST_CASES/RIP/cppdefs_BISCA.h",
+    "param_file": "TEST_CASES/RIP/param_BISCA.h",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "patches": {},
+    "check_outputs": ["rip_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  "GRANDPOPO": {
+    "title": "RIP - GRANDPOPO - (48 x 48 x 20 : 1800)",
+    "case": "GRANDPOPO",
+    "nml_file": "TEST_CASES/RIP/croco_GRANDPOPO.nml",
+    "cppdefs_file": "TEST_CASES/RIP/cppdefs_GRANDPOPO.h",
+    "param_file": "TEST_CASES/RIP/param_GRANDPOPO.h",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {},
     "check_outputs": ["rip_his.nc"],

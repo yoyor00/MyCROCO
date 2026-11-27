@@ -63,13 +63,13 @@ export RUN=1
 export PLOT=1
 #
 #=======================================================================
-# Define time parameters (it will modify croco_forecast.in)
+# Define time parameters (it will modify croco_forecast.nml)
 #=======================================================================
 #
 # Model time step [seconds]
 DT=3600
 # Number of barotropic time steps within one baroclinic time step [number]
-# NDTFAST in croco.in
+# NDTFAST in croco.nml
 NFAST=60
 # Hindcast depth [days] see crocotools_param (hdays/fdays)
 NDAYS_HIND=1
@@ -177,12 +177,12 @@ $CP -f $INPUTDIR/$CODFILE $SCRATCHDIR
 chmod u+x $CODFILE
 echo "Getting ${GRDFILE} from $MSSDIR"
 $CP -f $MSSDIR/${GRDFILE} $SCRATCHDIR
-echo "Getting ${MODEL}_forecast.in from $INPUTDIR"
-$CP -f $INPUTDIR/${MODEL}_forecast.in $SCRATCHDIR
-echo "Getting ${MODEL}_stations.in from $INPUTDIR"
-$CP -f $INPUTDIR/${MODEL}_stations.in $SCRATCHDIR
+echo "Getting ${MODEL}_forecast.nml from $INPUTDIR"
+$CP -f $INPUTDIR/${MODEL}_forecast.nml $SCRATCHDIR
+echo "Getting ${MODEL}_stations.nml from $INPUTDIR"
+$CP -f $INPUTDIR/${MODEL}_stations.nml $SCRATCHDIR
 #
-# Time management in croco_forecast.in
+# Time management in croco_forecast.nml
 #
 NDAYS=$((NDAYS_HIND + NDAYS_FCST ))
 NUMTIMES=$((NDAYS * 24 * 3600 / DT))
@@ -193,7 +193,7 @@ NUMTIMES=$((NDAYS * 24 * 3600 / DT))
 sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
     -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' \
     -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
-        < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
+        < $INPUTDIR/${MODEL}_forecast.nml > $SCRATCHDIR/${MODEL}_forecast.nml
 #
 #  Change directory
 #
@@ -206,7 +206,7 @@ cd $SCRATCHDIR
 if [ $RUN = 1 ] ;then
   echo Hindcast/Forecast run
   date
-  $EXEC $CODFILE ${MODEL}_forecast.in > ${MODEL}_forecast_${DATESTR}.out
+  $EXEC $CODFILE ${MODEL}_forecast.nml > ${MODEL}_forecast_${DATESTR}.out
   date
   #
   # Store the initial file for the next forecast

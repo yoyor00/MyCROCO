@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -57,6 +58,7 @@ C$    integer omp_get_thread_num
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntsavg, navg, rho0
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
@@ -129,7 +131,7 @@ C$    integer omp_get_thread_num
 
       if (ilc.gt.ntsavg) then
 
-        if (mod(ilc-ntsavg,navg).eq.1) then
+        if (mod(ilc-ntsavg,navg).eq.1 .OR. navg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then
@@ -289,6 +291,39 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
+        if (wrtavg(indxAkv)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Akv_avg(i,j,k)=cff*(cff1*Akv_avg(i,j,k)+Akv(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+#   ifdef TEMPERATURE
+        if (wrtavg(indxAkt)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Akt_avg(i,j,k,itemp)=cff*(cff1*Akt_avg(i,j,k,itemp)
+     &                                        +Akt(i,j,k,itemp))
+              enddo
+            enddo
+          enddo
+        endif
+#   endif
+#   ifdef SALINITY
+        if (wrtavg(indxAks)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Akt_avg(i,j,k,isalt)=cff*(cff1*Akt_avg(i,j,k,isalt)
+     &                                        +Akt(i,j,k,isalt))
+              enddo
+            enddo
+          enddo
+        endif
+#   endif
 #  if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         if (wrtavg(indxbvf)) then
@@ -311,6 +346,24 @@ C$    integer omp_get_thread_num
      &                                 +Wi(i,j,k)*pm(i,j)*pn(i,j)
 #  endif
      &                                                          )
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxZ_r)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                z_r_avg(i,j,k)=cff*(cff1*z_r_avg(i,j,k)+z_r(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxZ_w)) then
+          do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                z_w_avg(i,j,k)=cff*(cff1*z_w_avg(i,j,k)+z_w(i,j,k))
               enddo
             enddo
           enddo
@@ -417,9 +470,14 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxSwflx)) then
           do j=JstrR,JendR
             do i=IstrR,IendR
+#   ifdef RAIN_FLUX
+              stflx_avg(i,j,isalt)=cff*(cff1*stflx_avg(i,j,isalt)+
+     &                               stf_cff*EmP(i,j) )
+#   else
               stflx_avg(i,j,isalt)=cff*(cff1*stflx_avg(i,j,isalt)+
      &                               stf_cff*stflx(i,j,isalt) /
      &               ( max(eps,t(i,j,N,nstp,isalt)) ) )
+#   endif
             enddo
           enddo
         endif
@@ -524,41 +582,6 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  endif
-#  ifdef AVERAGES_K
-        if (wrtavg(indxAkv)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akv_avg(i,j,k)=cff*(cff1*Akv_avg(i,j,k)+Akv(i,j,k))
-              enddo
-            enddo
-          enddo
-        endif
-#   ifdef TEMPERATURE
-        if (wrtavg(indxAkt)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akt_avg(i,j,k,itemp)=cff*(cff1*Akt_avg(i,j,k,itemp)
-     &                                        +Akt(i,j,k,itemp))
-              enddo
-            enddo
-          enddo
-        endif
-#   endif
-#   ifdef SALINITY
-        if (wrtavg(indxAks)) then
-          do k=0,N
-            do j=JstrR,JendR
-              do i=IstrR,IendR
-                Akt_avg(i,j,k,isalt)=cff*(cff1*Akt_avg(i,j,k,isalt)
-     &                                        +Akt(i,j,k,isalt))
-              enddo
-            enddo
-          enddo
-        endif
-#   endif
 #  endif
 #  if defined BIOLOGY && !defined PISCES
         if (wrtavg(indxHel)) then
@@ -754,7 +777,7 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxEPB)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb0(i,j) )
+              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb(i,j) )
             enddo
           enddo
         endif

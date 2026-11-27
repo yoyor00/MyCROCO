@@ -54,8 +54,17 @@ MPIINC=""
 #
 # set NETCDF directories
 #
-NETCDFLIB="$(nf-config --flibs)"
-NETCDFINC="-I$(nf-config --includedir)"
+if command -v nf-config >/dev/null 2>&1; then
+    NETCDFLIB="$(nf-config --flibs)"
+    NETCDFINC="-I$(nf-config --includedir)"
+else
+    NETCDFLIB=""
+    NETCDFINC=""
+fi
+if command -v nc-config >/dev/null 2>&1; then
+    NETCDFLIB="$NETCDFLIB -L$(nc-config --libdir) -lnetcdf"
+    NETCDFINC="$NETCDFINC -I$(nc-config --includedir)"
+fi
 
 #
 # set OASIS-MCT (or OASIS3) directories if needed
@@ -93,6 +102,7 @@ function show_help() {
    echo "                              (default: if fc=gfortran: '-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy' )."
    echo "                              (default: if fc=nvfortran or pgfortran: '-g -fast -r8 -i4 -mcmodel=medium -Mbackslash' )."
    echo "  --jobs <flags>              Number of processes for compilation (default: 1)"
+   echo "  --timings                   Enable wall-clock timing regions (Experimental feature)."
    echo "  --netcdf-inc <path>         Specify the NetCDF include directory. (default: nf-config --includedir)"
    echo "  --netcdf-lib <path>         Specify the NetCDF library directory. (default: nf-config --flibs)"
    echo "  --xios-dir <path>           Specify the XIOS root directory. (default: $HOME/xios)"
@@ -142,6 +152,10 @@ while [[ $# -gt 0 ]]; do
             NPROCS="$2"
             shift 2
             ;;
+        --timings)
+            CROCO_TIMINGS=1
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             show_help
@@ -152,6 +166,7 @@ done
 
 
 NPROCS="${NPROCS:-1}"
+CROCO_TIMINGS="${CROCO_TIMINGS:-0}"
 SOURCE="${CROCO_SRC-$SOURCE1}"
 SCRDIR="./Compile"
 RUNDIR="`pwd`"
@@ -195,6 +210,14 @@ ls "${ROOT_DIR}/"PISCES/kRGB61*  > /dev/null  2>&1 && \cp "${ROOT_DIR}/"PISCES/k
 ls "${ROOT_DIR}/"MUSTANG/*       > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"MUSTANG/* "$SCRDIR"
 ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"OBSTRUCTION/* "$SCRDIR"
 ls "${SOURCE}/"croco_ascii.txt   > /dev/null  2>&1 && \cp "${SOURCE}/"croco_ascii.txt "$SCRDIR"
+ls "${ROOT_DIR}/"STOGEN/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"STOGEN/* "$SCRDIR"
+
+if [[ -e "namelist_sto" ]] ; then
+        echo "  file namelist_sto exist in Run directory"
+else
+        \cp -f "${ROOT_DIR}/"STOGEN/namelist_sto "$RUNDIR"
+        echo "  file namelist_sto copied from source directory"
+fi
 
 if [[ -e "namelist_pisces_ref" ]] ; then
    echo "  file namelist_pisces exists in Run directory"
@@ -203,14 +226,6 @@ else
    echo "  file namelist_pisces copied from source directory"
    \cp -f "${ROOT_DIR}/"PISCES/SED/namelist_sediment* "$RUNDIR"
    echo "  file namelist_sediment copied from source directory"
-fi
-
-if [[ -d MUSTANG_NAMELIST ]]; then
-   echo "  Mustang namelist directory MUSTANG_NAMELIST exists"
-else
-   mkdir -p "$RUNDIR/MUSTANG_NAMELIST"
-   \cp -rf "${ROOT_DIR}/"MUSTANG/MUSTANG_NAMELIST/*txt "$RUNDIR/MUSTANG_NAMELIST/."
-   echo "  file para*txt copied from source directory"
 fi
 
 #
@@ -231,6 +246,11 @@ cd "$SCRDIR"
 #
 LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
 CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
+
+#
+# take --fc/CROCO_CFT1 into account before selecting the compiler branch
+#
+FC="${CROCO_CFT1-$FC}"
 
 #
 # Set compilation options
@@ -355,11 +375,17 @@ if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
    echo " => OASIS activated"
    CHAN=MPI1
    LIBPSMILE="${PRISM_ROOT_DIR}/lib/libpsmile.${CHAN}.a \
-      ${PRISM_ROOT_DIR}/lib/libmct.a  \
-      ${PRISM_ROOT_DIR}/lib/libmpeu.a \
-      ${PRISM_ROOT_DIR}/lib/libscrip.a"
-   PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
-      -I${PRISM_ROOT_DIR}/build/lib/mct"
+              ${PRISM_ROOT_DIR}/lib/libmct.a            \
+              ${PRISM_ROOT_DIR}/lib/libmpeu.a           \
+              ${PRISM_ROOT_DIR}/lib/libscrip.a"
+   # For OASIS3-MCT version >= 5
+   if [ -d "${PRISM_ROOT_DIR}/include" ]; then
+      PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/include"
+   # For OASIS3-MCT version < 5
+   else
+      PSMILE_INCDIR="-I${PRISM_ROOT_DIR}/build/lib/psmile.${CHAN} \
+                     -I${PRISM_ROOT_DIR}/build/lib/mct"
+   fi
    COMPILEOASIS=TRUE
    LDFLAGS1="$LDFLAGS1 $LIBPSMILE $NETCDFLIB"
    CPPFLAGS1="$CPPFLAGS1 ${PSMILE_INCDIR} $NETCDFINC"
@@ -377,7 +403,7 @@ if [[ $COMPILEAGRIF ]] ; then
 # if True add '-fcommon' to CFLAGS
     if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
    echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
-   CFLAGS1="$CFLAGS1 -fcommon"
+   CFLAGS1="$CFLAGS1 -fcommon -std=gnu11"
     fi
 #
 # compile the AGRIF librairy
@@ -445,6 +471,16 @@ if $($CPP1 testkeys.F | grep -i -q openaccisdefined) ; then
 fi
 
 #
+# wall-clock timing regions
+#
+if [[ "$CROCO_TIMINGS" == "1" ]] ; then
+   CPPFLAGS1="$CPPFLAGS1 -DCROCO_TIMINGS"
+   echo "Timings: enabled (wall-clock JSON output)"
+else
+   echo "Timings: disabled"
+fi
+
+#
 # rewrite Makedefs according to previous flags
 # with openmp flags if needed
 #
@@ -460,8 +496,8 @@ rm -f flags.tmp
 #
 # compile croco
 #
-$MAKE depend
-$MAKE -j ${NPROCS} || exit 1
+$MAKE CROCO_TIMINGS="$CROCO_TIMINGS" depend
+$MAKE CROCO_TIMINGS="$CROCO_TIMINGS" -j ${NPROCS} || exit 1
 
 
 [[ -f croco  ]] && mv croco "$RUNDIR"

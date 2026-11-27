@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -31,6 +32,14 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
+# ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+# endif
+      use croco_namelist, only: rho0
+# ifdef SUBSTANCE
+      USE comsubstance, ONLY: cv_rain, sub_flx_atm
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -44,6 +53,9 @@
 !++ Local integers
       INTEGER              :: i, j, m, iter
       INTEGER              :: Istr, Iend, Jstr, Jend
+# ifdef SUBSTANCE
+      INTEGER              :: itrc
+# endif
       INTEGER              :: imin, imax, jmin, jmax
       INTEGER, PARAMETER   :: IterFl = 3
 # ifdef CFB_WIND_TRA
@@ -207,11 +219,11 @@
           Q        = spec_hum (RH,psurf,TairC)
 # else
           uwnd_r   = u_abl(i,j,2,nt_n)
-#  ifndef KILPATRICK
+#  ifndef ABL_NO_OCEAN_FEEDBACK
      &             - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
 #  endif
           vwnd_r   = v_abl(i,j,2,nt_n)
-#  ifndef KILPATRICK
+#  ifndef ABL_NO_OCEAN_FEEDBACK
      &             - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
 #  endif
           wspd0    = SQRT ( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
@@ -235,7 +247,7 @@
           Qsea   = qsat(TseaK,psurf,0.98)
 # ifdef ABL1D
           sst_abl(i,j) = TseaK*iexns
-#  ifdef KILPATRICK
+#  ifdef ABL_NO_OCEAN_FEEDBACK
           ssq_abl(i,j) = 0.0
 #  else
           ssq_abl(i,j) = Qsea
@@ -254,7 +266,7 @@
           delW(2) = wspd0_cfb
 #  endif
 # endif
-# ifdef KILPATRICK
+# ifdef ABL_NO_OCEAN_FEEDBACK
           delQ = 0.0
 # else
           delQ = Q-Qsea
@@ -659,14 +671,30 @@
           hfsen=-hfsen*rho0i*cpi
 !++  Total surface heat flux
           stflx(i,j,itemp)=srflx(i,j)+hflw+hflat+hfsen
+#  ifdef SUBSTANCE
+          ! uniform atmospheric (dry) deposition flux (flx_atm_n(),
+          ! stored as sub_flx_atm()); the wet-deposition (rain) term
+          ! is added on top of this below if RAIN_FLUX is defined
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=sub_flx_atm(itrc)
+          enddo
+#  endif
 #  ifdef SALINITY
           ! evap from latent heat flux
           evap=-cp*hflat/Hlv
 #   ifdef RAIN_FLUX
           ! E-P bilan in m/s
-          EmP(i,j)=evap-prate(i,j) 
+          EmP(i,j)=evap-prate(i,j)
           ! add temperature flux from rain
           stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
+#   ifdef SUBSTANCE
+          ! add wet-deposition substance flux from rain (cv_rain_n():
+          ! substance concentration in rainwater, kg/m3), on top of
+          ! the dry-deposition flux set above
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)+prate(i,j)*cv_rain(itrc)
+          enddo
+#   endif
 #   else
           !++  Total surface salt flux
           stflx(i,j,isalt)=(evap-prate(i,j))*t(i,j,N,nrhs,isalt)
@@ -675,16 +703,35 @@
 !
 #  ifdef MASKING
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask(i,j)
+#   endif
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)*rmask(i,j)
+          enddo
+#   endif
 #  endif
 #  ifdef WET_DRY
           stflx(i,j,itemp)=stflx(i,j,itemp)*rmask_wet(i,j)
+#   ifdef SALINITY
           stflx(i,j,isalt)=stflx(i,j,isalt)*rmask_wet(i,j)
+#   endif
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            stflx(i,j,itrc)=stflx(i,j,itrc)*rmask_wet(i,j)
+          enddo
+#   endif
 #  endif
 !++  Save for the calculation of wind stress
           aer(i,j)  = rhoAir*delW(1)
           Cd        = (Wstar(1)/ddelW(1))**2
           cer(i,j)  = Cd
+#  ifdef STOGEN
+          if (ln_stogen .and. ln_stobulk) then
+            cer(i,j)  = cer(i,j) * sto_bulk_cd(i,j)
+          endif
+#  endif
 #  ifdef CFB_STRESS
           stau(i,j) = cfb_slope * delW(1) + cfb_offset
 #  endif

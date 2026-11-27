@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !
@@ -37,23 +38,18 @@
 !  OUTPUT
 !  bulkfilename(bvar) (path and file name of the considered variable)
       USE tools_string, ONLY : to_uppercase
+      use croco_namelist, only: yearnum, monthnum, pathbulk
       implicit none
 #  include "param.h"
 #  include "online.h"
-#  include "ncscrum.h"
       integer, intent(in) :: bvar
       character bulkyear*4, bulkmonth1*1, bulkmonth2*2
       integer lenstr
       logical :: file_exists
       ! If first iteration, Y and M from roms.in file
       if(itbulkO(bvar).eq.0) then
-#  if defined XIOS
-        bulkyearnum(bvar)=start_year
-        bulkmonthnum(bvar)=start_month
-#  else
         bulkyearnum(bvar)=yearnum
         bulkmonthnum(bvar)=monthnum
-#  endif
       endif
 
       ! Variable to add the year in the name

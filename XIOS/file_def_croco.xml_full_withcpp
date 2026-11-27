@@ -271,12 +271,38 @@
       <field field_ref="S_Vmix" name="S_vmix"  />
       <field field_ref="S_Forc" name="S_forc" />
 #  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+#  if defined TEMPERATURE
+      <field field_ref="T_rate_mld" name="T_rate_mld"  />
+      <field field_ref="T_adv_mld" name="T_adv_mld"  />
+      <field field_ref="T_Hmix_mld" name="T_hmix_mld"  />
+      <field field_ref="T_Vmix_mld" name="T_vmix_mld"  />
+      <field field_ref="T_Forc_mld" name="T_forc_mld" />
+      <field field_ref="T_entr_mld" name="T_entr_mld"  />
+      <field field_ref="T_aver_mld" name="T_aver_mld"  />
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
+      <field field_ref="D_depth_mld" name="D_depth_mld" />
+#  endif
+#  endif
+#  ifdef SALINITY
+      <field field_ref="S_rate_mld" name="S_rate_mld"  />
+      <field field_ref="S_adv_mld" name="S_adv_mld"  />
+      <field field_ref="S_Hmix_mld" name="S_hmix_mld"  />
+      <field field_ref="S_Vmix_mld" name="S_vmix_mld"  />
+      <field field_ref="S_Forc_mld" name="S_forc_mld" />
+      <field field_ref="S_entr_mld" name="S_entr_mld"  />
+      <field field_ref="S_aver_mld" name="S_aver_mld"  />
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
+      <field field_ref="T_depth_mld" name="T_depth_mld" />
+#  endif
+#  endif
+#  endif
     </field_group>
   </file>
 </file_group>
 # endif
 
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 <file_group id="KE" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
   <file id="file7" name_suffix="_KE" split_freq="5d" split_freq_format="%y-%mo-%d">
     

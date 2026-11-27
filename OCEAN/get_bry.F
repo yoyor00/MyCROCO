@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -14,9 +15,14 @@
 
       subroutine get_bry            ! Read side boundary forcing
                                     ! fields from boundary file
+      use croco_namelist, only: dt, bry_file
 # ifdef OPENACC
       use exchange_device_host
 # endif
+# ifdef SUBSTANCE
+      use comsubstance, ONLY : obc_cv_name
+# endif
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -24,9 +30,12 @@
 # include "netcdf.inc"
 # include "boundary.h"
       real cff
-      character*180 units
-      integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc
+      character*60 vname1
+      character*180 units, transf
+      integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc,
+     &         varid, vtransform_value, vt_rec, ierr_vt
       integer  nf_read_bry_EW, nf_read_bry_NS
+      logical  old_vt
 !
 ! Initialization: Check, whether boundary forcing file is already
 !================ opened, and if not, open it.  Find and save netCDF
@@ -47,10 +56,57 @@
      &                                   bry_file(1:lstr),   '''.'
         endif
         if (ierr.eq.nf_noerr) then
+!
+! Check the vertical s-coordinate transformation used to create
+! the boundary file: stop if VertCoordType=OLD/SH94 or Vtransform/=2.
+! If neither VertCoordType nor Vtransform is present, the file is
+! assumed to be valid (tools write Vtransform=2 by default).
+!
+          old_vt=.false.
+          transf=' '
+          ierr_vt=nf_get_att_text(bry_id, nf_global,
+     &                            'VertCoordType', transf)
+          if (ierr_vt.eq.nf_noerr) then
+            if (trim(transf).eq.'OLD' .or.
+     &          trim(transf).eq.'SH94') old_vt=.true.
+          endif
+!
+          vtransform_value=0
+          ierr_vt=nf_inq_varid(bry_id, 'Vtransform', varid)
+          if (ierr_vt.eq.nf_noerr) then
+            vt_rec=1
+            ierr_vt=nf_get_var1_int(bry_id, varid, vt_rec,
+     &                                         vtransform_value)
+          else
+            ierr_vt=nf_get_att_int(bry_id, nf_global, 'Vtransform',
+     &                                         vtransform_value)
+          endif
+          if (ierr_vt.eq.nf_noerr .and. vtransform_value.ne.2)
+     &                                         old_vt=.true.
+!
+          if (old_vt) then
+            MPI_master_only write(stdout,'(/1x,A/(16x,A))')
+     &  'GET_BRY ERROR: Old Vtransform is obsolete.',
+     &  'From now on, CROCO uses only one vertical',
+     &  's-coordinate transformation (Vtransform=2).',
+     &  'Two possibilities:',
+     &  '1) keep these input files and use croco <= v2.1.3',
+     &  '   (with the NEW_S_COORD cppkey deactivated)',
+     &  '2) regenerate the input files with croco_tools',
+     &  '   or croco_pytools (Vtransform=2).',
+     &  'Newer versions of the tools no longer support',
+     &  'the old Vtransform.',
+     &  'For details, see the documentation.'
+            may_day_flag=2
+            return                                       !--> ERROR
+          endif
+!
           ierr_all=0
           ierr=nf_inq_varid (bry_id, 'bry_time',  bry_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'bry_time'
           ierr_all=ierr_all+ierr
+          call tool_origindate(bry_id,bry_time_id,
+     &                         bry_origin_date_in_sec, bry_secinunit)
 
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -85,6 +141,24 @@
      &         tbry_west_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_west'
           ierr_all=ierr_all+ierr
+#    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_west(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_west'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_west_id(itrc))
+              if (ierr.ne.nf_noerr) then
+!                 named variable not found
+                  got_tbry_west(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_west(itrc)=.false.
+            endif
+          enddo
 #    endif
 #   endif
 #  endif
@@ -124,6 +198,23 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_east'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_east(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_east'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_east_id(itrc))
+              if (ierr.ne.nf_noerr) then
+                  got_tbry_east(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_east(itrc)=.false.
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -161,6 +252,23 @@
      &         tbry_south_id(isalt))
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_south'
           ierr_all=ierr_all+ierr
+#    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_south(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_south'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_south_id(itrc))
+              if (ierr.ne.nf_noerr) then
+                  got_tbry_south(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_south(itrc)=.false.
+            endif
+          enddo
 #    endif
 #   endif
 #  endif
@@ -200,6 +308,23 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'salt_north'
           ierr_all=ierr_all+ierr
 #    endif
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(obc_cv_name(itrc) .ne. 'none' .and.
+     &         obc_cv_name(itrc) .ne. 'nullGradient') then
+              got_tbry_north(itrc)=.true.
+              write(vname1,*) trim(obc_cv_name(itrc)),'_north'
+              lvar=lenstr(vname1)
+              ierr=nf_inq_varid (bry_id,vname1(1:lvar),tbry_north_id(itrc))
+              if (ierr.ne.nf_noerr) then
+                  got_tbry_north(itrc)=.false.
+                  write(stdout,1) vname1(1:lvar)
+              endif
+            else
+              got_tbry_north(itrc)=.false.
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -228,13 +353,9 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (bry_id, bry_time_id, bry_rec, cff)
           if (ierr.eq.nf_noerr) then
-# ifdef USE_CALENDAR
-            call tool_origindate(bry_id,bry_time_id,
-     &                           bry_origin_date_in_sec)
-              cff=cff+bry_origin_date_in_sec*sec2day
-# endif
+              cff=bry_origin_date_in_sec+cff*bry_secinunit
             itbry=min(3-itbry,ntbry)
-            bry_time(itbry)=cff*day2sec + bry_cycle*bry_ncycle
+            bry_time(itbry)=cff + bry_cycle*bry_ncycle
             ierr_all=0
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -286,6 +407,17 @@
             call update_device(tbry_west_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_west(itrc)) then
+              ierr=nf_read_bry_EW (tbry_west_dt(START_1D_ARRAYETA,1
+     &             ,itbry,itrc),bry_id,tbry_west_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_west'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -340,6 +472,17 @@
             call update_device(tbry_east_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_east(itrc)) then
+              ierr=nf_read_bry_EW (tbry_east_dt(START_1D_ARRAYETA,1
+     &             ,itbry,itrc),bry_id,tbry_east_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_east'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -395,6 +538,17 @@
             call update_device(tbry_south_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_south(itrc)) then
+              ierr=nf_read_bry_NS (tbry_south_dt(START_1D_ARRAYXI,1
+     &             ,itbry,itrc),bry_id,tbry_south_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_south'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
@@ -449,17 +603,25 @@
             call update_device(tbry_north_dt(:,:,itbry,itrc))
 #    endif
             enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_north(itrc)) then
+              ierr=nf_read_bry_NS (tbry_north_dt(START_1D_ARRAYXI,1
+     &             ,itbry,itrc),bry_id,tbry_north_id(itrc),  bry_rec,
+     &             r3dvar)
+              if (ierr.ne.nf_noerr)  write(stdout,2)  'trc_north'
+              ierr_all=ierr_all+ierr
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
 # endif
             ierr=ierr_all
             if (ierr.eq.0) then
-              MPI_master_only write(stdout,'(6x,A,9x,A,1x,F10.4,1x,I4)')
+              MPI_master_only write(stdout,'(6x,A,9x,A,1x,A19,1x,I4)')
      &       'GET_BRY    -- Read all boundary data',
-     &                                 'for time =', cff
-# ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
-# endif
+     &                                 'for time =', tool_sectodat(cff)
 # ifdef MPI
      &                                             , mynode
 # endif
@@ -479,9 +641,7 @@
      &    'file ''',   bry_file(1:lstr),  '''',  'tdays = ', tdays,
      &    '  but the last available  bry_time =',
      &                                   bry_time(itbry)*sec2day
-# ifdef USE_CALENDAR
      &  -bry_origin_date_in_sec*sec2day
-# endif
         endif
       enddo
   2   format(' ERROR in get_bry: cannot read variable ''',A,'''')
@@ -505,6 +665,10 @@
 !  Set-up all boundary forcing fields
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt, rho0
+# ifdef SUBSTANCE
+      use comsubstance, ONLY : obc_cv_name, cobc_wat
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2, itrc
       real cff, cff1,cff2
@@ -541,7 +705,7 @@
 !$acc parallel loop if(compute_on_device) default(present)
           do j=JstrR,JendR
            zetabry_west(j)=zetabry_west(j)
-     &                     -(patm2d(Istr,j)-paref)/(g*rho0)
+     &                     -(patm2d(IstrR,j)-paref)/(g*rho0)
           enddo
 #   endif
 #   ifdef WET_DRY
@@ -584,6 +748,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_west(itrc)) then
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_west(j,k,itrc)=cff1*tbry_west_dt(j,k,it1,itrc)
+     &                               +cff2*tbry_west_dt(j,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_west(j,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif
@@ -644,6 +831,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_east(itrc)) then
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_east(j,k,itrc)=cff1*tbry_east_dt(j,k,it1,itrc)
+     &                               +cff2*tbry_east_dt(j,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do j=JstrR,JendR
+                  tbry_east(j,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif
@@ -704,6 +914,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_south(itrc)) then
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_south(i,k,itrc)=cff1*tbry_south_dt(i,k,it1,itrc)
+     &                                +cff2*tbry_south_dt(i,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_south(i,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif
@@ -765,6 +998,29 @@
               enddo
             enddo
           enddo
+#    ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            if(got_tbry_north(itrc)) then
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_north(i,k,itrc)=cff1*tbry_north_dt(i,k,it1,itrc)
+     &                                +cff2*tbry_north_dt(i,k,it2,itrc)
+                enddo
+              enddo
+            else
+!             'none', 'nullGradient' (handled directly in t3dbc.F, this
+!             value is unused), or a named variable not found in the
+!             bry file: fall back to the substance's uniform constant
+!             OBC concentration (same value ana_bry uses when there is
+!             no bry file at all)
+              do k=1,N
+                do i=IstrR,IendR
+                  tbry_north(i,k,itrc)=cobc_wat(itrc)
+                enddo
+              enddo
+            endif
+          enddo
+#    endif
 #   endif
 #  endif
         endif

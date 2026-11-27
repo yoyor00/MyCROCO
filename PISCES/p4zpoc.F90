@@ -54,7 +54,7 @@ MODULE p4zpoc
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zpoc.F90 15459 2021-10-29 08:19:18Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 
@@ -617,7 +617,13 @@ CONTAINS
       !
       orem3(:,:,:) = 0.
       !
-      ndayflx = nday_year  ! Initialize a counter of the current day
+      ! Initialize a counter of the current day. 
+      ! The global tdays/nday_year are not yet valid here: 
+      ! PISCES initializes (pisces_ini_tile, called from OCEAN/main.F) 
+      ! before CROCO sets time_start=time
+      ! Recompute ndayflx locally with the same restart-invariant formula 
+      ! as OCEAN/step.F 
+      ndayflx = INT( rdt * REAL(nit000-1,wp) / rday ) + 1
       !
 
    END SUBROUTINE p4z_poc_init

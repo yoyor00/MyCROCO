@@ -1,13 +1,12 @@
-! $Id: wrt_rst.F 1571 2014-07-01 12:38:05Z gcambon $
-!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al) 
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
-! CROCO website : http://www.croco-ocean.org
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see ../LICENSES/LICENSE_PISCES.txt
+!
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -19,6 +18,7 @@ MODULE sedrst
    !! * Modules used
    USE oce_sed
    USE sed
+   USE tools_calendar, ONLY: tool_sectodat
 #ifdef AGRIF
       USE param, ONLY : Lmmpi,Mmmpi
 #endif
@@ -48,9 +48,7 @@ CONTAINS
       &      , csize,cmode           &
 #endif
       &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), jn
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
+      CHARACTER (len=19)    :: cdate
       CHARACTER(len=20) :: cltra, cvar
 
 !
@@ -70,7 +68,6 @@ CONTAINS
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (cn_sedrst_out, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           cn_sedrst_out=TRIM(cn_sedrst_out(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
@@ -78,7 +75,6 @@ CONTAINS
           cn_sedrst_out=TRIM(cn_sedrst_out)//cdate(18:19)//'.nc'
           lstr=lenstr(cn_sedrst_out)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 
@@ -189,25 +185,6 @@ CONTAINS
         lvar = lenstr (vname(4,indxTime))
         ierr = nf_put_att_text(ncid, rstsedtime, 'field',     lvar,      &
         &                                  vname(4,indxTime)(1:lvar))
-
-!
-! Time2.
-!
-        lvar = lenstr(vname(1,indxTime2))
-        ierr = nf_def_var (ncid, vname(1,indxTime2)(1:lvar),            &
-        &                              NF_DOUBLE, 1, timedim, rstsedtime2)
-#ifdef NC4PAR
-        ierr = nf_var_par_access(ncid,rstsedtime2,nf_collective)
-#endif
-        lvar = lenstr(vname(2,indxTime2))
-        ierr = nf_put_att_text (ncid, rstsedtime2, 'long_name', lvar,     &
-        &                                  vname(2,indxTime2)(1:lvar))
-        lvar = lenstr(vname(3,indxTime2))
-        ierr = nf_put_att_text (ncid, rstsedtime2, 'units',     lvar,     &
-        &                                  vname(3,indxTime2)(1:lvar))
-        lvar = lenstr (vname(4,indxTime2))
-        ierr = nf_put_att_text(ncid, rstsedtime2, 'field',     lvar,      &
-        &                                  vname(4,indxTime2)(1:lvar))
 
 !
 ! Tracer variables.
@@ -342,15 +319,6 @@ CONTAINS
           GOTO 99                                         !--> ERROR
         ENDIF
 !
-! Time2.
-!
-        lvar = lenstr(vname(1,indxTime2))
-        ierr = nf_inq_varid (ncid, vname(1,indxTime2)(1:lvar), rstsedtime2)
-        IF (ierr .NE. nf_noerr) THEN
-          WRITE(stdout,1) vname(1,indxTime2)(1:lvar), TRIM(cn_sedrst_out)
-          GOTO 99                                         !--> ERROR
-        ENDIF
-!
 ! Tracer variables.
 !
        DO jn = 1, jptrased
@@ -401,6 +369,9 @@ CONTAINS
 
       SUBROUTINE sed_rst_wri      ! variables into restart
                                   ! netCDF file.
+#if defined MPI & !defined PARALLEL_FILES
+      use mpi
+#endif
 # include "netcdf.inc"
 
       INTEGER :: ierr, record, lstr, lvar, lenstr   &
@@ -424,7 +395,6 @@ CONTAINS
 
 
 #if defined MPI & !defined PARALLEL_FILES
-      INCLUDE 'mpif.h'
       INTEGER status(MPI_STATUS_SIZE), blank
 #endif
 

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 
@@ -68,6 +69,14 @@
 !  Adapted to CROCO by R. Benshila & P. Marchesiello, 2013
 !======================================================================
 !
+      use croco_namelist, ONLY: Zobt, wkb_amp, wkb_ang, wkb_prd,
+     &                          wkb_btg, wkb_gam
+# ifdef WAVE_ROLLER
+      use croco_namelist, ONLY: wkb_rsb, wkb_roller
+# endif
+# if defined MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer istr,iend,jstr,jend, i, j, k, wprv, wbak, wold,
@@ -91,7 +100,6 @@
      &                   khmax=20.     ! deep-water limit for k*h
       logical :: ana_ini_wkb
 # if defined MPI
-      include 'mpif.h'
 #  include "mpi_cpl.h"
       integer ierr
 # endif
@@ -1354,6 +1362,7 @@ c        cff1=3.D0/16.D0
       end
 
       subroutine wkb_cew_finalize_tile (istr,iend,jstr,jend)
+      use croco_namelist, only: ndtfast
       implicit none
 #  include "param.h"
       integer istr,iend,jstr,jend, i,j
@@ -1435,6 +1444,9 @@ c        cff1=3.D0/16.D0
       end
 
       subroutine wkb_diag_tile (istr,iend,jstr,jend)
+# if defined MPI
+      use mpi
+# endif
       implicit none
       integer istr,iend,jstr,jend, i,j,k, nsubs,ie
 # include "param.h"
@@ -1444,7 +1456,6 @@ c        cff1=3.D0/16.D0
       parameter (max_check_line=128)
       character check_line*(max_check_line), tstring*18
 # ifdef MPI
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), ierr
 #  include "mpi_cpl.h"
 # endif

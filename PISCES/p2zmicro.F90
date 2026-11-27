@@ -55,7 +55,7 @@ MODULE p2zmicro
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p2zmicro.F90 15459 2021-10-29 08:19:18Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 
@@ -80,10 +80,11 @@ CONTAINS
       REAL(wp) :: zcompaz , zcompaph, zcompapoc
       REAL(wp) :: zgraze, zdenom, zfact, zfood, zfoodlim, zbeta
       REAL(wp) :: zepsherf, zepshert, zepsherq, zepsherv, zgrarsig, zgraztotc, zgraztotn
-      REAL(wp) :: zgrarem, zgrapoc, zprcaca, zmortz
+      REAL(wp) :: zgrapoc, zprcaca, zmortz
       REAL(wp) :: zrespz, ztortz, zgrasratn
       REAL(wp) :: zgraznc, zgrazz, zgrazpoc
       REAL(wp) :: ztmp1, ztmp2, ztmp3, ztmptot, zproport, zproport2
+      REAL(wp), DIMENSION(A2D(0),jpk) :: zgrarem
       REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zw3d
       CHARACTER (len=25) :: charout
 
@@ -97,6 +98,8 @@ CONTAINS
       ENDIF
 
       IF( l_dia_graz )  ALLOCATE( zgrazing(A2D(0),jpk) ) 
+      !
+      zgrarem(:,:,:) = 0._wp
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          zcompaz = MAX( ( tr(ji,jj,jk,jpzoo,Kbb) - 1.e-9 ), 0.e0 )
@@ -199,7 +202,7 @@ CONTAINS
          ! Actual GGE of microzooplankton
          zepsherv  = zepsherf * zepshert * zepsherq
          ! Excretion of C, N, P
-         zgrarem   = zgraztotc * ( 1. - zepsherv - unass ) &
+         zgrarem(ji,jj,jk)  = zgraztotc * ( 1. - zepsherv - unass ) &
                  &  + ( 1. - epsher - unass ) / ( 1. - epsher ) * ztortz
          ! Egestion of C, N, P
          zgrapoc   = zgraztotc * unass + unass / ( 1. - epsher ) * ztortz + zrespz
@@ -207,14 +210,14 @@ CONTAINS
          !  Update of the TRA arrays
          !  ------------------------
          ! Fraction of excretion as inorganic nutrients and DIC
-         zgrarsig  = zgrarem * sigma1
-         tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) + zgrarsig
-         tr(ji,jj,jk,jpdoc,Krhs) = tr(ji,jj,jk,jpdoc,Krhs) + zgrarem - zgrarsig
-         tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) + zgrarem * feratz
+         tr(ji,jj,jk,jpno3,Krhs) = tr(ji,jj,jk,jpno3,Krhs) + zgrarem(ji,jj,jk) * sigma1
+         tr(ji,jj,jk,jpdoc,Krhs) = tr(ji,jj,jk,jpdoc,Krhs) + zgrarem(ji,jj,jk) * (1. - sigma1)
+         tr(ji,jj,jk,jpfer,Krhs) = tr(ji,jj,jk,jpfer,Krhs) + zgrarem(ji,jj,jk) * feratz
          !
-         tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - (o2ut + o2nit) * zgrarsig
-         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zgrarsig
-         tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - rno3 * zgrarsig
+         tr(ji,jj,jk,jpoxy,Krhs) = tr(ji,jj,jk,jpoxy,Krhs) - (o2ut + o2nit) &
+            &                      * zgrarem(ji,jj,jk) * sigma1
+         tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) + zgrarem(ji,jj,jk) * sigma1
+         tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) - rno3 * zgrarem(ji,jj,jk) * sigma1
          !   Update the arrays TRA which contain the biological sources and sinks
          !   --------------------------------------------------------------------
          tr(ji,jj,jk,jpzoo,Krhs) = tr(ji,jj,jk,jpzoo,Krhs) &
@@ -240,10 +243,14 @@ CONTAINS
         IF( l_dia_graz ) THEN  !   Total grazing of phyto by zooplankton
             ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
             DO_3D( 0, 0, 0, 0, 1, jpk)
-               zw3d(ji,jj,jkR) =  zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+               zw3d(ji,jj,jkR) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk)
             END_3D
             CALL iom_put( "GRAZ1" , zw3d )  ! conversion in mol/m2/s
-            CALL iom_put( "MicroZo2" , zw3d * ( 1. - epsher - unass ) * (-o2ut) * sigma1 ) ! o2 consumption by Microzoo
+            DO_3D( 0, 0, 0, 0, 1, jpk)
+               zw3d(ji,jj,jkR) = (-o2ut) * sigma1 * zgrarem(ji,jj,jk) &
+                 &               * 1.e+3 * rfact2r * tmask(ji,jj,jk)
+            END_3D
+            CALL iom_put( "MicroZo2" , zw3d ) ! o2 consumption by Microzoo
             DEALLOCATE( zw3d )
         ENDIF
         !
@@ -252,8 +259,8 @@ CONTAINS
 #if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)
          trc3d(ji,jj,jkR,jp_grapoc) = zgrazing(ji,jj,jk) * 1.e+3 * rfact2r * tmask(ji,jj,jk) !  grazing of phyto by microzoo
-         trc3d(ji,jj,jkR,jp_mico2)  = zgrazing(ji,jj,jk) * ( 1. -  epsher - unass ) &
-           &                      * (-o2ut) * sigma1 * 1.e+3 * rfact2r * tmask(ji,jj,jk)   ! o2 consumption by Microzoo
+         trc3d(ji,jj,jkR,jp_mico2)  = (-o2ut) * sigma1 * zgrarem(ji,jj,jk) &
+            &                          * 1.e+3 * rfact2r * tmask(ji,jj,jk) ! o2 consumption by Microzoo
       END_3D
 #endif      
       IF( l_dia_graz )   DEALLOCATE( zgrazing )

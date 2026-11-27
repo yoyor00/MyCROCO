@@ -1,5 +1,6 @@
-! MUSTANG - This software is governed by the CeCILL-C license
-! see LICENSE_MUSTANG.txt
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
 
 MODULE dredging
    !============================================================================
@@ -680,14 +681,16 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+# ifdef MPI
+      use mpi
+# endif
       IMPLICIT NONE
 
 # ifdef MPI
-      include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
+
+
 
       INTEGER :: iz, ierror
       REAL(KIND=rsh) :: tmp
@@ -712,15 +715,14 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+# ifdef MPI
+      use mpi
+# endif
       IMPLICIT NONE
 
 # ifdef MPI
-      include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
-
       INTEGER :: iv, iz, ierror
       REAL(KIND=rsh) :: tmp
 
@@ -746,6 +748,9 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+# ifdef MPI
+      use mpi
+# endif
       IMPLICIT NONE
 
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, N, 3, NT), &
@@ -753,12 +758,8 @@ CONTAINS
       INTEGER, INTENT(IN) :: Istr, Iend, Jstr, Jend
 
 # ifdef MPI
-      include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif
-
       INTEGER :: itrc
 
       do itrc = 1, NT
