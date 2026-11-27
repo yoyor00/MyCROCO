@@ -207,7 +207,7 @@
       init_cv_name_n(1)='MUD1'
       obc_cv_name_n(1)='nullGradient'
       tocd_n(1)=1000.
-      diam_n(1)=0.
+      diam_n(1)=0.00003
       ros_n(1)=2600.0
       ws_free_opt_n(1)=1
       ws_free_min_n(1)=0.00002

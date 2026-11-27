@@ -107,6 +107,7 @@
    l_vandera = .TRUE.
 /
 &namsedim_poro
+   poro_option=1
 /
 
 

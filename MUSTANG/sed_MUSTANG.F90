@@ -6683,9 +6683,9 @@ END SUBROUTINE mustang_manage_small_mass_in_ksmax
           DO iv=imud1,imud2
             diam_mud=diam_mud+diam_sed(iv)*frac_sed_kij(iv)
           ENDDO
-  
+
           ! beta : In the configuration where fines particles cover the surface
-          !        of a coarse particle, beta represents the arc angle linking the two 
+          !        of a coarse particle, beta represents the arc angle linking the two
           !        centers of adjacent fine particles
           beta = 2.0_rsh*ASIN(diam_mud/(diam_gravsan+diam_mud))
 
@@ -6693,7 +6693,7 @@ END SUBROUTINE mustang_manage_small_mass_in_ksmax
           !      particle
           Nc = 4.0_rsh*pi/( (beta**2.0_rsh) * COS(pi/6.0_rsh) )
 
-          ! n : Minimum number of layers of fine particles required to fill up 
+          ! n : Minimum number of layers of fine particles required to fill up
           !     the voids of coarse particles
           n = 0.1124_rsh*(diam_gravsan/diam_mud)
 
@@ -6701,12 +6701,12 @@ END SUBROUTINE mustang_manage_small_mass_in_ksmax
           !      particle, which is equal to the ratio of the numbers of
           !      fine and coarse particles in the sediment mixture
           Rn = (frac_mud*diam_gravsan**3.)/(frac_gravsan*diam_mud**3.)
-  
+
           ! P2 : The probability of a coarse particle contacting with a
           !      fine particle
           P2 = (frac_mud/diam_mud)/((frac_gravsan/diam_gravsan) + (frac_mud/diam_mud))
 
-          ! Bi : The portion of the coarse sediment class participating 
+          ! Bi : The portion of the coarse sediment class participating
           !      in filling
           !!! Envisager de revoir formulation de Bi dans cas ou sable heterometrique, en faisant intervenir ecart type geometrique !!!
           Bi = MIN( (P2*Rn)/(n*Nc) , Bmax_wu )

@@ -94,4 +94,5 @@
    dredging_dt_out = 3600.
 /
 &namsedim_poro
+   poro_option=1
 /

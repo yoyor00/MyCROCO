@@ -83,4 +83,5 @@
 &namdredging
 /
 &namsedim_poro
+   poro_option=1
 /
