@@ -21,7 +21,7 @@
   // enabled for VILAINE) and same input data as VILAINE, only the sediment
   // bedload formulation differs (l_erosion_by_class + l_vandera).
   // l_vandera=.TRUE. is already set directly in paraMUSTANG_COASTAL.nml
-  // l_erosion_by_class are
+  // l_erosion_by_class and poro_option are
   // patched in below rather than set in the shared .nml file itself,
   // since VILAINE and VILAINE_VANDERA share that same file and must not
   // both get switched to the V2-equivalent algorithms.
@@ -43,6 +43,12 @@
           "what": "&namsedim_erosion",
           "insert": "   l_erosion_by_class=.TRUE.",
           "descr": "VILAINE_VANDERA: use the class-by-class (former V2) erosion algorithm",
+        },
+        {
+          "mode": "replace",
+          "what": "poro_option=1",
+          "by": "   poro_option=2",
+          "descr": "VILAINE_VANDERA: poro_option=1 is incompatible with l_erosion_by_class=.TRUE.",
         }
       ],
     },

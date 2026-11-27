@@ -5835,6 +5835,148 @@ END SUBROUTINE mustang_reconstruct_rouse2D_profile
 
 END SUBROUTINE mustang_manage_active_layer
   !!==============================================================================
+SUBROUTINE mustang_fuse_two_layers(i,j,ksmax,ksmaxa,mass_sed_k,code,  &
+                        flx_s2w_eroij,phieau_ero_ij)
+   !&E--------------------------------------------------------------------------
+   !&E                 ***  ROUTINE mustang_fuse_two_layers  ***
+   !&E
+   !&E ** Purpose : fuse the sediment of layer ksmaxa into layer ksmax
+   !&E              (poro, poro_mud, crel_mud, cv_sed, c_sedtot), then clear
+   !&E              ksmaxa
+   !&E
+   !&E ** Description : shared by mustang_merge_surflayers and
+   !&E              mustang_manage_small_mass_in_ksmax, which only differ in
+   !&E              where mass_sed_k (layer ksmaxa's per-species mass) comes
+   !&E              from and in the IWS flux event code (see
+   !&E              mustang_eval_dissvar_IWSflux : code=4 for active-layer
+   !&E              formation, code=8 otherwise)
+   !&E
+   !&E ** Called by :  mustang_merge_surflayers, mustang_manage_small_mass_in_ksmax
+   !&E
+   !&E--------------------------------------------------------------------------
+
+   !! * Arguments
+   INTEGER, INTENT(IN)        :: i,j,ksmax,ksmaxa,code
+   REAL(KIND=rsh),DIMENSION(nvp),INTENT(IN) :: mass_sed_k
+
+   REAL(KIND=rsh),DIMENSION(-1:nv_adv),INTENT(INOUT)  ::  flx_s2w_eroij
+   REAL(KIND=rsh),INTENT(INOUT) ::   phieau_ero_ij
+
+   !! * Local declaration
+   INTEGER :: iv
+   REAL(KIND=rsh) :: dzsa,dzsam1,&
+                     massmud_k,massmud_km1,massmud_tot,poro_kij,&
+                     poroa,poroam1,poro_mud_new,mass_tot,&
+                     dzsi,crel_mud_new,sommud_new,cvolgrvsan_new
+
+   REAL(KIND=rsh),DIMENSION(nvp) :: mass_sed
+   REAL(KIND=rsh),DIMENSION(nvpc):: frac_sed
+   REAL(KIND=rsh) :: porowater1,porowater2, porowater_new
+   !!---------------------------------------------------------------------------
+   !! * Executable part
+
+     dzsa=dzs(ksmaxa,i,j)
+     dzsam1=dzs(ksmax,i,j)
+
+     poroa=poro(ksmaxa,i,j)
+     poroam1=poro(ksmax,i,j)
+
+     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
+     ! for  dissolved concentrations et fluxes estimation
+     porowater1=poroa*dzsa
+     porowater2=poroam1*dzsam1
+     ENDIF
+
+     massmud_k=0.0_rsh
+     massmud_km1=0.0_rsh
+     DO iv=imud1,imud2
+       massmud_k=massmud_k+mass_sed_k(iv)
+       massmud_km1=massmud_km1+cv_sed(iv,ksmax,i,j)*dzsam1
+     ENDDO
+     massmud_tot=massmud_k+massmud_km1
+
+     ! crel_mud/poro_mud of the merged layer are recomputed directly from
+     ! the merged mud concentration and non-mud (gravel+sand) volume
+     ! fraction, exactly as mustang_merge_bottomlayers / sed_mustang_split_surflayer /
+     ! sed_mustang_consol_diff_bioturb do
+     IF (massmud_tot .GT. 0.0_rsh) THEN
+       sommud_new=massmud_tot/(dzsa+dzsam1)
+       cvolgrvsan_new=0.0_rsh
+       DO iv=igrav1,isand2
+         cvolgrvsan_new=cvolgrvsan_new + (mass_sed_k(iv)+cv_sed(iv,ksmax,i,j)*dzsam1) &
+                                          /(dzsa+dzsam1)/ros(iv)
+       ENDDO
+       crel_mud_new=sommud_new/(1.0_rsh-cvolgrvsan_new)
+       poro_mud_new=1.0_rsh-sommud_new/ros(1)
+     ELSE
+       poro_mud_new=0.0_rsh
+       crel_mud_new=0.0_rsh
+     END IF
+
+     mass_tot = 0.0_rsh
+     DO iv=igrav1,imud2
+       mass_sed(iv)=mass_sed_k(iv) + cv_sed(iv,ksmax,i,j)*dzsam1
+       mass_tot=mass_tot+mass_sed(iv)
+     END DO
+
+     DO iv=igrav1,imud2
+       frac_sed(iv)=mass_sed(iv)/mass_tot
+     END DO
+
+     ! fusion of two known layers: thickness is just dzsa+dzsam1 (exact,
+     ! no erosion-style skeleton clamp needed), expressed here by reusing
+     ! mustang_porosity with ddzs=-dzsam1 (negative = growing/merging
+     ! instead of thinning) and cvolgrv=0.0 (disables the gravel-skeleton
+     ! floor, irrelevant when merging) - see mustang_porosity docstring
+     CALL mustang_porosity(frac_sed, poro_mud_new, crel_mud_new, mass_tot, &
+                           dzsa, -dzsam1, 0.0_rsh, mass_sed(1:nvpc),       &
+                           poro_kij, dzs(ksmax,i,j))
+
+     dzsi=1.0_rsh/dzs(ksmax,i,j)
+     crel_mud(ksmax,i,j)=crel_mud_new
+     poro(ksmax,i,j)=poro_kij
+     poro_mud(ksmax,i,j)=poro_mud_new
+     DO iv=1,nvpc
+       cv_sed(iv,ksmax,i,j)=mass_sed(iv)*dzsi
+     END DO
+
+      ! non constitutive particulate variables
+     DO iv=nvpc+1,nvp
+       cv_sed(iv,ksmax,i,j)=(mass_sed_k(iv)+cv_sed(iv,ksmax,i,j)*dzsam1)*dzsi
+     ENDDO
+
+     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
+     ! dissolved variable in pore waters and water fluxes at the interface
+     ! --------------------------------------------------------------------
+     !  ==> flx_s2w and cv_sed and phieau_s2w
+       porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
+       CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,code,    &
+           phieau_ero_ij=phieau_ero_ij,          &
+           flx_s2w_eroij=flx_s2w_eroij,          &
+           porowater1=porowater1, &
+           cv_sed1=cv_sed(-1:nv_adv,ksmaxa,i,j),     &
+           porowater2=porowater2, &
+           cv_sed2=cv_sed(-1:nv_adv,ksmax,i,j),       &
+           porowater_new=porowater_new)
+     ENDIF
+
+     c_sedtot(ksmax,i,j)=0.0_rsh
+     DO iv=1,nv_use ! nv_use=nvp
+       c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)+cv_sed(iv,ksmax,i,j)*typart(iv)
+     END DO
+
+     ! layer ksmaxa (the pre-fusion layer that has been folded into ksmax
+     ! above) is now vacated; clear it so dzs/poro/cv_sed/c_sedtot don't
+     ! stay stale there
+     dzs(ksmaxa,i,j)=0.0_rsh
+     poro(ksmaxa,i,j)=0.0_rsh
+     poro_mud(ksmaxa,i,j)=0.0_rsh
+     crel_mud(ksmaxa,i,j)=0.0_rsh
+     cv_sed(:,ksmaxa,i,j)=0.0_rsh
+     c_sedtot(ksmaxa,i,j)=0.0_rsh
+
+END SUBROUTINE mustang_fuse_two_layers
+  !!==============================================================================
 SUBROUTINE mustang_merge_surflayers(i,j,ksmax   &
                         ,flx_s2w_eroij                                &
                         ,phieau_ero_ij                                &
@@ -5842,10 +5984,13 @@ SUBROUTINE mustang_merge_surflayers(i,j,ksmax   &
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE mustang_merge_surflayers  ***
    !&E
-   !&E ** Purpose : fusion of two surficial sediment layers accounting for new 
+   !&E ** Purpose : fusion of two surficial sediment layers accounting for new
    !&E              computation of porosity
    !&E
-   !&E ** Description : 
+   !&E ** Description : thin wrapper around mustang_fuse_two_layers: layer
+   !&E              ksmax's per-species mass is built directly from state
+   !&E              here; IWS flux
+   !&E              event code=4 (active-layer formation)
    !&E                  variables OUT : ksmax, dzs, poro,poro_mud,crel_mud, cv_sed
    !&E                  variables IN : ksmi,ksmax,dzs, poro,poro_mud,crel_mud,
    !&E
@@ -5861,128 +6006,19 @@ SUBROUTINE mustang_merge_surflayers(i,j,ksmax   &
    REAL(KIND=rsh),INTENT(INOUT) ::   phieau_ero_ij
 
    !! * Local declaration
-   INTEGER :: iv,ksmaxa,ivp_assoc
-   REAL(KIND=rsh) :: sommud_k,sommud_km1,cvolinigrv_k,cvolinigrv_km1,cvolinisan_k,cvolinisan_km1,&
-                     cmudr_k,cmudr_km1,poro_mud_k,poro_mud_km1,dzsa,dzsam1,&
-                     massmud_k,massmud_km1,massmud_tot,poro_kij,&
-                     poroa,poroam1,poro_mud_new,mass_tot,&
-                     dzsi,crel_mud_new
-
-   REAL(KIND=rsh),DIMENSION(nvp) :: mass_sed
-   REAL(KIND=rsh),DIMENSION(nvpc):: frac_sed
-   REAL(KIND=rsh) :: porowater1,porowater2, porowater_new
+   INTEGER :: iv,ksmaxa
+   REAL(KIND=rsh),DIMENSION(nvp) :: mass_sed_k
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-     ! 1- We look at the composition and the porosity of the mud in layers ksmax and ksmax-1
-     ! 2- A porosity of the representative mud is calculated (pro rata of the masses)
-     ! 3- The sediment masses / fractions of the fused layer are calculated
-     ! 4- We calculate the porosity -> ksmax = ksmax-1 -> MAJ dzs, cv_sed ksmax
-
-     !1-
-     sommud_k=0.0_rsh
-     sommud_km1=0.0_rsh
-     DO iv=imud1,imud2
-       sommud_k=sommud_k+cv_sed(iv,ksmax,i,j)
-       sommud_km1=sommud_km1+cv_sed(iv,ksmax-1,i,j)
-     ENDDO
-
-     dzsa=dzs(ksmax,i,j)
-     dzsam1=dzs(ksmax-1,i,j)
-
-     massmud_k=sommud_k*dzsa
-     massmud_km1=sommud_km1*dzsam1
-     massmud_tot=massmud_k+massmud_km1
-     
-     poro_mud_k=poro_mud(ksmax,i,j)
-     poro_mud_km1=poro_mud(ksmax-1,i,j)
-
-     poroa=poro(ksmax,i,j)
-     poroam1=poro(ksmax-1,i,j)
-
-     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-     ! for  dissolved concentrations et fluxes estimation
-     porowater1=poroa*dzsa
-     porowater2=poroam1*dzsam1
-     ENDIF
-
-     !2-
-     IF (massmud_tot .GT. 0.0_rsh) THEN
-       poro_mud_new=(massmud_k/massmud_tot)*poro_mud_k + (massmud_km1/massmud_tot)*poro_mud_km1
-       crel_mud_new=(massmud_k/massmud_tot)*crel_mud(ksmax,i,j) + (massmud_km1/massmud_tot)*crel_mud(ksmax-1,i,j)
-     ELSE
-       poro_mud_new=0.0_rsh
-       crel_mud_new=0.0_rsh
-     END IF
-
-     !3-
-     mass_tot = 0.0_rsh
-     DO iv=igrav1,imud2
-       mass_sed(iv)=cv_sed(iv,ksmax,i,j)*dzsa + cv_sed(iv,ksmax-1,i,j)*dzsam1
-       mass_tot=mass_tot+mass_sed(iv)
-     END DO
-
-     DO iv=igrav1,imud2
-       frac_sed(iv)=mass_sed(iv)/mass_tot
-     END DO
-
-     !4-
      ksmaxa=ksmax
-     ksmax=ksmax-1
-
-     ! fusion of two known layers: thickness is just dzsa+dzsam1 (exact,
-     ! no erosion-style skeleton clamp needed), expressed here by reusing
-     ! mustang_porosity with ddzs=-dzsam1 (negative = growing/merging
-     ! instead of thinning) and cvolgrv=0.0 (disables the gravel-skeleton
-     ! floor, irrelevant when merging) - see mustang_porosity docstring
-     CALL mustang_porosity(frac_sed, poro_mud_new, crel_mud_new, mass_tot, &
-                           dzsa, -dzsam1, 0.0_rsh, mass_sed(1:nvpc),       &
-                           poro_kij, dzs(ksmax,i,j))
-
-     dzsi=1.0_rsh/dzs(ksmax,i,j)
-     crel_mud(ksmax,i,j)=crel_mud_new
-     poro(ksmax,i,j)=poro_kij     
-     poro_mud(ksmax,i,j)=poro_mud_new 
-     DO iv=1,nvpc
-       cv_sed(iv,ksmax,i,j)=mass_sed(iv)*dzsi
-     END DO
-
-      ! non constitutive particulate variables
-     DO iv=nvpc+1,nvp
-       cv_sed(iv,ksmax,i,j)=(cv_sed(iv,ksmaxa,i,j)*dzsa+cv_sed(iv,ksmax,i,j)*dzsam1)*dzsi
+     DO iv=1,nvp
+       mass_sed_k(iv)=cv_sed(iv,ksmaxa,i,j)*dzs(ksmaxa,i,j)
      ENDDO
 
-     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-     ! dissolved variable in pore waters and water fluxes at the interface
-     ! --------------------------------------------------------------------
-     !  ==> flx_s2w and cv_sed and phieau_s2w
-     ! fusion in active layer ==> mixing with water conscentrations ==> cv_sed=cw_bottom
-     ! code=4
-       porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
-       CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,4,    &
-           phieau_ero_ij=phieau_ero_ij,          &
-           flx_s2w_eroij=flx_s2w_eroij,          &
-           porowater1=porowater1, &
-           cv_sed1=cv_sed(-1:nv_adv,ksmaxa,i,j),     &
-           porowater2=porowater2, &
-           cv_sed2=cv_sed(-1:nv_adv,ksmax,i,j),       &
-           porowater_new=porowater_new)
-     ENDIF
-
-     c_sedtot(ksmax,i,j)=0.0_rsh
-     DO iv=1,nv_use ! nv_use=nvp
-       c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)+cv_sed(iv,ksmax,i,j)*typart(iv)
-     END DO
-
-     ! layer ksmaxa (the pre-fusion top layer, now beyond the
-     ! decremented ksmax) has been fully folded into ksmax above;
-     ! clear it so c_sedtot/cv_sed don't stay stale there
-     dzs(ksmaxa,i,j)=0.0_rsh
-     poro(ksmaxa,i,j)=0.0_rsh
-     poro_mud(ksmaxa,i,j)=0.0_rsh
-     crel_mud(ksmaxa,i,j)=0.0_rsh
-     cv_sed(:,ksmaxa,i,j)=0.0_rsh
-     c_sedtot(ksmaxa,i,j)=0.0_rsh
+     ksmax=ksmax-1
+     CALL mustang_fuse_two_layers(i,j,ksmax,ksmaxa,mass_sed_k,4,  &
+                                  flx_s2w_eroij,phieau_ero_ij)
 
 END SUBROUTINE mustang_merge_surflayers
   !!==============================================================================
@@ -6416,12 +6452,13 @@ SUBROUTINE mustang_manage_small_mass_in_ksmax(i,j,ksmax,      &
    !&E ** Purpose : when sediment masses remaining in ksmax become too small,
    !&E              they are integrated in ksmax-1 layer
    !&E
-   !&E ** Description : 0D
-   !&E              variables IN : ksmax, dzs, cv_sed, poro, poro_mud, crel_mud
-   !&E                             c_sedtot
-   !&E
-   !&E              variables OUT : ksmax,dzs, cv_sed, poro, poro_mud, crel_mud
-   !&E                             c_sedtot
+   !&E ** Description : thin wrapper around mustang_fuse_two_layers: unlike
+   !&E              mustang_merge_surflayers, layer ksmax's per-species mass
+   !&E              is supplied by the caller (mass_sed_ijksmax) rather than
+   !&E              read from state, because ksmax was already partially
+   !&E              eroded earlier in the same time step and cv_sed(:,ksmax,..)
+   !&E              does not reflect that yet ; IWS flux event code=8
+   !&E              (not an active-layer formation)
    !&E
    !&E ** Called by :  sed_mustang_erosion_mixture, mustang_merge_surflayers
    !&E
@@ -6436,116 +6473,14 @@ SUBROUTINE mustang_manage_small_mass_in_ksmax(i,j,ksmax,      &
    REAL(KIND=rsh),INTENT(INOUT)                                :: phieau_ero_ij
 
    !! * Local declaration
-   INTEGER :: iv,ivp_assoc
-   REAL(KIND=rsh) :: poro_mud_k,poro_mud_km1,dzsam1, &
-                     massmud_k,massmud_km1,massmud_tot,   &
-                     poroa,poroam1,poro_mud_new,mass_tot, &
-                     dzsi,crel_mud_new, poro_kij
-
-   REAL(KIND=rsh),DIMENSION(nvp) :: mass_sed
-   REAL(KIND=rsh),DIMENSION(nvpc):: frac_sed
-   REAL(KIND=rsh) :: porowater_new,porowater1,porowater2,dzsa
+   INTEGER :: ksmaxa
    !!---------------------------------------------------------------------------
    !! * Executable part
 
-     ! 1- We look at the composition and the porosity of the mud layers ksmax and ksmax-1
-     ! 2- A porosity of the representative mud is calculated (pro rata of the masses)
-     ! 3- The sediment masses / fractions of the fused layer are calculated
-     ! 4- We calculate the porosity -> ksmax = ksmax-1 -> MAJ dzs, cv_sed ksmax
-
-     !1-
-     massmud_k=0.0_rsh
-     massmud_km1=0.0_rsh
-     DO iv=imud1,imud2
-       massmud_k=massmud_k+mass_sed_ijksmax(iv)
-       massmud_km1=massmud_km1+(cv_sed(iv,ksmax-1,i,j)*dzs(ksmax-1,i,j))
-     ENDDO
-
-     massmud_tot=massmud_k+massmud_km1
-
-     poro_mud_k=poro_mud(ksmax,i,j)
-     poro_mud_km1=poro_mud(ksmax-1,i,j)
-
-     poroa=poro(ksmax,i,j) ! needs to be updated according to remaining sediments before calling the subroutine
-     poroam1=poro(ksmax-1,i,j)
-
-     dzsam1=dzs(ksmax-1,i,j)
-     dzsa=dzs(ksmax,i,j)
-     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-     porowater1=dzsa*poroa
-     porowater2=dzsam1*poroam1
-     ENDIF
-
-     !2-
-     IF (massmud_tot .GT. 0.0_rsh) THEN
-       poro_mud_new=(massmud_k*poro_mud_k + massmud_km1*poro_mud_km1)/massmud_tot
-       crel_mud_new=(massmud_k*crel_mud(ksmax,i,j) + massmud_km1*crel_mud(ksmax-1,i,j))/massmud_tot
-     ELSE
-       poro_mud_new=0.0_rsh
-       crel_mud_new=0.0_rsh
-     END IF
-
-     !3-
-     mass_tot = 0.0_rsh
-     DO iv=igrav1,imud2
-       mass_sed(iv)=mass_sed_ijksmax(iv) + (cv_sed(iv,ksmax-1,i,j)*dzsam1)
-       mass_tot=mass_tot+mass_sed(iv)
-     END DO
-
-     DO iv=igrav1,imud2
-       frac_sed(iv)=mass_sed(iv)/mass_tot
-     END DO
-
-     !4-
+     ksmaxa=ksmax
      ksmax=ksmax-1
-
-     ! fusion of two known layers: thickness is just dzsa+dzsam1 (exact, no
-     ! erosion-style skeleton clamp needed), expressed here by reusing
-     ! mustang_porosity with ddzs=-dzsam1 (negative = growing/merging
-     ! instead of thinning) and cvolgrv=0.0 (disables the gravel-skeleton
-     ! floor, irrelevant when merging) - same pattern as
-     ! mustang_merge_surflayers, which this subroutine otherwise duplicates
-     CALL mustang_porosity(frac_sed, poro_mud_new, crel_mud_new, mass_tot, &
-                           dzsa, -dzsam1, 0.0_rsh, mass_sed(1:nvpc),       &
-                           poro_kij, dzs(ksmax,i,j))
-     dzsi=1.0_rsh/dzs(ksmax,i,j)
-
-     crel_mud(ksmax,i,j)=crel_mud_new
-     poro(ksmax,i,j)=poro_kij
-     poro_mud(ksmax,i,j)=poro_mud_new ! Actualisation de poro_mud liee au melange !
-
-     c_sedtot(ksmax,i,j)=0.0_rsh
-     DO iv=1,nvpc
-       cv_sed(iv,ksmax,i,j)=mass_sed(iv)*dzsi
-       c_sedtot(ksmax,i,j)=c_sedtot(ksmax,i,j)+cv_sed(iv,ksmax,i,j)
-     END DO
-
-     DO iv=nvpc+1,nvp
-       cv_sed(iv,ksmax,i,j)=(mass_sed_ijksmax(iv)+cv_sed(iv,ksmax,i,j)*dzsam1)*dzsi
-     ENDDO
-
-
-     IF (l_diss_insed .OR. l_fluxwat_IWS) THEN
-     ! dissolved variable in pore waters and water fluxes at the interface
-     ! --------------------------------------------------------------------
-     ! fusion of 2 layers at surface ==> code 8  new poro could introduce water inputs or output
-     porowater_new=poro(ksmax,i,j)*dzs(ksmax,i,j)
-     CALL mustang_eval_dissvar_IWSflux(i,j,ksmax,8,  &
-           phieau_ero_ij=phieau_ero_ij,           &
-           flx_s2w_eroij=flx_s2w_eroij,           &
-           porowater1=porowater1,                      &
-           cv_sed1=cv_sed(-1:nv_adv,ksmax+1,i,j),        &
-           porowater2=porowater2,                      &
-           cv_sed2=cv_sed(-1:nv_adv,ksmax,i,j),      &
-           porowater_new=porowater_new)
-     ENDIF
-
-     ! old layer ksmax =0
-     poro(ksmax+1,i,j)=0.0_rsh
-     poro_mud(ksmax+1,i,j)=0.0_rsh
-     dzs(ksmax+1,i,j)=0.0_rsh
-     cv_sed(:,ksmax+1,i,j)=0.0_rsh
-     c_sedtot(ksmax+1,i,j)=0.0_rsh
+     CALL mustang_fuse_two_layers(i,j,ksmax,ksmaxa,mass_sed_ijksmax,8,  &
+                                  flx_s2w_eroij,phieau_ero_ij)
 
 END SUBROUTINE mustang_manage_small_mass_in_ksmax
 
