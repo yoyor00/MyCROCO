@@ -671,7 +671,6 @@ CONTAINS
               &                  * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "TPP", zw3d )
-          CALL iom_put( "PPNEWo2", zw3d * ( o2ut + o2nit ) ) ! Oxygen production by the New Produc
           CALL iom_put( "tintpp"  , tpp * zfact )  !  global total integrated primary production molC/s
           ! primary production by nanophyto
           DO_3D( 0, 0, 0, 0, 1, jpk)
@@ -711,6 +710,7 @@ CONTAINS
                 &             * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "TPNEW", zw3d )
+          CALL iom_put( "PPNEWo2", zw3d * ( o2ut + o2nit ) ) ! Oxygen production by the New Produc
          !  Regenerated production
           DO_3D( 0, 0, 0, 0, 1, jpk)
              zw3d(ji,jj,jkR) = ( zpronmaxn(ji,jj,jk) * xnanonh4(ji,jj,jk)   &
@@ -836,8 +836,8 @@ CONTAINS
         trc3d(ji,jj,jkR,jp_pbsi  )  = zprorcad(ji,jj,jk) * zysopt(ji,jj,jk) * zfact * tmask(ji,jj,jk) ! biogenic silica production
         trc3d(ji,jj,jkR,jp_pfed  )  = zprofed (ji,jj,jk) * zfact * tmask(ji,jj,jk) ! biogenic iron production by diatom
         trc3d(ji,jj,jkR,jp_pfen  )  = zprofen (ji,jj,jk) * zfact * tmask(ji,jj,jk) !  biogenic iron production by nanophyto
-        trc3d(ji,jj,jkR,jp_pnewo2)  = ( o2ut + o2nit ) &  ! Oxygen production by the New Produc.
-           &                        * ( zprorcan(ji,jj,jk) + zprorcad(ji,jj,jk) + zprorcap(ji,jj,jk) ) * zfact * tmask(ji,jj,jk)
+        trc3d(ji,jj,jkR,jp_pnewo2  ) = ( trc3d(ji,jj,jkR,jp_pnew) + trc3d(ji,jj,jkR,jp_pnew2) ) &
+           &                           * ( o2ut + o2nit ) ! Oxygen production by the New Produc.       
         trc3d(ji,jj,jkR,jp_prego2)  = ( zpronmaxn(ji,jj,jk) * xnanonh4(ji,jj,jk)  &
             &                       +  zpronmaxd(ji,jj,jk) * xdiatnh4(ji,jj,jk) &
             &                       +  zpronmaxp(ji,jj,jk) * zpronmaxp(ji,jj,jk) ) &
