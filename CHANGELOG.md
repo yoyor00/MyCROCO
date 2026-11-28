@@ -182,18 +182,17 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
 
-- PISCES : - Switch from relative to potential density for surface pH proxy,
-             inconsistent with what done for calcite dissolution (#531)
-           - Fix in the calculation of NEW primary productivity with XIOS (#535)
-           - Fix the calculation of nitrogen fixation rate with XIOS (#541)
-           - Set XIOS write timestep for PISCES identical to ocean (#548)
-           - Correct degree to radian conversion (#559)
-           - Add the read of pisces namelist for child grid with AGRIF (#561)
-           - Enables use of high-frequency qsr (<24 hrs) with PISCES 
-             in the case of offline reading (#563) - online calculation of 
-             daily mean of qsr needed by PISCES must be implemented
-           - Fix no update of POC/GOC prod by diazotropy - minor effect (#583)
-           - Fix micro and meso zooplankton o2 consumption with and without XIOS (#619)
+- PISCES : 
+  - Switch from relative to potential density for surface pH proxy, inconsistent with what done for calcite dissolution (#531)
+  - Fix in the calculation of NEW primary productivity with XIOS (#535)
+  - Fix the calculation of nitrogen fixation rate with XIOS (#541)
+  - Set XIOS write timestep for PISCES identical to ocean (#548)
+  - Correct degree to radian conversion (#559)
+  - Add the read of pisces namelist for child grid with AGRIF (#561)
+  - Enables use of high-frequency qsr (<24 hrs) with PISCES in the case of offline reading (#563) - online calculation of daily mean of qsr needed by PISCES must be implemented
+  - Fix no update of POC/GOC prod by diazotropy - minor effect (#583)
+  - Fix micro and meso zooplankton o2 consumption with and without XIOS (#619)
+  - Fix bug on O2 production diagnostics (PPNEWo2 and PPRego2) introduced since v2.1.0 (#632) 
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
